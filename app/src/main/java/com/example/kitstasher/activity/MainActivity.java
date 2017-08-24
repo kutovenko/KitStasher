@@ -1,14 +1,18 @@
 package com.example.kitstasher.activity;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
@@ -35,6 +39,8 @@ import com.example.kitstasher.other.Constants;
 import com.example.kitstasher.other.Helper;
 import com.example.kitstasher.other.DbConnector;
 import com.parse.Parse;
+
+import static android.support.v4.content.PermissionChecker.PERMISSION_DENIED;
 
 
 /**
@@ -81,6 +87,8 @@ public class MainActivity extends AppCompatActivity
     public static final int REQUEST_CODE_POSITION = 1;
     public static final int REQUEST_CODE_CAMERA = 2;
     public static final int REQUEST_CODE_CROP = 3;
+
+
     // Flag to load home fragment when user presses back key
     private boolean shouldLoadHomeFragOnBackPress = true;
     private Handler mHandler;
@@ -90,6 +98,7 @@ public class MainActivity extends AppCompatActivity
 
     public static AsyncApp42ServiceApi asyncService;
     private DbConnector dbConnector;
+    private int permissionCheck;
 
     private Uri picUri;
     private Bitmap bmBoxartPic;
@@ -111,6 +120,8 @@ public class MainActivity extends AppCompatActivity
         //Setting up Sqlite connection
         dbConnector = new DbConnector(this);
         dbConnector.open();
+
+
 
         //Loading SharedPreferences
         sharedPreferences = this.getSharedPreferences(Constants.ACCOUNT_PREFS,
@@ -156,6 +167,8 @@ public class MainActivity extends AppCompatActivity
             loadHomeFragment();
         }
     }
+
+
 
     /***
      * Loads navigation menu header information. Image is Facebook profile picture, name is Facebook
@@ -497,6 +510,10 @@ public class MainActivity extends AppCompatActivity
         if (resultCode != RESULT_OK){
         }
     }
+
+    /////////////////////////
+
+
 
 
 //    /**

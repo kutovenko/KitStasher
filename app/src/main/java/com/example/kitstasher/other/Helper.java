@@ -1,12 +1,16 @@
 package com.example.kitstasher.other;
 
+import android.Manifest;
 import android.content.Context;
 import android.media.MediaCodec;
 import android.os.Build;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.view.Display;
 import android.view.Surface;
 import android.view.WindowManager;
+
+import com.example.kitstasher.activity.MainActivity;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -164,6 +168,8 @@ public class Helper {
         }
         return code;
     }
+
+
 
 //    public String getScreenOrientation(){
 //        // TODO: 13.08.2017 move to Helper

@@ -1,11 +1,13 @@
 package com.example.kitstasher.fragment;
 
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.net.ConnectivityManager;
@@ -14,6 +16,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -115,6 +118,8 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     private Kit kit;
     private ArrayAdapter<String> descriptionAdapter, yearsAdapter;
 
+    private final int MY_PERMISSIONS_REQUEST_CAMERA = 11;
+
 
     public ManualAddFragment() {
         // Required empty public constructor
@@ -188,6 +193,8 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             }
             setCategory(savedInstanceState.getString(Constants.CATEGORY));
         }
+
+        checkPermissions();
 
 
         //Обрабатываем список автодополнения
@@ -295,7 +302,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         btnCancel = (Button) view.findViewById(R.id.btnMCancel);
         btnCancel.setOnClickListener(this);
         ivGetBoxart = (ImageView) view.findViewById(R.id.ivGetBoxart);
-        ivGetBoxart.setOnClickListener(this);
+//        ivGetBoxart.setOnClickListener(this);
         etBrandCat_no = (EditText) view.findViewById(R.id.etBrandCat_no);
         etScale = (EditText) view.findViewById(R.id.etScale);
         etKitName = (EditText) view.findViewById(R.id.etKitName);
@@ -324,6 +331,45 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         myList = DbConnector.getAllBrands();
     }
 
+    private void checkPermissions() {
+        //checking for permissions on Marshmallow+
+        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
+                    Manifest.permission.CAMERA)) {
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+
+            } else {
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(getActivity(),
+                        new String[]{Manifest.permission.CAMERA},
+                        MY_PERMISSIONS_REQUEST_CAMERA);
+            }
+        }else{
+            ivGetBoxart.setOnClickListener(this);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_CAMERA: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    ivGetBoxart.setOnClickListener(this);
+                } else {
+                    Toast.makeText(getActivity(),
+                            R.string.permission_denied_to_use_camera, Toast.LENGTH_SHORT).show();
+                    ivGetBoxart.setImageResource(R.drawable.ic_cancel_black_24dp);
+                }
+                return;
+            }
+        }
+    }
 
     //Проверки заполнения полей
     private boolean checkSearchFields() {

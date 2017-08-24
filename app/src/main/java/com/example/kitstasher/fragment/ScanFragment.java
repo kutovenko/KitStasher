@@ -1,11 +1,17 @@
 package com.example.kitstasher.fragment;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
@@ -15,6 +21,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.kitstasher.R;
+import com.example.kitstasher.activity.MainActivity;
 import com.example.kitstasher.objects.Item;
 import com.example.kitstasher.objects.Kit;
 import com.example.kitstasher.adapters.AdapterAlertDialog;
@@ -41,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import static android.support.v4.content.PermissionChecker.PERMISSION_DENIED;
 import static com.example.kitstasher.activity.MainActivity.asyncService;
 
 /**
@@ -63,7 +71,12 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
     private OnFragmentInteractionListener mListener;
     public static String scanTag;
     private char mode;
+    private Context mContext;
 
+    //for permission check
+    private final int MY_PERMISSIONS_REQUEST_CAMERA = 11;
+//    private final int MY_PERMISSIONS_REQUEST_INTERNET = 12;
+//    private final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 13;
 
     public ScanFragment() {
     }
@@ -91,6 +104,7 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_tabbed_scanning, container, false);
+        mContext = getActivity();
         barcodeView = (DecoratedBarcodeView)rootView.findViewById(R.id.barcode_view);
         textView = (TextView)rootView.findViewById(R.id.textView);
 //        constraintLayout = (ConstraintLayout)rootView.findViewById(R.id.clScanLayout);
@@ -106,10 +120,59 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
         SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
         date = df.format(c.getTime());
         boxart_uri = "";
-
-        initiateScanner(getCallback());
+        checkPermissions();
+//        initiateScanner(getCallback());
         return rootView;
 }
+
+    private void checkPermissions() {
+        //checking for permissions on Marshmallow+
+        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
+                    Manifest.permission.CAMERA)) {
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+
+            } else {
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(getActivity(),
+                        new String[]{Manifest.permission.CAMERA},
+                        MY_PERMISSIONS_REQUEST_CAMERA);
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_CAMERA: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    initiateScanner(getCallback());
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                    Toast.makeText(getActivity(),
+                            R.string.permission_denied_to_use_camera, Toast.LENGTH_SHORT).show();
+                    barcodeView.setVisibility(View.GONE);
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
+    }
+
 
     // Проверяем, откуда обратились к редактору
     private void checkMode() {

@@ -292,7 +292,7 @@
     <string name="get_from_my_stash">Get From My Stash</string>
     <string name="done" translatable="false">Done</string>
     <string name="newkit">New Kit</string>
-
+    <string name="permission_denied_to_use_camera">Permission denied to use camera</string>
 
 
 </resources>
