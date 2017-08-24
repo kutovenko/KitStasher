@@ -1,0 +1,248 @@
+//                    " SELECT '4D Master' AS " + BRANDS_COLUMN_BRAND +
+//                    " UNION SELECT '21st Century Toys'" +
+//                    " UNION SELECT '5M Hobby'" +
+//                    " UNION SELECT 'ACE'" +
+//                    " UNION SELECT 'AER Moldova'" +
+//                    " UNION SELECT 'AFV Club'" +
+//                    " UNION SELECT 'AJP Maquettes'" +
+//                    " UNION SELECT 'AMT/ERTL'" +
+//                    " UNION SELECT 'ASUKA Model'" +
+//                    " UNION SELECT 'AZ model'" +
+//                    " UNION SELECT 'Academy'" +
+//                    " UNION SELECT 'Academy/Minicraft'" +
+//                    " UNION SELECT 'Accu-Scale'" +
+//                    " UNION SELECT 'Accurate Armour'" +
+//                    " UNION SELECT 'Accurate Miniatures'" +
+//                    " UNION SELECT 'Ace Corporation'" +
+//                    " UNION SELECT 'AcroKit'" +
+//                    " UNION SELECT 'Aerobonus'" +
+//                    " UNION SELECT 'Aeroclub'" +
+//                    " UNION SELECT 'Aerodynamix'" +
+//                    " UNION SELECT 'Aeropoxy'" +
+//                    " UNION SELECT 'Air Craft Models'" +
+//                    " UNION SELECT 'Airfix'" +
+//                    " UNION SELECT 'Airmodel'" +
+//                    " UNION SELECT 'Alanger'" +
+//                    " UNION SELECT 'Alley Cat'" +
+//                    " UNION SELECT 'Amati'" +
+//                    " UNION SELECT 'Amodel'" +
+//                    " UNION SELECT 'Anigrand Craftswork'" +
+//                    " UNION SELECT 'Aoshima'" +
+//                    " UNION SELECT 'Ardpol'" +
+//                    " UNION SELECT 'Arii'" +
+//                    " UNION SELECT 'Ark Models'" +
+//                    " UNION SELECT 'Armourfast'" +
+//                    " UNION SELECT 'Artesania Latina'" +
+//                    " UNION SELECT 'Atelier Infinite'" +
+//                    " UNION SELECT 'Atlantic Models'" +
+//                    " UNION SELECT 'Attack Hobby Kits'" +
+//                    " UNION SELECT 'Aurora'" +
+//                    " UNION SELECT 'Azur'" +
+//                    " UNION SELECT 'Bandai'" +
+//                    " UNION SELECT 'Battle Axe'" +
+//                    " UNION SELECT 'Battlefleet Models'" +
+//                    " UNION SELECT 'Bilek'" +
+//                    " UNION SELECT 'Blitz'" +
+//                    " UNION SELECT 'Blue Ridge Models'" +
+//                    " UNION SELECT 'Blue Water Navy'" +
+//                    " UNION SELECT 'Brach Model'" +
+//                    " UNION SELECT 'Bronco'" +
+//                    " UNION SELECT 'Broplan'" +
+//                    " UNION SELECT 'CMR'" +
+//                    " UNION SELECT 'CZ Kolinec'" +
+//                    " UNION SELECT 'Choroszy Modelbud'" +
+//                    " UNION SELECT 'Classic Airframes'" +
+//                    " UNION SELECT 'Classic Plane'" +
+//                    " UNION SELECT 'Classy Hobby'" +
+//                    " UNION SELECT 'Coastal craft'" +
+//                    " UNION SELECT 'Collect-Aire Models'" +
+//                    " UNION SELECT 'Combat Models'" +
+//                    " UNION SELECT 'Combrig'" +
+//                    " UNION SELECT 'Commander Models'" +
+//                    " UNION SELECT 'Corsair Armada'" +
+//                    " UNION SELECT 'Craftworks'" +
+//                    " UNION SELECT 'Criel Model'" +
+//                    " UNION SELECT 'Cromwell Models'" +
+//                    " UNION SELECT 'Crown'" +
+//                    " UNION SELECT 'Cyber Hobby'" +
+//                    " UNION SELECT 'Czech Model'" +
+//                    " UNION SELECT 'Dnepromodel'" +
+//                    " UNION SELECT 'Decapod Models'" +
+//                    " UNION SELECT 'Dolphin Models'" +
+//                    " UNION SELECT 'Doyusha'" +
+//                    " UNION SELECT 'Dragon'" +
+//                    " UNION SELECT 'DreamModel'" +
+//                    " UNION SELECT 'Dujin'" +
+//                    " UNION SELECT 'EMHAR'" +
+//                    " UNION SELECT 'ESCI'" +
+//                    " UNION SELECT 'ESCI/ERTL'" +
+//                    " UNION SELECT 'Eaglewall'" +
+//                    " UNION SELECT 'Eastern Express'" +
+//                    " UNION SELECT 'Eduard'" +
+//                    " UNION SELECT 'Encore Models'" +
+//                    " UNION SELECT 'Essdale'" +
+//                    " UNION SELECT 'FM Models Australia'" +
+//                    " UNION SELECT 'FROG'" +
+//                    " UNION SELECT 'Fairy Kikaku'" +
+//                    " UNION SELECT 'Faller'" +
+//                    " UNION SELECT 'Fine Molds'" +
+//                    " UNION SELECT 'First to Fight'" +
+//                    " UNION SELECT 'Fisher Model'" +
+//                    " UNION SELECT 'Flagman'" +
+//                    " UNION SELECT 'Fly'" +
+//                    " UNION SELECT 'FlyHawk Model'" +
+//                    " UNION SELECT 'Foresight'" +
+//                    " UNION SELECT 'Formaplane'" +
+//                    " UNION SELECT 'Fujimi'" +
+//                    " UNION SELECT 'Gaso.line'" +
+//                    " UNION SELECT 'Glencoe Models'" +
+//                    " UNION SELECT 'Guillows'" +
+//                    " UNION SELECT 'Gwylan Models'" +
+//                    " UNION SELECT 'HP-Models'" +
+//                    " UNION SELECT 'HR Model'" +
+//                    " UNION SELECT 'Hachette'" +
+//                    " UNION SELECT 'Hasegawa'" +
+//                    " UNION SELECT 'Hawk'" +
+//                    " UNION SELECT 'Heller'" +
+//                    " UNION SELECT 'High Planes Models'" +
+//                    " UNION SELECT 'Hobby Boss'" +
+//                    " UNION SELECT 'Hobbycraft'" +
+//                    " UNION SELECT 'HpH models'" +
+//                    " UNION SELECT 'IBG Models'" +
+//                    " UNION SELECT 'ICM'" +
+//                    " UNION SELECT 'ID Models'" +
+//                    " UNION SELECT 'IMC'" +
+//                    " UNION SELECT 'Icaerodesign'" +
+//                    " UNION SELECT 'Iconicair'" +
+//                    " UNION SELECT 'Imai'" +
+//                    " UNION SELECT 'Imcth'" +
+//                    " UNION SELECT 'Iron Shipwrights'" +
+//                    " UNION SELECT 'Italeri'" +
+//                    " UNION SELECT 'JAG'" +
+//                    " UNION SELECT 'KP'" +
+//                    " UNION SELECT 'Kangnam'" +
+//                    " UNION SELECT 'Kinetic'" +
+//                    " UNION SELECT 'Kitty Hawk'" +
+//                    " UNION SELECT 'Kopro'" +
+//                    " UNION SELECT 'Kora Models'" +
+//                    " UNION SELECT 'L-Arsenal Aero'" +
+//                    " UNION SELECT 'L-Arsenal'" +
+//                    " UNION SELECT 'LEM Kits'" +
+//                    " UNION SELECT 'LIFE-LIKE Hobby Kits'" +
+//                    " UNION SELECT 'LS'" +
+//                    " UNION SELECT 'Lindberg'" +
+//                    " UNION SELECT 'Lodela'" +
+//                    " UNION SELECT 'Lukgraph'" +
+//                    " UNION SELECT 'Lüdemann-Modellbau'" +
+//                    " UNION SELECT 'MACH 2'" +
+//                    " UNION SELECT 'MPC'" +
+//                    " UNION SELECT 'MPM Production'" +
+//                    " UNION SELECT 'MSD Micro Scale Des'" +
+//                    " UNION SELECT 'Maquette'" +
+//                    " UNION SELECT 'Marsh Models/Aerote'" +
+//                    " UNION SELECT 'Master Box LTD'" +
+//                    " UNION SELECT 'MasterCraft'" +
+//                    " UNION SELECT 'Matchbox'" +
+//                    " UNION SELECT 'Matchbox/AMT'" +
+//                    " UNION SELECT 'Meng Model'" +
+//                    " UNION SELECT 'Merit International'" +
+//                    " UNION SELECT 'Merlin Models'" +
+//                    " UNION SELECT 'Micro Ace'" +
+//                    " UNION SELECT 'MidShip Models'" +
+//                    " UNION SELECT 'MikroMir'" +
+//                    " UNION SELECT 'Military Wheels'" +
+//                    " UNION SELECT 'Mini Hobby Models'" +
+//                    " UNION SELECT 'MiniArt'" +
+//                    " UNION SELECT 'Minicraft Hasegawa'" +
+//                    " UNION SELECT 'Minicraft Model Kits'" +
+//                    " UNION SELECT 'Mirage Hobby'" +
+//                    " UNION SELECT 'Model Design Construction'" +
+//                    " UNION SELECT 'Modelcollect'" +
+//                    " UNION SELECT 'Modelist'" +
+//                    " UNION SELECT 'Modell Trans Modellbau'" +
+//                    " UNION SELECT 'Monogram'" +
+//                    " UNION SELECT 'Monogram/Mattel'" +
+//                    " UNION SELECT 'Montex'" +
+//                    " UNION SELECT 'NNT Modell+Buch'" +
+//                    " UNION SELECT 'Nichimo'" +
+//                    " UNION SELECT 'Niko Model'" +
+//                    " UNION SELECT 'Nitto'" +
+//                    " UNION SELECT 'Novo'" +
+//                    " UNION SELECT 'OKB Grigorov'" +
+//                    " UNION SELECT 'Ogonjek'" +
+//                    " UNION SELECT 'Omega Models'" +
+//                    " UNION SELECT 'Orange Hobby'" +
+//                    " UNION SELECT 'PST'" +
+//                    " UNION SELECT 'Pacific Coast Model'" +
+//                    " UNION SELECT 'Panda'" +
+//                    " UNION SELECT 'PanzerShop'" +
+//                    " UNION SELECT 'Pegasus'" +
+//                    " UNION SELECT 'Pegasus Hobbies'" +
+//                    " UNION SELECT 'Pit-Road'" +
+//                    " UNION SELECT 'Planet Models'" +
+//                    " UNION SELECT 'Plastic Soldier'" +
+//                    " UNION SELECT 'Platz'" +
+//                    " UNION SELECT 'Profimodeller'" +
+//                    " UNION SELECT 'Pyro'" +
+//                    " UNION SELECT 'RPM'" +
+//                    " UNION SELECT 'RS Models'" +
+//                    " UNION SELECT 'RVHP'" +
+//                    " UNION SELECT 'RarePlane'" +
+//                    " UNION SELECT 'Reality in Scale'" +
+//                    " UNION SELECT 'Resicast'" +
+//                    " UNION SELECT 'Revell'" +
+//                    " UNION SELECT 'Revell Congost'" +
+//                    " UNION SELECT 'Revell ESCI'" +
+//                    " UNION SELECT 'Revell Italerei'" +
+//                    " UNION SELECT 'Revell Monogram'" +
+//                    " UNION SELECT 'Revell Takara'" +
+//                    " UNION SELECT 'Riich.Models'" +
+//                    " UNION SELECT 'Roden'" +
+//                    " UNION SELECT 'S-Model'" +
+//                    " UNION SELECT 'SDV Model'" +
+//                    " UNION SELECT 'SKIF'" +
+//                    " UNION SELECT 'SOL Model'" +
+//                    " UNION SELECT 'Scratchaeronautics'" +
+//                    " UNION SELECT 'Seminar'" +
+//                    " UNION SELECT 'Silver Wings'" +
+//                    " UNION SELECT 'Sky Wave'" +
+//                    " UNION SELECT 'SkyWave'" +
+//                    " UNION SELECT 'Smer'" +
+//                    " UNION SELECT 'Special Hobby'" +
+//                    " UNION SELECT 'Swallow'" +
+//                    " UNION SELECT 'Sword'" +
+//                    " UNION SELECT 'TOMY'" +
+//                    " UNION SELECT 'Takom'" +
+//                    " UNION SELECT 'Tamiya'" +
+//                    " UNION SELECT 'Tasca'" +
+//                    " UNION SELECT 'Testors'" +
+//                    " UNION SELECT 'Tigger Models'" +
+//                    " UNION SELECT 'Tomytec'" +
+//                    " UNION SELECT 'Torro'" +
+//                    " UNION SELECT 'Touchwood Models'" +
+//                    " UNION SELECT 'Tristar'" +
+//                    " UNION SELECT 'Trumpeter'" +
+//                    " UNION SELECT 'U-Models'" +
+//                    " UNION SELECT 'UM Military Technic'" +
+//                    " UNION SELECT 'UM Models'" +
+//                    " UNION SELECT 'UPC'" +
+//                    " UNION SELECT 'Unicraft Models'" +
+//                    " UNION SELECT 'VAMI Models'" +
+//                    " UNION SELECT 'Vac Wings'" +
+//                    " UNION SELECT 'Valom'" +
+//                    " UNION SELECT 'Verlinden Productions'" +
+//                    " UNION SELECT 'WCM'" +
+//                    " UNION SELECT 'WSW Modellbau'" +
+//                    " UNION SELECT 'Welsh Models'" +
+//                    " UNION SELECT 'White Ensign Models'" +
+//                    " UNION SELECT 'Williams Brothers'" +
+//                    " UNION SELECT 'WingScale'" +
+//                    " UNION SELECT 'Wingnut Wings'" +
+//                    " UNION SELECT 'Wings Models, Inc.'" +
+//                    " UNION SELECT 'XS-models'" +
+//                    " UNION SELECT 'YSK'" +
+//                    " UNION SELECT 'Yankee Modelworks'" +
+//                    " UNION SELECT 'ZTS Plastyk'" +
+//                    " UNION SELECT 'Zebrano'" +
+//                    " UNION SELECT 'Zoukei-Mura'" +
+//                    " UNION SELECT 'Zvezda';";

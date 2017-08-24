@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/menu_background"
+        android:gravity="right|center"
+        android:orientation="horizontal">
+
+
+        <LinearLayout
+            android:id="@+id/linLayoutListSortDate"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="0.25"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/textView3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                android:gravity="right|center"
+                android:text="@string/date" />
+
+            <ImageView
+                android:id="@+id/ivListSortDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/ic_keyboard_arrow_down_black_24dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/linLayoutListSortBrand"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="0.25"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                android:gravity="end|center"
+                android:text="@string/Brand" />
+
+            <ImageView
+                android:id="@+id/ivListSortBrand"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/ic_keyboard_arrow_up_black_24dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/linLayoutListSortKitname"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="0.25"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                android:gravity="right|center"
+                android:text="@string/Name" />
+
+            <ImageView
+                android:id="@+id/ivListSortKitname"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/ic_keyboard_arrow_up_black_24dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/linLayoutListSortScale"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="0.25"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                android:gravity="right|center"
+                android:text="@string/Scale" />
+
+            <ImageView
+                android:id="@+id/ivListSortScale"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/ic_keyboard_arrow_up_black_24dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="20"
+        android:orientation="vertical">
+
+        <ListView
+            android:id="@+id/lvListAllItems"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:dividerHeight="8.0sp"
+            android:layout_weight="1"></ListView>
+
+        <Button
+            android:id="@+id/btnAddListItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/button_light"
+            android:text="@string/add" />
+
+    </LinearLayout>
+</LinearLayout>

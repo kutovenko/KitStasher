@@ -1,0 +1,298 @@
+<resources>
+    <string name="app_name" translatable="false">KitStasher</string>
+
+    <string name="facebook_app_id" translatable="false">280770575659727</string>
+
+    <string name="openDrawer" translatable="false">open_drawer</string>
+    <string name="closeDrawer" translatable="false">close_drawer</string>
+
+    <!-- Navigation Drawer menu labels -->
+    <string name="nav_home">Scan</string>
+    <string name="nav_manual">Add</string>
+    <string name="nav_view">View</string>
+    <string name="nav_statistics">Statistics</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_account">Account</string>
+
+    <!-- Toolbar titles when navigation menu item is selected
+     Home
+     Add stash
+     View Stash
+     Statistics
+     Settings
+     <item>Account</item>
+        <item>Help</item>
+
+        <item>Kit</item>
+        <item>Edit</item>
+        <item>Trash</item>
+        <item>Brands</item>
+     -->
+    <string-array name="nav_item_activity_titles">
+        <!--<item></item>-->
+        <!--<item></item>-->
+        <!--<item></item>-->
+        <!--<item></item>-->
+        <!--<item>Settings</item>-->
+        <!--<item>Account</item>-->
+        <!--<item>Help</item>-->
+
+        <!--<item>Kit</item>-->
+        <!--<item>Edit</item>-->
+        <!--<item>Trash</item>-->
+        <!--<item>Brands</item>-->
+    </string-array>
+
+    <!--SettingsFragment-->
+
+    <!-- MainActivity -->
+    <string name="no_internet_connection">No Internet Connection</string>
+    <!-- SettingsBrandsFragment -->
+    <string name="by_manufacturer">By Manufacturer</string>
+    <string name="latest_added_first">Latest Added First</string>
+    <!--EditKitDetailsFragment-->
+    <string name="moved_to_trash">Moved to trash!</string>
+    <!--ScanFragment-->
+    <string name="searching_online">Searchng online ...</string>
+    <string name="no_matches_online">No matches in online base. Be the first to add!</string>
+    <string name="scan_cancelled">Scan cancelled</string>
+    <!--ManualAddFragment-->
+    <string name="scale">Scale</string>
+    <string name="name">Name</string>
+    <string name="manufacturer">Manufacturer</string>
+    <string name="cancelled">Canсelled</string>
+    <string name="nothing_found_online">Sorry, nothing in online database. Let\'s add manually!</string>
+    <string name="kit_added">Kit Added to Stash</string>
+    <!--SettingsFragment-->
+    <string name="clear_db">Deleting all data from database</string>
+    <string name="export_from_db_to_file">Export from database to file</string>
+    <string name="import_from_file_to_db">Import from file to database</string>
+    <string name="import_to_db_started">Starting import to database, please wait</string>
+    <string name="import_completed">Import succesfully completed</string>
+    <!--Preference-names-->
+    <string name="clearDb" translatable="false">clearDb</string>
+    <string name="exportDb" translatable="false">exportDb</string>
+    <string name="viewTrash" translatable="false">viewTrash</string>
+    <string name="editBrands" translatable="false">editBrands</string>
+    <string name="importDb" translatable="false">importDb</string>
+    <string name="repareBoxarts" translatable="false">repareBoxarts</string>
+    <string name="restoreDb" translatable="false">restoreDb</string>
+
+    <!--StatisticsFragment-->
+    <string name="air">Air: </string>
+    <string name="sea">Sea: </string>
+    <string name="ground">Ground: </string>
+    <string name="space">Space: </string>
+    <!--SettingsTrashFragment-->
+    <string name="item_deleted">Item Deleted</string>
+    <string name="nothing_to_delete">Nothing to delete</string>
+    <string name="delete">Delete</string>
+    <string name="restore">Restore</string>
+    <!--ViewStashFragment-->
+    <string name="date">Date</string>
+
+    <!--Layouts-->
+
+    <!--Main Drawer-->
+    <string name="Help">Help</string>
+    <!--Buttons-->
+    <string name="cancel">Cancel</string>
+    <string name="add">Add</string>
+    <string name="save">Save</string>
+    <string name="clear">Clear</string>
+    <string name="scan">Scan</string>
+    <string name="file">File</string>
+    <string name="camera">Camera</string>
+    <!--ManualAdd Form-->
+    <string name="Search_by_code">Search by Code</string>
+    <string name="Non_english_name">Non-English Name (if any)</string>
+    <string name="Catalog_code">Catalog Code</string>
+    <string name="Scale_1">Scale 1/</string>
+    <string name="Description">Description</string>
+    <string name="Kit_name">Kit Name</string>
+    <string name="Brand">Brand</string>
+    <string name="Name">Kit Name</string>
+    <string name="Scale">Scale</string>
+    <!--Categories-->
+    <string name="Ship">Ship</string>
+    <string name="Air">Air</string>
+    <string name="Ground">Ground</string>
+    <string name="Sea">Sea</string>
+    <string name="Space">Space</string>
+
+
+    <!--Statistics-->
+    <string name="today">Today</string>
+    <string name="daily_max">Daily Max</string>
+    <string name="delete_all">Delete All</string>
+
+
+    <string name="_1">1/</string>
+    <string name="entry_already_exist">Kit already in your stash</string>
+    <string name="working_with_database">Working with database</string>
+    <string name="completed">Completed</string>
+    <string name="completed_offline_pass" translatable="false">Completed offline pass</string>
+    <string name="sdcard_failed">SD card failed!</string>
+    <string name="writing" translatable="false">Writing</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_email" translatable="false">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="prompt_login" translatable="false">Your Name</string>
+    <string name="action_sign_in">Register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="error_invalid_email" translatable="false">This email address is invalid</string>
+    <string name="error_invalid_password" translatable="false">This password is too short</string>
+    <string name="error_incorrect_password" translatable="false">This password is incorrect</string>
+    <string name="error_field_required">This field is required</string>
+
+    <!-- Login-->
+    <!--<string name="app_name">Stashers-Login</string>-->
+    <string name="login_success_message" translatable="false">Login successful! This concludes an example.</string>
+    <string name="login_text" translatable="false">Log in</string>
+    <string name="logout_text">Log out</string>
+
+    <string name="facebook_button_text" translatable="false">Facebook</string>
+
+    <string name="register_text" translatable="false">Register</string>
+    <string name="restore_link">Restore Password</string>
+    <string name="password_recovered_message">We sent an email to your email address with a link to a password change page. Please check your email and follow the link for further instructions.</string>
+    <string name="restore_password_page_name">Password Restoration</string>
+    <string name="registration_page_name" translatable="false">Registration</string>
+    <string name="login_prompt">Login:</string>
+    <string name="password_recovery_page_name">Password Recovery</string>
+    <string name="warning_icon_description" translatable="false">warning icon</string>
+    <string name="remember_login_text">Remember me</string>
+
+    <string name="email_field_prompt">Email:</string>
+
+    <string name="name_field_prompt" translatable="false">Name:</string>
+
+    <string name="password_field_prompt">Password:</string>
+
+    <string name="phoneNumber_field_prompt" translatable="false">PhoneNumber:</string>
+
+    <string name="default_registered_text">Registered successfully!</string>
+
+    <string name="registration_success_message" translatable="false">Thank you for registering with the %1$s. Click the button below to proceed to the login.</string>
+    <string name="kitstasher_login">Log in with Email</string>
+    <string name="login_with" translatable="false">Log in with:</string>
+    <string name="new_user">New User</string>
+    <string name="your_email" translatable="false">Your Email</string>
+    <string name="achievments">Achievments:</string>
+    <string name="enter_brand">Please enter Brand name</string>
+    <string name="enter_cat_no">Please enter catalog code</string>
+    <string name="enter_scale">Please enter Scale</string>
+    <string name="enter_kit_name">Please enter Kit name</string>
+    <string name="please_fill_fields" translatable="false">Please fill in fields</string>
+    <!--Back4App-->
+    <!--<string name="parse_application_id" translatable="false">btaakgy7Ch1juOYWd34B09ir2Nyt1MUiFqfA9BRU</string>-->
+    <!--<string name="parse_client_key" translatable="false">bwcdVqjKNxrmmowaIPcala5ss9blO6KTr8s3Tn2U</string>-->
+    <!--<string name="parse_server_url" translatable="false">https://parseapi.back4app.com/</string>-->
+    <!--Parse on Buddy-->
+    <string name="parse_application_id" translatable="false">9bb8b16b-ebcf-443c-a71b-69fc5abf5751</string>
+    <string name="parse_client_key" translatable="false">xlBK4U5r4mDYi75QYDvswbM5cvpXC1uQ</string>
+    <string name="parse_server_url" translatable="false">https://api.parse.buddy.com/parse/</string>
+
+    <string name="check_now">Check</string>
+    <string name="password">Password</string>
+    <string name="email" translatable="false">Email</string>
+    <string name="keep_logged_in">Keep Logged In</string>
+    <string name="restore_password">Restore Password</string>
+    <string name="register" translatable="false">Register</string>
+    <string name="not_checked_yet" translatable="false">Not checked yet</string>
+    <string name="not_checked" translatable="false">Not checked yet</string>
+    <string name="all">All</string>
+    <string name="Other">Other</string>
+    <string name="report_incorrect_data" translatable="false">Report Incorrect Data</string>
+    <string name="edit">Edit</string>
+    <string name="auto_moto">Auto/Moto</string>
+    <string name="title_activity_main2" translatable="false">Main2Activity</string>
+
+    <string name="navigation_drawer_open" translatable="false">Open navigation drawer</string>
+    <string name="navigation_drawer_close" translatable="false">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="saved_barcode" translatable="false">barcode</string>
+    <string name="Auto_moto">Cars/Bikes</string>
+    <string name="Cars_bikes">Cars/Bikes</string>
+    <string name="Long_tap_to_delete">Long tap to delete</string>
+    <string name="repair_images" translatable="false">Repair images</string>
+    <string name="Export_database">Export database</string>
+    <string name="Backup">Backup</string>
+    <string name="Backup_text">Save database to file - you can import it later.</string>
+    <string name="Database">Database</string>
+    <string name="Repair_text">If you have problems with boxart images.</string>
+    <string name="Images">Images</string>
+    <string name="Restore_database">Restore database from backup. This will rewrite current database.</string>
+    <string name="Found">Found!</string>
+    <string name="Exception_Occured">Exception Occurred :</string>
+    <string name="We_badly_need_internet">We badly need Internet…</string>
+    <string name="Please_log_in">Please Log in</string>
+    <string name="Welcome">Welcome,</string>
+    <string name="Facebook_dont_know_you">Wow! Facebook don\'t know you! Why not to try again?</string>
+    <string name="Facebook_error">Oops… Facebook Error! Do we have Internet Connection?</string>
+    <string name="Kits_db_connection_error">Kits database connection error</string>
+    <string name="Kits_db_connection_ok">Kits database connection OK</string>
+    <string name="Cancelled">Cancelled</string>
+    <string name="Error_on_cloud_saving">Error on saving to cloud</string>
+    <string name="Saving">Saving…</string>
+    <string name="Saving_failed">Saving failed. Please, try again!</string>
+    <string name="Database_empty">Database Empty</string>
+    <string name="Checking">Checking..</string>
+    <string name="Server_error">Server error</string>
+    <string name="Sorry_no_crop">Sorry, it seems that your device don\'t allow to crop images</string>
+    <string name="Scan_barcode">Scan Barcode</string>
+    <string name="Manual_add">Manual Add</string>
+    <string name="Your_device_cannot_take_photos">Your device cannot take photos</string>
+    <string name="camera_failure">Sorry, camera failure</string>
+    <string name="the_world_s">The World\'s №</string>
+    <string name="total_stash">Total Stash</string>
+    <string name="added_today">Added Today</string>
+    <string name="daily_record">Daily Record</string>
+    <string name="cars_bikes">Cars/Bikes:</string>
+    <string name="other">Other:</string>
+    <string name="options">Import/Export</string>
+    <string name="Brands">Brands</string>
+    <string name="export">Export</string>
+    <string name="export_text">Export list of kits in different file formats</string>
+    <string name="export_to">Export</string>
+    <string name="coming_soon">Coming soon</string>
+    <string name="choose_output_format">Choose output format</string>
+    <string name="save_file_using">Save file using</string>
+    <string name="add_boxart">Add boxart</string>
+    <string name="restore_image">Restore image</string>
+    <string name="nav_more">More</string>
+    <string name="new_tool">New tool</string>
+    <string name="new_parts">New parts</string>
+    <string name="rebox">Rebox</string>
+    <string name="new_decal">New decals</string>
+    <string name="year">Year</string>
+    <string name="kittype">Kit type</string>
+    <string name="add_another_variant">Add another variant</string>
+    <string name="reissue">Reissue</string>
+    <string name="changed_parts">Changed parts</string>
+    <string name="changed_box">Changed box</string>
+    <string name="repack">Repack</string>
+    <string name="searching">Searching..</string>
+    <string name="Saved">Saved</string>
+    <string name="Mylists">My Lists</string>
+    <string name="new_list">New List</string>
+    <string name="Done">Done</string>
+    <string name="Cancel">Cancel</string>
+    <string name="title_activity_list" translatable="false">ListActivity</string>
+    <string name="Choose_mode">Choose Mode:</string>
+    <string name="Kit_added_to_list">Kit added to list</string>
+    <string name="Add_kit_to_list">Add Kit to List</string>
+    <string name="Add_new_list">Add New List</string>
+    <string name="new_name_for_the_list">New name for the list</string>
+    <string name="List_with_this_name_already_exists">List with this name already exists</string>
+    <string name="give_list_a_good_name">List name</string>
+    <string name="Rename_">Rename \"</string>
+    <string name="get_from_my_stash">Get From My Stash</string>
+    <string name="done" translatable="false">Done</string>
+    <string name="newkit">New Kit</string>
+
+
+
+</resources>

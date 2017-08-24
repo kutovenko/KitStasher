@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="Main">
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:title="Contributor Mode"
+            android:key="switch_contributor"
+            android:summary="Switch from local to contributor mode"/>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Manteinance">
+
+        <Preference android:title="Edit List of Brands"
+            android:key="@string/editBrands"
+            android:summary="Manually edit List of Brands"/>
+        <Preference android:title="Repair Boxart Images"
+            android:key="@string/repareBoxarts"
+            android:summary="Reload links to boxart images"/>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Database">
+
+        <Preference android:title="View Trash"
+            android:key="@string/viewTrash"
+            android:summary="View and restore deleted items"/>
+        <Preference android:title="Clean Database"
+            android:key="@string/clearDb"
+            android:summary="Cleans Local Database from Trash Entries"/>
+        <Preference android:title="Backup Database"
+            android:key="@string/exportDb"
+            android:summary="Export Local Database to file"/>
+        <Preference android:title="Restore Database"
+            android:key="@string/restoreDb"
+            android:summary="Import data to Local Database from file (Scalemates)"/>
+        <Preference android:title="Import CSV"
+            android:key="@string/importDb"
+            android:summary="Import your stash to Local Database from Scalemates"/>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Look and Feel">
+        <SwitchPreference
+            android:defaultValue="true"
+            android:title="Header Image"
+            android:key="switch_header"
+            android:summary="Automatically header image change based on main category of your stash"/>
+    </PreferenceCategory>
+
+</PreferenceScreen>

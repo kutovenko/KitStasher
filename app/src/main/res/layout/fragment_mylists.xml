@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginLeft="20dp"
+    android:layout_marginRight="20dp"
+    android:orientation="vertical">
+
+    <ListView
+        android:id="@+id/lvMyLists"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_weight="10"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="8.0sp" />
+
+    <Button
+        android:id="@+id/btnAddMylist"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/button_light"
+        android:text="@string/Add_new_list" />
+
+</LinearLayout>
