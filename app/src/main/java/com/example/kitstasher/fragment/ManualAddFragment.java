@@ -1,6 +1,8 @@
 package com.example.kitstasher.fragment;
 
 import android.Manifest;
+import android.app.DatePickerDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -17,6 +19,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -31,9 +34,12 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -49,6 +55,7 @@ import com.example.kitstasher.other.Constants;
 import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.Helper;
 import com.example.kitstasher.other.OnFragmentInteractionListener;
+import com.example.kitstasher.other.SelectDateFragment;
 import com.example.kitstasher.other.ValueContainer;
 import com.parse.ParseException;
 import com.parse.ParseFile;
@@ -67,6 +74,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -84,20 +93,23 @@ import static com.example.kitstasher.activity.MainActivity.asyncService;
  */
 
 public class ManualAddFragment extends Fragment implements View.OnClickListener, TextWatcher,
-        AsyncApp42ServiceApi.App42StorageServiceListener, OnFragmentInteractionListener, AdapterView.OnItemSelectedListener {
+        AsyncApp42ServiceApi.App42StorageServiceListener, OnFragmentInteractionListener,
+        AdapterView.OnItemSelectedListener {
     private View view;
-    private EditText etBrandCat_no, etScale, etKitName, etKitNoengName;
+    private EditText etBrandCat_no, etScale, etKitName, etKitNoengName, etNotes, etPrice;
     private Button btnAdd, btnCancel, btnCheckOnlineDatabase;
-    private AppCompatSpinner spYear, spDescription;
+    private AppCompatSpinner spYear, spDescription, spQuantity, spCurrency;
     private LinearLayout linLayoutMAir, linLayoutMCar, linLayoutMGround, linLayoutMOther,
             linLayoutMSea, linLayoutMSpace;
     private ImageView ivGetBoxart;
+    private TextView tvPurchaseDate;
     private ProgressDialog progressDialog;
 
-    private String barcode, brand, brand_catno, kitname, status, kit_noengname, date,
-            boxart_url, category, boxart_uri, fbId, description, year, onlineId, listname;
+    private String barcode, brand, brand_catno, kitname, status, kit_noengname, date, purchaseDate,
+            boxart_url, category, boxart_uri, fbId, description, year, onlineId, listname, notes,
+    currency, prototype, scalemates_url;
     private char mode;
-    private int scale;
+    private int scale, quantity, y, month, day, price;
     private boolean isFoundOnline, isReported, wasSearchedOnline, isRbChanged;
 
     private Context context;
@@ -163,7 +175,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.fragment_tabbed_manualadd, container, false);
+        view = inflater.inflate(R.layout.fragment_tabbed_manualadd2, container, false);
 //Соединение с локальной БД
         dbConnector = new DbConnector(getActivity());
         dbConnector.open();
@@ -230,6 +242,16 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                 android.R.layout.simple_spinner_item, years);
         spYear.setAdapter(yearsAdapter);
 
+        Integer[] quants = new Integer[]{1,2,3,4,5,6,7,8,9,10};
+        ArrayAdapter quantityAdapter = new ArrayAdapter<Integer>(getActivity(),
+                android.R.layout.simple_spinner_item, quants);
+        spQuantity.setAdapter(quantityAdapter);
+
+        String[] currencies = new String[]{"BYN", "EUR", "RUR", "UAH", "USD"};
+        ArrayAdapter currencyAdapter = new ArrayAdapter<String>(getActivity(),
+                android.R.layout.simple_spinner_item, currencies);
+        spCurrency.setAdapter(currencyAdapter);
+
 
         return view;
     }
@@ -255,43 +277,75 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 
         //экономим обращения к онлайновой базе - если уже искали, не искать.
         wasSearchedOnline = false;
-
-
-        //Статус для последующей записи пропущенных в офлайне записей
-        status = null;
-        brand = null;
-        brand_catno = null;
-        scale = 0;
-        kitname = null;
+        isRbChanged = false;
         isFoundOnline = false;
+        isReported = false;
+        status = "";//Статус для последующей записи пропущенных в офлайне записей
+        mode = 'm';
+
+        brand = "";
+        brand_catno = "";
+        scale = 0;
+        kitname = "";
+        kit_noengname = "";
         boxart_url = "";
         boxart_uri = "";
-        isReported = false;
         date = df.format(c.getTime());
         barcode = "";
-        mode = 'm';
+
         if (getArguments() != null && getArguments().getChar("mode") == 'l'
                 && getArguments().getString("barcode") != null){
             barcode = getArguments().getString("barcode");
         }
         description = "";
         year = "0";
-
         category = Constants.CAT_OTHER;
         onlineId = "";
-
-        isRbChanged = false;
-
+        price = 0;
+        notes = "";
+        purchaseDate = date;
+        currency = "";
+        quantity = 1;
+        prototype = "";
+        scalemates_url = "";
 
 
         //New kit with empty fields
-        kit = new Kit.KitBuilder().build();
-        kit.setBarcode(barcode);
-        kit.setBoxart_uri("");
-        kit.setKit_noeng_name("");
-        kit.setDescription("");
-        kit.setYear("0");
-        kit.setOnlineId("");
+        kit = new Kit.KitBuilder()
+                .hasBrand(brand)
+                .hasBrand_catno(brand_catno)
+                .hasKit_name(kitname)
+                .hasScale(scale)
+                .hasCategory(category)
+                .hasBarcode(barcode)
+                .hasKit_noeng_name(kit_noengname)
+                .hasDescription(description)
+
+                .hasPrototype("")//not in use
+
+                .hasBoxart_url(boxart_url)
+                .hasBoxart_uri(boxart_uri)
+                .hasScalemates_url("")
+                .hasYear(year)
+                .hasOnlineId(onlineId)
+                .hasDateAdded(date)
+                .hasDatePurchased(purchaseDate)
+                .hasQuantity(quantity)
+                .hasNotes(notes)
+                .hasPrice(price)
+                .hasCurrency(currency)
+        .build();
+
+//        kit.setBarcode(barcode);
+//        kit.setBoxart_uri("");
+//        kit.setKit_noeng_name("");
+//        kit.setDescription("");
+//        kit.setYear("0");
+//        kit.setOnlineId("");
+//        kit.setPrice(price);
+//        kit.setNotes(notes);
+//        kit.setDate_purchased(purchaseDate);
+//        kit.setCurrency(currency);
     }
 
     private void initUI() {
@@ -322,6 +376,16 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         linLayoutMSpace.setOnClickListener(this);
         linLayoutMOther = (LinearLayout) view.findViewById(R.id.linLayoutMOther);
         linLayoutMOther.setOnClickListener(this);
+
+        spCurrency = (AppCompatSpinner)view.findViewById(R.id.spCurrency);
+        spCurrency.setSelection(0, true);
+        spQuantity = (AppCompatSpinner)view.findViewById(R.id.spQuantity);
+        spQuantity.setSelection(0, true);
+        etNotes = (EditText)view.findViewById(R.id.etNotes);
+        tvPurchaseDate = (TextView)view.findViewById(R.id.tvPurchaseDate);
+        tvPurchaseDate.setText(purchaseDate);
+        tvPurchaseDate.setOnClickListener(this);
+        etPrice = (EditText)view.findViewById(R.id.etPrice);
     }
 
 
@@ -471,7 +535,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                         myList.add(newAdd);
                         //Срабатывает при перезапуске, записывает в базу
                         // и при следующем запуске уже берет из нее
-                        dbConnector.addKitRec(newAdd);
+                        dbConnector.addBrand(newAdd);
                     }
                     myAutoCompleteAdapter = new ArrayAdapter<String>(
                             getActivity(),
@@ -485,9 +549,9 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                         if (bytes != null && boxartPic != null) {
                             writeBoxartFile(bytes, boxartPic); //now kit has boxart_uri
                         }
-                        saveOnline(kit);
+//                        saveOnline(kit);
                         ////////////////////////
-                        if (mode !='l') {
+                        if (mode !='l') {//из ручного добавления
                             if (isOnline()) {
                                 writeToLocalDatabase(kit); //writes kit to database
                                 if (wasSearchedOnline && !isFoundOnline) {
@@ -512,7 +576,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                                 clearFields();
                                 returnToScan();
                             }
-                        }else{
+                        }else{ //из списков
                             writeToLocalDatabase(kit);
                             Toast.makeText(getActivity(), R.string.Kit_added_to_list, Toast.LENGTH_SHORT).show();
                             status = null;
@@ -534,7 +598,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                     }
                 } else {
                     //Проверяем все поля - начальная проверка не пройдена!
-                    Toast.makeText(getActivity(), "Please enter data", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), R.string.Please_enter_data, Toast.LENGTH_SHORT).show();
                 }
                 break;
 
@@ -574,12 +638,19 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                 try {
                     // Намерение для запуска камеры
                     Intent captureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+//                    captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, "");
                     startActivityForResult(captureIntent, REQUEST_CODE_CAMERA);
                 } catch (ActivityNotFoundException e) {
                     // Выводим сообщение об ошибке
                     String errorMessage = getString(R.string.camera_failure);
                     Toast.makeText(getActivity(), errorMessage, Toast.LENGTH_SHORT).show();
                 }
+                break;
+
+            case R.id.tvPurchaseDate:
+                DialogFragment newFragment = new SelectDateFragment();
+                newFragment.show(getFragmentManager(), "DatePicker");
                 break;
         }
     }
@@ -675,27 +746,57 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         linLayoutMOther.setBackgroundColor(ContextCompat.getColor(context, R.color.colorItem));
     }
 
-
-
-/*
+    /*
 * Writes kit object to local Sqlite database*/
     private void writeToLocalDatabase(Kit kitSave) {
         if (mode == 'm') {
-            dbConnector.addKitRec(kitSave.getBarcode(), kitSave.getBrand(), kitSave.getBrand_catno(),
-                    kitSave.getScale(), kitSave.getKit_name(), kitSave.getKit_noeng_name(), status, date,
-                    kitSave.getBoxart_url(), kitSave.getCategory(), kitSave.getBoxart_uri(),
-//                kit.getOnlineId(),
-                    kitSave.getDescription(),
-                    kitSave.getYear());
-        }else if (mode == 'l'){
-            dbConnector.addListItem(kitSave.getBarcode(), kitSave.getBrand(), kitSave.getBrand_catno(),
-                    kitSave.getScale(), kitSave.getKit_name(), kitSave.getKit_noeng_name(), status, date,
-                    kitSave.getBoxart_url(), kitSave.getCategory(), kitSave.getBoxart_uri(),
-//                kit.getOnlineId(),
-                    kitSave.getDescription(),
-                    kitSave.getYear(),
-                    listname);
+            dbConnector.addKitRec(kitSave);
+//            dbConnector.addKitRec(
+//                    kitSave.getBarcode(),
+//                    kitSave.getBrand(),
+//                    kitSave.getBrand_catno(),
+//                    kitSave.getScale(),
+//                    kitSave.getKit_name(),
+//                    kitSave.getKit_noeng_name(),
+//                    status,
+//                    date,
+//                    kitSave.getBoxart_url(),
+//                    kitSave.getCategory(),
+//                    kitSave.getBoxart_uri(),
+////                kit.getOnlineId(),
+//                    kitSave.getDescription(),
+//                    kitSave.getYear(),
+//                    notes,
+//                    purchaseDate,
+//                    quantity,
+//                    price,
+//                    currency
+//            );
+        }else if (mode == 'l') {
+            dbConnector.addListItem(kitSave, listname);
         }
+//            dbConnector.addListItem(
+//                    kitSave.getBarcode(),
+//                    kitSave.getBrand(),
+//                    kitSave.getBrand_catno(),
+//                    kitSave.getScale(),
+//                    kitSave.getKit_name(),
+//                    kitSave.getKit_noeng_name(),
+//                    status,
+//                    date,
+//                    kitSave.getBoxart_url(),
+//                    kitSave.getCategory(),
+//                    kitSave.getBoxart_uri(),
+////                kit.getOnlineId(),
+//                    kitSave.getDescription(),
+//                    kitSave.getYear(),
+//                    notes,
+//                    purchaseDate,
+//                    quantity,
+//                    price,
+//                    currency,
+//                    listname);
+//        }
 
     }
 
@@ -734,8 +835,21 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         if (!d.equals(getString(R.string.kittype))){
             kit.setDescription(descToCode(d));
         }else{
-            kit.setDescription("0");
+            kit.setDescription(Constants.CODE_OTHER);
         }
+        currency = spCurrency.getSelectedItem().toString();
+        kit.setCurrency(currency);
+        quantity = spQuantity.getSelectedItemPosition() + 1;
+        kit.setQuantity(quantity);
+        notes = etNotes.getText().toString();
+        kit.setNotes(notes);
+        price = Integer.parseInt(etPrice.getText().toString()) * 100;
+        kit.setPrice(price);
+        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
+        purchaseDate = tvPurchaseDate.getText().toString();
+        kit.setDate_purchased(purchaseDate);
+        kit.setBoxart_uri(boxart_uri);
+        kit.setBoxart_url(boxart_url);
 
     }
 
@@ -769,15 +883,8 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 
     //Очистка полей и переменных
     private void clearFields() {
-        //Обнуляем переменные
-        barcode = "";
-        brand = null;
-        brand_catno = null;
-        scale = 0;
-        kitname = null;
-        category = CAT_OTHER;
-        description = "";
-        year = "0";
+
+
         //Очищаем поля
         acTvBrand.setText("");
         acTvBrand.setError(null);
@@ -793,11 +900,68 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         ivGetBoxart.setBackgroundResource(R.drawable.button_inversed);
         spDescription.setSelection(0);
         spYear.setSelection(0);
-        onlineId = "";
-        setCategory(Constants.CAT_OTHER);
+        spCurrency.setSelection(0);
+        spQuantity.setSelection(0);
+        etNotes.setText("");
+        etPrice.setText("");
+        tvPurchaseDate.setText(purchaseDate);
 
+        setCategory(Constants.CAT_OTHER);
+//todo добавить новые поля
         clearTags();
         kit = new Kit.KitBuilder().build();
+        //экономим обращения к онлайновой базе - если уже искали, не искать.
+        wasSearchedOnline = false;
+        isRbChanged = false;
+        isFoundOnline = false;
+        isReported = false;
+        status = "";//Статус для последующей записи пропущенных в офлайне записей
+        mode = 'm';
+
+        brand = "";
+        brand_catno = "";
+        scale = 0;
+        kitname = "";
+        kit_noengname = "";
+        boxart_url = "";
+        boxart_uri = "";
+        barcode = "";
+        description = "";
+        year = "0";
+        category = Constants.CAT_OTHER;
+        onlineId = "";
+        price = 0;
+        notes = "";
+        purchaseDate = date;
+        currency = "";
+        quantity = 1;
+        prototype = "";
+        status = "";//Статус для последующей записи пропущенных в офлайне записей
+        scalemates_url = "";
+//обнуляем значения кита
+        kit.setBrand(brand);
+        kit.setBrand_catno(brand_catno);
+        kit.setKit_name(kitname);
+        kit.setScale(scale);
+        kit.setCategory(category);
+        //Optional
+        kit.setBarcode(barcode);
+        kit.setKit_noeng_name(kit_noengname);
+        kit.setDescription(description);
+        kit.setPrototype(prototype);
+        kit.setBoxart_url(boxart_url);
+        kit.setScalemates_url(scalemates_url);
+        kit.setBoxart_uri(boxart_uri);
+        kit.setYear(year);
+        kit.setOnlineId(onlineId);
+
+        kit.setDate_added(date);
+        kit.setDate_purchased(purchaseDate);
+        kit.setQuantity(quantity);
+        kit.setNotes(notes);
+        kit.setPrice(price);
+        kit.setCurrency(currency);
+        kit.setStatus(status);
 
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
@@ -1125,7 +1289,8 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 
                     barcode = kitToAdd.getBarcode();//todo???
                 if (wasSearchedOnline && isFoundOnline) {
-                    kit.setBoxart_url(kitToAdd.getBoxart_url());
+                    boxart_url = kitToAdd.getBoxart_url();
+//                    kit.setBoxart_url(kitToAdd.getBoxart_url());
                     setCategory(kitToAdd.getCategory());
                 }else{
                     kit.setBoxart_url("");
@@ -1290,10 +1455,11 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             Intent cropIntent = new Intent("com.android.camera.action.CROP");
             cropIntent.setDataAndType(picUri, "image/*");
             cropIntent.putExtra("crop", "true");
-            cropIntent.putExtra("aspectX", 280);
-            cropIntent.putExtra("aspectY", 172);
-            cropIntent.putExtra("outputX", 280);
-            cropIntent.putExtra("outputY", 172);
+            cropIntent.putExtra("aspectX", Constants.SIZE_FULL_WIDTH);
+            cropIntent.putExtra("aspectY", Constants.SIZE_FULL_HEIGHT);
+            cropIntent.putExtra("outputX", Constants.SIZE_FULL_WIDTH);
+            cropIntent.putExtra("outputY", Constants.SIZE_FULL_HEIGHT);
+            cropIntent.putExtra("scale", true);
             cropIntent.putExtra("return-data", true);
             startActivityForResult(cropIntent, REQUEST_CODE_CROP);
         }
@@ -1334,30 +1500,35 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         } catch (IOException e) {
             e.printStackTrace();
         }
-        kit.setBoxart_uri(pictureName);
+        boxart_uri = pictureName;
+//        kit.setBoxart_uri(pictureName);
     }
 
     private void saveWithBoxartToParse(Bitmap bmp, Kit kitSave){
 
-        String name = kitSave.getBrand() + kitSave.getBrand_catno();
-        saveWithResize(kitSave, name, bmp, Constants.SIZE_SMALL_HEIGHT, Constants.SIZE_SMALL_WIDTH);
-        saveWithResize(kitSave, name, bmp, Constants.SIZE_MEDIUM_HEIGHT, Constants.SIZE_MEDIUM_WIDTH);
+//        String name = kitSave.getBrand() + kitSave.getBrand_catno();
+        saveWithResize(kitSave, bmp, Constants.SIZE_FULL_HEIGHT, Constants.SIZE_FULL_WIDTH);
+//        saveWithResize(kitSave, name, bmp, Constants.SIZE_MEDIUM_HEIGHT, Constants.SIZE_MEDIUM_WIDTH);
+//        saveWithResize(kitSave, name, bmp, Constants.SIZE_SMALL_HEIGHT, Constants.SIZE_SMALL_WIDTH);
 //        saveWithResize(kitSave, name, bmp, 393, 640);
-        saveWithResize(kitSave, name, bmp, Constants.SIZE_FULL_HEIGHT, Constants.SIZE_FULL_WIDTH);
+
 
     }
 
-    private void saveWithResize(final Kit kitSave, String name, Bitmap bmp, int height, final int width) {
+    private void saveWithResize(final Kit kitSave, Bitmap bmp, int height, final int width) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         getResizedBitmap(bmp, height, width).compress(Bitmap.CompressFormat.JPEG, 100, stream);
         byte[] data = stream.toByteArray();
+        String name = kit.getBrand() + kit.getBrand_catno();
+        String fullName = "";
         String nameBody;
         if (width == Constants.SIZE_FULL_WIDTH){
             nameBody = "-pristine";
         }else{
             nameBody = "-t" + String.valueOf(width);
         }
-        final ParseFile file = new ParseFile(name + nameBody + Constants.BOXART_URL_POSTFIX, data);
+        fullName = name + nameBody + Constants.BOXART_URL_POSTFIX;
+        final ParseFile file = new ParseFile(fullName, data);
         ParseObject boxartToSave = new ParseObject("Boxart");
         boxartToSave.put("image", file);
         boxartToSave.put("description", getBoxartDescription());
@@ -1367,8 +1538,11 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             public void done(ParseException ex) {
                 if (ex == null) {
                     if (width == Constants.SIZE_FULL_WIDTH){
-                    boxart_url = file.getUrl();
-                    kitSave.setBoxart_url(boxart_url);
+//                    boxart_url = file.getUrl();
+//                    kitSave.setBoxart_url(boxart_url);
+//                        saveOnline(kitSave);
+//                        boxart_url = file.getUrl();
+                        kitSave.setBoxart_url(file.getUrl());
                         saveOnline(kitSave);
                     }
                 } else {

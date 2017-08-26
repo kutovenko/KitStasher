@@ -43,6 +43,7 @@ import com.shephertz.app42.paas.sdk.android.storage.Storage;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -72,6 +73,10 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
     public static String scanTag;
     private char mode;
     private Context mContext;
+
+    private String notes, purchaseDate, currency;
+    private int quantity;
+    private int price;
 
     //for permission check
     private final int MY_PERMISSIONS_REQUEST_CAMERA = 11;
@@ -120,6 +125,13 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
         SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
         date = df.format(c.getTime());
         boxart_uri = "";
+
+        notes = "";
+        purchaseDate = date;
+        quantity = 1;
+        price = 0;
+        currency = "";
+
         checkPermissions();
 //        initiateScanner(getCallback());
         return rootView;
@@ -406,14 +418,40 @@ private BarcodeCallback getCallback(){
                     openManualAdd();
                 }else {
                     Kit kitToAdd = itemsForDb.get(item - 1);//// TODO: 11.07.2017 добавить год в базу
+                    kitToAdd.setDate_added(date);
+                    kitToAdd.setNotes(notes);
+                    kitToAdd.setDate_purchased(purchaseDate);
+                    kitToAdd.setQuantity(quantity);
+                    kitToAdd.setPrice(price);
+                    kitToAdd.setCurrency(currency);
+                    kitToAdd.setStatus(status);
+                    kitToAdd.setOnlineId("");
+                    kitToAdd.setBoxart_uri("");
                     if (mode == 'l'){
-                        dbConnector.addListItem(kitToAdd.getBarcode(), kitToAdd.getBrand(),
-                                kitToAdd.getBrand_catno(), kitToAdd.getScale(), kitToAdd.getKit_name(),
-                                kitToAdd.getKit_noeng_name(), status, date, kitToAdd.getBoxart_url(),
-                                kitToAdd.getCategory(), "",
-//                            kitToAdd.getOnlineId(),
-                                kitToAdd.getDescription(),
-                                kitToAdd.getYear(), listname);
+
+                        dbConnector.addListItem(kitToAdd, listname);
+
+//                        dbConnector.addListItem(
+//                                kitToAdd.getBarcode(),
+//                                kitToAdd.getBrand(),
+//                                kitToAdd.getBrand_catno(),
+//                                kitToAdd.getScale(),
+//                                kitToAdd.getKit_name(),
+//                                kitToAdd.getKit_noeng_name(),
+//                                status,
+//                                date,
+//                                kitToAdd.getBoxart_url(),
+//                                kitToAdd.getCategory(),
+//                                kitToAdd.getBoxart_uri(),
+////                kit.getOnlineId(),
+//                                kitToAdd.getDescription(),
+//                                kitToAdd.getYear(),
+//                                notes,
+//                                purchaseDate,
+//                                quantity,
+//                                price,
+//                                currency,
+//                                listname);
                         textView.setText(R.string.Kit_added_to_list);
                         ListViewFragment listViewFragment = new ListViewFragment();
                         Bundle bundle = new Bundle(1);
@@ -425,13 +463,28 @@ private BarcodeCallback getCallback(){
                         fragmentTransaction.commit();
 
                     }else {
-                        dbConnector.addKitRec(kitToAdd.getBarcode(), kitToAdd.getBrand(),
-                                kitToAdd.getBrand_catno(), kitToAdd.getScale(), kitToAdd.getKit_name(),
-                                kitToAdd.getKit_noeng_name(), status, date, kitToAdd.getBoxart_url(),
-                                kitToAdd.getCategory(), "",
-//                            kitToAdd.getOnlineId(),
-                                kitToAdd.getDescription(),
-                                kitToAdd.getYear());
+                        dbConnector.addKitRec(kitToAdd);
+//                        dbConnector.addKitRec(
+//                                kitToAdd.getBarcode(),
+//                                kitToAdd.getBrand(),
+//                                kitToAdd.getBrand_catno(),
+//                                kitToAdd.getScale(),
+//                                kitToAdd.getKit_name(),
+//                                kitToAdd.getKit_noeng_name(),
+//                                status,
+//                                date,
+//                                kitToAdd.getBoxart_url(),
+//                                kitToAdd.getCategory(),
+//                                kitToAdd.getBoxart_uri(),
+////                kit.getOnlineId(),
+//                                kitToAdd.getDescription(),
+//                                kitToAdd.getYear(),
+//                                notes,
+//                                purchaseDate,
+//                                quantity,
+//                                price,
+//                                currency
+//                        );
 
                         textView.setText(R.string.kit_added);
                     }

@@ -74,6 +74,11 @@ Prefixes and postfixes for links
     public static final String CODE_OTHER = "0";
     public static final String CAT_AUTOMOTO = "auto";
     public static final String CODE_AUTOMOTO = "5";
+    public static final String CAT_FIGURES = "figures";
+    public static final String CODE_FIGURES = "6";
+    public static final String CAT_FANTASY = "fantasy";
+    public static final String CODE_FANTASY = "7";
+
 
     public static final String LIST_ID = "id";
     public static final String LIST_TAG = "tag";

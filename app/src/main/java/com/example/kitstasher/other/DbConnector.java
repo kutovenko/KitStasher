@@ -1,11 +1,17 @@
 package com.example.kitstasher.other;
 
+import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.widget.Toast;
 
+import com.example.kitstasher.activity.MainActivity;
+import com.example.kitstasher.objects.Kit;
+
+import java.math.BigDecimal;
 import java.util.ArrayList;
 
 public class DbConnector {
@@ -36,9 +42,15 @@ public class DbConnector {
     public static final String COLUMN_IS_DELETED = "is_deleted";
     public static final String COLUMN_YEAR = "year";
 
+    public static final String COLUMN_PURCHASE_DATE = "purchase_date";
+    public static final String COLUMN_PRICE = "price";
+    public static final String COLUMN_QUANTITY = "quantity";
+    public static final String COLUMN_NOTES = "notes";
+    public static final String COLUMN_CURRENCY = "currency";
+
     ///////// TABLE BRANDS /////////
 
-    private static final String TABLE_BRANDS = "brands";
+    public static final String TABLE_BRANDS = "brands";
     public static final String BRANDS_COLUMN_ID = "_id";
     public static final String BRANDS_COLUMN_BRAND = "brand";
 
@@ -98,9 +110,16 @@ public class DbConnector {
                     COLUMN_BOXART_URI + " text," + //локальная ссылка на файл боксарта LOCAL - 12
                     COLUMN_BOXART_URL + " text," + //интернет-ссылка на боксарт для Glide LOCAL - 13
                     COLUMN_IS_DELETED + " int," + // - 14
-                    COLUMN_DATE + " text," +// дата добавления? LOCAL? - 15
+                    COLUMN_DATE + " text," +// дата добавления в базу LOCAL? - 15
                     COLUMN_YEAR + " text," + // год выпуска набора - 16
-                    MYLISTSITEMS_LISTNAME + " text" + // Локальный ключ -0
+
+                    COLUMN_PURCHASE_DATE + " text," + //дата покупки -17
+                    COLUMN_PRICE + " int," + //цена в копейках-18
+                    COLUMN_QUANTITY + " integer," + //количество - 19
+                    COLUMN_NOTES + " text," + //заметки - 20
+                    COLUMN_CURRENCY + " text," + //валюта - 21
+
+                    MYLISTSITEMS_LISTNAME + " text" + // Локальный ключ -22
                     ");";
 
 
@@ -138,9 +157,15 @@ public class DbConnector {
                     //заметки? LOCAL?
                     COLUMN_BOXART_URI + " text," + //локальная ссылка на файл боксарта LOCAL - 12
                     COLUMN_BOXART_URL + " text," + //интернет-ссылка на боксарт для Glide LOCAL - 13
-                    COLUMN_IS_DELETED + " int," + // - 14
+                    COLUMN_IS_DELETED + " integer," + // - 14
                     COLUMN_DATE + " text," +// дата добавления? LOCAL? - 15
-                    COLUMN_YEAR + " text" + // год выпуска набора - 16
+                    COLUMN_YEAR + " text," + // год выпуска набора - 16
+
+                    COLUMN_PURCHASE_DATE + " text," + //дата покупки -17
+                    COLUMN_PRICE + " text," + //цена -18
+                    COLUMN_QUANTITY + " integer," + //количество - 19
+                    COLUMN_NOTES + " text," + //заметки - 20
+                    COLUMN_CURRENCY + " text" + //валюта - 21
                     ");";
 
     private static final String CREATE_TABLE_BRANDS =
@@ -408,7 +433,8 @@ public class DbConnector {
                           String boxart_url, String category, String boxart_uri,
 //                          String online_id,
                           String description,
-                          String year) {
+                          String year, String notes, String datePurchase, int quantity,
+                          int price, String currency) {
         ContentValues cv = new ContentValues();
         cv.put(COLUMN_BARCODE, barcode);
         cv.put(COLUMN_BRAND, brand);
@@ -426,6 +452,50 @@ public class DbConnector {
         cv.put(COLUMN_YEAR, year);
         cv.put(COLUMN_DESCRIPTION, description);
 
+        cv.put(COLUMN_NOTES, notes);
+        cv.put(COLUMN_PURCHASE_DATE, datePurchase);
+        cv.put(COLUMN_QUANTITY, quantity);
+        cv.put(COLUMN_PRICE, price);
+        cv.put(COLUMN_CURRENCY, currency);
+
+
+        mDB.insert(TABLE_KITS, null, cv);
+    }
+
+    public void addKitRec(Kit kit){
+
+        ContentValues cv = new ContentValues();
+
+        cv.put(COLUMN_BARCODE, kit.getBarcode());
+
+        String string = kit.getBarcode();
+        cv.put(COLUMN_BRAND, kit.getBrand());
+        cv.put(COLUMN_BRAND_CATNO, kit.getBrand_catno());
+        cv.put(COLUMN_SCALE, kit.getScale());
+        cv.put(COLUMN_KIT_NAME, kit.getKit_name());
+        cv.put(COLUMN_DESCRIPTION, kit.getDescription());
+        cv.put(COLUMN_ORIGINAL_KIT_NAME, kit.getKit_noeng_name());
+
+        cv.put(COLUMN_CATEGORY, kit.getCategory());
+//        cv.put(COLUMN_COLLECTION, kit.get  + " text," + //коллекция - для группировки и других функций - 9
+//        cv.put(COLUMN_SEND_STATUS, kit.getSe + " text," + //для отслеживания офлайн отправок LOCAL - 10
+        cv.put(COLUMN_ID_ONLINE, kit.getOnlineId());
+                //заметки? LOCAL?
+        cv.put(COLUMN_BOXART_URI, kit.getBoxart_uri());
+        cv.put(COLUMN_BOXART_URL, kit.getBoxart_url());
+//        cv.put(COLUMN_IS_DELETED, kit.get + " int," + // - 14
+        cv.put(COLUMN_DATE, kit.getDate_added());
+        cv.put(COLUMN_YEAR, kit.getYear());
+
+        cv.put(COLUMN_PURCHASE_DATE, kit.getDate_purchased());
+        cv.put(COLUMN_PRICE, kit.getPrice());
+        cv.put(COLUMN_QUANTITY, kit.getQuantity());
+        cv.put(COLUMN_NOTES, kit.getNotes());
+        cv.put(COLUMN_CURRENCY, kit.getCurrency());
+        cv.put(COLUMN_SEND_STATUS, kit.getStatus());
+
+
+//                MYLISTSITEMS_LISTNAME +
 
         mDB.insert(TABLE_KITS, null, cv);
     }
@@ -451,11 +521,16 @@ public class DbConnector {
     }
 
     //НОВОЕ!!! Для автодополнения брэндов
-    public void addKitRec(String brand) {
+    public void addBrand(String brand) {
         ContentValues cv = new ContentValues();
         cv.put(BRANDS_COLUMN_BRAND, brand);
         mDB.insert(TABLE_BRANDS, null, cv);
     }
+
+    public void addBrand(ContentValues cv) {
+        mDB.insert(TABLE_BRANDS, null, cv);
+    }
+
 
     //НОВОЕ!!! Для автодополнения брэндов
     public static ArrayList<String> getAllBrands() {
@@ -473,6 +548,7 @@ public class DbConnector {
         cursor.close();
         return allBrands;
     }
+
 
 
     // удалить запись из TABLE_BRANDS
@@ -509,6 +585,10 @@ public class DbConnector {
             cv.put(MYLISTS_COLUMN_LIST_NAME, listName);
             cv.put(MYLISTS_COLUMN_DATE, date);
             mDB.insert(TABLE_MYLISTS, null, cv);
+    }
+
+    public void addList (ContentValues cv) {
+        mDB.insert(TABLE_MYLISTS, null, cv);
     }
 
     public Cursor getAllLists (){
@@ -548,31 +628,76 @@ public class DbConnector {
         }
     }
 
-
-    public void addListItem(String barcode, String brand, String brand_catno, int scale,
-                          String kitname, String kit_noengname, String status, String date,
-                          String boxart_url, String category, String boxart_uri,
-//                          String online_id,
-                          String description,
-                          String year, String listname) {
+    public void addListItem(Kit kit, String listname){
         ContentValues cv = new ContentValues();
-        cv.put(COLUMN_BARCODE, barcode);
-        cv.put(COLUMN_BRAND, brand);
-        cv.put(COLUMN_BRAND_CATNO, brand_catno);
-        cv.put(COLUMN_SCALE, scale);
-        cv.put(COLUMN_KIT_NAME, kitname);
-        cv.put(COLUMN_ORIGINAL_KIT_NAME, kit_noengname);
-        cv.put(COLUMN_SEND_STATUS, status);
-        cv.put(COLUMN_DATE, date);
-        cv.put(COLUMN_BOXART_URL, boxart_url);
-        cv.put(COLUMN_CATEGORY, category);
 
-        cv.put(COLUMN_BOXART_URI, boxart_uri);
-//        cv.put(COLUMN_ID_ONLINE, online_id);
-        cv.put(COLUMN_YEAR, year);
-        cv.put(COLUMN_DESCRIPTION, description);
+        cv.put(COLUMN_BARCODE, kit.getBarcode());
+        cv.put(COLUMN_BRAND, kit.getBrand());
+        cv.put(COLUMN_BRAND_CATNO, kit.getBrand_catno());
+        cv.put(COLUMN_SCALE, kit.getScale());
+        cv.put(COLUMN_KIT_NAME, kit.getKit_name());
+        cv.put(COLUMN_DESCRIPTION, kit.getDescription());
+        cv.put(COLUMN_ORIGINAL_KIT_NAME, kit.getKit_noeng_name());
+
+        cv.put(COLUMN_CATEGORY, kit.getCategory());
+//        cv.put(COLUMN_COLLECTION, kit.get  + " text," + //коллекция - для группировки и других функций - 9
+//        cv.put(COLUMN_SEND_STATUS, kit.getSe + " text," + //для отслеживания офлайн отправок LOCAL - 10
+        cv.put(COLUMN_ID_ONLINE, kit.getOnlineId());
+        //заметки? LOCAL?
+        cv.put(COLUMN_BOXART_URI, kit.getBoxart_uri());
+        cv.put(COLUMN_BOXART_URL, kit.getBoxart_url());
+//        cv.put(COLUMN_IS_DELETED, kit.get + " int," + // - 14
+        cv.put(COLUMN_DATE, kit.getDate_added());
+        cv.put(COLUMN_YEAR, kit.getYear());
+
+        cv.put(COLUMN_PURCHASE_DATE, kit.getDate_purchased());
+        cv.put(COLUMN_PRICE, kit.getPrice());
+        cv.put(COLUMN_QUANTITY, kit.getQuantity());
+        cv.put(COLUMN_NOTES, kit.getNotes());
+        cv.put(COLUMN_CURRENCY, kit.getCurrency());
+
         cv.put(MYLISTSITEMS_LISTNAME, listname);
 
+        mDB.insert(TABLE_MYLISTSITEMS, null, cv);
+    }
+
+//    public void addListItem(String barcode, String brand, String brand_catno, int scale,
+//                            String kitname, String kit_noengname, String status, String date,
+//                            String boxart_url, String category, String boxart_uri,
+////                          String online_id,
+//                            String description,
+//                            String year, String notes, String datePurchase, int quantity,
+//                            BigDecimal price, String currency, String listname) {
+//        ContentValues cv = new ContentValues();
+//        cv.put(COLUMN_BARCODE, barcode);
+//        cv.put(COLUMN_BRAND, brand);
+//        cv.put(COLUMN_BRAND_CATNO, brand_catno);
+//        cv.put(COLUMN_SCALE, scale);
+//        cv.put(COLUMN_KIT_NAME, kitname);
+//        cv.put(COLUMN_ORIGINAL_KIT_NAME, kit_noengname);
+//        cv.put(COLUMN_SEND_STATUS, status);
+//        cv.put(COLUMN_DATE, date);
+//        cv.put(COLUMN_BOXART_URL, boxart_url);
+//        cv.put(COLUMN_CATEGORY, category);
+//
+//        cv.put(COLUMN_BOXART_URI, boxart_uri);
+////        cv.put(COLUMN_ID_ONLINE, online_id);
+//        cv.put(COLUMN_YEAR, year);
+//        cv.put(COLUMN_DESCRIPTION, description);
+//
+//        cv.put(COLUMN_NOTES, notes);
+//        cv.put(COLUMN_PURCHASE_DATE, datePurchase);
+//        cv.put(COLUMN_QUANTITY, quantity);
+//        cv.put(COLUMN_PRICE, price.toString());
+//        cv.put(COLUMN_CURRENCY, currency);
+//
+//
+//        cv.put(MYLISTSITEMS_LISTNAME, listname);
+//
+//        mDB.insert(TABLE_MYLISTSITEMS, null, cv);
+//    }
+
+    public void addListItem(ContentValues cv){
         mDB.insert(TABLE_MYLISTSITEMS, null, cv);
     }
 
@@ -614,6 +739,10 @@ public class DbConnector {
 
     public void delListItem(long id) {
         mDB.delete(TABLE_MYLISTSITEMS, COLUMN_ID + " = " + id, null);
+    }
+
+    public Cursor getAllListsItems(String sortBy) {
+        return mDB.query(TABLE_MYLISTSITEMS, null, null, null, null, null, sortBy);
     }
 
     public void clearList (String listname){

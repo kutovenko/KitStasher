@@ -293,6 +293,14 @@
     <string name="done" translatable="false">Done</string>
     <string name="newkit">New Kit</string>
     <string name="permission_denied_to_use_camera">Permission denied to use camera</string>
+    <string name="notes">Notes</string>
+    <string name="Please_add_boxart_photo">Please add boxart photo</string>
+    <string name="Please_enter_data">Please enter data</string>
+    <string name="Quantity">Quantity</string>
+    <string name="Currency">Currency</string>
+    <string name="purchase_date">Date of Purchase</string>
+    <string name="Figures">Figures</string>
+    <string name="Fantasy">Fantasy</string>
 
 
 </resources>

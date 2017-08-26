@@ -169,4 +169,13 @@
     <string name="get_from_my_stash">Выбрать из локальной базы</string>
     <string name="give_list_a_good_name">Имя списка</string>
     <string name="newkit">Новинка</string>
+    <string name="Currency">Валюта</string>
+    <string name="Fantasy">Фантастика</string>
+    <string name="Figures">Фигуры</string>
+    <string name="Quantity">Количество</string>
+    <string name="notes">Примечания</string>
+    <string name="permission_denied_to_use_camera">Запрещено использовать камеру</string>
+    <string name="purchase_date">Дата приобретения</string>
+    <string name="Please_add_boxart_photo">Пожалуйста, добавьте фото коробки</string>
+    <string name="Please_enter_data">Пожалуйста, внесите все нужные данные</string>
 </resources>

@@ -14,6 +14,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatSpinner;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -79,6 +80,9 @@ public class KitActivity extends AppCompatActivity implements View.OnClickListen
 //    private final String SIZE_FULL = "-pristine";
 //    private final String SIZE_MEDIUM = "-t280";
 //    private final String SIZE_SMALL = "-t140";
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -390,90 +394,95 @@ public class KitActivity extends AppCompatActivity implements View.OnClickListen
 
 ///////////////////////////////////////////////////////////////////////////////
             case R.id.btnSaveEdit:
-                if (bmBoxartPic != null) {
-                    size = Constants.SIZE_FULL;
+                if (checkAllFields()) {
+                    if (bmBoxartPic != null) {
+                        size = Constants.SIZE_FULL;
 
-                    File pictures = Environment
-                            .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+                        File pictures = Environment
+                                .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
 //                String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-                    pictureName = etDetFullBrand.getText().toString()
-                            + etDetFullBrandCatNo.getText().toString()
-                            + size
-                            + ".jpg";
-                    photoFile = new File(pictures, pictureName);
-                    context = this;
+                        pictureName = etDetFullBrand.getText().toString()
+                                + etDetFullBrandCatNo.getText().toString()
+                                + size
+                                + ".jpg";
+                        photoFile = new File(pictures, pictureName);
+                        context = this;
 
-                    File exportDir = new File(Environment.getExternalStorageDirectory(), "Kitstasher");
-                    if (!exportDir.exists()) {
-                        exportDir.mkdirs();
+                        File exportDir = new File(Environment.getExternalStorageDirectory(), "Kitstasher");
+                        if (!exportDir.exists()) {
+                            exportDir.mkdirs();
+                        }
+
+
+                        writeBoxartFile(exportDir);
+                        writeBoxartToCloud();
+
+                        bmBoxartPic = Bitmap.createScaledBitmap(bmBoxartPic, 280, 172, false);
+                        size = Constants.SIZE_MEDIUM;
+                        pictureName = etDetFullBrand.getText().toString()
+                                + etDetFullBrandCatNo.getText().toString()
+                                + size
+                                + ".jpg";
+                        writeBoxartFile(exportDir);
+
+                        bmBoxartPic = Bitmap.createScaledBitmap(bmBoxartPic, 140, 86, false);
+                        size = Constants.SIZE_SMALL;
+                        pictureName = etDetFullBrand.getText().toString()
+                                + etDetFullBrandCatNo.getText().toString()
+                                + size
+                                + ".jpg";
+                        writeBoxartFile(exportDir);
                     }
 
 
-                    writeBoxartFile(exportDir);
-                    writeBoxartToCloud();
-
-                    bmBoxartPic = Bitmap.createScaledBitmap(bmBoxartPic, 280, 172, false);
-                    size = Constants.SIZE_MEDIUM;
-                    pictureName = etDetFullBrand.getText().toString()
-                            + etDetFullBrandCatNo.getText().toString()
-                            + size
-                            + ".jpg";
-                    writeBoxartFile(exportDir);
-
-                    bmBoxartPic = Bitmap.createScaledBitmap(bmBoxartPic, 140, 86, false);
-                    size = Constants.SIZE_SMALL;
-                    pictureName = etDetFullBrand.getText().toString()
-                            + etDetFullBrandCatNo.getText().toString()
-                            + size
-                            + ".jpg";
-                    writeBoxartFile(exportDir);
-                }
-
-
-                ContentValues cv = new ContentValues();
-                cv.put("brand", etDetFullBrand.getText().toString().trim());
-                cv.put("kit_name", etDetFullKitname.getText().toString().trim());
-                cv.put("brand_catno", etDetFullBrandCatNo.getText().toString().trim());
-                cv.put("scale", parseInt(etDetFullScale.getText().toString().trim()));
-                cv.put("original_kit_name", etDetFullKitNoengname.getText().toString().trim());
+                    ContentValues cv = new ContentValues();
+                    cv.put("brand", etDetFullBrand.getText().toString().trim());
+                    cv.put("kit_name", etDetFullKitname.getText().toString().trim());
+                    cv.put("brand_catno", etDetFullBrandCatNo.getText().toString().trim());
+                    cv.put("scale", parseInt(etDetFullScale.getText().toString().trim()));
+                    cv.put("original_kit_name", etDetFullKitNoengname.getText().toString().trim());
 //                cv.put("description", etDetFullDescription.getText().toString());
-                cv.put("category", category);
-                if (pictureName != null || pictureName.trim().length() > 0) {
-                    cv.put("boxart_uri", pictureName);
-                }else{
-                    cv.put("boxart_uri", "");
-                }
-                String y = spKitYear.getSelectedItem().toString();
-                cv.put("year", getKitYear(y));
-                
-                String d = spKitDescription.getSelectedItem().toString();
-                cv.put(DbConnector.COLUMN_DESCRIPTION, getKitDescription(d));
-                if (mode == 'l'){
-                    dbConnector.editListItemById(id, cv);
-                }else{
-                    dbConnector.editRecById(id, cv);
-                }
+                    cv.put("category", category);
+                    if (pictureName != null || pictureName.trim().length() > 0) {
+                        cv.put("boxart_uri", pictureName);
+                    } else {
+                        cv.put("boxart_uri", "");
+                    }
+                    String y = spKitYear.getSelectedItem().toString();
+                    cv.put("year", getKitYear(y));
 
-                if (isRbChanged){/////????????????????????????
-                    categoryTab = category;
-                }else{
-                    categoryTab = incomeCategory;
-                }
-                if (mode == 'l'){
-                    Intent intent3 = new Intent();
-                    intent3.putExtra(Constants.LIST_POSITION, position);
-                    intent3.putExtra(Constants.LIST_ID, id);
-                    intent3.putExtra(Constants.LIST_CATEGORY, categoryToReturn);
-                    setResult(RESULT_OK, intent3);
-                    finish();
-                }else {
-                    Intent intent3 = new Intent();
-                    intent3.putExtra(Constants.LIST_POSITION, position);
-                    intent3.putExtra(Constants.LIST_ID, id);
-                    intent3.putExtra(Constants.LIST_CATEGORY, categoryToReturn);
-                    setResult(RESULT_OK, intent3);
-                    finish();
-                }
+                    String d = spKitDescription.getSelectedItem().toString();
+                    cv.put(DbConnector.COLUMN_DESCRIPTION, getKitDescription(d));
+                    if (mode == 'l') {
+                        dbConnector.editListItemById(id, cv);
+                    } else {
+                        dbConnector.editRecById(id, cv);
+                    }
+
+                    if (isRbChanged) {/////????????????????????????
+                        categoryTab = category;
+                    } else {
+                        categoryTab = incomeCategory;
+                    }
+                    if (mode == 'l') {
+                        Intent intent3 = new Intent();
+                        intent3.putExtra(Constants.LIST_POSITION, position);
+                        intent3.putExtra(Constants.LIST_ID, id);
+                        intent3.putExtra(Constants.LIST_CATEGORY, categoryToReturn);
+                        setResult(RESULT_OK, intent3);
+                        finish();
+                    } else {
+                        Intent intent3 = new Intent();
+                        intent3.putExtra(Constants.LIST_POSITION, position);
+                        intent3.putExtra(Constants.LIST_ID, id);
+                        intent3.putExtra(Constants.LIST_CATEGORY, categoryToReturn);
+                        setResult(RESULT_OK, intent3);
+                        finish();
+                    }
+                } else {
+            //Проверяем все поля - начальная проверка не пройдена!
+            Toast.makeText(KitActivity.this, R.string.Please_enter_data, Toast.LENGTH_SHORT).show();
+        }
                 break;
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -666,6 +675,7 @@ public class KitActivity extends AppCompatActivity implements View.OnClickListen
             cropIntent.putExtra("outputY", 172);
             cropIntent.putExtra("return-data", true);
             startActivityForResult(cropIntent, PIC_CROP);
+            // TODO: 25.08.2017 исправить размеры картинки
         }
         catch(ActivityNotFoundException anfe){
             String errorMessage = "Извините, но ваше устройство не поддерживает кадрирование";
@@ -726,5 +736,30 @@ public class KitActivity extends AppCompatActivity implements View.OnClickListen
 //        btnGetFromCamera.setOnClickListener(this);
     }
 
+    private boolean checkAllFields() {
+        // TODO: 25.08.2017 проверки на пробелы
+        boolean check = true;
+        if (TextUtils.isEmpty(etDetFullBrand.getText())) {
+            etDetFullBrand.setError(getString(R.string.enter_brand));
+            check = false;
+        }
+        if (TextUtils.isEmpty(etDetFullBrandCatNo.getText())) {
+            etDetFullBrandCatNo.setError(getString(R.string.enter_cat_no));
+            check = false;
+        }
+        if (TextUtils.isEmpty(etDetFullScale.getText()) || etDetFullScale.getText().equals("0")) {
+            etDetFullScale.setError(getString(R.string.enter_scale));
+            check = false;
+        }
+        if (TextUtils.isEmpty(etDetFullKitname.getText())) {
+            etDetFullKitname.setError(getString(R.string.enter_kit_name));
+            check = false;
+        }
+//        if (bmBoxartPic == null){
+//            Toast.makeText(KitActivity.this, R.string.Please_add_boxart_photo, Toast.LENGTH_SHORT).show();
+//            check = false;
+//        }
+        return check;
+    }
 
 }

@@ -1,10 +1,13 @@
 package com.example.kitstasher.objects;
 
+import java.math.BigDecimal;
+
 /**
  * Created by Алексей on 04.05.2017.
  */
 
 public class Kit {
+
     //Required
 
     private String brand;
@@ -23,6 +26,18 @@ public class Kit {
 
     private String year;
     private String onlineId;
+
+    private String date_added;
+
+
+    private String date_purchased;
+    private int quantity;
+    private String notes;
+    private int price;
+    private String currency;
+    private String status;
+
+
 
 
     public  String getBrand() {
@@ -126,6 +141,55 @@ public class Kit {
         this.onlineId = onlineId;
     }
 
+    public void setDate_purchased(String date_purchased) {
+        this.date_purchased = date_purchased;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+
+    public int getPrice() {
+        return price;
+    }
+
+    public void setPrice(int price) {
+        this.price = price;
+    }
+
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
+
+    public String getDate_added() {
+        return date_added;
+    }
+
+    public void setDate_added(String date_added) {
+        this.date_added = date_added;
+    }
+
+    public String getDate_purchased() {
+        return date_purchased;
+    }
+
+
     private Kit(KitBuilder kitBuilder){
         this.brand = kitBuilder.brand;
         this.brand_catno = kitBuilder.brand_catno;
@@ -142,8 +206,24 @@ public class Kit {
         this.scalemates_url = kitBuilder.scalemates_url;
         this.year = kitBuilder.year;
         this.onlineId = kitBuilder.onlineId;
+
+
+        this.date_added = kitBuilder.date_added;
+        this.date_purchased = kitBuilder.date_purchased;
+        this.quantity = kitBuilder.quantity;
+        this.notes = kitBuilder.notes;
+        this.price = kitBuilder.price;
+        this.currency = kitBuilder.currency;
+        this.status = kitBuilder.status;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
 
     public static class KitBuilder{
@@ -163,6 +243,14 @@ public class Kit {
         private String boxart_uri;
         private String year;
         private String onlineId;
+
+        private String date_added;
+        private String date_purchased;
+        private int quantity;
+        private String notes;
+        private int price;
+        private String currency;
+        private String status;
 
         public KitBuilder(){
             this.barcode = ""; //todo ??
@@ -222,7 +310,7 @@ public class Kit {
             return this;
         }
         public KitBuilder hasBoxart_uri(String boxart_uri) {
-            this.boxart_uri = this.boxart_uri;
+            this.boxart_uri = boxart_uri;
             return this;
         }
         public KitBuilder hasYear(String year){
@@ -232,6 +320,37 @@ public class Kit {
 
         public KitBuilder hasOnlineId(String onlineId){
             this.onlineId = onlineId;
+            return this;
+        }
+
+
+        public KitBuilder hasDateAdded(String date_added){
+            this.date_added = date_added;
+            return this;
+        }
+        public KitBuilder hasDatePurchased(String date_purchased){
+            this.date_purchased = date_purchased;
+            return this;
+        }
+        public KitBuilder hasQuantity(int quantity){
+            this.quantity = quantity;
+            return this;
+        }
+        public KitBuilder hasNotes(String notes){
+            this.notes = notes;
+            return this;
+        }
+        public KitBuilder hasPrice(int price){
+            this.price = price;
+            return this;
+        }
+        public KitBuilder hasCurrency(String unit){
+            this.currency = unit;
+            return this;
+        }
+
+        public KitBuilder hasStatus(String status){
+            this.status = status;
             return this;
         }
 

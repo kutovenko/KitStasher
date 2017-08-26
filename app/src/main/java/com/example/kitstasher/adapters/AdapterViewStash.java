@@ -9,6 +9,8 @@ import com.example.kitstasher.R;
 import com.example.kitstasher.fragment.SortAirFragment;
 import com.example.kitstasher.fragment.SortAllFragment;
 import com.example.kitstasher.fragment.SortCarBikeFragment;
+import com.example.kitstasher.fragment.SortFantasyFragment;
+import com.example.kitstasher.fragment.SortFiguresFragment;
 import com.example.kitstasher.fragment.SortGroundFragment;
 import com.example.kitstasher.fragment.SortOtherFragment;
 import com.example.kitstasher.fragment.SortSeaFragment;
@@ -20,7 +22,7 @@ import com.example.kitstasher.fragment.ViewStashFragment;
  */
 
 public class AdapterViewStash extends FragmentStatePagerAdapter {
-    private static int FRAGMENT_COUNT = 7;
+    private static int FRAGMENT_COUNT = 9;
     private Context mContext;
 
     public AdapterViewStash(FragmentManager fm, Context context) {
@@ -44,7 +46,12 @@ public class AdapterViewStash extends FragmentStatePagerAdapter {
             case 5:
                 return new SortCarBikeFragment();
             case 6:
+                return new SortFiguresFragment();
+            case 7:
+                return new SortFantasyFragment();
+            case 8:
                 return new SortOtherFragment();
+
         }
         return null;
     }
@@ -78,6 +85,10 @@ public class AdapterViewStash extends FragmentStatePagerAdapter {
             case 5:
                 return mContext.getResources().getString(R.string.Auto_moto);
             case 6:
+                return mContext.getResources().getString(R.string.Figures);
+            case 7:
+                return mContext.getResources().getString(R.string.Fantasy);
+            case 8:
                 return mContext.getResources().getString(R.string.Other);
         }
         return null;

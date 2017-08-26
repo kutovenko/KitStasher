@@ -14,6 +14,7 @@ import com.example.kitstasher.adapters.AdapterChooserList;
 import com.example.kitstasher.objects.Kit;
 import com.example.kitstasher.other.DbConnector;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 
@@ -84,46 +85,100 @@ public class ChooserActivity extends AppCompatActivity {
 
     private void copyKit(Cursor c) {
         c.moveToFirst();
-            String url = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_BOXART_URL));
-            String uri = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_BOXART_URI));
+            String boxart_url = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_BOXART_URL));
+            String boxart_uri = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_BOXART_URI));
             String brand = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_BRAND));
             String cat_no = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_BRAND_CATNO));
             String name = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_KIT_NAME));
-            String scale = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_SCALE));
+            int scale = c.getInt(c.getColumnIndexOrThrow(DbConnector.COLUMN_SCALE));
             String category = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_CATEGORY));
             String year = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_YEAR));
             String description = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_DESCRIPTION));
-            String noengname = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_ORIGINAL_KIT_NAME));
+            String kit_noengname = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_ORIGINAL_KIT_NAME));
             String barcode = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_BARCODE));
             String status = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_SEND_STATUS));
             String date = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_DATE));
 
+        String onlineId = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_ID_ONLINE));
 
-            Kit kitToAdd = new Kit.KitBuilder()
-                    .hasBrand(brand)
-                    .hasBrand_catno(cat_no)
-                    .hasKit_name(name)
-                    .hasScale(Integer.valueOf(scale))
-                    .hasCategory(category)
-                    .hasDescription(description)
-//                .hasPrototype(prototype)
-                    .hasKit_noeng_name(noengname)
-                    .hasBoxart_url(url)
-                    .hasBoxart_uri(uri)
-                    .hasBarcode(barcode)
-//                .hasScalemates_url(scalemates_page)
-                    .hasYear(year)
-//                    .hasOnlineId(onlineId)
-                    .build();
+        String notes = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_NOTES));
+        String purchaseDate = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_PURCHASE_DATE));
+        String currency = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_CURRENCY));
+        int quantity = c.getInt(c.getColumnIndexOrThrow(DbConnector.COLUMN_QUANTITY));
+        int price = c.getInt(c.getColumnIndexOrThrow(DbConnector.COLUMN_PRICE));
+
+
+        Kit kitToAdd = new Kit.KitBuilder()
+                .hasBrand(brand)
+                .hasBrand_catno(cat_no)
+                .hasKit_name(name)
+                .hasScale(scale)
+                .hasCategory(category)
+                .hasBarcode(barcode)
+                .hasKit_noeng_name(kit_noengname)
+                .hasDescription(description)
+
+                .hasPrototype("")//not in use
+
+                .hasBoxart_url(boxart_url)
+                .hasBoxart_uri(boxart_uri)
+                .hasScalemates_url("")
+                .hasYear(year)
+                .hasOnlineId(onlineId)
+                .hasDateAdded(date)
+                .hasDatePurchased(purchaseDate)
+                .hasQuantity(quantity)
+                .hasNotes(notes)
+                .hasPrice(price)
+                .hasCurrency(currency)
+                .build();
+
+
+//            Kit kitToAdd = new Kit.KitBuilder()
+//                    .hasBrand(brand)
+//                    .hasBrand_catno(cat_no)
+//                    .hasKit_name(name)
+//                    .hasScale(scale)
+//                    .hasCategory(category)
+//                    .hasDescription(description)
+////                .hasPrototype(prototype)
+//                    .hasKit_noeng_name(noengname)
+//                    .hasBoxart_url(url)
+//                    .hasBoxart_uri(uri)
+//                    .hasBarcode(barcode)
+////                .hasScalemates_url(scalemates_page)
+//                    .hasYear(year)
+////                    .hasOnlineId(onlineId)
+//                    .hasNotes(notes)
+//                    .hasDatePurchased(purchaseDate)
+//
+//                    .build();
+
         if (!dbConnector.searchListForDoubles(listname, brand, cat_no)) {
 
-            dbConnector.addListItem(kitToAdd.getBarcode(), kitToAdd.getBrand(),
-                    kitToAdd.getBrand_catno(), kitToAdd.getScale(), kitToAdd.getKit_name(),
-                    kitToAdd.getKit_noeng_name(), status, date, kitToAdd.getBoxart_url(),
-                    kitToAdd.getCategory(), "",
-//                            kitToAdd.getOnlineId(),
-                    kitToAdd.getDescription(),
-                    kitToAdd.getYear(), listname);
+            dbConnector.addListItem(kitToAdd, listname);
+//            dbConnector.addListItem(
+//                    kitToAdd.getBarcode(),
+//                    kitToAdd.getBrand(),
+//                    kitToAdd.getBrand_catno(),
+//                    kitToAdd.getScale(),
+//                    kitToAdd.getKit_name(),
+//                    kitToAdd.getKit_noeng_name(),
+//                    status,
+//                    date,
+//                    kitToAdd.getBoxart_url(),
+//                    kitToAdd.getCategory(),
+//                    kitToAdd.getBoxart_uri(),
+////                kit.getOnlineId(),
+//                    kitToAdd.getDescription(),
+//                    kitToAdd.getYear(),
+//                    notes,
+//                    purchaseDate,
+//                    quantity,
+//                    new BigDecimal(price),
+//                    currency,
+//                    listname);
+
         }
     }
 }

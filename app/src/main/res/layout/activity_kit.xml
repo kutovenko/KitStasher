@@ -42,22 +42,24 @@
 
                 <Button
                     android:id="@+id/btnAddBoxart"
+                    style="@style/Widget.AppCompat.Button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
                     android:layout_weight="1"
-                    android:background="@drawable/button_light"
                     android:padding="8dp"
-                    android:text="@string/add_boxart" />
+                    android:text="@string/add_boxart"
+                    android:theme="@style/AppTheme.ButtonAct" />
 
                 <Button
                     android:id="@+id/btnRestoreImage"
+                    style="@style/Widget.AppCompat.Button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/button_light"
                     android:padding="8dp"
-                    android:text="@string/restore_image" />
+                    android:text="@string/restore_image"
+                    android:theme="@style/AppTheme.ButtonAct" />
 
             </LinearLayout>
 
@@ -350,6 +352,22 @@
 
         </LinearLayout>
 
+        <EditText
+            android:id="@+id/etFullPrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="numberDecimal" />
+
+        <EditText
+            android:id="@+id/etFullNotes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/com_facebook_button_login_silver_background_color"
+            android:ems="10"
+            android:inputType="textMultiLine"
+            android:lines="5" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -380,44 +398,47 @@
             android:layout_margin="20dp">
 
             <Button
-                android:text="@string/cancel"
+                android:id="@+id/btnCancelEdit"
+                style="@style/Widget.AppCompat.Button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:drawableTop="@drawable/ic_cancel_black_24dp"
-                android:id="@+id/btnCancelEdit"
-                android:layout_weight="1"
-                android:background="@drawable/button_light"
-                android:padding="8dp"
                 android:layout_marginBottom="16dp"
-                android:layout_marginRight="8dp" />
+                android:layout_marginRight="8dp"
+                android:layout_weight="1"
+                android:drawableTop="@drawable/ic_cancel_black_24dp"
+                android:padding="8dp"
+                android:text="@string/cancel"
+                android:theme="@style/AppTheme.ButtonAct" />
 
             <Button
                 android:id="@+id/btnDelete"
+                style="@style/Widget.AppCompat.Button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="8dp"
                 android:layout_marginRight="8dp"
                 android:layout_weight="1"
-                android:background="@drawable/button_inversed"
                 android:drawableTop="@drawable/ic_delete_black_24dp"
                 android:padding="8dp"
                 android:text="@string/delete"
+                android:theme="@style/AppTheme.ButtonDeny"
                 tools:layout_conversion_absoluteHeight="56dp"
                 tools:layout_conversion_absoluteWidth="344dp"
                 tools:layout_conversion_absoluteX="20dp"
                 tools:layout_conversion_absoluteY="0dp" />
 
             <Button
-                android:text="@string/save"
+                android:id="@+id/btnSaveEdit"
+                style="@style/Widget.AppCompat.Button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/btnSaveEdit"
-                android:drawableTop="@drawable/ic_save_black_24dp"
-                android:layout_weight="1"
-                android:background="@drawable/button_light"
-                android:padding="8dp"
+                android:layout_marginBottom="16dp"
                 android:layout_marginLeft="8dp"
-                android:layout_marginBottom="16dp" />
+                android:layout_weight="1"
+                android:drawableTop="@drawable/ic_save_black_24dp"
+                android:padding="8dp"
+                android:text="@string/save"
+                android:theme="@style/AppTheme.ButtonConfirm" />
 
         </LinearLayout>
 

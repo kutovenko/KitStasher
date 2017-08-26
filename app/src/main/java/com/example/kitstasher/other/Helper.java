@@ -27,8 +27,11 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 
 import static com.example.kitstasher.other.Constants.CAT_AUTOMOTO;
+import static com.example.kitstasher.other.Constants.CAT_FIGURES;
 import static com.example.kitstasher.other.Constants.CAT_OTHER;
 import static com.example.kitstasher.other.Constants.CODE_AUTOMOTO;
+import static com.example.kitstasher.other.Constants.CODE_FANTASY;
+import static com.example.kitstasher.other.Constants.CODE_FIGURES;
 import static com.example.kitstasher.other.Constants.CODE_OTHER;
 
 
@@ -134,11 +137,17 @@ public class Helper {
             case Constants.CODE_SPACE:
                 tag = Constants.CAT_SPACE;
                 break;
-            case CODE_AUTOMOTO:
-                tag = CAT_AUTOMOTO;
+            case Constants.CODE_AUTOMOTO:
+                tag = Constants.CAT_AUTOMOTO;
                 break;
-            case CODE_OTHER:
-                tag = CAT_OTHER;
+            case Constants.CODE_OTHER:
+                tag = Constants.CAT_OTHER;
+                break;
+            case Constants.CODE_FIGURES:
+                tag = Constants.CAT_FIGURES;
+                break;
+            case Constants.CODE_FANTASY:
+                tag = Constants.CAT_FANTASY;
                 break;
         }
         return tag;
@@ -165,6 +174,13 @@ public class Helper {
             case Constants.CAT_OTHER:
                 code = CODE_OTHER;
                 break;
+            case Constants.CAT_FIGURES:
+                code = CODE_FIGURES;
+                break;
+            case Constants.CAT_FANTASY:
+                code = CODE_FANTASY;
+                break;
+
         }
         return code;
     }

@@ -409,7 +409,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
      */
     private void sendDataToParse() {
         ParseQuery<ParseObject> query = ParseQuery.getQuery("Top_users");
-        query.whereEqualTo(Constants.USER_ID_FACEBOOK, null);
+        query.whereEqualTo("ownerId", Constants.USER_ID_FACEBOOK);
         query.getFirstInBackground(new GetCallback<ParseObject>() {
             public void done(ParseObject object, ParseException e) {
                 if (e == null) {

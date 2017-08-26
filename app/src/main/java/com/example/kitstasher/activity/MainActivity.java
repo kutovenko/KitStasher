@@ -134,8 +134,8 @@ public class MainActivity extends AppCompatActivity
 
         navHeader = navigationView.getHeaderView(0);
         txtName = (TextView) navHeader.findViewById(R.id.name);
-        txtWebsite = (TextView) navHeader.findViewById(R.id.website);
-        imgNavHeaderBg = (ImageView) navHeader.findViewById(R.id.img_header_bg);
+//        txtWebsite = (TextView) navHeader.findViewById(R.id.website);
+//        imgNavHeaderBg = (ImageView) navHeader.findViewById(R.id.img_header_bg);
         imgProfile = (ImageView) navHeader.findViewById(R.id.img_profile);
         header = (RelativeLayout)navHeader.findViewById(R.id.rlAppBarHeader);
         imgProfile.setOnClickListener(new View.OnClickListener() {

@@ -4,9 +4,16 @@
     <color name="colorSecondary">#1a237e</color>
     <color name="colorPrimaryDark">#00ACFF</color>
     <color name="colorItem">#ffffff</color>
-    <color name="colorAccent">#FF8900</color>
+    <color name="colorAccent">#ff8900</color>
     <color name="colorSecondaryDark">#1a237e</color>
     <color name="colorPassive">#9e9e9e</color>
+
+    <color name="confirm">#81c784</color>
+    <color name="deny">#e57373</color>
+    <color name="act">#ffd54f</color>
+
+    <color name="text">#424242</color>
+
 
     <color name="air">#80deea</color>
     <color name="sea">#304ffe</color>
