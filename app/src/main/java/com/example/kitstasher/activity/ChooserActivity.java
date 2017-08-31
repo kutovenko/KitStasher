@@ -160,7 +160,7 @@ public class ChooserActivity extends AppCompatActivity {
 //            dbConnector.addListItem(
 //                    kitToAdd.getBarcode(),
 //                    kitToAdd.getBrand(),
-//                    kitToAdd.getBrand_catno(),
+//                    kitToAdd.getBrandCatno(),
 //                    kitToAdd.getScale(),
 //                    kitToAdd.getKit_name(),
 //                    kitToAdd.getKit_noeng_name(),

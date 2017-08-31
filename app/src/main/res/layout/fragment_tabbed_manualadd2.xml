@@ -139,7 +139,7 @@
                     android:layout_weight="1"
                     android:ems="10"
                     android:hint="@string/Non_english_name"
-                    android:inputType="textCapWords" />
+                    android:inputType="textCapSentences" />
 
             </android.support.design.widget.TextInputLayout>
 
@@ -157,14 +157,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:padding="8dp">
+                android:padding="8dp"
+                android:weightSum="4">
 
                 <LinearLayout
                     android:id="@+id/linLayoutMAir"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:orientation="horizontal">
+                    android:orientation="vertical">
 
                     <ImageView
                         android:id="@+id/ivMAir"
@@ -192,7 +193,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:orientation="horizontal">
+                    android:orientation="vertical">
 
                     <ImageView
                         android:id="@+id/ivMGround"
@@ -214,7 +215,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:orientation="horizontal">
+                    android:orientation="vertical">
 
                     <ImageView
                         android:id="@+id/ivMSea"
@@ -236,14 +237,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:orientation="horizontal">
+                    android:orientation="vertical">
 
                     <ImageView
                         android:id="@+id/ivMFigure"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        app:srcCompat="@drawable/ic_tag_ship_black_24dp" />
+                        app:srcCompat="@drawable/ic_wc_black_24dp" />
 
                     <TextView
                         android:id="@+id/tvLabelMFigure"
@@ -259,14 +260,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:padding="8dp">
+                android:padding="8dp"
+                android:weightSum="4">
 
                 <LinearLayout
                     android:id="@+id/linLayoutMSpace"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:orientation="horizontal">
+                    android:orientation="vertical">
 
                     <ImageView
                         android:id="@+id/ivMSpace"
@@ -294,7 +296,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:orientation="horizontal">
+                    android:orientation="vertical">
 
                     <ImageView
                         android:id="@+id/ivMCar"
@@ -310,19 +312,20 @@
                         android:layout_weight="1"
                         android:text="@string/Cars_bikes" />
                 </LinearLayout>
+
                 <LinearLayout
                     android:id="@+id/linLayoutMFantasy"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:orientation="horizontal">
+                    android:orientation="vertical">
 
                     <ImageView
                         android:id="@+id/ivMFantasy"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        app:srcCompat="@drawable/ic_check_box_outline_blank_black_24dp" />
+                        app:srcCompat="@drawable/ic_android_black_24dp" />
 
                     <TextView
                         android:id="@+id/tvLabelMFantasy"
@@ -332,12 +335,13 @@
                         android:text="@string/Fantasy" />
 
                 </LinearLayout>
+
                 <LinearLayout
                     android:id="@+id/linLayoutMOther"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:orientation="horizontal">
+                    android:orientation="vertical">
 
                     <ImageView
                         android:id="@+id/ivMOther"
@@ -363,6 +367,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
+                android:layout_margin="8dp"
                 android:text="@string/purchase_date" />
 
         </LinearLayout>
@@ -379,9 +384,21 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
+                android:layout_margin="8dp"
                 android:background="@drawable/button_light"
                 android:padding="8dp"
-                android:text="20-12-2017" />
+                android:text="@string/Date_not_set" />
+
+            <Button
+                android:id="@+id/btnClearDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_light"
+                android:padding="8dp"
+                android:text="@string/Clear_date" />
 
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
@@ -391,8 +408,10 @@
                     android:id="@+id/etPrice"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
                     android:layout_marginLeft="20dp"
                     android:layout_marginRight="20dp"
+                    android:layout_marginTop="16dp"
                     android:layout_weight="1"
                     android:ems="10"
                     android:gravity="start"
@@ -413,6 +432,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_gravity="center_horizontal"
+                android:layout_margin="8dp"
                 android:layout_weight="1" />
 
             <TextView
@@ -427,7 +447,30 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_gravity="center_horizontal"
+                android:layout_margin="8dp"
                 android:layout_weight="1" />
+
+
+            <TextView
+                android:id="@+id/textView19"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="8dp"
+                android:text="@string/Purchased_from" />
+
+            <AutoCompleteTextView
+                android:id="@+id/acPlacePurchased"
+                android:layout_marginBottom="8dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="16dp"
+                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
 
         </LinearLayout>
 
@@ -446,14 +489,16 @@
                     android:id="@+id/etNotes"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
                     android:layout_marginLeft="20dp"
                     android:layout_marginRight="20dp"
+                    android:layout_marginTop="8dp"
                     android:layout_weight="1"
-                    android:background="@color/com_facebook_button_login_silver_background_color"
+                    android:background="@color/com_facebook_button_login_silver_background_color_pressed"
                     android:ems="10"
                     android:gravity="start"
                     android:hint="@string/notes"
-                    android:inputType="textMultiLine"
+                    android:inputType="textCapSentences|textMultiLine"
                     android:lines="3" />
             </android.support.design.widget.TextInputLayout>
         </LinearLayout>

@@ -11,7 +11,9 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatSpinner;
 import android.text.TextUtils;
@@ -21,21 +23,23 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.kitstasher.R;
-import com.example.kitstasher.fragment.ListViewFragment;
 import com.example.kitstasher.other.Constants;
 import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.Helper;
+import com.example.kitstasher.other.SelectDateFragment;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -48,14 +52,16 @@ public class KitActivity extends AppCompatActivity implements View.OnClickListen
     private int categoryToReturn;
     private ImageView ivEditorBoxart;
     private EditText etDetFullKitname, etDetFullBrand, etDetFullBrandCatNo, etDetFullScale,
-            etDetFullKitNoengname;
+            etDetFullKitNoengname,
+    etFullNotes, etFullPrice, etPurchasedFrom;
     private LinearLayout linLayoutAir, linLayoutGround, linLayoutSea, linLayoutSpace, linLayoutCar,
-            linLayoutOther;
-    private Button btnSaveEdit, btnCancelEdit, btnDelete, btnRestoreImage, btnAddBoxart;
-    AppCompatSpinner spKitDescription, spKitYear;
+            linLayoutOther, linLayoutFigures, linLayoutFantasy;
+    private Button btnSaveEdit, btnCancelEdit, btnDelete, btnRestoreImage, btnAddBoxart, btnClearDate;
+    private AppCompatSpinner spKitDescription, spKitYear, spQuantity, spCurrency;
 //    private int PICK_IMAGE_REQUEST = 1;
-    private String boxart_url, incomeCategory; //incomeCategory - исходная категория.
+    private String boxart_url, incomeCategory;//incomeCategory - исходная категория.
     private String categoryTab, category, listname; // для переключения к вкладке. при изменении совпадает с category, иначе то, что было (пришло или сохранено в записи)
+    private int quantity;
     private char mode;
     private DbConnector dbConnector;
     private Cursor cursor;
@@ -63,6 +69,12 @@ public class KitActivity extends AppCompatActivity implements View.OnClickListen
     private Uri uri;
 //    private View view;
     private boolean isRbChanged;
+    private ArrayAdapter quantityAdapter;
+
+    private TextView tvMPurchaseDate;
+    private String purchaseDate;
+    private boolean isDateChanged;
+    private String defaultCurrency;
 
     //работа с камерой
     final static int CAMERA_CAPTURE = 1;
@@ -75,7 +87,7 @@ public class KitActivity extends AppCompatActivity implements View.OnClickListen
     ByteArrayOutputStream bytes;
     String size;
 
-    private ArrayAdapter<String> descriptionAdapter, yearsAdapter;
+    private ArrayAdapter<String> descriptionAdapter, yearsAdapter, currencyAdapter;
 
 //    private final String SIZE_FULL = "-pristine";
 //    private final String SIZE_MEDIUM = "-t280";
@@ -101,12 +113,17 @@ public class KitActivity extends AppCompatActivity implements View.OnClickListen
 
         initUI();
 
+        Calendar c = Calendar.getInstance();
+        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
+        String dateToday = df.format(c.getTime());
+
         if (savedInstanceState != null) {
             bmBoxartPic = savedInstanceState.getParcelable("boxartImage");
             ivEditorBoxart.setImageBitmap(bmBoxartPic);
         }
 
         isRbChanged = false;
+        isDateChanged = false;
 
         /////////////////Работа с камерой
 
@@ -124,15 +141,16 @@ public class KitActivity extends AppCompatActivity implements View.OnClickListen
         /////////////////////// радиокнопки
         setTag(category);
 
-        etDetFullBrand.setText(cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_BRAND)));
-        etDetFullBrandCatNo.setText(cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_BRAND_CATNO)));
-        etDetFullKitname.setText(cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_KIT_NAME)));
-        etDetFullScale.setText(cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_SCALE)));
-        if (cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_ORIGINAL_KIT_NAME)) != null){
-            etDetFullKitNoengname.setText(cursor.getString(cursor.getColumnIndex
-                    (DbConnector.COLUMN_ORIGINAL_KIT_NAME)));
+        etDetFullBrand.setText(cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BRAND)));
+        etDetFullBrandCatNo.setText(cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BRAND_CATNO)));
+        etDetFullKitname.setText(cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_KIT_NAME)));
+        etDetFullScale.setText(cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_SCALE)));
+        String pr = String.valueOf(cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_PRICE)) / 100);
+        etFullPrice.setText(pr);
+        if (cursor.getColumnIndex(DbConnector.COLUMN_PURCHASE_PLACE) != -1) {
+            etPurchasedFrom.setText(cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_PURCHASE_PLACE)));
         }
-
+        etPurchasedFrom.setText(cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_PURCHASE_PLACE)));
         String[] descriptionItems = new String[]{getString(R.string.kittype),
                 getString(R.string.newkit),
                 getString(R.string.rebox),
@@ -155,6 +173,65 @@ public class KitActivity extends AppCompatActivity implements View.OnClickListen
         yearsAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_spinner_item, years);
         spKitYear.setAdapter(yearsAdapter);
+
+        String[] currencies = new String[]{"BYN", "EUR", "RUR", "UAH", "USD"};
+        currencyAdapter = new ArrayAdapter<String>(KitActivity.this,
+                android.R.layout.simple_spinner_item, currencies);
+        spCurrency.setAdapter(currencyAdapter);
+
+        Integer[] quants = new Integer[]{1,2,3,4,5,6,7,8,9,10};
+        quantityAdapter = new ArrayAdapter<Integer>(KitActivity.this,
+                android.R.layout.simple_spinner_item, quants);
+        spQuantity.setAdapter(quantityAdapter);
+
+        if (cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_ORIGINAL_KIT_NAME)) != null){
+            etDetFullKitNoengname.setText(cursor.getString(cursor.getColumnIndex
+                    (DbConnector.COLUMN_ORIGINAL_KIT_NAME)));
+        }
+        if (cursor.getInt(cursor.getColumnIndex(DbConnector.COLUMN_PRICE)) != 0){
+            etFullPrice.setText(String.valueOf(cursor.getInt(cursor.getColumnIndex
+                    (DbConnector.COLUMN_PRICE))/100));
+        }else{
+            etFullPrice.setText("");
+        }
+        if (cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_NOTES)) != null){
+            etFullNotes.setText(cursor.getString(cursor.getColumnIndex
+                    (DbConnector.COLUMN_NOTES)));
+        }
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        defaultCurrency = sharedPreferences.getString(Constants.DEFAULT_CURRENCY, "");
+
+        if (!cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_CURRENCY)).equals("")){
+            String cr = cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_CURRENCY));
+            setKitCurrency(cr);
+        }else{
+            setKitCurrency(defaultCurrency);
+        }
+//        }else{
+//            setKitCurrency(defaultCurrency);
+//        }
+        if (cursor.getInt(cursor.getColumnIndex(DbConnector.COLUMN_QUANTITY)) != 0){
+            quantity = cursor.getInt(cursor.getColumnIndex(DbConnector.COLUMN_QUANTITY));
+            setKitQuantity(quantity);
+        }else{
+            quantity = 1;
+            setKitQuantity(quantity);
+        }
+
+        String pd = cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_PURCHASE_DATE));
+
+        if (!pd.equals("")){
+            tvMPurchaseDate.setText(cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_PURCHASE_DATE)));
+        }else{
+            tvMPurchaseDate.setText(R.string.Date_not_set);
+        }
+        String pp = "";
+             etPurchasedFrom.setText(cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_PURCHASE_PLACE)));
+
+
+
+
 
         ////....
 
@@ -217,12 +294,24 @@ public class KitActivity extends AppCompatActivity implements View.OnClickListen
     }
 
     private void setKitYear(String year) {
-//        Toast.makeText(this, year + "+", Toast.LENGTH_SHORT).show();
         if (year.length() == 4 && !year.contains("-")) {
             int spYearPosition = yearsAdapter.getPosition(year);
             spKitYear.setSelection(spYearPosition);
         }else{
             spKitYear.setSelection(0); //оставляем на первой
+        }
+    }
+
+    private void setKitCurrency(String currency) {
+            int spCurrencyPosition = currencyAdapter.getPosition(currency);
+            spCurrency.setSelection(spCurrencyPosition);
+    }
+
+    private void setKitQuantity(int quantity) {
+        if (quantity != 0) {
+            spQuantity.setSelection(quantity - 1);
+        }else{
+            spQuantity.setSelection(0);
         }
     }
 
@@ -372,6 +461,20 @@ public class KitActivity extends AppCompatActivity implements View.OnClickListen
                 clearTags();
                 setTag(category);
                 break;
+            case R.id.linLayoutSelectFigures:
+                category = Constants.CAT_FIGURES;
+                isRbChanged = true;
+                clearTags();
+                setTag(category);
+                break;
+            case R.id.linLayoutSelectFantasy:
+                category = Constants.CAT_FANTASY;
+                isRbChanged = true;
+                clearTags();
+                setTag(category);
+                break;
+
+
 
             //////////////////////////////////////////////////////////////////////////////////
 
@@ -435,35 +538,8 @@ public class KitActivity extends AppCompatActivity implements View.OnClickListen
                     }
 
 
-                    ContentValues cv = new ContentValues();
-                    cv.put("brand", etDetFullBrand.getText().toString().trim());
-                    cv.put("kit_name", etDetFullKitname.getText().toString().trim());
-                    cv.put("brand_catno", etDetFullBrandCatNo.getText().toString().trim());
-                    cv.put("scale", parseInt(etDetFullScale.getText().toString().trim()));
-                    cv.put("original_kit_name", etDetFullKitNoengname.getText().toString().trim());
-//                cv.put("description", etDetFullDescription.getText().toString());
-                    cv.put("category", category);
-                    if (pictureName != null || pictureName.trim().length() > 0) {
-                        cv.put("boxart_uri", pictureName);
-                    } else {
-                        cv.put("boxart_uri", "");
-                    }
-                    String y = spKitYear.getSelectedItem().toString();
-                    cv.put("year", getKitYear(y));
+                    getValues();
 
-                    String d = spKitDescription.getSelectedItem().toString();
-                    cv.put(DbConnector.COLUMN_DESCRIPTION, getKitDescription(d));
-                    if (mode == 'l') {
-                        dbConnector.editListItemById(id, cv);
-                    } else {
-                        dbConnector.editRecById(id, cv);
-                    }
-
-                    if (isRbChanged) {/////????????????????????????
-                        categoryTab = category;
-                    } else {
-                        categoryTab = incomeCategory;
-                    }
                     if (mode == 'l') {
                         Intent intent3 = new Intent();
                         intent3.putExtra(Constants.LIST_POSITION, position);
@@ -492,7 +568,7 @@ public class KitActivity extends AppCompatActivity implements View.OnClickListen
                 Intent intent1 = new Intent();
                 intent1.putExtra("position", position);
                 intent1.putExtra("id", id);
-                intent1.putExtra("category", categoryToReturn);
+                intent1.putExtra(Constants.LIST_CATEGORY, categoryToReturn);
                 setResult(RESULT_OK, intent1);
                 finish();
                 break;
@@ -513,7 +589,7 @@ public class KitActivity extends AppCompatActivity implements View.OnClickListen
                 Intent intent2 = new Intent();
                 intent2.putExtra("position", position);
                 intent2.putExtra("id", id);
-                intent2.putExtra("category", categoryToReturn);
+                intent2.putExtra(Constants.LIST_CATEGORY, categoryToReturn);
                 setResult(RESULT_OK, intent2);
                 finish();
                 break;
@@ -528,8 +604,85 @@ public class KitActivity extends AppCompatActivity implements View.OnClickListen
                 dbConnector.editRecById(id, cvUri);
                 setBoxartImage();
                 break;
+
+            case R.id.tvMSelectPurchaseDate:
+                isDateChanged = true;
+                DialogFragment newFragment = new SelectDateFragment();
+                Bundle bundle = new Bundle(1);
+                bundle.putString("caller", "KitActivity");
+                newFragment.setArguments(bundle);
+                newFragment.show(getSupportFragmentManager(), "DatePicker");
+                break;
+
+            case R.id.btnMClearDate:
+                purchaseDate = "";
+                tvMPurchaseDate.setText(R.string.Date_not_set);
         }
 
+    }
+
+    private void getValues() {
+        ContentValues cv = new ContentValues();
+        cv.put(DbConnector.COLUMN_BRAND, etDetFullBrand.getText().toString().trim());
+        cv.put(DbConnector.COLUMN_KIT_NAME, etDetFullKitname.getText().toString().trim());
+        cv.put(DbConnector.COLUMN_BRAND_CATNO, etDetFullBrandCatNo.getText().toString().trim());
+        cv.put(DbConnector.COLUMN_SCALE, parseInt(etDetFullScale.getText().toString().trim()));
+        cv.put(DbConnector.COLUMN_PURCHASE_PLACE, etPurchasedFrom.getText().toString().trim());
+        if (!tvMPurchaseDate.getText().toString().equals("")
+                && !tvMPurchaseDate.getText().toString().equals(R.string.Date_not_set)) {
+            purchaseDate = tvMPurchaseDate.getText().toString();
+            cv.put(DbConnector.COLUMN_PURCHASE_DATE, purchaseDate);
+        }else{
+            cv.put(DbConnector.COLUMN_PURCHASE_DATE, "");
+        }
+        if (etDetFullKitNoengname.getText() != null) {
+            cv.put(DbConnector.COLUMN_ORIGINAL_KIT_NAME, etDetFullKitNoengname.getText().toString().trim());
+        }
+        if (etFullPrice.getText().toString().trim().equals("")){
+            cv.put(DbConnector.COLUMN_PRICE, 0);
+        }else{
+            int pr = Integer.parseInt(etFullPrice.getText().toString().trim()) * 100;
+            cv.put(DbConnector.COLUMN_PRICE, pr);
+
+        }
+//        if(etFullNotes.getText().toString().trim() != null){
+            cv.put(DbConnector.COLUMN_NOTES, etFullNotes.getText().toString().trim());
+//        }
+//                cv.put("description", etDetFullDescription.getText().toString());
+        cv.put(DbConnector.COLUMN_CATEGORY, category);
+//        if (pictureName != null || pictureName.trim().length() > 0) {
+        if (pictureName != null || pictureName.length() > 0) {
+
+                cv.put(DbConnector.COLUMN_BOXART_URI, pictureName);
+        } else {
+            cv.put(DbConnector.COLUMN_BOXART_URI, "");
+        }
+        String y = spKitYear.getSelectedItem().toString();
+        cv.put(DbConnector.COLUMN_YEAR, getKitYear(y));
+
+        String d = spKitDescription.getSelectedItem().toString();
+        cv.put(DbConnector.COLUMN_DESCRIPTION, getKitDescription(d));
+
+        quantity = spQuantity.getSelectedItemPosition() + 1;
+        cv.put(DbConnector.COLUMN_QUANTITY, quantity);
+
+        String curr = spCurrency.getSelectedItem().toString();
+        cv.put(DbConnector.COLUMN_CURRENCY, curr);
+
+        String purchasedFrom = etPurchasedFrom.getText().toString();
+        cv.put(DbConnector.COLUMN_PURCHASE_PLACE, purchasedFrom);
+
+        if (mode == 'l') {
+            dbConnector.editListItemById(id, cv);
+        } else {
+            dbConnector.editRecById(id, cv);
+        }
+
+        if (isRbChanged) {/////????????????????????????
+            categoryTab = category;
+        } else {
+            categoryTab = incomeCategory;
+        }
     }
 
     private String getKitYear(String y) {
@@ -611,9 +764,17 @@ public class KitActivity extends AppCompatActivity implements View.OnClickListen
                 linLayoutCar.setBackgroundColor(Helper.getColor(this, R.color.colorAccent));
 //                categoryToReturn = 5;
                 break;
+            case Constants.CAT_FANTASY:
+                linLayoutFantasy.setBackgroundColor(Helper.getColor(this, R.color.colorAccent));
+//                categoryToReturn = 7;
+                break;
+            case Constants.CAT_FIGURES:
+                linLayoutFigures.setBackgroundColor(Helper.getColor(this, R.color.colorAccent));
+//                categoryToReturn = 6;
+                break;
             case Constants.CAT_OTHER:
                 linLayoutOther.setBackgroundColor(Helper.getColor(this, R.color.colorAccent));
-//                categoryToReturn = 6;
+//                categoryToReturn = 8;
                 break;
         }
     }
@@ -625,6 +786,8 @@ public class KitActivity extends AppCompatActivity implements View.OnClickListen
         linLayoutGround.setBackgroundColor(Helper.getColor(this, R.color.colorItem));
         linLayoutCar.setBackgroundColor(Helper.getColor(this, R.color.colorItem));
         linLayoutOther.setBackgroundColor(Helper.getColor(this, R.color.colorItem));
+        linLayoutFigures.setBackgroundColor(Helper.getColor(this, R.color.colorItem));
+        linLayoutFantasy.setBackgroundColor(Helper.getColor(this, R.color.colorItem));
     }
 
     private void writeBoxartToCloud() {
@@ -716,6 +879,10 @@ public class KitActivity extends AppCompatActivity implements View.OnClickListen
         linLayoutSea.setOnClickListener(this);
         linLayoutSpace = (LinearLayout)findViewById(R.id.linLayoutSelectSpace);
         linLayoutSpace.setOnClickListener(this);
+        linLayoutFantasy = (LinearLayout)findViewById(R.id.linLayoutSelectFantasy);
+        linLayoutFantasy.setOnClickListener(this);
+        linLayoutFigures = (LinearLayout)findViewById(R.id.linLayoutSelectFigures);
+        linLayoutFigures.setOnClickListener(this);
 
         btnSaveEdit = (Button)findViewById(R.id.btnSaveEdit);
         btnSaveEdit.setOnClickListener(this);
@@ -730,6 +897,20 @@ public class KitActivity extends AppCompatActivity implements View.OnClickListen
 
         spKitDescription = (AppCompatSpinner)findViewById(R.id.spKitDescription);
         spKitYear = (AppCompatSpinner)findViewById(R.id.spKitYear);
+
+        spCurrency = (AppCompatSpinner)findViewById(R.id.spFullCurrency);
+        spQuantity = (AppCompatSpinner)findViewById(R.id.spFullQuantity);
+
+
+        etFullNotes = (EditText)findViewById(R.id.etFullNotes);
+        etFullPrice = (EditText)findViewById(R.id.etFullPrice);
+        etPurchasedFrom = (EditText)findViewById(R.id.etFullPurchasedFrom);
+
+        tvMPurchaseDate = (TextView)findViewById(R.id.tvMSelectPurchaseDate);
+        tvMPurchaseDate.setOnClickListener(this);
+
+        btnClearDate = (Button)findViewById(R.id.btnMClearDate);
+        btnClearDate.setOnClickListener(this);
 //        btnGetFromFile = (Button)findViewById(R.id.btnGetFromFile);
 //        btnGetFromFile.setOnClickListener(this);
 //        btnGetFromCamera = (Button)findViewById(R.id.btnGetFromCamera);

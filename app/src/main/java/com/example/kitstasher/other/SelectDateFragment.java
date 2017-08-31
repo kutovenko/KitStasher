@@ -34,8 +34,15 @@ private int year, month, day;
         year = y;
         month = m;
         day = d;
-        TextView dob = (TextView)getActivity().findViewById(R.id.tvPurchaseDate);
-        dob.setText(day+"-"+month+"-"+year);
+        String caller = getArguments().getString("caller");
+        if (caller.equals("KitActivity")) {
+            TextView dob = (TextView) getActivity().findViewById(R.id.tvMSelectPurchaseDate);
+            dob.setText(day+"-"+month+"-"+year);
+        }else if (caller.equals("manualadd")){
+            TextView dob = (TextView) getActivity().findViewById(R.id.tvPurchaseDate);
+            dob.setText(day+"-"+month+"-"+year);
+        }
+
     }
 
     public int getDay() {

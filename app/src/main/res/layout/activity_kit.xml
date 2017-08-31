@@ -84,7 +84,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:orientation="horizontal">
+                    android:orientation="vertical">
 
                     <ImageView
                         android:id="@+id/ivAir"
@@ -112,7 +112,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:orientation="horizontal">
+                    android:orientation="vertical">
 
                     <ImageView
                         android:id="@+id/ivGround"
@@ -134,7 +134,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:orientation="horizontal">
+                    android:orientation="vertical">
 
                     <ImageView
                         android:id="@+id/ivSea"
@@ -151,12 +151,33 @@
                         android:text="@string/Sea" />
                 </LinearLayout>
 
+                <LinearLayout
+                    android:id="@+id/linLayoutSelectFigures"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:id="@+id/ivFigures"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        app:srcCompat="@drawable/ic_wc_black_24dp" />
+
+                    <TextView
+                        android:id="@+id/tvLabelFigures"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/Figures" />
+                </LinearLayout>
+
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
                 android:baselineAligned="false"
                 android:padding="8dp">
 
@@ -165,7 +186,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:orientation="horizontal">
+                    android:orientation="vertical">
 
                     <ImageView
                         android:id="@+id/ivSpace"
@@ -193,7 +214,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:orientation="horizontal">
+                    android:orientation="vertical">
 
                     <ImageView
                         android:id="@+id/ivCar"
@@ -211,11 +232,33 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/linLayoutSelectFantasy"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:id="@+id/ivFantasy"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        app:srcCompat="@drawable/ic_android_black_24dp" />
+
+                    <TextView
+                        android:id="@+id/tvLabelFantasy"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/Fantasy" />
+                </LinearLayout>
+
+                <LinearLayout
                     android:id="@+id/linLayoutSelectOther"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:orientation="horizontal">
+                    android:orientation="vertical">
 
                     <ImageView
                         android:id="@+id/ivOther"
@@ -356,17 +399,105 @@
             android:id="@+id/etFullPrice"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="16dp"
             android:ems="10"
+            android:hint="@string/Price"
             android:inputType="numberDecimal" />
+
+        <TextView
+            android:id="@+id/textView17"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/Currency" />
+
+        <android.support.v7.widget.AppCompatSpinner
+            android:id="@+id/spFullCurrency"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="8dp" />
+
+        <TextView
+            android:id="@+id/textView18"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/Quantity" />
+
+        <android.support.v7.widget.AppCompatSpinner
+            android:id="@+id/spFullQuantity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="8dp" />
+
+        <TextView
+            android:id="@+id/textView20"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="20dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="8dp"
+            android:text="@string/purchase_date" />
+
+        <TextView
+            android:id="@+id/tvMSelectPurchaseDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="8dp"
+            android:background="@drawable/button_light"
+            android:padding="8dp"
+            android:text="10-10-2017" />
+
+        <Button
+            android:id="@+id/btnMClearDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="8dp"
+            android:background="@drawable/button_light"
+            android:padding="8dp"
+            android:text="@string/Clear_date" />
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <EditText
+                android:id="@+id/etFullPurchasedFrom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="8dp"
+                android:ems="10"
+                android:hint="@string/Purchased_from"
+                android:inputType="text" />
+        </android.support.design.widget.TextInputLayout>
 
         <EditText
             android:id="@+id/etFullNotes"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/com_facebook_button_login_silver_background_color"
+            android:layout_marginBottom="8dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginTop="16dp"
+            android:background="@color/com_facebook_button_login_silver_background_color_pressed"
             android:ems="10"
+            android:gravity="top"
+            android:hint="@string/notes"
             android:inputType="textMultiLine"
-            android:lines="5" />
+            android:lines="3" />
 
         <LinearLayout
             android:layout_width="match_parent"

@@ -1,7 +1,5 @@
 package com.example.kitstasher.objects;
 
-import java.math.BigDecimal;
-
 /**
  * Created by Алексей on 04.05.2017.
  */
@@ -11,7 +9,7 @@ public class Kit {
     //Required
 
     private String brand;
-    private String brand_catno;
+    private String brandCatno;
     private String kit_name;
     private int scale;
     private String category;
@@ -30,12 +28,13 @@ public class Kit {
     private String date_added;
 
 
-    private String date_purchased;
+    private String datePurchased;
     private int quantity;
     private String notes;
     private int price;
     private String currency;
     private String status;
+    private String placePurchased;
 
 
 
@@ -43,8 +42,8 @@ public class Kit {
     public  String getBrand() {
         return brand;
     }
-    public String getBrand_catno() {
-        return brand_catno;
+    public String getBrandCatno() {
+        return brandCatno;
     }
     public String getKit_name() {
         return kit_name;
@@ -89,8 +88,8 @@ public class Kit {
         this.brand = brand;
     }
 
-    public void setBrand_catno(String brand_catno) {
-        this.brand_catno = brand_catno;
+    public void setBrandCatno(String brandCatno) {
+        this.brandCatno = brandCatno;
     }
 
     public void setKit_name(String kit_name) {
@@ -141,8 +140,8 @@ public class Kit {
         this.onlineId = onlineId;
     }
 
-    public void setDate_purchased(String date_purchased) {
-        this.date_purchased = date_purchased;
+    public void setDatePurchased(String datePurchased) {
+        this.datePurchased = datePurchased;
     }
 
     public int getQuantity() {
@@ -185,14 +184,14 @@ public class Kit {
         this.date_added = date_added;
     }
 
-    public String getDate_purchased() {
-        return date_purchased;
+    public String getDatePurchased() {
+        return datePurchased;
     }
 
 
     private Kit(KitBuilder kitBuilder){
         this.brand = kitBuilder.brand;
-        this.brand_catno = kitBuilder.brand_catno;
+        this.brandCatno = kitBuilder.brand_catno;
         this.kit_name = kitBuilder.kit_name;
         this.scale = kitBuilder.scale;
         this.category = kitBuilder.category;
@@ -209,12 +208,13 @@ public class Kit {
 
 
         this.date_added = kitBuilder.date_added;
-        this.date_purchased = kitBuilder.date_purchased;
+        this.datePurchased = kitBuilder.date_purchased;
         this.quantity = kitBuilder.quantity;
         this.notes = kitBuilder.notes;
         this.price = kitBuilder.price;
         this.currency = kitBuilder.currency;
         this.status = kitBuilder.status;
+        this.placePurchased = kitBuilder.placePurchased;
     }
 
     public String getStatus() {
@@ -223,6 +223,14 @@ public class Kit {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getPlacePurchased() {
+        return placePurchased;
+    }
+
+    public void setPlacePurchased(String placePurchased) {
+        this.placePurchased = placePurchased;
     }
 
 
@@ -251,11 +259,12 @@ public class Kit {
         private int price;
         private String currency;
         private String status;
+        private String placePurchased;
 
         public KitBuilder(){
             this.barcode = ""; //todo ??
 //            this.brand = brand;
-//            this.brand_catno = brand_catno;
+//            this.brandCatno = brandCatno;
 //            this.kit_name = kit_name;
 //            this.scale = scale;
 //            this.category = category;
@@ -351,6 +360,11 @@ public class Kit {
 
         public KitBuilder hasStatus(String status){
             this.status = status;
+            return this;
+        }
+
+        public KitBuilder hasPlacePurchased(String placePurchased){
+            this.placePurchased = placePurchased;
             return this;
         }
 

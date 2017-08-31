@@ -1,7 +1,6 @@
 package com.example.kitstasher.fragment;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -10,7 +9,6 @@ import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
@@ -21,7 +19,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.kitstasher.R;
-import com.example.kitstasher.activity.MainActivity;
 import com.example.kitstasher.objects.Item;
 import com.example.kitstasher.objects.Kit;
 import com.example.kitstasher.adapters.AdapterAlertDialog;
@@ -43,13 +40,11 @@ import com.shephertz.app42.paas.sdk.android.storage.Storage;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-import static android.support.v4.content.PermissionChecker.PERMISSION_DENIED;
 import static com.example.kitstasher.activity.MainActivity.asyncService;
 
 /**
@@ -127,7 +122,7 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
         boxart_uri = "";
 
         notes = "";
-        purchaseDate = date;
+        purchaseDate = "";
         quantity = 1;
         price = 0;
         currency = "";
@@ -420,13 +415,15 @@ private BarcodeCallback getCallback(){
                     Kit kitToAdd = itemsForDb.get(item - 1);//// TODO: 11.07.2017 добавить год в базу
                     kitToAdd.setDate_added(date);
                     kitToAdd.setNotes(notes);
-                    kitToAdd.setDate_purchased(purchaseDate);
+                    kitToAdd.setDatePurchased(purchaseDate);
                     kitToAdd.setQuantity(quantity);
                     kitToAdd.setPrice(price);
                     kitToAdd.setCurrency(currency);
                     kitToAdd.setStatus(status);
                     kitToAdd.setOnlineId("");
                     kitToAdd.setBoxart_uri("");
+                    kitToAdd.setPlacePurchased("");
+
                     if (mode == 'l'){
 
                         dbConnector.addListItem(kitToAdd, listname);
@@ -434,7 +431,7 @@ private BarcodeCallback getCallback(){
 //                        dbConnector.addListItem(
 //                                kitToAdd.getBarcode(),
 //                                kitToAdd.getBrand(),
-//                                kitToAdd.getBrand_catno(),
+//                                kitToAdd.getBrandCatno(),
 //                                kitToAdd.getScale(),
 //                                kitToAdd.getKit_name(),
 //                                kitToAdd.getKit_noeng_name(),
@@ -467,7 +464,7 @@ private BarcodeCallback getCallback(){
 //                        dbConnector.addKitRec(
 //                                kitToAdd.getBarcode(),
 //                                kitToAdd.getBrand(),
-//                                kitToAdd.getBrand_catno(),
+//                                kitToAdd.getBrandCatno(),
 //                                kitToAdd.getScale(),
 //                                kitToAdd.getKit_name(),
 //                                kitToAdd.getKit_noeng_name(),
@@ -487,6 +484,7 @@ private BarcodeCallback getCallback(){
 //                        );
 
                         textView.setText(R.string.kit_added);
+//                        initiateScanner(callback); //добавлено 28-08
                     }
 
                 }

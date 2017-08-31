@@ -55,7 +55,7 @@ public class MyListsFragment extends Fragment implements View.OnClickListener {
         super.onAttach(context);
         dbConnector = new DbConnector(getActivity());
         dbConnector.open();
-        cursor = dbConnector.getAllLists();
+        cursor = dbConnector.getAllLists("_id DESC");
     }
 
     @Override
@@ -68,7 +68,7 @@ public class MyListsFragment extends Fragment implements View.OnClickListener {
         view = inflater.inflate(R.layout.fragment_mylists, container, false);
 
         lvMyLists = (ListView) view.findViewById(R.id.lvMyLists);
-        cursor = dbConnector.getAllLists();
+        cursor = dbConnector.getAllLists("_id DESC");
         adapterMyLists = new AdapterMyLists(getActivity(), cursor);
         lvMyLists.setAdapter(adapterMyLists);
         lvMyLists.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -116,7 +116,7 @@ public class MyListsFragment extends Fragment implements View.OnClickListener {
                             Toast.LENGTH_SHORT).show();
                 }else{
                 dbConnector.addList(etNewListName.getText().toString().trim(), date);
-                cursor = dbConnector.getAllLists();
+                cursor = dbConnector.getAllLists("_id DESC");
                 adapterMyLists = new AdapterMyLists(getActivity(), cursor);
                 lvMyLists.setAdapter(adapterMyLists);
                 }

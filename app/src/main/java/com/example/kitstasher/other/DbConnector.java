@@ -1,17 +1,13 @@
 package com.example.kitstasher.other;
 
-import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.widget.Toast;
 
-import com.example.kitstasher.activity.MainActivity;
 import com.example.kitstasher.objects.Kit;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 
 public class DbConnector {
@@ -47,6 +43,8 @@ public class DbConnector {
     public static final String COLUMN_QUANTITY = "quantity";
     public static final String COLUMN_NOTES = "notes";
     public static final String COLUMN_CURRENCY = "currency";
+    public static final String COLUMN_PURCHASE_PLACE = "purchasePlace";
+
 
     ///////// TABLE BRANDS /////////
 
@@ -54,9 +52,19 @@ public class DbConnector {
     public static final String BRANDS_COLUMN_ID = "_id";
     public static final String BRANDS_COLUMN_BRAND = "brand";
 
+    ///////// TABLE TAGS //////////
     private static final String TABLE_TAGS = "tags";
     private static final String TAGS_COLUMN_ID = "_id";
     private static final String TAGS_COLUMN_TAG = "tag";
+
+    ///////// TABLE MYSHOPS ///////////
+
+    public static final String TABLE_MYSHOPS = "myshops";
+    public static final String MYSHOPS_COLUMN_SHOP_NAME = "shop_name";
+    public static final String MYSHOPS_COLUMN_SHOP_DESCRIPTION = "shop_desc";
+    public static final String MYSHOPS_COLUMN_SHOP_URL = "shop_url";
+    public static final String MYSHOPS_COLUMN_SHOP_RATING = "shop_rating";
+    public static final String MYSHOPS_COLUMN_SHOP_CONTACT = "shop_contact";
 
     ///////// TABLE STATISTIC /////////
     //Not in use now?
@@ -78,6 +86,12 @@ public class DbConnector {
     public static final String MYLISTSITEMS_LISTNAME = "listname";
 
 
+    ///////// TABLE CURRENCIES ///////
+    public static final String TABLE_CURRENCIES = "currencies";
+    public static final String CURRENCIES_COLUMN_ID = "_id";
+    public static final String CURRENCIES_COLUMN_CURRENCY = "currency";
+
+
     ///////// TABLE ACCOUNT /////////
     //Not in use now
 
@@ -89,7 +103,24 @@ public class DbConnector {
     private static final String ACCOUNT_COLUMN_FACEBOOK_PROFILE_URL = "fb_profile_url";
     private static final String ACCOUNT_COLUMN_NETWORK = "network";
 
+    //////////////////////////////////
     ///////// CREATE SCRIPTS /////////
+    /////////////////////////////////
+    private static final String CREATE_TABLE_CURRENCIES =
+            "create table " + TABLE_CURRENCIES + "(" +
+                    COLUMN_ID + " integer primary key autoincrement, " + // Локальный ключ -0
+                    CURRENCIES_COLUMN_CURRENCY + " text" +
+                    ");";
+
+    private static final String CREATE_TABLE_MYSHOPS =
+            "create table " + TABLE_MYSHOPS + "(" +
+                    COLUMN_ID + " integer primary key autoincrement, " + // Локальный ключ -0
+                    MYSHOPS_COLUMN_SHOP_NAME + " text," +
+                    MYSHOPS_COLUMN_SHOP_DESCRIPTION + " text," +
+                    MYSHOPS_COLUMN_SHOP_URL + " text," +
+                    MYSHOPS_COLUMN_SHOP_CONTACT + " text," +
+                    MYSHOPS_COLUMN_SHOP_RATING + " integer" +
+                    ");";
 
     private static final String CREATE_TABLE_MYLISTSITEMS =
             "create table " + TABLE_MYLISTSITEMS + "(" +
@@ -118,8 +149,9 @@ public class DbConnector {
                     COLUMN_QUANTITY + " integer," + //количество - 19
                     COLUMN_NOTES + " text," + //заметки - 20
                     COLUMN_CURRENCY + " text," + //валюта - 21
+                    COLUMN_PURCHASE_PLACE + " text," + //место покупки - 22
 
-                    MYLISTSITEMS_LISTNAME + " text" + // Локальный ключ -22
+                    MYLISTSITEMS_LISTNAME + " text" + // Локальный ключ -23
                     ");";
 
 
@@ -165,7 +197,8 @@ public class DbConnector {
                     COLUMN_PRICE + " text," + //цена -18
                     COLUMN_QUANTITY + " integer," + //количество - 19
                     COLUMN_NOTES + " text," + //заметки - 20
-                    COLUMN_CURRENCY + " text" + //валюта - 21
+                    COLUMN_CURRENCY + " text," + //валюта - 21
+                    COLUMN_PURCHASE_PLACE + " text" + //место покупки - 22
                     ");";
 
     private static final String CREATE_TABLE_BRANDS =
@@ -352,7 +385,7 @@ public class DbConnector {
         return mDB.query(TABLE_KITS, null, null, null, null, null, null);
     }
 
-    //Все с сортировкой, без удаленных
+    //Все с сортировкой
     public Cursor getAllData(String sortBy) {
         return mDB.query(TABLE_KITS, null, null, null, null, null, sortBy);
     }
@@ -428,49 +461,48 @@ public class DbConnector {
     }
 
     // Запись в базу, если есть баркод со сканера //todo CHANGE and DELETE
-    public void addKitRec(String barcode, String brand, String brand_catno, int scale,
-                          String kitname, String kit_noengname, String status, String date,
-                          String boxart_url, String category, String boxart_uri,
-//                          String online_id,
-                          String description,
-                          String year, String notes, String datePurchase, int quantity,
-                          int price, String currency) {
-        ContentValues cv = new ContentValues();
-        cv.put(COLUMN_BARCODE, barcode);
-        cv.put(COLUMN_BRAND, brand);
-        cv.put(COLUMN_BRAND_CATNO, brand_catno);
-        cv.put(COLUMN_SCALE, scale);
-        cv.put(COLUMN_KIT_NAME, kitname);
-        cv.put(COLUMN_ORIGINAL_KIT_NAME, kit_noengname);
-        cv.put(COLUMN_SEND_STATUS, status);
-        cv.put(COLUMN_DATE, date);
-        cv.put(COLUMN_BOXART_URL, boxart_url);
-        cv.put(COLUMN_CATEGORY, category);
-
-        cv.put(COLUMN_BOXART_URI, boxart_uri);
-//        cv.put(COLUMN_ID_ONLINE, online_id);
-        cv.put(COLUMN_YEAR, year);
-        cv.put(COLUMN_DESCRIPTION, description);
-
-        cv.put(COLUMN_NOTES, notes);
-        cv.put(COLUMN_PURCHASE_DATE, datePurchase);
-        cv.put(COLUMN_QUANTITY, quantity);
-        cv.put(COLUMN_PRICE, price);
-        cv.put(COLUMN_CURRENCY, currency);
-
-
-        mDB.insert(TABLE_KITS, null, cv);
-    }
+//    public void addKitRec(String barcode, String brand, String brand_catno, int scale,
+//                          String kitname, String kit_noengname, String status, String date,
+//                          String boxart_url, String category, String boxart_uri,
+////                          String online_id,
+//                          String description,
+//                          String year, String notes, String datePurchase, int quantity,
+//                          int price, String currency) {
+//        ContentValues cv = new ContentValues();
+//        cv.put(COLUMN_BARCODE, barcode);
+//        cv.put(COLUMN_BRAND, brand);
+//        cv.put(COLUMN_BRAND_CATNO, brand_catno);
+//        cv.put(COLUMN_SCALE, scale);
+//        cv.put(COLUMN_KIT_NAME, kitname);
+//        cv.put(COLUMN_ORIGINAL_KIT_NAME, kit_noengname);
+//        cv.put(COLUMN_SEND_STATUS, status);
+//        cv.put(COLUMN_DATE, date);
+//        cv.put(COLUMN_BOXART_URL, boxart_url);
+//        cv.put(COLUMN_CATEGORY, category);
+//
+//        cv.put(COLUMN_BOXART_URI, boxart_uri);
+////        cv.put(COLUMN_ID_ONLINE, online_id);
+//        cv.put(COLUMN_YEAR, year);
+//        cv.put(COLUMN_DESCRIPTION, description);
+//
+//        cv.put(COLUMN_NOTES, notes);
+//        cv.put(COLUMN_PURCHASE_DATE, datePurchase);
+//        cv.put(COLUMN_QUANTITY, quantity);
+//        cv.put(COLUMN_PRICE, price);
+//        cv.put(COLUMN_CURRENCY, currency);
+//
+//
+//        mDB.insert(TABLE_KITS, null, cv);
+//    }
 
     public void addKitRec(Kit kit){
 
         ContentValues cv = new ContentValues();
 
         cv.put(COLUMN_BARCODE, kit.getBarcode());
-
-        String string = kit.getBarcode();
+//        String string = kit.getBarcode();
         cv.put(COLUMN_BRAND, kit.getBrand());
-        cv.put(COLUMN_BRAND_CATNO, kit.getBrand_catno());
+        cv.put(COLUMN_BRAND_CATNO, kit.getBrandCatno());
         cv.put(COLUMN_SCALE, kit.getScale());
         cv.put(COLUMN_KIT_NAME, kit.getKit_name());
         cv.put(COLUMN_DESCRIPTION, kit.getDescription());
@@ -487,12 +519,13 @@ public class DbConnector {
         cv.put(COLUMN_DATE, kit.getDate_added());
         cv.put(COLUMN_YEAR, kit.getYear());
 
-        cv.put(COLUMN_PURCHASE_DATE, kit.getDate_purchased());
+        cv.put(COLUMN_PURCHASE_DATE, kit.getDatePurchased());
         cv.put(COLUMN_PRICE, kit.getPrice());
         cv.put(COLUMN_QUANTITY, kit.getQuantity());
         cv.put(COLUMN_NOTES, kit.getNotes());
         cv.put(COLUMN_CURRENCY, kit.getCurrency());
         cv.put(COLUMN_SEND_STATUS, kit.getStatus());
+        cv.put(COLUMN_PURCHASE_PLACE, kit.getPlacePurchased());
 
 
 //                MYLISTSITEMS_LISTNAME +
@@ -535,16 +568,11 @@ public class DbConnector {
     //НОВОЕ!!! Для автодополнения брэндов
     public static ArrayList<String> getAllBrands() {
         ArrayList<String> allBrands = new ArrayList<>();
-        //SQLiteDatabase sqLiteDatabase = null;
-//        try {
         String query = "select brand from brands;";
         Cursor cursor = mDB.rawQuery(query, null);
         while (cursor.moveToNext()) {
             allBrands.add(cursor.getString(cursor.getColumnIndex(COLUMN_BRAND)));
         }
-//        }catch(Exception ex){
-//            Log.e(TAG,"Erro in geting friends "+ex.toString());
-//        }
         cursor.close();
         return allBrands;
     }
@@ -591,8 +619,8 @@ public class DbConnector {
         mDB.insert(TABLE_MYLISTS, null, cv);
     }
 
-    public Cursor getAllLists (){
-        return mDB.query(TABLE_MYLISTS, null, null, null, null, null, null);
+    public Cursor getAllLists (String sortBy){
+        return mDB.query(TABLE_MYLISTS, null, null, null, null, null, sortBy);
     }
 
     public Cursor getListById (long id){
@@ -633,7 +661,7 @@ public class DbConnector {
 
         cv.put(COLUMN_BARCODE, kit.getBarcode());
         cv.put(COLUMN_BRAND, kit.getBrand());
-        cv.put(COLUMN_BRAND_CATNO, kit.getBrand_catno());
+        cv.put(COLUMN_BRAND_CATNO, kit.getBrandCatno());
         cv.put(COLUMN_SCALE, kit.getScale());
         cv.put(COLUMN_KIT_NAME, kit.getKit_name());
         cv.put(COLUMN_DESCRIPTION, kit.getDescription());
@@ -650,11 +678,13 @@ public class DbConnector {
         cv.put(COLUMN_DATE, kit.getDate_added());
         cv.put(COLUMN_YEAR, kit.getYear());
 
-        cv.put(COLUMN_PURCHASE_DATE, kit.getDate_purchased());
+        cv.put(COLUMN_PURCHASE_DATE, kit.getDatePurchased());
         cv.put(COLUMN_PRICE, kit.getPrice());
         cv.put(COLUMN_QUANTITY, kit.getQuantity());
         cv.put(COLUMN_NOTES, kit.getNotes());
         cv.put(COLUMN_CURRENCY, kit.getCurrency());
+
+        cv.put(COLUMN_PURCHASE_PLACE, kit.getPlacePurchased());
 
         cv.put(MYLISTSITEMS_LISTNAME, listname);
 
@@ -783,6 +813,67 @@ public boolean checkListForDounles(long id){
         return found;
 
     }
+
+    //////////////// MYSHOPS ////////////////
+    public static ArrayList<String> getAllShops() {
+        ArrayList<String> allShops = new ArrayList<>();
+        String query = "select shop_name from myshops;";
+        Cursor cursor = mDB.rawQuery(query, null);
+        while (cursor.moveToNext()) {
+            allShops.add(cursor.getString(cursor.getColumnIndex(MYSHOPS_COLUMN_SHOP_NAME)));
+        }
+        cursor.close();
+        return allShops;
+    }
+
+
+    public Cursor getShops(String sortBy){
+        return mDB.query(TABLE_MYSHOPS, null, null, null, null, null, sortBy);
+    }
+
+    public void addShop(String shopName) { //// TODO: 30.08.2017 Переделать с объектом Shop
+        if (!isShopExist(shopName)) {
+            ContentValues cv = new ContentValues();
+            cv.put(MYSHOPS_COLUMN_SHOP_NAME, shopName);
+            cv.put(MYSHOPS_COLUMN_SHOP_RATING, 1);
+            cv.put(MYSHOPS_COLUMN_SHOP_DESCRIPTION, "");
+            cv.put(MYSHOPS_COLUMN_SHOP_CONTACT, "");
+            cv.put(MYSHOPS_COLUMN_SHOP_URL, "");
+            mDB.insert(TABLE_MYSHOPS, null, cv);
+        }
+    }
+
+    public void addShop(ContentValues cv) { //// TODO: 30.08.2017 Переделать с объектом Shop
+        mDB.insert(TABLE_MYSHOPS, null, cv);
+    }
+        public void deleteShop(String shopName){
+mDB.delete(TABLE_MYSHOPS, MYSHOPS_COLUMN_SHOP_NAME + " = '" + shopName + "'", null);
+    }
+
+    public void delShopById(long id) {
+        mDB.delete(TABLE_MYSHOPS, COLUMN_ID + " = " + id, null);
+    }
+
+    public void clearMyshops (String shopname){
+        mDB.delete(TABLE_MYSHOPS, null, null);
+    }
+
+    public void updateShop (String shopName, ContentValues cv){
+        mDB.update(TABLE_MYSHOPS, cv, "shop_name = ?", new String[] { shopName });
+    }
+
+    public boolean isShopExist (String shopName){
+        if (getShop(shopName).getCount() != 0){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    public Cursor getShop (String shopName){
+        return mDB.query(TABLE_MYSHOPS, null, "shop_name = ?", new String[] { shopName }, null, null, null);
+    }
+
     ////////////////ПРОВЕРКИ ПРИ ДОБАВЛЕНИИ////////////////////
 
     //Для проверки из сканирования ScanActivity
@@ -841,6 +932,9 @@ public boolean checkListForDounles(long id){
             db.execSQL(CREATE_TABLE_ACCOUNT);
             db.execSQL(CREATE_TABLE_MYLISTS);
             db.execSQL(CREATE_TABLE_MYLISTSITEMS);
+
+            db.execSQL(CREATE_TABLE_CURRENCIES);
+            db.execSQL(CREATE_TABLE_MYSHOPS);
         }
 
         @Override

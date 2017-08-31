@@ -7,6 +7,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 
 import com.example.kitstasher.R;
 import com.example.kitstasher.fragment.SettingsBrandsFragment;
+import com.example.kitstasher.fragment.SettingsMyShopsFragment;
 import com.example.kitstasher.fragment.SettingsOptionsFragment;
 import com.example.kitstasher.fragment.SettingsTrashFragment;
 
@@ -16,7 +17,7 @@ import com.example.kitstasher.fragment.SettingsTrashFragment;
 
 public class AdapterSettings extends FragmentPagerAdapter {
 
-    private static final int FRAGMENT_COUNT = 2;
+    private static final int FRAGMENT_COUNT = 3;
     private Context mContext;
 
     public AdapterSettings(FragmentManager fm, Context context) {
@@ -30,6 +31,8 @@ public class AdapterSettings extends FragmentPagerAdapter {
                 return new SettingsOptionsFragment();
             case 1:
                 return new SettingsBrandsFragment();
+            case 2:
+                return new SettingsMyShopsFragment();
         }
         return null;
     }
@@ -45,6 +48,9 @@ public class AdapterSettings extends FragmentPagerAdapter {
                 return mContext.getResources().getString(R.string.options);
             case 1:
                 return mContext.getResources().getString(R.string.Brands);
+            case 2:
+                return mContext.getResources().getString(R.string.myshops);
+
         }
         return null;
     }
@@ -54,6 +60,9 @@ public class AdapterSettings extends FragmentPagerAdapter {
     }
     public static Fragment openBrands(){
         return new SettingsBrandsFragment();
+    }
+    public static Fragment openShops(){
+        return new SettingsMyShopsFragment();
     }
 //    public static Fragment openTrash(){
 //        return new SettingsTrashFragment();

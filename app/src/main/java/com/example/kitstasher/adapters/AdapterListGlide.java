@@ -79,6 +79,7 @@ public class AdapterListGlide extends CursorAdapter {
         space = Constants.CAT_SPACE;
         other = Constants.CAT_OTHER;
         car = Constants.CAT_AUTOMOTO;
+
         if (ship.equals(category)) {
             holder.ivTagItem.setImageResource(R.drawable.ic_tag_ship_black_24dp);
         }
@@ -96,6 +97,12 @@ public class AdapterListGlide extends CursorAdapter {
         }
         if (car.equals(category)){
             holder.ivTagItem.setImageResource(R.drawable.ic_directions_car_black_24dp);
+        }
+        if (Constants.CAT_FIGURES.equals(category)){
+            holder.ivTagItem.setImageResource(R.drawable.ic_wc_black_24dp);
+        }
+        if (Constants.CAT_FANTASY.equals(category)){
+            holder.ivTagItem.setImageResource(R.drawable.ic_android_black_24dp);
         }
 
         // Populate fields with extracted properties

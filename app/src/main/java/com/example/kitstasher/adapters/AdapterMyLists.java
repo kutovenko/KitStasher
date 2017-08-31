@@ -65,7 +65,7 @@ public class AdapterMyLists extends CursorAdapter {
                 String st = obj.toString();
                 dbConnector.deleteList(st);
                 dbConnector.clearList(name);
-                Cursor newcursor = dbConnector.getAllLists();
+                Cursor newcursor = dbConnector.getAllLists("_id DESC");
                 changeCursor(newcursor);
                 notifyDataSetChanged();
             }
@@ -96,7 +96,7 @@ public class AdapterMyLists extends CursorAdapter {
                                     Toast.LENGTH_SHORT).show();
                         }else {
                             dbConnector.updateList(nameToChange, listname);
-                            Cursor newcursor = dbConnector.getAllLists();
+                            Cursor newcursor = dbConnector.getAllLists("_id DESC");
                             changeCursor(newcursor);
                             notifyDataSetChanged();
                         }

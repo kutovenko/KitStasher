@@ -8,12 +8,12 @@ android {
         minSdkVersion 15
         targetSdkVersion 25
         versionCode 1
-        versionName "0.8"
+        versionName "0.8.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -36,5 +36,6 @@ dependencies {
     compile 'com.facebook.android:facebook-android-sdk:[4,5)'
     compile 'com.parse:parse-android:1.15.6'
     compile 'com.journeyapps:zxing-android-embedded:3.5.0'
+    compile 'org.apache.commons:commons-lang3:3.5'
     testCompile 'junit:junit:4.12'
 }

@@ -119,7 +119,7 @@ Prefixes and postfixes for links
     public static final String SIZE_SMALL = "-t140";
 
     // Image Dimensions
-    public static final int SIZE_FULL_HEIGHT = 86;
+    public static final int SIZE_FULL_HEIGHT = 86; //исправить!
     public static final int SIZE_FULL_WIDTH = 140;
     public static final int SIZE_UP_MEDIUM_HEIGHT = 393;
     public static final int SIZE_UP_MEDIUM_WIDTH = 640;
@@ -132,4 +132,14 @@ Prefixes and postfixes for links
     public static final String BOXART_IMAGE = "boxartImage";
     public static final String CATEGORY = "category";
     public static final String BOXART_URL = "boxart_url";
+
+    //Backup and Restore
+    public static final String KITS_FILE_NAME = "kits";
+    public static final String BRANDS_FILE_NAME = "brands";
+    public static final String LISTS_FILE_NAME = "lists";
+    public static final String LISTITEMS_FILE_NAME = "listitems";
+    public static final String MYSHOPS_FILE_NAME = "myshops";
+
+    //Defaults
+    public static final String DEFAULT_CURRENCY = "def_curr";
 }

@@ -11,6 +11,8 @@ import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.kitstasher.R;
 import com.example.kitstasher.activity.ChooserActivity;
 import com.example.kitstasher.other.CheckableLinearLayout;
@@ -19,6 +21,8 @@ import com.example.kitstasher.other.DbConnector;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static android.R.drawable.ic_menu_camera;
 
 /**
  * Created by Алексей on 14.08.2017.
@@ -101,29 +105,50 @@ public class AdapterChooserList extends CursorAdapter {
         holder.tvChooseKitBrand.setText(brand);
         holder.tvScale.setText(scale);
 
-        String ship = Constants.CAT_SEA;
-        String air = Constants.CAT_AIR;
-        String ground = Constants.CAT_GROUND;
-        String space = Constants.CAT_SPACE;
-        String other = Constants.CAT_OTHER;
-        String car = Constants.CAT_AUTOMOTO;
-        if (ship.equals(category)) {
+//        String ship = Constants.CAT_SEA;
+//        String air = Constants.CAT_AIR;
+//        String ground = Constants.CAT_GROUND;
+//        String space = Constants.CAT_SPACE;
+//        String other = Constants.CAT_OTHER;
+//        String car = Constants.CAT_AUTOMOTO;
+
+        if (Constants.CAT_SEA.equals(category)) {
             holder.ivChooseKitCategory.setImageResource(R.drawable.ic_tag_ship_black_24dp);
         }
-        if (air.equals(category)) {
+        if (Constants.CAT_AIR.equals(category)) {
             holder.ivChooseKitCategory.setImageResource(R.drawable.ic_tag_air_black_24dp);
         }
-        if (ground.equals(category)) {
+        if (Constants.CAT_GROUND.equals(category)) {
             holder.ivChooseKitCategory.setImageResource(R.drawable.ic_tag_afv_black_24dp);
         }
-        if (space.equals(category)) {
+        if (Constants.CAT_SPACE.equals(category)) {
             holder.ivChooseKitCategory.setImageResource(R.drawable.ic_tag_space_black_24dp);
         }
-        if (other.equals(category)) {
+        if (Constants.CAT_OTHER.equals(category)) {
             holder.ivChooseKitCategory.setImageResource(R.drawable.ic_check_box_outline_blank_black_24dp);
         }
-        if (car.equals(category)){
+        if (Constants.CAT_AUTOMOTO.equals(category)){
             holder.ivChooseKitCategory.setImageResource(R.drawable.ic_directions_car_black_24dp);
+        }
+        if (Constants.CAT_FANTASY.equals(category)){
+            Glide
+                    .with(context)
+                    .load(R.drawable.ic_android_black_24dp)
+                    .placeholder(ic_menu_camera)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    //.crossFade()
+                    .into(holder.ivChooseKitCategory);
+//            holder.ivChooseKitCategory.setImageResource(R.drawable.ic_android_black_24dp);
+        }
+        if (Constants.CAT_FIGURES.equals(category)){
+            Glide
+                    .with(context)
+                    .load(R.drawable.ic_wc_black_24dp)
+                    .placeholder(ic_menu_camera)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    //.crossFade()
+                    .into(holder.ivChooseKitCategory);
+//            holder.ivChooseKitCategory.setImageResource(R.drawable.ic_wc_black_24dp);
         }
 
 

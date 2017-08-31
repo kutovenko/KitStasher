@@ -94,7 +94,7 @@
     <string name="the_world_s">В мире на месте №</string>
     <string name="total_stash">Всего в коллекции</string>
     <string name="added_today">Сегодня добавлено</string>
-    <string name="options">Импорт/Экспорт</string>
+    <string name="options">Опции</string>
     <string name="Brands">Бренды</string>
     <string name="Database">База данных</string>
     <string name="Checking">Проверяем…</string>
@@ -178,4 +178,13 @@
     <string name="purchase_date">Дата приобретения</string>
     <string name="Please_add_boxart_photo">Пожалуйста, добавьте фото коробки</string>
     <string name="Please_enter_data">Пожалуйста, внесите все нужные данные</string>
+    <string name="Clear_date">Сбросить дату</string>
+    <string name="Date_not_set">Дата не установлена</string>
+    <string name="Place_of_purchase">Источник приобретения</string>
+    <string name="Price">Цена</string>
+    <string name="Purchased_from">Приобретено</string>
+    <string name="Set">Сохранить</string>
+    <string name="Set_default_currency">Установить валюту по умолчанию</string>
+    <string name="myshops">Мои магазины</string>
+    <string name="Options">Опции</string>
 </resources>

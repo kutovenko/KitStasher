@@ -252,7 +252,7 @@
     <string name="daily_record">Daily Record</string>
     <string name="cars_bikes">Cars/Bikes:</string>
     <string name="other">Other:</string>
-    <string name="options">Import/Export</string>
+    <!--<string name="options">Import/Export</string>-->
     <string name="Brands">Brands</string>
     <string name="export">Export</string>
     <string name="export_text">Export list of kits in different file formats</string>
@@ -301,6 +301,15 @@
     <string name="purchase_date">Date of Purchase</string>
     <string name="Figures">Figures</string>
     <string name="Fantasy">Fantasy</string>
+    <string name="Price">Price</string>
+    <string name="Place_of_purchase">Place of Purchase</string>
+    <string name="Purchased_from">Purchased From</string>
+    <string name="options">Options</string>
+    <string name="Set">Set</string>
+    <string name="Set_default_currency">Set default currency</string>
+    <string name="Clear_date">Clear Date</string>
+    <string name="Date_not_set">Date not set</string>
+    <string name="myshops">My Shops</string>
 
 
 </resources>
