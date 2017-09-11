@@ -43,6 +43,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.kitstasher.R;
 import com.example.kitstasher.activity.MainActivity;
+import com.example.kitstasher.objects.Aftermarket;
 import com.example.kitstasher.objects.Item;
 import com.example.kitstasher.objects.Kit;
 import com.example.kitstasher.adapters.AdapterAddFragment;
@@ -92,16 +93,21 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     private View view;
     private EditText etBrandCat_no, etScale, etKitName, etKitNoengName, etNotes, etPrice;
     private Button btnAdd, btnCancel, btnCheckOnlineDatabase, btnClearDate;
-    private AppCompatSpinner spYear, spDescription, spQuantity, spCurrency;
+    private AppCompatSpinner spYear, spDescription, spQuantity, spCurrency, spKitMedia;
     private LinearLayout linLayoutMAir, linLayoutMCar, linLayoutMGround, linLayoutMOther,
             linLayoutMSea, linLayoutMSpace, linLayoutMFigures, linLAyoutMFantasy;
     private ImageView ivGetBoxart;
     private TextView tvPurchaseDate;
     private ProgressDialog progressDialog;
 
-    private String barcode, brand, brandCatno, kitName, status, kitNoengname, date, purchaseDate,
+    private String aftermarketName, aftemarketOriginalName, compilanceWith;
+    private long incomeKitId;
+
+    private String barcode, brand, brandCatno, kitName, sendStatus, kitNoengname, dateAdded, datePurchased,
             boxartUrl, category, boxartUri, fbId, description, year, onlineId, listname, notes,
-    currency, prototype, scalemates_url, placePurchased;
+    currency, prototype, scalematesUrl, placePurchased;
+    private int status, media;
+
     private String defCurrency;
     private char mode;
     private int scale, quantity, y, month, day, price;
@@ -129,7 +135,9 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     private String currentDocId;
 
     private Kit kit;
-    private ArrayAdapter<String> descriptionAdapter, yearsAdapter;
+    private Aftermarket aftermarket;
+    private ArrayAdapter<String> descriptionAdapter, yearsAdapter, mediaAdapter;
+
 
     private final int MY_PERMISSIONS_REQUEST_CAMERA = 11;
 
@@ -263,6 +271,23 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                 android.R.layout.simple_spinner_item, currencies);
         spCurrency.setAdapter(currencyAdapter);
 
+        String[] mediaTypes = new String[]{
+                getString(R.string.media_other),
+                getString(R.string.media_injected),
+                getString(R.string.media_shortrun),
+                getString(R.string.media_resin),
+                getString(R.string.media_vacu),
+                getString(R.string.media_paper),
+                getString(R.string.media_wood),
+                getString(R.string.media_metal),
+                getString(R.string.media_3dprint),
+                getString(R.string.media_multimedia)
+        };
+        mediaAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item,
+                mediaTypes);
+        spKitMedia.setAdapter(mediaAdapter);
+        spKitMedia.setSelection(1);
+
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         defCurrency = sharedPreferences.getString(Constants.DEFAULT_CURRENCY, "");
         spCurrencyPosition = currencyAdapter.getPosition(defCurrency);
@@ -271,17 +296,31 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 
         return view;
     }
-// Проверяем, откуда обратились к редактору
+    // Проверяем, откуда обратились к редактору
     private void checkMode() {
         if (getArguments() != null){
-            listname = getArguments().getString("listname");
-        if (getArguments().getChar("mode") == 'l'){
-            mode = 'l';
-        }else{
-            mode = 'm';
-        }
-        }else{
-            mode = 'm';
+            listname = getArguments().getString(Constants.LISTNAME);
+            switch (getArguments().getChar(Constants.EDIT_MODE)){
+                case 'l':
+                    mode = Constants.MODE_LIST;
+                    break;
+                case 'm':
+                    mode = Constants.MODE_KIT;
+                    break;
+                case 'a':
+                    mode = Constants.MODE_AFTERMARKET;
+                    break;
+                default:
+                    mode = Constants.MODE_KIT;
+                    break;
+            }
+//            if (getArguments().getChar(Constants.EDIT_MODE) == Constants.MODE_LIST){
+//                mode = Constants.MODE_LIST;
+//            }else{
+//                mode = 'm';
+//            }
+//        }else{
+//            mode = 'm';
         }
     }
 
@@ -296,8 +335,8 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         isRbChanged = false;
         isFoundOnline = false;
         isReported = false;
-        status = "";//Статус для последующей записи пропущенных в офлайне записей
-        mode = 'm';
+        sendStatus = "";//Статус для последующей записи пропущенных в офлайне записей
+        mode = Constants.MODE_KIT; //// TODO: 06.09.2017 Check
 
         brand = "";
         brandCatno = "";
@@ -306,10 +345,15 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         kitNoengname = "";
         boxartUrl = "";
         boxartUri = "";
-        date = df.format(c.getTime());
+        if (getArguments() != null && getArguments().getChar(Constants.EDIT_MODE) == Constants.MODE_AFTERMARKET
+               && getArguments().getString("boxart_uri") != null){
+            boxartUri = getArguments().getString("boxart_uri");
+        }
+
+        dateAdded = df.format(c.getTime());
         barcode = "";
 
-        if (getArguments() != null && getArguments().getChar("mode") == 'l'
+        if (getArguments() != null && getArguments().getChar(Constants.EDIT_MODE) == Constants.MODE_LIST
                 && getArguments().getString("barcode") != null){
             barcode = getArguments().getString("barcode");
         }
@@ -319,13 +363,15 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         onlineId = "";
         price = 0;
         notes = "";
-        purchaseDate = "";
+        datePurchased = "";
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
         currency = sharedPref.getString(Constants.DEFAULT_CURRENCY,"");
         quantity = 1;
         prototype = "";
-        scalemates_url = "";
+        scalematesUrl = "";
         placePurchased = "";
+        status = Constants.STATUS_NEW;
+        media = Constants.M_CODE_INJECTED;
 
 
         //New kit with empty fields
@@ -341,19 +387,84 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 
                 .hasPrototype("")//not in use
 
+                .hasSendStatus(sendStatus)
+
                 .hasBoxart_url(boxartUrl)
                 .hasBoxart_uri(boxartUri)
                 .hasScalemates_url("")
                 .hasYear(year)
                 .hasOnlineId(onlineId)
-                .hasDateAdded(date)
-                .hasDatePurchased(purchaseDate)
+                .hasDateAdded(dateAdded)
+                .hasDatePurchased(datePurchased)
                 .hasQuantity(quantity)
                 .hasNotes(notes)
                 .hasPrice(price)
                 .hasCurrency(currency)
                 .hasPlacePurchased(placePurchased)
+                .hasStatus(status)
+                .hasMedia(media)
         .build();
+
+//        if (mode == Constants.MODE_AFTERMARKET) {
+            aftermarketName = "";
+            aftemarketOriginalName = "";
+            compilanceWith = "";
+
+
+//            brand = "";
+//            brandCatno = "";
+//
+//            scale = 0;
+//            category = Constants.CAT_OTHER;
+//            //Optional
+//            barcode = "";
+//
+//            description = "";
+//
+//            boxartUrl = "";
+//            scalematesUrl = "";
+//            boxartUri = "";
+//            year = "";
+//            onlineId = "";
+//            dateAdded = "";
+//            datePurchased = "";
+//
+//            quantity = 1;
+//            notes = "";
+//            price = 0;
+//            currency = "";
+//            sendStatus = "";
+//            placePurchased = "";
+
+            aftermarket = new Aftermarket.AftermarketBuilder()
+                    .hasBrand(brand)
+                    .hasBrandCatno(brandCatno)
+                    .hasAftermarketName(aftermarketName)
+                    .hasScale(scale)
+                    .hasCategory(category)
+                    .hasBarcode(barcode)
+                    .hasAftermarketOriginalName(aftemarketOriginalName)
+                    .hasDescription(description)
+                    .hasCompilance(compilanceWith)
+                    .hasBoxartUrl(boxartUrl)
+                    .hasScalematesUrl(scalematesUrl)
+                    .hasBoxartUri(boxartUri)
+                    .hasYear(year)
+                    .hasOnlineId(onlineId)
+                    .hasDateAdded(dateAdded)
+                    .hasDatePurchased(datePurchased)
+                    .hasQuantity(quantity)
+                    .hasNotes(notes)
+                    .hasPrice(price)
+                    .hasCurrency(currency)
+                    .hasSendStatus(sendStatus)
+                    .hasPlacePurchased(placePurchased)
+                    .hasStatus(status)
+                    .hasMedia(media)
+                    .hasListname(listname)
+                    .build();
+//        }
+
 
 //        kit.setBarcode(barcode);
 //        kit.setBoxart_uri("");
@@ -363,7 +474,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 //        kit.setOnlineId("");
 //        kit.setPrice(price);
 //        kit.setNotes(notes);
-//        kit.setDatePurchased(purchaseDate);
+//        kit.setDatePurchased(datePurchased);
 //        kit.setCurrency(currency);
     }
 
@@ -406,6 +517,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 
         spCurrency = (AppCompatSpinner)view.findViewById(R.id.spCurrency);
         spQuantity = (AppCompatSpinner)view.findViewById(R.id.spQuantity);
+        spKitMedia = (AppCompatSpinner)view.findViewById(R.id.spKitMedia);
 
         etNotes = (EditText)view.findViewById(R.id.etNotes);
         tvPurchaseDate = (TextView)view.findViewById(R.id.tvPurchaseDate);
@@ -599,7 +711,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                         }
 //                        saveOnline(kit);
                         ////////////////////////
-                        if (mode !='l') {//из ручного добавления
+                        if (mode == Constants.MODE_KIT) {//из ручного добавления
                             if (isOnline()) {
                                 writeToLocalDatabase(kit); //writes kit to database
                                 if (wasSearchedOnline && !isFoundOnline) {
@@ -617,17 +729,17 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                                 }
 
                             } else {
-                                status = "n";//Надо потом записать в облако
+                                sendStatus = "n";//Надо потом записать в облако
                                 writeToLocalDatabase(kit);
                                 Toast.makeText(getActivity(), R.string.kit_added, Toast.LENGTH_SHORT).show();
-                                status = null;
+                                sendStatus = "";
                                 clearFields();
                                 returnToScan();
                             }
-                        }else{ //из списков
+                        }else if (mode == Constants.MODE_LIST){ //из списков
                             writeToLocalDatabase(kit);
                             Toast.makeText(getActivity(), R.string.Kit_added_to_list, Toast.LENGTH_SHORT).show();
-                            status = null;
+                            sendStatus = "";
                             clearFields();
                             returnToScan();
 
@@ -639,6 +751,34 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                                     getFragmentManager().beginTransaction();
                             fragmentTransaction.replace(R.id.llListsContainer, listViewFragment);
                             fragmentTransaction.commit();
+
+                        }else if (mode == Constants.MODE_AFTERMARKET){ //запись в афтемаркет
+                            writeToLocalDatabase(aftermarket);
+                            Toast.makeText(getActivity(), R.string.Kit_added_to_list, Toast.LENGTH_SHORT).show();
+                            sendStatus = "";
+                            clearFields();
+
+//                            returnToScan();
+
+                            int position = getArguments().getInt(Constants.LIST_POSITION);
+                            int categoryToReturn = getArguments().getInt(Constants.LIST_CATEGORY);
+                            KitEditFragment kitEditFragment = new KitEditFragment();
+
+                            Bundle bundle = new Bundle(5);
+                            bundle.putInt("position", position);
+                            bundle.putInt("category", categoryToReturn);
+                            bundle.putLong("id", incomeKitId);
+                            bundle.putChar(Constants.EDIT_MODE, Constants.MODE_AFTERMARKET);
+                            kitEditFragment.setArguments(bundle);
+//                            Bundle bundle = new Bundle(1);
+//                            bundle.putString("listname", listname);
+//                            listViewFragment.setArguments(bundle);
+
+                            android.support.v4.app.FragmentTransaction fragmentTransaction =
+                                    getFragmentManager().beginTransaction();
+                            fragmentTransaction.replace(R.id.linLayoutKitContainer, kitEditFragment);
+                            fragmentTransaction.commit();
+
                         }
                     } else {
                         Toast.makeText(getActivity(), R.string.entry_already_exist,
@@ -716,14 +856,14 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                 break;
 
             case R.id.btnClearDate:
-                purchaseDate = "";
+                datePurchased = "";
                 tvPurchaseDate.setText(R.string.Date_not_set);
         }
     }
 
 
 
-    private void searchKitOnline(Kit kitToSearch) {
+    private void searchKitOnline(Kit kitToSearch) { //// TODO: 04.09.2017 Helper
 
 
         Query q1 = QueryBuilder.build(Constants.TAG_BRAND, kitToSearch.getBrand().trim(),
@@ -826,9 +966,9 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 
     /*
 * Writes kit object to local Sqlite database*/
-    private void writeToLocalDatabase(Kit kitSave) {
-        if (mode == 'm') {
-            dbConnector.addKitRec(kitSave);
+    private void writeToLocalDatabase(Object itemSave) {
+        if (mode == Constants.MODE_KIT) {
+            dbConnector.addKitRec((Kit) itemSave);
 //            dbConnector.addKitRec(
 //                    kitSave.getBarcode(),
 //                    kitSave.getBrand(),
@@ -836,8 +976,8 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 //                    kitSave.getScale(),
 //                    kitSave.getKit_name(),
 //                    kitSave.getKit_noeng_name(),
-//                    status,
-//                    date,
+//                    sendStatus,
+//                    dateAdded,
 //                    kitSave.getBoxart_url(),
 //                    kitSave.getCategory(),
 //                    kitSave.getBoxart_uri(),
@@ -845,13 +985,17 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 //                    kitSave.getDescription(),
 //                    kitSave.getYear(),
 //                    notes,
-//                    purchaseDate,
+//                    datePurchased,
 //                    quantity,
 //                    price,
 //                    currency
 //            );
-        }else if (mode == 'l') {
-            dbConnector.addListItem(kitSave, listname);
+        }else if (mode == Constants.MODE_LIST) {
+            dbConnector.addListItem((Kit)itemSave, listname);
+        }else if (mode == Constants.MODE_AFTERMARKET){
+            long aftId = dbConnector.addAftermarket((Aftermarket)itemSave);
+            incomeKitId = getArguments().getLong("id");
+            dbConnector.addAfterToKit(incomeKitId, aftId);
         }
 //            dbConnector.addListItem(
 //                    kitSave.getBarcode(),
@@ -860,8 +1004,8 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 //                    kitSave.getScale(),
 //                    kitSave.getKit_name(),
 //                    kitSave.getKit_noeng_name(),
-//                    status,
-//                    date,
+//                    sendStatus,
+//                    dateAdded,
 //                    kitSave.getBoxart_url(),
 //                    kitSave.getCategory(),
 //                    kitSave.getBoxart_uri(),
@@ -869,7 +1013,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 //                    kitSave.getDescription(),
 //                    kitSave.getYear(),
 //                    notes,
-//                    purchaseDate,
+//                    datePurchased,
 //                    quantity,
 //                    price,
 //                    currency,
@@ -896,50 +1040,163 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 /*
 * Gets data from form fields, trim strings and add them to kit object fields*/
     private void getFieldsValues() {
-        kit.setBrand(acTvBrand.getText().toString().trim());
-        kit.setBrandCatno(etBrandCat_no.getText().toString().trim());
-        kit.setScale(Integer.parseInt(etScale.getText().toString()));
-        kit.setKit_name(etKitName.getText().toString().trim());
-        kit.setKit_noeng_name(etKitNoengName.getText().toString().trim());
-        kit.setBarcode(barcode);
-        kit.setCategory(category);
-        String y = spYear.getSelectedItem().toString();
-        if (!y.equals(getString(R.string.year))){
-            kit.setYear(y);
+//        Object object;
+        if (mode == Constants.MODE_AFTERMARKET){
+//            object = aftermarket;
+
+//            compilanceWith = "";
+
+            aftermarket.setBrand(acTvBrand.getText().toString().trim());
+            aftermarket.setBrandCatno(etBrandCat_no.getText().toString().trim());
+            aftermarket.setScale(Integer.parseInt(etScale.getText().toString()));
+            aftermarket.setAftermarketName(etKitName.getText().toString().trim());
+            aftermarket.setAftemarketOriginalName(etKitNoengName.getText().toString().trim());
+            aftermarket.setBarcode(barcode);
+            aftermarket.setCategory(category);
+            String y = spYear.getSelectedItem().toString();
+            if (!y.equals(getString(R.string.year))){
+                aftermarket.setYear(y);
+            }else{
+                aftermarket.setYear("");
+            }
+
+            aftermarket.setMedia(spKitMedia.getSelectedItemPosition());
+
+            String d = spDescription.getSelectedItem().toString();
+            if (!d.equals(getString(R.string.kittype))){
+                aftermarket.setDescription(descToCode(d));
+            }else{
+                aftermarket.setDescription(Constants.CODE_OTHER);
+            }
+            currency = spCurrency.getSelectedItem().toString();
+            aftermarket.setCurrency(currency);
+            quantity = spQuantity.getSelectedItemPosition() + 1;
+            aftermarket.setQuantity(quantity);
+            notes = etNotes.getText().toString();
+            aftermarket.setNotes(notes);
+            if (!etPrice.getText().toString().equals("")){
+                price = Integer.parseInt(etPrice.getText().toString()) * 100;
+            }else{
+                price = 0;
+            }
+            aftermarket.setPrice(price);
+            //SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
+            if (!tvPurchaseDate.getText().toString().equals("")
+                    && tvPurchaseDate.getText().toString().equals(R.string.Date_not_set)) {
+                datePurchased = tvPurchaseDate.getText().toString();
+            }else{
+                datePurchased = "";
+            }
+
+            placePurchased = acPurchasedFrom.getText().toString().trim();
+            aftermarket.setPlacePurchased(placePurchased);
+
+            aftermarket.setDatePurchased(datePurchased);
+            aftermarket.setBoxartUri(boxartUri);
+            aftermarket.setBoxartUrl(boxartUrl);
+            aftermarket.setListname(listname);
+
         }else{
-            kit.setYear("");
-        }
-        String d = spDescription.getSelectedItem().toString();
-        if (!d.equals(getString(R.string.kittype))){
-            kit.setDescription(descToCode(d));
-        }else{
-            kit.setDescription(Constants.CODE_OTHER);
-        }
-        currency = spCurrency.getSelectedItem().toString();
-        kit.setCurrency(currency);
-        quantity = spQuantity.getSelectedItemPosition() + 1;
-        kit.setQuantity(quantity);
-        notes = etNotes.getText().toString();
-        kit.setNotes(notes);
-        if (!etPrice.getText().toString().equals("")){
-        price = Integer.parseInt(etPrice.getText().toString()) * 100;
-        }else{
-            price = 0;
-        }
-        kit.setPrice(price);
-        //SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
-        if (!tvPurchaseDate.getText().toString().equals("")
-                && tvPurchaseDate.getText().toString().equals(R.string.Date_not_set)) {
-            purchaseDate = tvPurchaseDate.getText().toString();
-        }else{purchaseDate = "";
+//            object = kit;
+            kit.setBrand(acTvBrand.getText().toString().trim());
+            kit.setBrandCatno(etBrandCat_no.getText().toString().trim());
+            kit.setScale(Integer.parseInt(etScale.getText().toString()));
+            kit.setKit_name(etKitName.getText().toString().trim());
+            kit.setKit_noeng_name(etKitNoengName.getText().toString().trim());
+            kit.setBarcode(barcode);
+            kit.setCategory(category);
+            String y = spYear.getSelectedItem().toString();
+            if (!y.equals(getString(R.string.year))){
+                kit.setYear(y);
+            }else{
+                kit.setYear("");
+            }
+
+            kit.setMedia(spKitMedia.getSelectedItemPosition());
+
+            String d = spDescription.getSelectedItem().toString();
+            if (!d.equals(getString(R.string.kittype))){
+                kit.setDescription(descToCode(d));
+            }else{
+                kit.setDescription(Constants.CODE_OTHER);
+            }
+            currency = spCurrency.getSelectedItem().toString();
+            kit.setCurrency(currency);
+            quantity = spQuantity.getSelectedItemPosition() + 1;
+            kit.setQuantity(quantity);
+            notes = etNotes.getText().toString();
+            kit.setNotes(notes);
+            if (!etPrice.getText().toString().equals("")){
+                price = Integer.parseInt(etPrice.getText().toString()) * 100;
+            }else{
+                price = 0;
+            }
+            kit.setPrice(price);
+            //SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
+            if (!tvPurchaseDate.getText().toString().equals("")
+                    && tvPurchaseDate.getText().toString().equals(R.string.Date_not_set)) {
+                datePurchased = tvPurchaseDate.getText().toString();
+            }else{
+                datePurchased = "";
+            }
+
+            placePurchased = acPurchasedFrom.getText().toString().trim();
+            kit.setPlacePurchased(placePurchased);
+
+            kit.setDatePurchased(datePurchased);
+            kit.setBoxart_uri(boxartUri);
+            kit.setBoxart_url(boxartUrl);
         }
 
-        placePurchased = acPurchasedFrom.getText().toString().trim();
-        kit.setPlacePurchased(placePurchased);
 
-        kit.setDatePurchased(purchaseDate);
-        kit.setBoxart_uri(boxartUri);
-        kit.setBoxart_url(boxartUrl);
+
+//        kit.setBrand(acTvBrand.getText().toString().trim());
+//        kit.setBrandCatno(etBrandCat_no.getText().toString().trim());
+//        kit.setScale(Integer.parseInt(etScale.getText().toString()));
+//        kit.setKit_name(etKitName.getText().toString().trim());
+//        kit.setKit_noeng_name(etKitNoengName.getText().toString().trim());
+//        kit.setBarcode(barcode);
+//        kit.setCategory(category);
+//        String y = spYear.getSelectedItem().toString();
+//        if (!y.equals(getString(R.string.year))){
+//            kit.setYear(y);
+//        }else{
+//            kit.setYear("");
+//        }
+//        String d = spDescription.getSelectedItem().toString();
+//        if (!d.equals(getString(R.string.kittype))){
+//            kit.setDescription(descToCode(d));
+//        }else{
+//            kit.setDescription(Constants.CODE_OTHER);
+//        }
+//        currency = spCurrency.getSelectedItem().toString();
+//        kit.setCurrency(currency);
+//        quantity = spQuantity.getSelectedItemPosition() + 1;
+//        kit.setQuantity(quantity);
+//        notes = etNotes.getText().toString();
+//        kit.setNotes(notes);
+//        if (!etPrice.getText().toString().equals("")){
+//        price = Integer.parseInt(etPrice.getText().toString()) * 100;
+//        }else{
+//            price = 0;
+//        }
+//        kit.setPrice(price);
+//        //SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
+//        if (!tvPurchaseDate.getText().toString().equals("")
+//                && tvPurchaseDate.getText().toString().equals(R.string.Date_not_set)) {
+//            datePurchased = tvPurchaseDate.getText().toString();
+//        }else{
+//            datePurchased = "";
+//        }
+//
+//        placePurchased = acPurchasedFrom.getText().toString().trim();
+//        kit.setPlacePurchased(placePurchased);
+//
+//        kit.setDatePurchased(datePurchased);
+//        kit.setBoxart_uri(boxartUri);
+//        kit.setBoxart_url(boxartUrl);
+
+
 
     }
 
@@ -963,7 +1220,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         return desc;
     }
 
-    public boolean isOnline() {
+    public boolean isOnline() {//// TODO: 06.09.2017 Helper
         ConnectivityManager cm =
                 (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
@@ -1006,7 +1263,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         isRbChanged = false;
         isFoundOnline = false;
         isReported = false;
-        status = "";//Статус для последующей записи пропущенных в офлайне записей
+        sendStatus = "";//Статус для последующей записи пропущенных в офлайне записей
         mode = 'm';
 
         brand = "";
@@ -1023,18 +1280,21 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         onlineId = "";
         price = 0;
         notes = "";
-        purchaseDate = date;
+        datePurchased = dateAdded;
         currency = "";
         quantity = 1;
         prototype = "";
-        status = "";//Статус для последующей записи пропущенных в офлайне записей
-        scalemates_url = "";
+        sendStatus = "";//Статус для последующей записи пропущенных в офлайне записей
+        scalematesUrl = "";
 
         spCurrencyPosition = currencyAdapter.getPosition(defCurrency);
         spCurrency.setSelection(spCurrencyPosition);
 
         placePurchased = "";
         acPurchasedFrom.setText(placePurchased);
+
+        status = Constants.STATUS_NEW;
+        media = Constants.M_CODE_INJECTED;
 
 
 //обнуляем значения кита
@@ -1049,19 +1309,52 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         kit.setDescription(description);
         kit.setPrototype(prototype);
         kit.setBoxart_url(boxartUrl);
-        kit.setScalemates_url(scalemates_url);
+        kit.setScalemates_url(scalematesUrl);
         kit.setBoxart_uri(boxartUri);
         kit.setYear(year);
         kit.setOnlineId(onlineId);
 
-        kit.setDate_added(date);
-        kit.setDatePurchased(purchaseDate);
+        kit.setDate_added(dateAdded);
+        kit.setDatePurchased(datePurchased);
         kit.setQuantity(quantity);
         kit.setNotes(notes);
         kit.setPrice(price);
         kit.setCurrency(currency);
-        kit.setStatus(status);
+        kit.setSendStatus(sendStatus);
         kit.setPlacePurchased(placePurchased);
+        kit.setStatus(status);
+        kit.setMedia(media);
+
+        aftermarketName = "";
+        aftemarketOriginalName = "";
+        compilanceWith = "";
+        listname = "";
+
+        aftermarket.setBrand(brand);
+        aftermarket.setBrandCatno(brandCatno);
+        aftermarket.setAftermarketName(aftermarketName);
+        aftermarket.setScale(scale);
+        aftermarket.setCategory(category);
+        aftermarket.setBarcode(barcode);
+        aftermarket.setAftemarketOriginalName(aftemarketOriginalName);
+        aftermarket.setDescription(description);
+        aftermarket.setCompilanceWith(compilanceWith);
+        aftermarket.setBoxartUrl(boxartUrl);
+        aftermarket.setScalematesUrl(scalematesUrl);
+        aftermarket.setBoxartUri(boxartUri);
+        aftermarket.setYear(year);
+        aftermarket.setOnlineId(onlineId);
+        aftermarket.setDateAdded(dateAdded);
+        aftermarket.setDatePurchased(datePurchased);
+        aftermarket.setQuantity(quantity);
+        aftermarket.setNotes(notes);
+        aftermarket.setPrice(price);
+        aftermarket.setCurrency(currency);
+        aftermarket.setSendStatus(sendStatus);
+        aftermarket.setPlacePurchased(placePurchased);
+        aftermarket.setListname(listname);
+        aftermarket.setStatus(status);
+        aftermarket.setMedia(media);
 
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();

@@ -1,18 +1,13 @@
 package com.example.kitstasher.activity;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.NavigationView;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
@@ -32,6 +27,7 @@ import com.example.kitstasher.fragment.AddFragment;
 import com.example.kitstasher.fragment.HomeFragment;
 import com.example.kitstasher.fragment.MyListsFragment;
 import com.example.kitstasher.fragment.SettingsFragment;
+import com.example.kitstasher.fragment.StatisticsFragment;
 import com.example.kitstasher.fragment.ViewStashFragment;
 import com.example.kitstasher.other.AsyncApp42ServiceApi;
 import com.example.kitstasher.other.CircleTransform;
@@ -39,8 +35,6 @@ import com.example.kitstasher.other.Constants;
 import com.example.kitstasher.other.Helper;
 import com.example.kitstasher.other.DbConnector;
 import com.parse.Parse;
-
-import static android.support.v4.content.PermissionChecker.PERMISSION_DENIED;
 
 
 /**
@@ -76,6 +70,7 @@ public class MainActivity extends AppCompatActivity
     public static final String TAG_SETTINGS = "settings";
     public static final String TAG_HELP = "help";
     public static final String TAG_MYLISTS = "mylists";
+    public static final String TAG_STATISTICS = "statistics";
 
 
     public static String CURRENT_TAG = TAG_HOME;
@@ -283,14 +278,19 @@ public class MainActivity extends AppCompatActivity
                         navItemIndex = 2;
                         CURRENT_TAG = TAG_VIEWSTASH;
                         break;
-                    case R.id.nav_settings:
-                        navItemIndex = 3;
-                        CURRENT_TAG = TAG_SETTINGS;
-                        break;
                     case R.id.nav_mylists:
-                        navItemIndex = 4;
+                        navItemIndex = 3;
                         CURRENT_TAG = TAG_MYLISTS;
                         break;
+                    case R.id.nav_statistics:
+                        navItemIndex = 4;
+                        CURRENT_TAG = TAG_STATISTICS;
+                        break;
+                    case R.id.nav_settings:
+                        navItemIndex = 5;
+                        CURRENT_TAG = TAG_SETTINGS;
+                        break;
+
 //                    case R.id.nav_help:
 //                        navItemIndex = 4;
 //                        CURRENT_TAG = TAG_HELP;
@@ -348,23 +348,23 @@ public class MainActivity extends AppCompatActivity
         // This code loads home fragment when back key is pressed
         // when user is in other fragment than home
         if (shouldLoadHomeFragOnBackPress) {
-            if (navItemIndex == 5) {
-                navItemIndex = 2;
-                CURRENT_TAG = TAG_VIEWSTASH;
-                loadHomeFragment();
-//                return;
-            } else if (navItemIndex == 6 || navItemIndex == 7) {
-                navItemIndex = 3;
-                CURRENT_TAG = TAG_SETTINGS;
-                loadHomeFragment();
-//                return;
-            } else {
+//            if (navItemIndex == 5) {
+//                navItemIndex = 2;
+//                CURRENT_TAG = TAG_VIEWSTASH;
+//                loadHomeFragment();
+////                return;
+//            } else if (navItemIndex == 6 || navItemIndex == 7) {
+//                navItemIndex = 5;
+//                CURRENT_TAG = TAG_SETTINGS;
+//                loadHomeFragment();
+////                return;
+//            } else {
                 navItemIndex = 0;
                 CURRENT_TAG = TAG_HOME;
                 loadHomeFragment();
 //                return;
 
-            }
+//            }
 
         } else {
             super.onBackPressed();
@@ -397,7 +397,7 @@ public class MainActivity extends AppCompatActivity
                 fragment.setArguments(bundle);//
                 android.support.v4.app.FragmentTransaction fragmentTransaction =
                         getSupportFragmentManager().beginTransaction();
-                fragmentTransaction.replace(R.id.frame, fragment, CURRENT_TAG);
+                fragmentTransaction.replace(R.id.mainactivityContainer, fragment, CURRENT_TAG);
                 fragmentTransaction.commitAllowingStateLoss();
             }
         };
@@ -428,16 +428,22 @@ public class MainActivity extends AppCompatActivity
                 return viewStashFragment;
 
             case 3:
-                // Settings fragment
-                SettingsFragment settingsFragment = new SettingsFragment();
-                return settingsFragment;
-
-            case 4:
                 // My Lists fragment
                 MyListsFragment myListsFragment = new MyListsFragment();
                 return myListsFragment;
 
-//            case 4:
+            case 4:
+                // Statistics fragment
+//                SettingsFragment settingsFragment = new SettingsFragment();
+                return new StatisticsFragment();
+
+            case 5:
+                // Settings fragment
+                SettingsFragment settingsFragment = new SettingsFragment();
+                return settingsFragment;
+
+
+//            case 5:
 //                //Help fragment
 //                HelpFragment helpFragment = new HelpFragment();
 //                return helpFragment;
@@ -462,17 +468,16 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_viewstash) {
             navItemIndex = 2;
             loadHomeFragment();
-        } else if (id == R.id.nav_settings) {
+        } else if (id == R.id.nav_mylists) {
             navItemIndex = 3;
             loadHomeFragment();
-        } else if (id == R.id.nav_mylists){
+        } else if (id == R.id.nav_statistics){
             navItemIndex = 4;
             loadHomeFragment();
+        } else if (id == R.id.nav_settings) {
+            navItemIndex = 5;
+            loadHomeFragment();
         }
-//        } else if (id == R.id.nav_help) {
-//            navItemIndex = 4;
-//            loadHomeFragment();
-
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -494,15 +499,30 @@ public class MainActivity extends AppCompatActivity
             int position = data.getExtras().getInt(Constants.LIST_POSITION);
             int categoryTab = data.getExtras().getInt(Constants.LIST_CATEGORY);
 
+            String scaleFilter = data.getExtras().getString("scaleFilter");
+            String brandFilter = data.getExtras().getString("brandFilter");
+            String kitnameFilter = data.getExtras().getString("kitnameFilter");
+
+            String statusFilter = data.getExtras().getString("statusFilter");
+            String mediaFilter = data.getExtras().getString("mediaFilter");
+
+
             Bundle bundle = new Bundle();
             bundle.putInt(Constants.LIST_POSITION, position);
             bundle.putInt(Constants.LIST_CATEGORY, categoryTab);
+
+            bundle.putString("scaleFilter", scaleFilter);
+            bundle.putString("brandFilter", brandFilter);
+            bundle.putString("kitnameFilter", kitnameFilter);
+
+            bundle.putString("statusFilter", statusFilter);
+            bundle.putString("mediaFilter", mediaFilter);
 
             ViewStashFragment fragment = new ViewStashFragment();
             fragment.setArguments(bundle);
             android.support.v4.app.FragmentTransaction fragmentTransaction =
                     getSupportFragmentManager().beginTransaction();
-            fragmentTransaction.replace(R.id.frame, fragment);
+            fragmentTransaction.replace(R.id.mainactivityContainer, fragment);
             fragmentTransaction.commit();
             ViewPager viewPager = (ViewPager) findViewById(R.id.viewpagerViewStash);
             viewPager.setCurrentItem(categoryTab);

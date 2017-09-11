@@ -33,10 +33,28 @@ public class Kit {
     private String notes;
     private int price;
     private String currency;
-    private String status;
+    private String sendStatus;
     private String placePurchased;
 
+    private int media;
+    private int status;
 
+
+    public int getMedia() {
+        return media;
+    }
+
+    public void setMedia(int media) {
+        this.media = media;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
 
 
     public  String getBrand() {
@@ -213,16 +231,18 @@ public class Kit {
         this.notes = kitBuilder.notes;
         this.price = kitBuilder.price;
         this.currency = kitBuilder.currency;
-        this.status = kitBuilder.status;
+        this.sendStatus = kitBuilder.sendStatus;
         this.placePurchased = kitBuilder.placePurchased;
+        this.status = kitBuilder.status;
+        this.media = kitBuilder.media;
     }
 
-    public String getStatus() {
-        return status;
+    public String getSendStatus() {
+        return sendStatus;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setSendStatus(String sendStatus) {
+        this.sendStatus = sendStatus;
     }
 
     public String getPlacePurchased() {
@@ -258,8 +278,10 @@ public class Kit {
         private String notes;
         private int price;
         private String currency;
-        private String status;
+        private String sendStatus;
         private String placePurchased;
+        private int status;
+        private int media;
 
         public KitBuilder(){
             this.barcode = ""; //todo ??
@@ -358,8 +380,18 @@ public class Kit {
             return this;
         }
 
-        public KitBuilder hasStatus(String status){
+        public KitBuilder hasSendStatus(String sendStatus){
+            this.sendStatus = sendStatus;
+            return this;
+        }
+
+        public KitBuilder hasStatus(int status){
             this.status = status;
+            return this;
+        }
+
+        public KitBuilder hasMedia(int media){
+            this.media = media;
             return this;
         }
 

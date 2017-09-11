@@ -142,4 +142,34 @@ Prefixes and postfixes for links
 
     //Defaults
     public static final String DEFAULT_CURRENCY = "def_curr";
+
+    //Modes for editor
+    public static final String LISTNAME = "listname";
+    public static final String EDIT_MODE = "mode";
+    public static final Character MODE_KIT = 'm';
+    public static final Character MODE_LIST = 'l';
+    public static final Character MODE_AFTERMARKET = 'a';
+
+    public static final String PASS_ID = "passid";
+
+    //Media Codes
+    public static final int M_CODE_OTHER = 0;
+    public static final int M_CODE_INJECTED = 1;
+    public static final int M_CODE_SHORTRUN = 2;
+    public static final int M_CODE_RESIN = 3;
+    public static final int M_CODE_VACU = 4;
+    public static final int M_CODE_PAPER = 5;
+    public static final int M_CODE_WOOD = 6;
+    public static final int M_CODE_METAL = 7;
+    public static final int M_CODE_3DPRINT = 8;
+    public static final int M_CODE_MULTIMEDIA = 9;
+
+    //Status codes
+    public static final int STATUS_NEW = 0;
+    public static final int STATUS_OPENED = 1;
+    public static final int STATUS_STARTED = 2;
+    public static final int STATUS_INPROGRESS = 3;
+    public static final int STATUS_FINISHED = 4;
+    public static final int STATUS_LOST = 5;
+
 }

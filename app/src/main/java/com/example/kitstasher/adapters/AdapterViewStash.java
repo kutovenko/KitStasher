@@ -1,6 +1,7 @@
 package com.example.kitstasher.adapters;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -51,6 +52,7 @@ public class AdapterViewStash extends FragmentStatePagerAdapter {
                 return new SortFantasyFragment();
             case 8:
                 return new SortOtherFragment();
+
 
         }
         return null;

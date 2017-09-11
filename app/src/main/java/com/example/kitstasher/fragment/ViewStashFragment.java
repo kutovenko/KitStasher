@@ -3,6 +3,7 @@ package com.example.kitstasher.fragment;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,9 +17,10 @@ import com.example.kitstasher.adapters.AdapterViewStash;
  * Created by Алексей on 21.04.2017.
  */
 
-public class ViewStashFragment extends Fragment {
+public class ViewStashFragment extends Fragment{
     private TabLayout tabLayout;
     private ViewPager viewPager;
+    int passPosition;
 
     public ViewStashFragment(){
 
@@ -41,9 +43,11 @@ public class ViewStashFragment extends Fragment {
             if (currentTab != 0) {
                 viewPager.setCurrentItem(currentTab);
             }
+        }else{
+            int currentTab = 0;
+            viewPager.setCurrentItem(currentTab);
         }
         tabLayout.setupWithViewPager(viewPager);
         return view;
     }
-
 }

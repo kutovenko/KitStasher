@@ -1,6 +1,7 @@
 package com.example.kitstasher;
 
 import android.app.Application;
+import android.content.Context;
 
 import com.parse.Parse;
 
@@ -9,9 +10,13 @@ import com.parse.Parse;
  * Нужен для корректной работы Parse во фрагментах
  */
 public class MyApplication extends Application {
+    private static Context mContext;
+
     @Override
     public void onCreate() {
         super.onCreate();
+        mContext = this;
+
 
 //        //This will only be called once in your app's entire lifecycle.
 //        Parse.initialize(this,
@@ -22,6 +27,10 @@ public class MyApplication extends Application {
                 .applicationId(getString(R.string.parse_application_id))
                 .clientKey(getString(R.string.parse_client_key))
                 .server(getString(R.string.parse_server_url)).build());
+    }
+
+    public static Context getContext(){
+        return mContext;
     }
 
 }

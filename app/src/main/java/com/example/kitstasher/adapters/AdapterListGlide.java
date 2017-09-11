@@ -72,6 +72,8 @@ public class AdapterListGlide extends CursorAdapter {
         String description = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_DESCRIPTION));
         String noengname = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_ORIGINAL_KIT_NAME));
 
+        String id = String.valueOf(cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_ID)));
+
 //        String noengname = String.valueOf(cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_ORIGINAL_KIT_NAME)));
         ship = Constants.CAT_SEA;
         air = Constants.CAT_AIR;
@@ -111,7 +113,7 @@ public class AdapterListGlide extends CursorAdapter {
         holder.tvFullKitname.setText(name);
         holder.tvDescription.setText(getKitDescription(description));
         holder.tvYear.setText(year);
-        holder.tvNoEngName.setText(noengname);
+        holder.tvNoEngName.setText(noengname + id);
 
         //Check - if URI - load local image, else - load from cloud
         if (!Helper.isBlank(uri)) {
@@ -134,7 +136,7 @@ public class AdapterListGlide extends CursorAdapter {
         }
     }
 
-    private String composeUrl(String url){
+    private String composeUrl(String url){  //// TODO: 04.09.2017 Helper
         if (!Helper.isBlank(url)) {
             return Constants.BOXART_URL_PREFIX
                     + url
@@ -143,7 +145,6 @@ public class AdapterListGlide extends CursorAdapter {
         }else{
             return "";
         }
-
     }
 
 //    private String getKitDescription(String description) {
@@ -207,7 +208,7 @@ public class AdapterListGlide extends CursorAdapter {
         return desc;
     }
 
-    private String getSuffix(){
+    private String getSuffix(){ //// TODO: 04.09.2017 Helper
         String suffix = Constants.BOXART_URL_SMALL;
         SharedPreferences preferences = context.getSharedPreferences(Constants.BOXART_SIZE,
                 Context.MODE_PRIVATE);

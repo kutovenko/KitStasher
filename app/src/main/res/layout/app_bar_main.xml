@@ -27,7 +27,7 @@
     <!--<include layout="@layout/content_main" />-->
 
     <FrameLayout
-        android:id="@+id/frame"
+        android:id="@+id/mainactivityContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"></FrameLayout>

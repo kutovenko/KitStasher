@@ -7,7 +7,7 @@
     <string name="closeDrawer" translatable="false">close_drawer</string>
 
     <!-- Navigation Drawer menu labels -->
-    <string name="nav_home">Scan</string>
+    <string name="nav_home">Home</string>
     <string name="nav_manual">Add</string>
     <string name="nav_view">View</string>
     <string name="nav_statistics">Statistics</string>
@@ -310,6 +310,38 @@
     <string name="Clear_date">Clear Date</string>
     <string name="Date_not_set">Date not set</string>
     <string name="myshops">My Shops</string>
+    <string name="Filter">Filter</string>
+    <string name="Filter_by">Filter by</string>
+    <string name="Filters_disabled">Filters Disabled</string>
+    <string name="No_matches_try_manual">No matches, please try to search by brand and catalog number</string>
+    <string name="Search_with_Google">Search with Google</string>
+    <string name="Look_up_on_Scalemates">Look up on Scalemates</string>
+    <string name="Back">Back</string>
+    <string name="Add_Kit">Add Kit</string>
+    <string name="View_Stash">View Stash</string>
+    <string name="What_in_the_box">What is in the box?</string>
+    <string name="View_Statistics">View Statistics</string>
+    <string name="add_aftermarket">Add Aftermarket</string>
+    <string name="After_with_this_name_already_exists">Aftermarket with this name already exists</string>
+    <string name="media_other">Other</string>
+    <string name="media_injected">Injected</string>
+    <string name="media_shortrun">Short-run</string>
+    <string name="media_resin">Resin</string>
+    <string name="media_vacu">Vacu-formed</string>
+    <string name="media_paper">Paper</string>
+    <string name="media_wood">Wood</string>
+    <string name="media_metal">Metal</string>
+    <string name="media_3dprint">3D-printed</string>
+    <string name="media_multimedia">Multimedia</string>
+    <string name="status_new">New</string>
+    <string name="status_opened">Opened</string>
+    <string name="status_started">Started</string>
+    <string name="status_inprogress">In progress</string>
+    <string name="status_finished">Finished</string>
+    <string name="status_lost_sold">Lost or Sold</string>
+    <string name="Status" >Status</string>
+    <string name="Media">Media</string>
+    <string name="aftermarket">Aftermarket</string>
 
 
 </resources>

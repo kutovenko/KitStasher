@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -19,9 +18,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.kitstasher.R;
+import com.example.kitstasher.adapters.AdapterAlertDialog;
 import com.example.kitstasher.objects.Item;
 import com.example.kitstasher.objects.Kit;
-import com.example.kitstasher.adapters.AdapterAlertDialog;
 import com.example.kitstasher.other.AsyncApp42ServiceApi;
 import com.example.kitstasher.other.Constants;
 import com.example.kitstasher.other.DbConnector;
@@ -54,14 +53,15 @@ import static com.example.kitstasher.activity.MainActivity.asyncService;
 public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42StorageServiceListener {
 
     private String barcode, docId, brand, brand_catno, kit_name,
-    kit_noeng_name, status, date, boxart_url, category, description, scalemates_page, boxart_uri,
+    kit_noeng_name, sendStatus, date, boxart_url, category, description, scalemates_page, boxart_uri,
             prototype, year, showKit, onlineId, listname;
+    private int status, media;
+
     private int scale;
     boolean isReported;
     private ProgressDialog progressDialog;
     private TextView textView;
     DecoratedBarcodeView barcodeView;
-    ConstraintLayout constraintLayout;
     BarcodeCallback callback;
     DbConnector dbConnector;
     private OnFragmentInteractionListener mListener;
@@ -103,18 +103,20 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_tabbed_scanning, container, false);
+        View view = inflater.inflate(R.layout.fragment_tabbed_scanning, container, false);
         mContext = getActivity();
-        barcodeView = (DecoratedBarcodeView)rootView.findViewById(R.id.barcode_view);
-        textView = (TextView)rootView.findViewById(R.id.textView);
-//        constraintLayout = (ConstraintLayout)rootView.findViewById(R.id.clScanLayout);
+        barcodeView = (DecoratedBarcodeView)view.findViewById(R.id.barcode_view);
+        textView = (TextView)view.findViewById(R.id.textView);
+//        constraintLayout = (ConstraintLayout)view.findViewById(R.id.clScanLayout);
 
         dbConnector = new DbConnector(getActivity());
         dbConnector.open();
         checkMode();
         isReported = false;
         scanTag = this.getTag();
-        status = ""; // TODO: 04.05.2017 убрать статусы
+        sendStatus = "";
+        status = Constants.STATUS_NEW;
+        media = Constants.M_CODE_INJECTED;
 
         Calendar c = Calendar.getInstance();
         SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
@@ -129,7 +131,7 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
 
         checkPermissions();
 //        initiateScanner(getCallback());
-        return rootView;
+        return view;
 }
 
     private void checkPermissions() {
@@ -419,37 +421,19 @@ private BarcodeCallback getCallback(){
                     kitToAdd.setQuantity(quantity);
                     kitToAdd.setPrice(price);
                     kitToAdd.setCurrency(currency);
-                    kitToAdd.setStatus(status);
+                    kitToAdd.setSendStatus(sendStatus);
                     kitToAdd.setOnlineId("");
                     kitToAdd.setBoxart_uri("");
                     kitToAdd.setPlacePurchased("");
+
+                    kitToAdd.setStatus(status);
+                    kitToAdd.setMedia(media);
 
                     if (mode == 'l'){
 
                         dbConnector.addListItem(kitToAdd, listname);
 
-//                        dbConnector.addListItem(
-//                                kitToAdd.getBarcode(),
-//                                kitToAdd.getBrand(),
-//                                kitToAdd.getBrandCatno(),
-//                                kitToAdd.getScale(),
-//                                kitToAdd.getKit_name(),
-//                                kitToAdd.getKit_noeng_name(),
-//                                status,
-//                                date,
-//                                kitToAdd.getBoxart_url(),
-//                                kitToAdd.getCategory(),
-//                                kitToAdd.getBoxart_uri(),
-////                kit.getOnlineId(),
-//                                kitToAdd.getDescription(),
-//                                kitToAdd.getYear(),
-//                                notes,
-//                                purchaseDate,
-//                                quantity,
-//                                price,
-//                                currency,
-//                                listname);
-                        textView.setText(R.string.Kit_added_to_list);
+                        Toast.makeText(mContext, R.string.Kit_added_to_list, Toast.LENGTH_SHORT).show();
                         ListViewFragment listViewFragment = new ListViewFragment();
                         Bundle bundle = new Bundle(1);
                         bundle.putString("listname", listname);
@@ -461,41 +445,17 @@ private BarcodeCallback getCallback(){
 
                     }else {
                         dbConnector.addKitRec(kitToAdd);
-//                        dbConnector.addKitRec(
-//                                kitToAdd.getBarcode(),
-//                                kitToAdd.getBrand(),
-//                                kitToAdd.getBrandCatno(),
-//                                kitToAdd.getScale(),
-//                                kitToAdd.getKit_name(),
-//                                kitToAdd.getKit_noeng_name(),
-//                                status,
-//                                date,
-//                                kitToAdd.getBoxart_url(),
-//                                kitToAdd.getCategory(),
-//                                kitToAdd.getBoxart_uri(),
-////                kit.getOnlineId(),
-//                                kitToAdd.getDescription(),
-//                                kitToAdd.getYear(),
-//                                notes,
-//                                purchaseDate,
-//                                quantity,
-//                                price,
-//                                currency
-//                        );
-
-                        textView.setText(R.string.kit_added);
-//                        initiateScanner(callback); //добавлено 28-08
+                        Toast.makeText(mContext, R.string.kit_added, Toast.LENGTH_SHORT).show();
                     }
-
                 }
             }
         });
 
         AlertDialog alert = builder.create();
         alert.show();
-
     }
-    private String setDescription(String description) {
+
+    private String setDescription(String description) { // TODO: 03.09.2017 Helper
         String desc = "";
         if (!description.equals("")) {
             switch (description) {
@@ -564,7 +524,7 @@ private BarcodeCallback getCallback(){
 //    private void writeToLocalDatabase() {
 ////        dbConnector.open();
 ////        dbConnector.addKitRec(barcode, brand, brand_catno, scale, kitname,
-////                kit_noengname, status, date, boxart_url, category, "");
+////                kit_noengname, sendStatus, date, boxart_url, category, "");
 //    }
 
     public void onAttachToParentFragment(Fragment fragment)

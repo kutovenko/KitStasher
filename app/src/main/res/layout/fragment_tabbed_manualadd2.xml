@@ -7,11 +7,10 @@
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_alignParentTop="true"
 
 
         tools:context="info.androidhive.navigationdrawer.fragment.ManualAddFragment"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
 
         <ImageView
             android:id="@+id/ivGetBoxart"
@@ -145,6 +144,19 @@
 
 
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/textView24"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="2.8"
+            android:text="Media" />
+
+        <android.support.v7.widget.AppCompatSpinner
+            android:id="@+id/spKitMedia"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="2.8" />
 
         <LinearLayout
             android:id="@+id/linLayTags"

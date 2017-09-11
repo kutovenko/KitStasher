@@ -1,16 +1,14 @@
 package com.example.kitstasher.other;
 
-import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
-import android.media.MediaCodec;
 import android.os.Build;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.view.Display;
-import android.view.Surface;
-import android.view.WindowManager;
+import android.text.Html;
+import android.text.Spanned;
 
-import com.example.kitstasher.activity.MainActivity;
+import com.example.kitstasher.MyApplication;
+import com.example.kitstasher.R;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,9 +24,6 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 
-import static com.example.kitstasher.other.Constants.CAT_AUTOMOTO;
-import static com.example.kitstasher.other.Constants.CAT_FIGURES;
-import static com.example.kitstasher.other.Constants.CAT_OTHER;
 import static com.example.kitstasher.other.Constants.CODE_AUTOMOTO;
 import static com.example.kitstasher.other.Constants.CODE_FANTASY;
 import static com.example.kitstasher.other.Constants.CODE_FIGURES;
@@ -185,6 +180,97 @@ public class Helper {
         return code;
     }
 
+    public static String codeToMedia(int mediaCode){
+        String media;
+        switch (mediaCode){
+            case Constants.M_CODE_OTHER:
+                media = MyApplication.getContext().getResources().getString(R.string.media_other);
+                break;
+            case Constants.M_CODE_INJECTED:
+                media = MyApplication.getContext().getResources().getString(R.string.media_injected);
+                break;
+            case Constants.M_CODE_SHORTRUN:
+                media = MyApplication.getContext().getResources().getString(R.string.media_shortrun);
+                break;
+            case Constants.M_CODE_RESIN:
+                media = MyApplication.getContext().getResources().getString(R.string.media_resin);
+                break;
+            case Constants.M_CODE_VACU:
+                media = MyApplication.getContext().getResources().getString(R.string.media_vacu);
+                break;
+            case Constants.M_CODE_PAPER:
+                media = MyApplication.getContext().getResources().getString(R.string.media_paper);
+                break;
+            case Constants.M_CODE_WOOD:
+                media = MyApplication.getContext().getResources().getString(R.string.media_wood);
+                break;
+            case Constants.M_CODE_METAL:
+                media = MyApplication.getContext().getResources().getString(R.string.media_metal);
+                break;
+            case Constants.M_CODE_3DPRINT:
+                media = MyApplication.getContext().getResources().getString(R.string.media_3dprint);
+                break;
+            case Constants.M_CODE_MULTIMEDIA:
+                media = MyApplication.getContext().getResources().getString(R.string.media_multimedia);
+                break;
+            default:
+                media = MyApplication.getContext().getResources().getString(R.string.media_other);
+                break;
+        }
+        return media;
+    }
+
+//    public static int mediaToCode(String media){
+//        int code;
+//
+//        return code;
+//    }
+
+    public static String codeToStatus(int code){
+        String status;
+        switch (code){
+            case Constants.STATUS_NEW:
+                status = MyApplication.getContext().getResources().getString(R.string.status_new);
+                break;
+            case Constants.STATUS_OPENED:
+                status = MyApplication.getContext().getResources().getString(R.string.status_opened);
+                break;
+            case Constants.STATUS_STARTED:
+                status = MyApplication.getContext().getResources().getString(R.string.status_started);
+                break;
+            case Constants.STATUS_INPROGRESS:
+                status = MyApplication.getContext().getResources().getString(R.string.status_inprogress);
+                break;
+            case Constants.STATUS_FINISHED:
+                status = MyApplication.getContext().getResources().getString(R.string.status_finished);
+                break;
+            case Constants.STATUS_LOST:
+                status = MyApplication.getContext().getResources().getString(R.string.status_lost_sold);
+                break;
+            default:
+                status = MyApplication.getContext().getResources().getString(R.string.status_new);
+                break;
+        }
+        return status;
+    }
+
+//    public static int mediaToCode(String media){
+//        int code;
+//
+//        return code;
+//    }
+
+
+    @SuppressWarnings("deprecation")
+    public static Spanned fromHtml(String html){
+        Spanned result;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            result = Html.fromHtml(html,Html.FROM_HTML_MODE_LEGACY);
+        } else {
+            result = Html.fromHtml(html);
+        }
+        return result;
+    }
 
 
 //    public String getScreenOrientation(){

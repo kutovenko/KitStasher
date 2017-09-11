@@ -112,8 +112,15 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 app:srcCompat="@drawable/ic_keyboard_arrow_up_black_24dp" />
+
+
         </LinearLayout>
 
+        <ImageButton
+            android:id="@+id/ibtnFilter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/ic_filter_list_black_24dp" />
     </LinearLayout>
 
     <ListView
