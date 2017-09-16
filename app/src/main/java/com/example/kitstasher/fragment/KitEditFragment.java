@@ -37,6 +37,8 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.kitstasher.R;
 import com.example.kitstasher.activity.AftermarketActivity;
+import com.example.kitstasher.activity.ChooserActivity;
+import com.example.kitstasher.adapters.AdapterAfterItemsList;
 import com.example.kitstasher.other.Constants;
 import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.Helper;
@@ -95,7 +97,7 @@ public class KitEditFragment extends Fragment implements View.OnClickListener{
     private View view;
 
     private ListView lvAftermarket;
-    private SimpleCursorAdapter aftermarketAdapter;
+//    private SimpleCursorAdapter aftermarketAdapter;
 
     //работа с камерой
     final static int CAMERA_CAPTURE = 1;
@@ -108,20 +110,22 @@ public class KitEditFragment extends Fragment implements View.OnClickListener{
     Bitmap bmBoxartPic;
     ByteArrayOutputStream bytes;
     String size;
+    final private int CODE_AFTERMARKET = 4;
 
     String scaleFilter, brandFilter, kitnameFilter, statusFilter, mediaFilter;
 
-    long passId;
-
     private ArrayAdapter<String> descriptionAdapter, yearsAdapter, currencyAdapter, statusAdapter,
             mediaAdapter;
+    private AdapterAfterItemsList aAdapter;
 
-//    private final String SIZE_FULL = "-pristine";
-//    private final String SIZE_MEDIUM = "-t280";
-//    private final String SIZE_SMALL = "-t140";
+    @Override
+    public void onResume(){
+        super.onResume();
+        aCursor = dbConnector.getAftermarketForKit(id, listname);
+        aAdapter = new AdapterAfterItemsList(context, aCursor, 0, id, listname);
+        lvAftermarket.setAdapter(aAdapter);
 
-
-
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -130,27 +134,9 @@ public class KitEditFragment extends Fragment implements View.OnClickListener{
         context = getActivity();
         dbConnector = new DbConnector(context);
         dbConnector.open();
-        dbConnector = new DbConnector(context);
-        dbConnector.open();
 
         initUI();
-
-        position = getArguments().getInt(Constants.LIST_POSITION);
-        id = getArguments().getLong("id");
-        listname = "";
-        scaleFilter = getArguments().getString("scaleFilter");
-        brandFilter = getArguments().getString("brandFilter");
-        kitnameFilter = getArguments().getString("kitnameFilter");
-        statusFilter = getArguments().getString("statusFilter");
-        mediaFilter = getArguments().getString("mediaFilter");
-
-        categoryToReturn = getArguments().getInt(Constants.LIST_CATEGORY);
-        mode = getArguments().getChar(Constants.EDIT_MODE);
-//        if (mode == Constants.MODE_AFTERMARKET){
-//            passId = getArguments().getLong(Constants.PASS_ID);
-//        }else{
-//            passId = id;
-//        }
+        receiveArguments();
 
 
         Calendar c = Calendar.getInstance();
@@ -204,13 +190,16 @@ public class KitEditFragment extends Fragment implements View.OnClickListener{
 ///////////////////////////////////////////////////////////////////////////////////////
         String[]from = new String[]{DbConnector.COLUMN_AFTERMARKET_NAME}; //chek
         int[] to = new int[] { R.id.tvEditBrandListItem};
-        aftermarketAdapter = new SimpleCursorAdapter(getActivity(), R.layout.list_edit_brands, aCursor, from, to, 0);
-        lvAftermarket.setAdapter(aftermarketAdapter);
+        aAdapter = new AdapterAfterItemsList(context, aCursor, 0, id, listname);
+//        aftermarketAdapter = new SimpleCursorAdapter(getActivity(), R.layout.list_edit_brands, aCursor, from, to, 0);
+//        lvAftermarket.setAdapter(aftermarketAdapter);
+        lvAftermarket.setAdapter(aAdapter);
         lvAftermarket.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent intent = new Intent(context, AftermarketActivity.class);
                 intent.putExtra("after_id", l);
+                intent.putExtra("id", id);
                 startActivity(intent);
             }
         });
@@ -303,9 +292,7 @@ public class KitEditFragment extends Fragment implements View.OnClickListener{
         }else{
             setKitCurrency(defaultCurrency);
         }
-//        }else{
-//            setKitCurrency(defaultCurrency);
-//        }
+
         if (cursor.getInt(cursor.getColumnIndex(DbConnector.COLUMN_QUANTITY)) != 0){
             quantity = cursor.getInt(cursor.getColumnIndex(DbConnector.COLUMN_QUANTITY));
             setKitQuantity(quantity);
@@ -321,29 +308,36 @@ public class KitEditFragment extends Fragment implements View.OnClickListener{
         }else{
             tvMPurchaseDate.setText(R.string.Date_not_set);
         }
-        String pp = "";
+
         etPurchasedFrom.setText(cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_PURCHASE_PLACE)));
 
-
-
-
-
-        ////....
-
-
-//        String year = cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_YEAR));
         String year = cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_YEAR));
         setKitYear(year);
 
 
         String description = cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_DESCRIPTION));
-//        Toast.makeText(this, description, Toast.LENGTH_SHORT).show();
         setKitDescription(description);
-
 
         setBoxartImage();
 
         return view;
+    }
+
+    private void receiveArguments() {
+        position = getArguments().getInt(Constants.LIST_POSITION);
+        id = getArguments().getLong("id");
+        listname = "";
+        scaleFilter = getArguments().getString("scaleFilter");
+        brandFilter = getArguments().getString("brandFilter");
+        kitnameFilter = getArguments().getString("kitnameFilter");
+        statusFilter = getArguments().getString("statusFilter");
+        mediaFilter = getArguments().getString("mediaFilter");
+
+        categoryToReturn = getArguments().getInt(Constants.LIST_CATEGORY);
+        mode = Constants.MODE_KIT;
+        if (getArguments().getChar(Constants.EDIT_MODE) != '\u0000'){
+        mode = getArguments().getChar(Constants.EDIT_MODE);
+        }
     }
 
     private void setKitDescription(String description) {
@@ -496,7 +490,6 @@ public class KitEditFragment extends Fragment implements View.OnClickListener{
 //                e.printStackTrace();
 //            }
 //        }
-
         if (resultCode == RESULT_OK) {
             // Вернулись от приложения Камера
             if (requestCode == CAMERA_CAPTURE) {
@@ -514,9 +507,13 @@ public class KitEditFragment extends Fragment implements View.OnClickListener{
                 bmBoxartPic.compress(Bitmap.CompressFormat.JPEG, 70, bytes);
 
                 ivEditorBoxart.setImageBitmap(bmBoxartPic);
+            }else if (requestCode == 10){
+
+                aCursor = dbConnector.getAftermarketForKit(id, listname);
+                aAdapter = new AdapterAfterItemsList(context, aCursor, 0, id, listname);
+                lvAftermarket.setAdapter(aAdapter);
             }
         }
-
     }
 
     @Override
@@ -606,14 +603,12 @@ public class KitEditFragment extends Fragment implements View.OnClickListener{
                                 + size
                                 + ".jpg";
                         photoFile = new File(pictures, pictureName);
-                        context = getActivity(); //???
+//                        context = getActivity(); //???
 
                         File exportDir = new File(Environment.getExternalStorageDirectory(), "Kitstasher");
                         if (!exportDir.exists()) {
                             exportDir.mkdirs();
                         }
-
-
                         writeBoxartFile(exportDir);
                         writeBoxartToCloud();
 
@@ -637,7 +632,7 @@ public class KitEditFragment extends Fragment implements View.OnClickListener{
 
                     getValues();
 
-                    if (mode == 'l') {
+//                    if (mode == 'l') {
                         Intent intent3 = new Intent();
                         intent3.putExtra(Constants.LIST_POSITION, position);
                         intent3.putExtra(Constants.LIST_ID, id);
@@ -652,22 +647,22 @@ public class KitEditFragment extends Fragment implements View.OnClickListener{
 
                         getActivity().setResult(RESULT_OK, intent3);
                         getActivity().finish();
-                    } else {
-                        Intent intent3 = new Intent();
-                        intent3.putExtra(Constants.LIST_POSITION, position);
-                        intent3.putExtra(Constants.LIST_ID, id);
-                        intent3.putExtra(Constants.LIST_CATEGORY, categoryToReturn);
-
-                        intent3.putExtra("scaleFilter", scaleFilter);
-                        intent3.putExtra("brandFilter", brandFilter);
-                        intent3.putExtra("kitnameFilter", kitnameFilter);
-
-                        intent3.putExtra("statusFilter", statusFilter);
-                        intent3.putExtra("mediaFilter", mediaFilter);
-
-                        getActivity().setResult(RESULT_OK, intent3);
-                        getActivity().finish();
-                    }
+//                    } else {
+//                        Intent intent3 = new Intent();
+//                        intent3.putExtra(Constants.LIST_POSITION, position);
+//                        intent3.putExtra(Constants.LIST_ID, id);
+//                        intent3.putExtra(Constants.LIST_CATEGORY, categoryToReturn);
+//
+//                        intent3.putExtra("scaleFilter", scaleFilter);
+//                        intent3.putExtra("brandFilter", brandFilter);
+//                        intent3.putExtra("kitnameFilter", kitnameFilter);
+//
+//                        intent3.putExtra("statusFilter", statusFilter);
+//                        intent3.putExtra("mediaFilter", mediaFilter);
+//
+//                        getActivity().setResult(RESULT_OK, intent3);
+//                        getActivity().finish();
+//                    }
                 } else {
                     //Проверяем все поля - начальная проверка не пройдена!
                     Toast.makeText(context, R.string.Please_enter_data, Toast.LENGTH_SHORT).show();
@@ -694,7 +689,7 @@ public class KitEditFragment extends Fragment implements View.OnClickListener{
 //                cv2.put("is_deleted", 1);
 //                dbConnector.editRecById(id, cv2);
                 //Permanent delete
-                if (mode =='l'){
+                if (mode == Constants.MODE_LIST){
                     dbConnector.delListItem(id);
                 }else {
                     dbConnector.delRec(id);
@@ -802,7 +797,7 @@ public class KitEditFragment extends Fragment implements View.OnClickListener{
         } else if (mode == 'm'){
             dbConnector.editRecById(id, cv);
         } else if (mode == 'a'){
-            //todo ACTION
+            dbConnector.editRecById(id, cv);
         }
 
         if (isRbChanged) {/////????????????????????????
@@ -842,14 +837,13 @@ public class KitEditFragment extends Fragment implements View.OnClickListener{
 
     private String getKitDescription(String d) {
         String desc = "";
-//      String d = spDescription.getSelectedItem().toString();
         if (!d.equals(getString(R.string.kittype))){
             desc = descToCode(d);
         }
         return desc;
     }
 
-    private String descToCode(String d) {
+    private String descToCode(String d) { //// TODO: 13.09.2017 Helper
         String desc = "";
         if (d.equals(getString(R.string.kittype))){
             desc = "0";
@@ -1122,6 +1116,7 @@ public class KitEditFragment extends Fragment implements View.OnClickListener{
                 bundle.putInt("position", position);
                 bundle.putInt("category", categoryToReturn);
                 bundle.putLong("id", id);
+
                 bundle.putString("boxart_uri", pictureName);
 //                bundle.putLong(Constants.PASS_ID, passId);
                 fragment.setArguments(bundle);
@@ -1133,15 +1128,17 @@ public class KitEditFragment extends Fragment implements View.OnClickListener{
             }
         });
 
-//        final Button getFromMyStash = (Button)dialogView.findViewById(R.id.btnListModeMyStash);
-//        getFromMyStash.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Intent intent = new Intent(context, ChooserActivity.class);
-//                intent.putExtra("listname", listname);
-//                startActivityForResult(intent, 10);
-//                alertDialog.dismiss();
-//            }
-//        });
+        final Button getFromMyStash = (Button)dialogView.findViewById(R.id.btnListModeMyStash);
+        getFromMyStash.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(context, ChooserActivity.class);
+                intent.putExtra("listname", listname);
+                intent.putExtra("kitId", id);
+                intent.putExtra(Constants.EDIT_MODE, Constants.MODE_AFTERMARKET);
+                startActivityForResult(intent, 10);
+                alertDialog.dismiss();
+            }
+        });
     }
 }

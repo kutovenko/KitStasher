@@ -109,8 +109,8 @@ public class DbConnector {
     private static final String ACCOUNT_COLUMN_NETWORK = "network";
 
     ////////// TABLE AFTEMARKET /////////
-    private static final String TABLE_AFTERMARKET = "aftermarket";
-    public static final String COLUMN_AFTERMARKET_NAME = "after_name";
+    public static final String TABLE_AFTERMARKET = "aftermarket";
+    public static final String COLUMN_AFTERMARKET_NAME = "kit_name"; //after_name одинаково для фильтра
     public static final String COLUMN_AFTERMARKET_ORIGINAL_NAME = "after_orig_name";
 
     ///////// TABLE AFTERMARKET_MYLIST /////////
@@ -639,9 +639,9 @@ public class DbConnector {
     }
 
 
-    public ArrayList<String> getFilterData(String filter) {
+    public ArrayList<String> getFilterData(String tableName, String filter) {
         ArrayList<String> filterData = new ArrayList<>();
-        String query = "select DISTINCT " + filter + " from kits ORDER BY " + filter + " ASC;";
+        String query = "select DISTINCT " + filter + " from "+ tableName +" ORDER BY " + filter + " ASC;";
         Cursor cursor = mDB.rawQuery(query, null);
         while (cursor.moveToNext()) {
             filterData.add(cursor.getString(cursor.getColumnIndex(filter)));
@@ -650,9 +650,9 @@ public class DbConnector {
         return filterData;
     }
 
-    public ArrayList<String> getFilterFromIntData(String filter) {
+    public ArrayList<String> getFilterFromIntData(String tableName, String filter) {
         ArrayList<String> filterData = new ArrayList<>();
-        String query = "select DISTINCT " + filter + " from kits ORDER BY " + filter + " ASC;";
+        String query = "select DISTINCT " + filter + " from " + tableName + " ORDER BY " + filter + " ASC;";
         Cursor cursor = mDB.rawQuery(query, null);
         while (cursor.moveToNext()) {
 //            filterData.add(String.valueOf(cursor.getInt(cursor.getColumnIndex(filter))));
@@ -737,7 +737,7 @@ public class DbConnector {
     }
 
 // Список с фильтрацией и сортировкой
-    public Cursor filteredKits(String[] filters, String sortBy, int categoryTab){
+    public Cursor filteredKits(String tableName, String[] filters, String sortBy, int categoryTab){
         String groupBy = "_id";
         String having;
         switch (categoryTab){
@@ -771,7 +771,9 @@ public class DbConnector {
         }
 
         if (filters.length == 0){
-            return mDB.query(TABLE_KITS, null, null, null, groupBy, having, sortBy);
+            return mDB.query(tableName, null, null, null, groupBy, having, sortBy);
+//            return mDB.query(TABLE_KITS, null, null, null, groupBy, having, sortBy);
+
         }else {
 
             ArrayList<String> clausesList = new ArrayList<>();
@@ -835,7 +837,9 @@ public class DbConnector {
             }
             String query = builder.toString();
 
-            return mDB.query(TABLE_KITS, null, query, argsStringArray, groupBy, having, sortBy);
+            return mDB.query(tableName, null, query, argsStringArray, groupBy, having, sortBy);
+//            return mDB.query(TABLE_KITS, null, query, argsStringArray, groupBy, having, sortBy);
+
         }
     }
     ////////////////BRANDS/////////////////
@@ -1113,7 +1117,7 @@ public class DbConnector {
         mDB.insert(TABLE_MYSHOPS, null, cv);
     }
 
-    public void deleteShop(String shopName){
+    public void deleteShopByName(String shopName){
         mDB.delete(TABLE_MYSHOPS, MYSHOPS_COLUMN_SHOP_NAME + " = '" + shopName + "'", null);
     }
 
@@ -1150,6 +1154,10 @@ public class DbConnector {
         mDB.insert(TABLE_KIT_AFTER_CONNECTIONS, null, cv);
     }
 
+    public void addAftersToKits(ContentValues cv){
+        mDB.insert(TABLE_KIT_AFTER_CONNECTIONS, null, cv);
+    }
+
     public Cursor getAftermarketForKit(long id, String listname){
         ArrayList <String> listAft = new ArrayList<>();
         Cursor cursor = mDB.query(TABLE_KIT_AFTER_CONNECTIONS, new String[]{KIT_AFTER_AFTERID},
@@ -1169,6 +1177,10 @@ public class DbConnector {
             String query = "SELECT * FROM " + TABLE_AFTERMARKET + " WHERE listname = '"+listname+"' AND _id IN (-1)";
             return mDB.rawQuery(query, aftid);
         }
+    }
+
+    public Cursor getKitAfterConnections(String sortBy){
+        return mDB.query(TABLE_KIT_AFTER_CONNECTIONS, null, null, null, null, null, sortBy);
     }
 
 
@@ -1209,11 +1221,31 @@ public class DbConnector {
         return mDB.insert(TABLE_AFTERMARKET, null, cv);
     }
 
+    public void addAftermarket(ContentValues cv){
+        mDB.insert(TABLE_AFTERMARKET, null, cv);
+    }
+
+    public void editAftermarketById (long id, ContentValues cv){
+        mDB.update(TABLE_AFTERMARKET, cv, "_id = ?", new String[] { String.valueOf(id) });
+    }
+
+
     public Cursor getAftermarketByID(long after_id){
         return mDB.query(TABLE_AFTERMARKET, null, "_id = " + after_id, null, null, null, null);
     }
 
+    public void removeAftermarketFromKit(long id) {
+        mDB.delete(TABLE_KIT_AFTER_CONNECTIONS, KIT_AFTER_AFTERID + " = " + id, null);
+    }
 
+    public void deleteAftermarketById(long id) {
+        mDB.delete(TABLE_MYSHOPS, COLUMN_ID + " = " + id, null);
+    }
+
+    public Cursor getAllAftermarket(String sortBy){
+        return mDB.query(TABLE_AFTERMARKET, null, null, null, null, null, sortBy);
+
+    }
     ////////////////ПРОВЕРКИ ПРИ ДОБАВЛЕНИИ////////////////////
 
     //Для проверки из сканирования ScanActivity

@@ -2,7 +2,6 @@ package com.example.kitstasher.fragment;
 
 import android.app.ProgressDialog;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -24,7 +23,6 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.example.kitstasher.R;
-import com.example.kitstasher.activity.KitActivity;
 import com.example.kitstasher.other.Constants;
 import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.Helper;
@@ -42,6 +40,8 @@ import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import static com.example.kitstasher.other.DbConnector.COLUMN_AFTERMARKET_NAME;
+import static com.example.kitstasher.other.DbConnector.COLUMN_AFTERMARKET_ORIGINAL_NAME;
 import static com.example.kitstasher.other.DbConnector.COLUMN_BARCODE;
 import static com.example.kitstasher.other.DbConnector.COLUMN_BOXART_URI;
 import static com.example.kitstasher.other.DbConnector.COLUMN_BOXART_URL;
@@ -52,6 +52,7 @@ import static com.example.kitstasher.other.DbConnector.COLUMN_COLLECTION;
 import static com.example.kitstasher.other.DbConnector.COLUMN_CURRENCY;
 import static com.example.kitstasher.other.DbConnector.COLUMN_DATE;
 import static com.example.kitstasher.other.DbConnector.COLUMN_DESCRIPTION;
+import static com.example.kitstasher.other.DbConnector.COLUMN_ID;
 import static com.example.kitstasher.other.DbConnector.COLUMN_ID_ONLINE;
 import static com.example.kitstasher.other.DbConnector.COLUMN_IS_DELETED;
 import static com.example.kitstasher.other.DbConnector.COLUMN_KIT_NAME;
@@ -64,6 +65,19 @@ import static com.example.kitstasher.other.DbConnector.COLUMN_QUANTITY;
 import static com.example.kitstasher.other.DbConnector.COLUMN_SCALE;
 import static com.example.kitstasher.other.DbConnector.COLUMN_SEND_STATUS;
 import static com.example.kitstasher.other.DbConnector.COLUMN_YEAR;
+import static com.example.kitstasher.other.DbConnector.KIT_AFTER_AFTERBARCODE;
+import static com.example.kitstasher.other.DbConnector.KIT_AFTER_AFTERBRAND;
+import static com.example.kitstasher.other.DbConnector.KIT_AFTER_AFTERCATNO;
+import static com.example.kitstasher.other.DbConnector.KIT_AFTER_AFTERDESIGNEDFOR;
+import static com.example.kitstasher.other.DbConnector.KIT_AFTER_AFTERID;
+import static com.example.kitstasher.other.DbConnector.KIT_AFTER_AFTERNAME;
+import static com.example.kitstasher.other.DbConnector.KIT_AFTER_KITBARCODE;
+import static com.example.kitstasher.other.DbConnector.KIT_AFTER_KITBRAND;
+import static com.example.kitstasher.other.DbConnector.KIT_AFTER_KITCATNO;
+import static com.example.kitstasher.other.DbConnector.KIT_AFTER_KITID;
+import static com.example.kitstasher.other.DbConnector.KIT_AFTER_KITNAME;
+import static com.example.kitstasher.other.DbConnector.KIT_AFTER_KITPROTOTYPE;
+import static com.example.kitstasher.other.DbConnector.KIT_AFTER_LISTNAME;
 import static com.example.kitstasher.other.DbConnector.MYLISTS_COLUMN_LIST_NAME;
 
 /**
@@ -141,14 +155,12 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
             case R.id.btnBackup:
                 Toast.makeText(getActivity(), getString(R.string.Saving), Toast.LENGTH_SHORT).show();
                 backupDb();
-//                dbConnector.close();
                 Toast.makeText(getActivity(), getString(R.string.Saved), Toast.LENGTH_SHORT).show();
                 break;
             case R.id.btnRestore:
                 Toast.makeText(getActivity(), getString(R.string.Saving), Toast.LENGTH_SHORT).show();
                 restoreDb();
                 Toast.makeText(getActivity(), getString(R.string.Saved), Toast.LENGTH_SHORT).show();
-//                dbConnector.close();
                 break;
             case R.id.btnRepairImages:
                 String[] items = new String[]{"TXT"
@@ -174,15 +186,12 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
                 });
                 AlertDialog alert = builder.create();
                 alert.show();
-//                repairImages();
-//                dbConnector.close();
                 break;
         }
         progressDialog.dismiss();
     }
 
     private void exportStashTo(String mode){
-//        Toast.makeText(getActivity(), "Saving", Toast.LENGTH_SHORT).show();
         progressDialog = ProgressDialog.show(getActivity(), "Export to File", getString(R.string.Saving));
         progressDialog.setCancelable(true);
         final String m = mode;
@@ -313,13 +322,14 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
         {
             exportDir.mkdirs();
         }
-        backupKitsDb(exportDir);
-        backupListItemsDb(exportDir);
-        backupBrandsDb(exportDir);
+        backupKits(exportDir);
+        backupListItems(exportDir);
+        backupBrands(exportDir);
         backupLists(exportDir);
         backupShops(exportDir);
+        backupAftermarket(exportDir);
+        backupKitAfter(exportDir);
     }
-
 
     private void restoreDb() {
         // проверяем доступность SD
@@ -332,124 +342,38 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
         // добавляем свой каталог к пути
         sdPath = new File(sdPath.getAbsolutePath() + "/" + "Kitstasher");
 
-        restoreKitsDb(sdPath);
-        restoreListsItemsDb(sdPath);
-        restoreBrandsDb(sdPath);
-        restoreListsDb(sdPath);
+        restoreKits(sdPath);
+        restoreListsItems(sdPath);
+        restoreBrands(sdPath);
+        restoreLists(sdPath);
         restoreShops(sdPath);
+        restoreAftermarket(sdPath);
+        restoreKitAfter(sdPath);
     }
 
-
-
-    private void restoreOldDb() {
-        // проверяем доступность SD
-        if (!Environment.getExternalStorageState().equals(
-                Environment.MEDIA_MOUNTED)) {
-            Toast.makeText(getActivity(), R.string.sdcard_failed, Toast.LENGTH_SHORT).show();
-        }
-        // получаем путь к SD
-        File sdPath = Environment.getExternalStorageDirectory();
-        // добавляем свой каталог к пути
-        sdPath = new File(sdPath.getAbsolutePath() + "/" + "Kitstasher");
-
-        restoreOldKitsDb(sdPath);
-        restoreOldBrandsDb(sdPath);
-        Toast.makeText(getActivity(), "Импортировано " + dbConnector.getAllData().getCount() + " записей", Toast.LENGTH_SHORT).show();
-    }
-
-    ////////// SHOPS ////////////////
-    private void backupShops(File exportDir) {
-
-        //сохраняем таблицу магазинов
-        File fileShops = new File(exportDir, Constants.MYSHOPS_FILE_NAME);
+    /////////// AFTERMARKET ////////////
+    private void backupAftermarket(File exportDir) {
+        //сохраняем таблицу афтемаркета
+        File fileAfter = new File(exportDir, Constants.AFTER_FILE_NAME);
         try
         {
-            fileShops.createNewFile();
-            CSVWriter csvWrite = new CSVWriter(new FileWriter(fileShops),
+            fileAfter.createNewFile();
+            CSVWriter csvWrite = new CSVWriter(new FileWriter(fileAfter),
                     CSVWriter.DEFAULT_SEPARATOR,
                     CSVWriter.NO_QUOTE_CHARACTER);
-            Cursor curCSV = dbConnector.getShops("_id");
+            Cursor curCSV = dbConnector.getAllAftermarket("_id");
             curCSV.moveToFirst();
             while(!curCSV.isAfterLast())
             {
-                String ch = curCSV.getString(1);
-                String ch1 = curCSV.getString(2);
-                String ch2 = curCSV.getString(3);
-
-
-                String arrStr[] ={
-                        curCSV.getString(1), //name
-                        curCSV.getString(2), //desc
-                        curCSV.getString(3), //url
-                        curCSV.getString(4), //contact
-                        curCSV.getString(5)  //rating int
-                };
-                csvWrite.writeNext(arrStr);
-                curCSV.moveToNext();
-            }
-            csvWrite.close();
-            curCSV.close();
-        }
-        catch(Exception sqlEx)
-        {
-            Log.e("Brands backup failed", sqlEx.getMessage(), sqlEx);
-        }
-    }
-
-    private void restoreShops(File sdPath) {
-        File shopsFile = new File(sdPath, Constants.MYSHOPS_FILE_NAME);
-
-        dbConnector.clearTable(DbConnector.TABLE_MYSHOPS);
-
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(shopsFile));
-            String str = "";
-            while ((str = br.readLine()) != null) {
-                String[] colums = str.split(",");
-                ContentValues cv = new ContentValues();
-                cv.put(DbConnector.MYSHOPS_COLUMN_SHOP_NAME, colums[0].trim());
-                cv.put(DbConnector.MYSHOPS_COLUMN_SHOP_DESCRIPTION, colums[1].trim());
-                cv.put(DbConnector.MYSHOPS_COLUMN_SHOP_URL, colums[2].trim());
-                cv.put(DbConnector.MYSHOPS_COLUMN_SHOP_CONTACT, colums[3].trim());
-                cv.put(DbConnector.MYSHOPS_COLUMN_SHOP_RATING, colums[4].trim());
-
-                dbConnector.addShop(cv);
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    //////////////// KITS //////////////////
-
-    private void backupKitsDb(File exportDir) {
-        //сохраняем таблицу наборов
-        File fileKits = new File(exportDir, Constants.KITS_FILE_NAME);
-//        File fileKits = new File(exportDir, "kits.csv");
-
-        try
-        {
-            fileKits.createNewFile();
-            CSVWriter csvWrite = new CSVWriter(new FileWriter(fileKits),
-                    CSVWriter.DEFAULT_SEPARATOR,
-                    CSVWriter.NO_QUOTE_CHARACTER);
-            Cursor curCSV = dbConnector.getAllData("_id");
-            curCSV.moveToFirst();
-            while(!curCSV.isAfterLast())
-            {
-                //Which column you want to export
                 String arrStr[] = {
+                        curCSV.getString(0), //id
                         curCSV.getString(1), //barcode
                         curCSV.getString(2), //brand
                         curCSV.getString(3), //brand_catno
                         curCSV.getString(4), //scale
-                        curCSV.getString(5), //kitname
+                        curCSV.getString(5), //after_name
                         curCSV.getString(6), //desc
-                        curCSV.getString(7), //original name
+                        curCSV.getString(7), //after_original name
                         curCSV.getString(8), //category - tag
                         curCSV.getString(9), //collection
                         curCSV.getString(10), //send status
@@ -466,65 +390,66 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
                         curCSV.getString(19), //date !!
                         curCSV.getString(20), //date !!
                         curCSV.getString(21), //date !!
-                        curCSV.getString(22)
-
+                        curCSV.getString(22),
+                        curCSV.getString(23) //listname
                 };
                 csvWrite.writeNext(arrStr);
                 curCSV.moveToNext();
             }
             csvWrite.close();
             curCSV.close();
-            Helper.encrypt(fileKits);
+            Helper.encrypt(fileAfter);
         }
         catch(Exception sqlEx)
         {
-            Log.e("MainActivity", sqlEx.getMessage(), sqlEx);
+            Log.e("Aftermarket Backup", sqlEx.getMessage(), sqlEx);
         }
     }
 
-    private void restoreKitsDb(File sdPath) {
-        // формируем объект File, который содержит путь к файлу
-        File sdFile = new File(sdPath, Constants.KITS_FILE_NAME);
+    private void restoreAftermarket(File sdPath) {
+        File aftermarketFile = new File(sdPath, Constants.AFTER_FILE_NAME);
 
         try {
-            Helper.decrypt(sdFile);
+            Helper.decrypt(aftermarketFile);
         } catch (Exception e) {
             e.printStackTrace();
         }
         //Очищаем базу
-        dbConnector.clearTable(DbConnector.TABLE_KITS);
+        dbConnector.clearTable(DbConnector.TABLE_AFTERMARKET);
         try {
-            CSVReader reader = new CSVReader(new FileReader(sdFile));
+            CSVReader reader = new CSVReader(new FileReader(aftermarketFile));
             String[] colums;
             ContentValues cv = new ContentValues();
             while ((colums = reader.readNext()) != null) {
-                cv.put(COLUMN_BARCODE, colums[0]);
-                cv.put(COLUMN_BRAND, colums[1]);
-                cv.put(COLUMN_BRAND_CATNO, colums[2]);
-                cv.put(COLUMN_SCALE, colums[3]);
-                cv.put(COLUMN_KIT_NAME, colums[4]);
-                cv.put(COLUMN_DESCRIPTION, colums[5]);
-                cv.put(COLUMN_ORIGINAL_KIT_NAME, colums[6]);
-                        // если отличается
-                cv.put(COLUMN_CATEGORY, colums[7]);
-                cv.put(COLUMN_COLLECTION, colums[8]);
-                cv.put(COLUMN_SEND_STATUS, colums[9]);
-                cv.put(COLUMN_ID_ONLINE, colums[10]);
+                cv.put(COLUMN_ID, colums[0]);
+                cv.put(COLUMN_BARCODE, colums[1]);
+                cv.put(COLUMN_BRAND, colums[2]);
+                cv.put(COLUMN_BRAND_CATNO, colums[3]);
+                cv.put(COLUMN_SCALE, colums[4]);
+                cv.put(COLUMN_AFTERMARKET_NAME, colums[5]);
+                cv.put(COLUMN_DESCRIPTION, colums[6]);
+                cv.put(COLUMN_AFTERMARKET_ORIGINAL_NAME, colums[7]);//!
+                // если отличается
+                cv.put(COLUMN_CATEGORY, colums[8]);
+                cv.put(COLUMN_COLLECTION, colums[9]);
+                cv.put(COLUMN_SEND_STATUS, colums[10]);
+                cv.put(COLUMN_ID_ONLINE, colums[11]);
                 //заметки? LOCAL?
-                cv.put(COLUMN_BOXART_URI, colums[11]);
-                cv.put(COLUMN_BOXART_URL, colums[12]);
-                cv.put(COLUMN_IS_DELETED, colums[13]);
-                cv.put(COLUMN_DATE, colums[14]);
-                cv.put(COLUMN_YEAR, colums[15]);
-                cv.put(COLUMN_PURCHASE_DATE, colums[16]);
-                cv.put(COLUMN_PRICE, colums[17]);
-                cv.put(COLUMN_QUANTITY, colums[18]);
-                cv.put(COLUMN_NOTES, colums[19]);
-                cv.put(COLUMN_CURRENCY, colums[20]);
-                cv.put(COLUMN_PURCHASE_PLACE, colums[21]);
-                dbConnector.addKitRec(cv);
+                cv.put(COLUMN_BOXART_URI, colums[12]);
+                cv.put(COLUMN_BOXART_URL, colums[13]);
+                cv.put(COLUMN_IS_DELETED, colums[14]);
+                cv.put(COLUMN_DATE, colums[15]);
+                cv.put(COLUMN_YEAR, colums[16]);
+                cv.put(COLUMN_PURCHASE_DATE, colums[17]);
+                cv.put(COLUMN_PRICE, colums[18]);
+                cv.put(COLUMN_QUANTITY, colums[19]);
+                cv.put(COLUMN_NOTES, colums[20]);
+                cv.put(COLUMN_CURRENCY, colums[21]);
+                cv.put(COLUMN_PURCHASE_PLACE, colums[22]);
+                cv.put(MYLISTS_COLUMN_LIST_NAME, colums[23]);
+                dbConnector.addAftermarket(cv);
             }
-            Helper.encrypt(sdFile);
+            Helper.encrypt(aftermarketFile);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -532,6 +457,109 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void backupKitAfter(File exportDir){
+        File fileAfter = new File(exportDir, Constants.KIT_AFTER_FILE_NAME);
+        try
+        {
+            fileAfter.createNewFile();
+            CSVWriter csvWrite = new CSVWriter(new FileWriter(fileAfter),
+                    CSVWriter.DEFAULT_SEPARATOR,
+                    CSVWriter.NO_QUOTE_CHARACTER);
+            Cursor curCSV = dbConnector.getKitAfterConnections("_id");
+            curCSV.moveToFirst();
+            while(!curCSV.isAfterLast())
+            {
+                String arrStr[] = {
+                        curCSV.getString(0), //id
+                        curCSV.getString(1), //barcode
+                        curCSV.getString(2), //brand
+                        curCSV.getString(3), //brand_catno
+                        curCSV.getString(4), //scale
+                        curCSV.getString(5), //after_name
+                        curCSV.getString(6), //desc
+                        curCSV.getString(7), //after_original name
+                        curCSV.getString(8), //category - tag
+                        curCSV.getString(9), //collection
+                        curCSV.getString(10), //send status
+                        curCSV.getString(11), // online id
+                        curCSV.getString(12), // boxart uri
+                        curCSV.getString(13), //boxart url
+                        curCSV.getString(14), //is deleted !!
+                };
+                csvWrite.writeNext(arrStr);
+                curCSV.moveToNext();
+            }
+            csvWrite.close();
+            curCSV.close();
+            Helper.encrypt(fileAfter);
+        }
+        catch(Exception sqlEx)
+        {
+            Log.e("Kit+After Backup failed", sqlEx.getMessage(), sqlEx);
+        }
+    }
+
+    private void restoreKitAfter(File sdPath){
+        File aftermarketFile = new File(sdPath, Constants.KIT_AFTER_FILE_NAME);
+
+        try {
+            Helper.decrypt(aftermarketFile);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        //Очищаем базу
+        dbConnector.clearTable(DbConnector.TABLE_KIT_AFTER_CONNECTIONS);
+        try {
+            CSVReader reader = new CSVReader(new FileReader(aftermarketFile));
+            String[] colums;
+            ContentValues cv = new ContentValues();
+            while ((colums = reader.readNext()) != null) {
+                cv.put(COLUMN_ID, colums[0]);
+                cv.put(COLUMN_SCALE, colums[1]);
+                cv.put(KIT_AFTER_KITID, colums[2]);
+                cv.put(KIT_AFTER_AFTERID, colums[3]);
+                cv.put(KIT_AFTER_LISTNAME, colums[4]);
+                cv.put(KIT_AFTER_KITNAME, colums[5]);
+                cv.put(KIT_AFTER_KITBRAND, colums[6]);
+                cv.put(KIT_AFTER_KITCATNO, colums[7]);//!
+                // если отличается
+                cv.put(KIT_AFTER_KITBARCODE, colums[8]);
+                cv.put(KIT_AFTER_KITPROTOTYPE, colums[9]);
+                cv.put(KIT_AFTER_AFTERNAME, colums[10]);
+                cv.put(KIT_AFTER_AFTERBRAND, colums[11]);
+                //заметки? LOCAL?
+                cv.put(KIT_AFTER_AFTERCATNO, colums[12]);
+                cv.put(KIT_AFTER_AFTERBARCODE, colums[13]);
+                cv.put(KIT_AFTER_AFTERDESIGNEDFOR, colums[14]);
+                dbConnector.addAftersToKits(cv);
+            }
+            Helper.encrypt(aftermarketFile);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+//////////// KITSTASHER 0.8 /////////////
+    private void restoreOldDb() {
+        // проверяем доступность SD
+        if (!Environment.getExternalStorageState().equals(
+                Environment.MEDIA_MOUNTED)) {
+            Toast.makeText(getActivity(), R.string.sdcard_failed, Toast.LENGTH_SHORT).show();
+        }
+        // получаем путь к SD
+        File sdPath = Environment.getExternalStorageDirectory();
+        // добавляем свой каталог к пути
+        sdPath = new File(sdPath.getAbsolutePath() + "/" + "Kitstasher");
+
+        restoreOldKitsDb(sdPath);
+        restoreOldBrandsDb(sdPath);
+        Toast.makeText(getActivity(), "Импортировано " + dbConnector.getAllData().getCount() + " записей", Toast.LENGTH_SHORT).show();
     }
 
     private void restoreOldKitsDb(File sdPath) {// TODO: 28.08.2017 убрать в 0.8.2!!
@@ -579,11 +607,11 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
 
                 cv.put(COLUMN_YEAR, ""); //// TODO: 30.08.2017 проверить колонки
                 cv.put(COLUMN_PURCHASE_DATE, "");
-                    cv.put(COLUMN_PRICE, 0);
-                    cv.put(COLUMN_QUANTITY, 1);
-                    cv.put(COLUMN_NOTES, "");
-                    cv.put(COLUMN_CURRENCY, "");//валюта
-                    cv.put(COLUMN_PURCHASE_PLACE, "");//валюта
+                cv.put(COLUMN_PRICE, 0);
+                cv.put(COLUMN_QUANTITY, 1);
+                cv.put(COLUMN_NOTES, "");
+                cv.put(COLUMN_CURRENCY, "");//валюта
+                cv.put(COLUMN_PURCHASE_PLACE, "");//валюта
 
                 dbConnector = new DbConnector(getActivity());
                 dbConnector.open();
@@ -599,57 +627,7 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
         }
     }
 
-    ///////////// BRANDS ////////////////
-    private void backupBrandsDb(File exportDir) {
-        //сохраняем таблицу брэндов
-        File fileBrands = new File(exportDir, Constants.BRANDS_FILE_NAME);
-        try
-        {
-            fileBrands.createNewFile();
-            CSVWriter csvWrite = new CSVWriter(new FileWriter(fileBrands),
-                    CSVWriter.DEFAULT_SEPARATOR,
-                    CSVWriter.NO_QUOTE_CHARACTER);
-            Cursor curCSV = dbConnector.getBrands("_id");
-            curCSV.moveToFirst();
-            while(curCSV.moveToNext())
-            {
-                String arrStr[] ={curCSV.getString(1)};
-                csvWrite.writeNext(arrStr);
-            }
-            csvWrite.close();
-            curCSV.close();
-        }
-        catch(Exception sqlEx)
-        {
-            Log.e("Brands backup failed", sqlEx.getMessage(), sqlEx);
-        }
-    }
-
-    private void restoreBrandsDb(File sdPath) {
-        File sdBrandsFile = new File(sdPath, Constants.BRANDS_FILE_NAME);
-
-        dbConnector.clearTable(DbConnector.TABLE_BRANDS);
-
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(sdBrandsFile));
-            String str = "";
-            while ((str = br.readLine()) != null) {
-                String[] colums = str.split(",");
-                ContentValues cv = new ContentValues();
-                cv.put(DbConnector.BRANDS_COLUMN_BRAND, colums[0].trim());
-                dbConnector.addBrand(cv);
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void restoreOldBrandsDb(File sdPath) { //// TODO: 28.08.2017 убрать посде конверсии
-        //восстанавливаем список брэндов
+    private void restoreOldBrandsDb(File sdPath) {
         File sdBrandsFile = new File(sdPath, "brands.csv");
         try {
             Helper.decrypt(sdBrandsFile);
@@ -682,10 +660,225 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
         }
     }
 
+    ////////// SHOPS ////////////////
+    private void backupShops(File exportDir) {
+        File fileShops = new File(exportDir, Constants.MYSHOPS_FILE_NAME);
+        try
+        {
+            fileShops.createNewFile();
+            CSVWriter csvWrite = new CSVWriter(new FileWriter(fileShops),
+                    CSVWriter.DEFAULT_SEPARATOR,
+                    CSVWriter.NO_QUOTE_CHARACTER);
+            Cursor curCSV = dbConnector.getShops("_id");
+            curCSV.moveToFirst();
+            while(!curCSV.isAfterLast())
+            {
+                String arrStr[] ={
+                        curCSV.getString(0), //id
+                        curCSV.getString(1), //name
+                        curCSV.getString(2), //desc
+                        curCSV.getString(3), //url
+                        curCSV.getString(4), //contact
+                        curCSV.getString(5)  //rating int
+                };
+                csvWrite.writeNext(arrStr);
+                curCSV.moveToNext();
+            }
+            csvWrite.close();
+            curCSV.close();
+        }
+        catch(Exception sqlEx)
+        {
+            Log.e("Shops backup failed", sqlEx.getMessage(), sqlEx);
+        }
+    }
+
+    private void restoreShops(File sdPath) {
+        File shopsFile = new File(sdPath, Constants.MYSHOPS_FILE_NAME);
+        dbConnector.clearTable(DbConnector.TABLE_MYSHOPS);
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(shopsFile));
+            String str = "";
+            while ((str = br.readLine()) != null) {
+                String[] colums = str.split(",");
+                ContentValues cv = new ContentValues();
+                cv.put(DbConnector.COLUMN_ID, colums[0].trim());
+                cv.put(DbConnector.MYSHOPS_COLUMN_SHOP_NAME, colums[1].trim());
+                cv.put(DbConnector.MYSHOPS_COLUMN_SHOP_DESCRIPTION, colums[2].trim());
+                cv.put(DbConnector.MYSHOPS_COLUMN_SHOP_URL, colums[3].trim());
+                cv.put(DbConnector.MYSHOPS_COLUMN_SHOP_CONTACT, colums[4].trim());
+                cv.put(DbConnector.MYSHOPS_COLUMN_SHOP_RATING, colums[5].trim());
+                dbConnector.addShop(cv);
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    //////////////// KITS //////////////////
+
+    private void backupKits(File exportDir) {
+        File fileKits = new File(exportDir, Constants.KITS_FILE_NAME);
+        try
+        {
+            fileKits.createNewFile();
+            CSVWriter csvWrite = new CSVWriter(new FileWriter(fileKits),
+                    CSVWriter.DEFAULT_SEPARATOR,
+                    CSVWriter.NO_QUOTE_CHARACTER);
+            Cursor curCSV = dbConnector.getAllData("_id");
+            curCSV.moveToFirst();
+            while(!curCSV.isAfterLast())
+            {
+                String arrStr[] = {
+                        curCSV.getString(0), //id
+                        curCSV.getString(1), //barcode
+                        curCSV.getString(2), //brand
+                        curCSV.getString(3), //brand_catno
+                        curCSV.getString(4), //scale
+                        curCSV.getString(5), //kitname
+                        curCSV.getString(6), //desc
+                        curCSV.getString(7), //original name
+                        curCSV.getString(8), //category - tag
+                        curCSV.getString(9), //collection
+                        curCSV.getString(10), //send status
+                        curCSV.getString(11), // online id
+                        curCSV.getString(12), // boxart uri
+                        curCSV.getString(13), //boxart url
+
+                        curCSV.getString(14), //is deleted !!
+                        curCSV.getString(15), //date !!
+
+                        curCSV.getString(16), //year !!
+                        curCSV.getString(17), //date !!
+                        curCSV.getString(18), //date !!
+                        curCSV.getString(19), //date !!
+                        curCSV.getString(20), //date !!
+                        curCSV.getString(21), //date !!
+                        curCSV.getString(22)
+                };
+                csvWrite.writeNext(arrStr);
+                curCSV.moveToNext();
+            }
+            csvWrite.close();
+            curCSV.close();
+            Helper.encrypt(fileKits);
+        }
+        catch(Exception sqlEx)
+        {
+            Log.e("Kits backup failed", sqlEx.getMessage(), sqlEx);
+        }
+    }
+
+    private void restoreKits(File sdPath) {
+        File sdFile = new File(sdPath, Constants.KITS_FILE_NAME);
+        try {
+            Helper.decrypt(sdFile);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        //Очищаем базу
+        dbConnector.clearTable(DbConnector.TABLE_KITS);
+        try {
+            CSVReader reader = new CSVReader(new FileReader(sdFile));
+            String[] colums;
+            ContentValues cv = new ContentValues();
+            while ((colums = reader.readNext()) != null) {
+                cv.put(COLUMN_ID, colums[0]);
+                cv.put(COLUMN_BARCODE, colums[1]);
+                cv.put(COLUMN_BRAND, colums[2]);
+                cv.put(COLUMN_BRAND_CATNO, colums[3]);
+                cv.put(COLUMN_SCALE, colums[4]);
+                cv.put(COLUMN_KIT_NAME, colums[5]);
+                cv.put(COLUMN_DESCRIPTION, colums[6]);
+                cv.put(COLUMN_ORIGINAL_KIT_NAME, colums[7]);
+                cv.put(COLUMN_CATEGORY, colums[8]);
+                cv.put(COLUMN_COLLECTION, colums[9]);
+                cv.put(COLUMN_SEND_STATUS, colums[10]);
+                cv.put(COLUMN_ID_ONLINE, colums[11]);
+                cv.put(COLUMN_BOXART_URI, colums[12]);
+                cv.put(COLUMN_BOXART_URL, colums[13]);
+                cv.put(COLUMN_IS_DELETED, colums[14]);
+                cv.put(COLUMN_DATE, colums[15]);
+                cv.put(COLUMN_YEAR, colums[16]);
+                cv.put(COLUMN_PURCHASE_DATE, colums[17]);
+                cv.put(COLUMN_PRICE, colums[18]);
+                cv.put(COLUMN_QUANTITY, colums[19]);
+                cv.put(COLUMN_NOTES, colums[20]);
+                cv.put(COLUMN_CURRENCY, colums[21]);
+                cv.put(COLUMN_PURCHASE_PLACE, colums[22]);
+                dbConnector.addKitRec(cv);
+            }
+            Helper.encrypt(sdFile);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    ///////////// BRANDS ////////////////
+    private void backupBrands(File exportDir) {
+        File fileBrands = new File(exportDir, Constants.BRANDS_FILE_NAME);
+        try
+        {
+            fileBrands.createNewFile();
+            CSVWriter csvWrite = new CSVWriter(new FileWriter(fileBrands),
+                    CSVWriter.DEFAULT_SEPARATOR,
+                    CSVWriter.NO_QUOTE_CHARACTER);
+            Cursor curCSV = dbConnector.getBrands("_id");
+            curCSV.moveToFirst();
+            while(curCSV.moveToNext())
+            {
+                String arrStr[] = {
+                        curCSV.getString(0),
+                        curCSV.getString(1)
+                };
+                csvWrite.writeNext(arrStr);
+            }
+            csvWrite.close();
+            curCSV.close();
+        }
+        catch(Exception sqlEx)
+        {
+            Log.e("Brands backup failed", sqlEx.getMessage(), sqlEx);
+        }
+    }
+
+    private void restoreBrands(File sdPath) {
+        File sdBrandsFile = new File(sdPath, Constants.BRANDS_FILE_NAME);
+
+        dbConnector.clearTable(DbConnector.TABLE_BRANDS);
+
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(sdBrandsFile));
+            String str = "";
+            while ((str = br.readLine()) != null) {
+                String[] colums = str.split(",");
+                ContentValues cv = new ContentValues();
+                cv.put(DbConnector.BRANDS_COLUMN_ID, colums[0].trim());
+                cv.put(DbConnector.BRANDS_COLUMN_BRAND, colums[1].trim());
+                dbConnector.addBrand(cv);
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
     ////////////// MY LISTS ///////////////
 
     private void backupLists(File exportDir) {
-        //сохраняем перечень списков
         File fileLists = new File(exportDir, Constants.LISTS_FILE_NAME);
         try
         {
@@ -699,6 +892,7 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
             {
                 //Which column you want to exprort
                 String arrStr[] ={
+                        listCur.getString(0), //id
                         listCur.getString(1), //listname
                         listCur.getString(2), //date created
                 };
@@ -714,7 +908,7 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
         }
     }
 
-    private void restoreListsDb(File sdPath) {
+    private void restoreLists(File sdPath) {
         File sdListsFile = new File(sdPath, Constants.LISTS_FILE_NAME);
         //Очищаем базу
         dbConnector.clearTable(DbConnector.TABLE_MYLISTS);
@@ -726,8 +920,9 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
             while ((str = br.readLine()) != null) {
                 String[] colums = str.split(",");
                 ContentValues cv = new ContentValues();
-                cv.put(DbConnector.MYLISTS_COLUMN_LIST_NAME, colums[0].trim()); //listname
-                cv.put(DbConnector.MYLISTS_COLUMN_DATE, colums[1].trim()); //date
+                cv.put(DbConnector.MYLISTS_COLUMN_ID, colums[0].trim()); //id
+                cv.put(DbConnector.MYLISTS_COLUMN_LIST_NAME, colums[1].trim()); //listname
+                cv.put(DbConnector.MYLISTS_COLUMN_DATE, colums[2].trim()); //date
                 dbConnector.addList(cv);
             }
         } catch (FileNotFoundException e) {
@@ -739,13 +934,10 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
         }
     }
 
-/////////// LISTSITEMS //////////////
+    /////////// LISTSITEMS //////////////
 
-    private void backupListItemsDb(File exportDir) {
-        //сохраняем содержимое списков
+    private void backupListItems(File exportDir) {
         File fileListItems = new File(exportDir, Constants.LISTITEMS_FILE_NAME);
-
-        //// TODO: 28.08.2017 шифрование!
         try
         {
             fileListItems.createNewFile();
@@ -756,8 +948,8 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
             curCSV.moveToFirst();
             while(!curCSV.isAfterLast())
             {
-                //Which column you want to export
                 String arrStr[] = {
+                        curCSV.getString(0), //id
                         curCSV.getString(1), //barcode
                         curCSV.getString(2), //brand
                         curCSV.getString(3), //brand_catno
@@ -783,7 +975,6 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
                         curCSV.getString(21), //date !!
                         curCSV.getString(22),
                         curCSV.getString(23)
-
                 };
                 csvWrite.writeNext(arrStr);
                 curCSV.moveToNext();
@@ -794,53 +985,12 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
         }
         catch(Exception sqlEx)
         {
-            Log.e("MainActivity", sqlEx.getMessage(), sqlEx);
+            Log.e("ListItems backup failed", sqlEx.getMessage(), sqlEx);
         }
-
-
-//            while(curCSV.moveToNext())
-//            {
-//                //Which column you want to export
-//                String arrStr[] = {
-//                        curCSV.getString(1), //barcode
-//                        curCSV.getString(2), //brand
-//                        curCSV.getString(3), //brand_catno
-//                        curCSV.getString(4), //scale
-//                        curCSV.getString(5), //kitname
-//                        curCSV.getString(6), //desc
-//                        curCSV.getString(7), //original name
-//                        curCSV.getString(8), //category - tag
-//                        curCSV.getString(9), //collection
-//                        curCSV.getString(10), //send status
-//                        curCSV.getString(11), // online id
-//                        curCSV.getString(12), // boxart uri
-//                        curCSV.getString(13), //boxart url
-//
-//                        curCSV.getString(14), //is deleted !!
-//                        curCSV.getString(15), //date !!
-//
-//                        curCSV.getString(16), //date !!
-//                        curCSV.getString(17), //date !!
-//                        curCSV.getString(18), //date !!
-//                        curCSV.getString(19), //date !!
-//                        curCSV.getString(20), //date !!
-//                        curCSV.getString(21), //date !!
-//
-//                        curCSV.getString(22) //list name
-//                };
-//                csvWrite.writeNext(arrStr);
-//            }
-//            csvWrite.close();
-//            curCSV.close();
-////            Helper.encrypt(fileListItems);
-//        }catch(Exception sqlEx){
-//            Log.e("Listitems backup failed", sqlEx.getMessage(), sqlEx);
-//        }
     }
 
-    private void restoreListsItemsDb(File sdPath) {
+    private void restoreListsItems(File sdPath) {
         File sdListItemsFile = new File(sdPath, Constants.LISTITEMS_FILE_NAME);
-
         try {
             Helper.decrypt(sdListItemsFile);
         } catch (Exception e) {
@@ -853,31 +1003,30 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
             String[] colums;
             ContentValues cv = new ContentValues();
             while ((colums = reader.readNext()) != null) {
-                cv.put(COLUMN_BARCODE, colums[0]);
-                cv.put(COLUMN_BRAND, colums[1]);
-                cv.put(COLUMN_BRAND_CATNO, colums[2]);
-                cv.put(COLUMN_SCALE, colums[3]);
-                cv.put(COLUMN_KIT_NAME, colums[4]);
-                cv.put(COLUMN_DESCRIPTION, colums[5]);
-                cv.put(COLUMN_ORIGINAL_KIT_NAME, colums[6]);
-                // если отличается
-                cv.put(COLUMN_CATEGORY, colums[7]);
-                cv.put(COLUMN_COLLECTION, colums[8]);
-                cv.put(COLUMN_SEND_STATUS, colums[9]);
-                cv.put(COLUMN_ID_ONLINE, colums[10]);
-                //заметки? LOCAL?
-                cv.put(COLUMN_BOXART_URI, colums[11]);
-                cv.put(COLUMN_BOXART_URL, colums[12]);
-                cv.put(COLUMN_IS_DELETED, colums[13]);
-                cv.put(COLUMN_DATE, colums[14]);
-                cv.put(COLUMN_YEAR, colums[15]);
-                cv.put(COLUMN_PURCHASE_DATE, colums[16]);
-                cv.put(COLUMN_PRICE, colums[17]);
-                cv.put(COLUMN_QUANTITY, colums[18]);
-                cv.put(COLUMN_NOTES, colums[19]);
-                cv.put(COLUMN_CURRENCY, colums[20]);
-                cv.put(COLUMN_PURCHASE_PLACE, colums[21]);
-                cv.put(MYLISTS_COLUMN_LIST_NAME, colums[22]);
+                cv.put(COLUMN_ID, colums[0]);
+                cv.put(COLUMN_BARCODE, colums[1]);
+                cv.put(COLUMN_BRAND, colums[2]);
+                cv.put(COLUMN_BRAND_CATNO, colums[3]);
+                cv.put(COLUMN_SCALE, colums[4]);
+                cv.put(COLUMN_KIT_NAME, colums[5]);
+                cv.put(COLUMN_DESCRIPTION, colums[6]);
+                cv.put(COLUMN_ORIGINAL_KIT_NAME, colums[7]);
+                cv.put(COLUMN_CATEGORY, colums[8]);
+                cv.put(COLUMN_COLLECTION, colums[9]);
+                cv.put(COLUMN_SEND_STATUS, colums[10]);
+                cv.put(COLUMN_ID_ONLINE, colums[11]);
+                cv.put(COLUMN_BOXART_URI, colums[12]);
+                cv.put(COLUMN_BOXART_URL, colums[13]);
+                cv.put(COLUMN_IS_DELETED, colums[14]);
+                cv.put(COLUMN_DATE, colums[15]);
+                cv.put(COLUMN_YEAR, colums[16]);
+                cv.put(COLUMN_PURCHASE_DATE, colums[17]);
+                cv.put(COLUMN_PRICE, colums[18]);
+                cv.put(COLUMN_QUANTITY, colums[19]);
+                cv.put(COLUMN_NOTES, colums[20]);
+                cv.put(COLUMN_CURRENCY, colums[21]);
+                cv.put(COLUMN_PURCHASE_PLACE, colums[22]);
+                cv.put(MYLISTS_COLUMN_LIST_NAME, colums[23]);
                 dbConnector.addListItem(cv);
             }
             Helper.encrypt(sdListItemsFile);
@@ -888,66 +1037,9 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-//
-//
-//
-//
-//
-//
-//
-//        //Очищаем базу
-//        // TODO: 17.08.2017 Сделать бэкап на случай сбоя записи?
-//        dbConnector.clearTable(DbConnector.TABLE_MYLISTSITEMS);
-//        try {
-//
-//            // открываем поток для чтения
-//            BufferedReader br = new BufferedReader(new FileReader(sdListItemsFile));
-//            String str = "";
-//            // читаем содержимое
-//
-//            while ((str = br.readLine()) != null) {
-////                Log.d("Читаем", str);
-//                String[] colums = str.split(",");
-//                ContentValues cv = new ContentValues();
-//                cv.put(COLUMN_BARCODE, colums[0].trim()); //barcode
-//                cv.put(COLUMN_BRAND, colums[1].trim());//brand
-//                cv.put(COLUMN_BRAND_CATNO, colums[2].trim());//brand_catno
-//                cv.put(COLUMN_SCALE, colums[3].trim());//scale INT
-//                cv.put(COLUMN_KIT_NAME, colums[4].trim());//kitname
-//                cv.put(COLUMN_DESCRIPTION, colums[5].trim());//desc
-//                cv.put(COLUMN_ORIGINAL_KIT_NAME, colums[6].trim());//original name
-//                cv.put(COLUMN_CATEGORY, colums[7].trim());//category - tag
-//                cv.put(COLUMN_COLLECTION, colums[8].trim());//collection
-//                cv.put(COLUMN_SEND_STATUS, colums[9].trim());//send status
-//                cv.put(COLUMN_ID_ONLINE, colums[10]); // cloud id
-//                cv.put(COLUMN_BOXART_URI, colums[11]); // local boxart image file
-//                cv.put(COLUMN_BOXART_URL, colums[12].trim());//boxart url
-////                cv.put(DbConnector.COLUMN_IS_DELETED, colums[13].trim());//is deleted
-//                cv.put(COLUMN_DATE, colums[14].trim());//is deleted
-//
-//                cv.put(COLUMN_YEAR, colums[15].trim());//date
-//                cv.put(COLUMN_PURCHASE_DATE, colums[16].trim());//date
-//                cv.put(COLUMN_PRICE, colums[17].trim());//priceFLOAT
-//                cv.put(COLUMN_QUANTITY, colums[18].trim());//INT
-//                cv.put(COLUMN_NOTES, colums[19].trim());//notes
-//                cv.put(COLUMN_CURRENCY, colums[20].trim());//валюта
-//                cv.put(COLUMN_PURCHASE_PLACE, colums[21].trim());
-//
-//                cv.put(DbConnector.MYLISTSITEMS_LISTNAME, colums[22].trim());//listname
-//                dbConnector.addListItem(cv);
-//            }
-////            Helper.encrypt(sdListItemsFile);
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-////            progressDialog.dismiss();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-////            progressDialog.dismiss();
-//        }
     }
+
+    /////////////////////
 
     private void setDefaultCurrency(String currency){
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());

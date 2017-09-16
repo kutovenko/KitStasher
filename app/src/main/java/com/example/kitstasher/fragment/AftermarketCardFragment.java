@@ -1,12 +1,14 @@
 package com.example.kitstasher.fragment;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +20,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.kitstasher.R;
+import com.example.kitstasher.activity.KitActivity;
 import com.example.kitstasher.other.Constants;
 import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.Helper;
@@ -25,6 +28,7 @@ import com.example.kitstasher.other.Helper;
 import java.io.File;
 
 import static android.R.drawable.ic_menu_camera;
+import static android.app.Activity.RESULT_OK;
 
 /**
  * Created by Алексей on 08.09.2017.
@@ -33,8 +37,8 @@ import static android.R.drawable.ic_menu_camera;
 public class AftermarketCardFragment extends Fragment {
     private Context context;
     private ImageView ivBoxart;
-    private TextView tvKitname, tvBrand, tvBrandcatno, tvScale, tvScalematesUrl, tvGoogleUrl;
-    private Button btnBack;
+    private TextView tvKitname, tvBrand, tvBrandcatno, tvScale, tvScalematesUrl, tvGoogleUrl, tvAfterNotes;
+    private Button btnBack, btnEditAftermarket;
 
     DbConnector dbConnector;
 
@@ -49,23 +53,20 @@ public class AftermarketCardFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_kit_card, container, false);
+        View view = inflater.inflate(R.layout.fragment_after_card, container, false);
         context = getActivity();
 
 
-//        Character mode = getArguments().getChar("mode");
+
         String listname = getArguments().getString("listname");
 
-//        int scale = getArguments().getInt("scale");
-//                bundle.putLong("kitid", cursor.getLong(cursor.getColumnIndex(DbConnector.COLUMN_ID)));
-//        int position = getArguments().getInt("position");
-//        int categoryToreturn = getArguments().getInt("category");
-        long after_id = getArguments().getLong("id");
+        final long kitId = getArguments().getLong("id"); //для возврата в Кит
+        final long afterId = getArguments().getLong("after_id"); //для демонстрации карточки
 
         dbConnector = new DbConnector(context);
         dbConnector.open();
 
-        Cursor cursor = dbConnector.getAftermarketByID(after_id);
+        Cursor cursor = dbConnector.getAftermarketByID(afterId);
         cursor.moveToFirst();
         String uri = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BOXART_URI));
 
@@ -75,11 +76,13 @@ public class AftermarketCardFragment extends Fragment {
         String scale = "1/" + String.valueOf(getArguments().getInt("scale"));
         String url = getArguments().getString("url");
         String scalematesUrl = getArguments().getString("scalemates");
+        String notes = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_NOTES));
 
-        String pictureName = brand
-                + catno
-                + Constants.SIZE_SMALL
-                + ".jpg";
+        String pictureName = uri;
+//        String pictureName = brand
+//                + catno
+////                + Constants.SIZE_SMALL
+//                + ".jpg";
 
 
 
@@ -89,13 +92,24 @@ public class AftermarketCardFragment extends Fragment {
         btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //todo нужно вернуться на карточку кита, т.е во фрагмент другой активити
-//                SearchFragment searchFragment = new SearchFragment();
-//                android.support.v4.app.FragmentTransaction fragmentTransaction =
-//                        getFragmentManager().beginTransaction();
-//                fragmentTransaction.replace(R.id.mainactivityContainer, searchFragment);
-//                fragmentTransaction.addToBackStack("card_fragment");
-//                fragmentTransaction.commit();
+                Intent intent = new Intent(context, KitActivity.class);
+                intent.putExtra("id", kitId);
+                getActivity().setResult(RESULT_OK, intent);
+                getActivity().finish();
+
+            }
+        });
+        btnEditAftermarket = (Button)view.findViewById(R.id.btnEditAftermarket);
+        btnEditAftermarket.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AftermarketEditFragment fragment = new AftermarketEditFragment();
+                Bundle bundle = new Bundle();
+                bundle.putLong("after_id", afterId);
+                fragment.setArguments(bundle);
+                android.support.v4.app.FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+                fragmentTransaction.replace(R.id.linlayoutAftermarketContainer, fragment);
+                fragmentTransaction.commit();
             }
         });
 
@@ -107,15 +121,11 @@ public class AftermarketCardFragment extends Fragment {
         tvBrandcatno = (TextView)view.findViewById(R.id.tvCatno);
         tvBrandcatno.setText(cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BRAND_CATNO)));
         tvScale = (TextView)view.findViewById(R.id.tvScale);
-        tvScale.setText(cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_SCALE)));
+        tvScale.setText("1/" + cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_SCALE)));
 
-        tvScalematesUrl = (TextView)view.findViewById(R.id.tvScalemates);
-        tvScalematesUrl.setClickable(true);
-        tvScalematesUrl.setMovementMethod(LinkMovementMethod.getInstance());
-        String scalematesText = "<a href='https://www.scalemates.com/"
-                + scalematesUrl
-                + "'> " + getString(R.string.Look_up_on_Scalemates) + "</a>";
-        tvScalematesUrl.setText(Helper.fromHtml(scalematesText));
+        tvAfterNotes = (TextView)view.findViewById(R.id.tvNotes);
+        tvAfterNotes.setText(notes);
+
 
         tvGoogleUrl = (TextView)view.findViewById(R.id.tvGoogle);
         tvGoogleUrl.setClickable(true);

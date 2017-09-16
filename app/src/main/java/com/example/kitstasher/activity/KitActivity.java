@@ -1,11 +1,14 @@
 package com.example.kitstasher.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.LinearLayout;
 
 import com.example.kitstasher.R;
 import com.example.kitstasher.fragment.KitEditFragment;
+import com.example.kitstasher.fragment.ViewStashFragment;
 import com.example.kitstasher.other.Constants;
 
 import static java.lang.Integer.parseInt;
@@ -1035,6 +1038,18 @@ public class KitActivity extends AppCompatActivity
 ////                alertDialog.dismiss();
 ////            }
 ////        });
+//    }
+
+//    @Override
+//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        //super call required for work with onActivityResult from nested fragments
+//        super.onActivityResult(requestCode, resultCode, data);
+//
+//        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_POSITION){
+//;
+//        }
+//        if (resultCode != RESULT_OK){
+//        }
 //    }
 
 }

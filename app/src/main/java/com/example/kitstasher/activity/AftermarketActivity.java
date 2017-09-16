@@ -21,7 +21,8 @@ public class AftermarketActivity extends AppCompatActivity {
 //        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarList);
 //        setSupportActionBar(toolbar);
         int position = getIntent().getExtras().getInt(Constants.LIST_POSITION);
-        long id = getIntent().getExtras().getLong("after_id");
+        long kitId = getIntent().getExtras().getLong("id");
+        long afterId = getIntent().getExtras().getLong("after_id");
         int categoryToReturn = getIntent().getExtras().getInt(Constants.LIST_CATEGORY);
 
         String scaleFilter = getIntent().getExtras().getString("scaleFilter");
@@ -41,7 +42,8 @@ public class AftermarketActivity extends AppCompatActivity {
         Bundle bundle = new Bundle();
         bundle.putChar(Constants.EDIT_MODE, mode);
         bundle.putInt(Constants.LIST_POSITION, position);
-        bundle.putLong("id", id);
+        bundle.putLong("kit_id", kitId);
+        bundle.putLong("after_id", afterId);
         bundle.putInt(Constants.LIST_CATEGORY, categoryToReturn);
 
         bundle.putString("scaleFilter", scaleFilter);

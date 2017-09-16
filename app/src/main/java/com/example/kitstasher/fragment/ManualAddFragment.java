@@ -141,6 +141,8 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 
     private final int MY_PERMISSIONS_REQUEST_CAMERA = 11;
 
+    private long kit_id, after_id;
+
 
     public ManualAddFragment() {
         // Required empty public constructor
@@ -345,9 +347,11 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         kitNoengname = "";
         boxartUrl = "";
         boxartUri = "";
-        if (getArguments() != null && getArguments().getChar(Constants.EDIT_MODE) == Constants.MODE_AFTERMARKET
+
+        if (getArguments() != null && getArguments().getChar(Constants.EDIT_MODE) == Constants.MODE_AFTERMARKET//???
                && getArguments().getString("boxart_uri") != null){
             boxartUri = getArguments().getString("boxart_uri");
+
         }
 
         dateAdded = df.format(c.getTime());
@@ -752,7 +756,8 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                             fragmentTransaction.replace(R.id.llListsContainer, listViewFragment);
                             fragmentTransaction.commit();
 
-                        }else if (mode == Constants.MODE_AFTERMARKET){ //запись в афтемаркет
+                        }else if (mode == Constants.MODE_AFTERMARKET)
+                        { //запись в афтемаркет
                             writeToLocalDatabase(aftermarket);
                             Toast.makeText(getActivity(), R.string.Kit_added_to_list, Toast.LENGTH_SHORT).show();
                             sendStatus = "";
@@ -762,12 +767,16 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 
                             int position = getArguments().getInt(Constants.LIST_POSITION);
                             int categoryToReturn = getArguments().getInt(Constants.LIST_CATEGORY);
+                            long after_id = getArguments().getLong("after_id");
+                            long kit_id = getArguments().getLong("id");
+
                             KitEditFragment kitEditFragment = new KitEditFragment();
 
                             Bundle bundle = new Bundle(5);
                             bundle.putInt("position", position);
                             bundle.putInt("category", categoryToReturn);
-                            bundle.putLong("id", incomeKitId);
+                            bundle.putLong("id", kit_id);
+                            bundle.putLong("after_id", after_id);
                             bundle.putChar(Constants.EDIT_MODE, Constants.MODE_AFTERMARKET);
                             kitEditFragment.setArguments(bundle);
 //                            Bundle bundle = new Bundle(1);
@@ -1866,7 +1875,12 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 
     /**Writes boxart image file to local directory**/
     private void writeBoxartFile(ByteArrayOutputStream baos, Bitmap bitmap) {
-        String pictureName = kit.getBrand() + kit.getBrandCatno() + Constants.BOXART_URL_POSTFIX; //todo добавить description
+        String pictureName = "";
+        if (mode == Constants.MODE_KIT) {
+            pictureName = kit.getBrand() + kit.getBrandCatno() + Constants.BOXART_URL_POSTFIX; //todo добавить description
+        }else if (mode == Constants.MODE_AFTERMARKET){
+            pictureName = aftermarket.getBrand() + aftermarket.getBrandCatno() + Constants.BOXART_URL_POSTFIX; //todo добавить description
+        }
         File exportDir = new File(Environment.getExternalStorageDirectory(), "Kitstasher");
         File boxartImageFile = new File(exportDir + File.separator + pictureName);
         try {
@@ -1895,7 +1909,11 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             e.printStackTrace();
         }
         boxartUri = pictureName;
-        kit.setBoxart_uri(pictureName);
+        if (mode == Constants.MODE_LIST || mode == Constants.MODE_KIT){
+            kit.setBoxart_uri(pictureName);
+        }else if (mode == Constants.MODE_AFTERMARKET){
+            aftermarket.setBoxartUri(pictureName);
+        }
     }
 
     private void saveWithBoxartToParse(Bitmap bmp, Kit kitSave){
@@ -2052,32 +2070,5 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     public void onNothingSelected(AdapterView<?> adapterView) {
 
     }
-//Связь с интерфейсом. Перевод кодов в надписи с транслэйтом
-//    private String getKitDescription(String description) {
-//        String desc = "";
-//        if (!description.equals("")) {
-//            switch (description) {
-//                case "0":
-//                    desc = getString(R.string.new_tool);
-//                    break;
-//                case "1":
-//                    desc = getString(R.string.reissue);
-//                    break;
-//                case "2":
-//                    desc = getString(R.string.changed_parts);
-//                    break;
-//                case "3":
-//                    desc = getString(R.string.new_decal);
-//                    break;
-//                case "4":
-//                    desc = getString(R.string.changed_box);
-//                    break;
-//                case "5":
-//                    desc = getString(R.string.repack);
-//            }
-//        }else{
-//            desc = "";
-//        }
-//        return desc;
-//    }
+
 }

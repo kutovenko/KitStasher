@@ -32,14 +32,16 @@ public class AdapterChooserList extends CursorAdapter {
     private final Context context;
     List<Integer> selectedItemsPositions;//to store all selected items position
     List<String> selectedIds;
+    char mode;
 
 
 
-    public AdapterChooserList(Context context, Cursor c, int flags) {
+    public AdapterChooserList(Context context, Cursor c, int flags, char mode) {
         super(context, c, flags);
         this.context = context;
         selectedItemsPositions = new ArrayList<Integer>();
         selectedIds = new ArrayList<String>();
+        this.mode = mode;
     }
 
     static class ViewHolder {
@@ -94,9 +96,13 @@ public class AdapterChooserList extends CursorAdapter {
         holder.tvScale = (TextView)view.findViewById(R.id.tvScale);
         holder.cllContainer = (CheckableLinearLayout)view.findViewById(R.id.llChooseItemContainer);
 
-
-
-        String kitname = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_KIT_NAME));
+/////////////// TODO: 15.09.2017 разделить на кит и афтер
+        String kitname = "";
+        if (mode == Constants.MODE_KIT){
+            kitname = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_KIT_NAME));
+        }else if (mode == Constants.MODE_AFTERMARKET){
+            kitname = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_AFTERMARKET_NAME));
+        }
         String brand = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BRAND));
         String scale = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_SCALE));
         String category = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_CATEGORY));
@@ -105,12 +111,6 @@ public class AdapterChooserList extends CursorAdapter {
         holder.tvChooseKitBrand.setText(brand);
         holder.tvScale.setText(scale);
 
-//        String ship = Constants.CAT_SEA;
-//        String air = Constants.CAT_AIR;
-//        String ground = Constants.CAT_GROUND;
-//        String space = Constants.CAT_SPACE;
-//        String other = Constants.CAT_OTHER;
-//        String car = Constants.CAT_AUTOMOTO;
 
         if (Constants.CAT_SEA.equals(category)) {
             holder.ivChooseKitCategory.setImageResource(R.drawable.ic_tag_ship_black_24dp);

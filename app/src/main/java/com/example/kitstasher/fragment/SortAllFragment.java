@@ -90,7 +90,7 @@ public class SortAllFragment extends Fragment implements SortKits, View.OnClickL
         filters = new String[0];
         dbConnector = new DbConnector(getActivity());
         dbConnector.open();
-        cursor = dbConnector.filteredKits(filters, "_id DESC", categoryTab);
+        cursor = dbConnector.filteredKits(DbConnector.TABLE_KITS, filters, "_id DESC", categoryTab);
     }
 
     @Override
@@ -134,10 +134,6 @@ public class SortAllFragment extends Fragment implements SortKits, View.OnClickL
                 intent.putExtra("kitnameFilter", filters[2]);
                 intent.putExtra("statusFilter", filters[3]);
                 intent.putExtra("mediaFilter", filters[4]);
-
-
-//                intent.putExtra("description", description);
-//                intent.putExtra("year", year);
                 getActivity().startActivityForResult(intent, REQUEST_CODE_POSITION);
             }
         });
@@ -165,7 +161,7 @@ public class SortAllFragment extends Fragment implements SortKits, View.OnClickL
             public boolean onLongClick(View view) {
                 filters = new String[0];
                 ibtnFilter.setBackgroundColor(Color.TRANSPARENT);
-                cursor = dbConnector.filteredKits(filters, "_id DESC", categoryTab);
+                cursor = dbConnector.filteredKits(DbConnector.TABLE_KITS, filters, "_id DESC", categoryTab);
                 prepareListAndAdapter(cursor);
                 Toast.makeText(mContext, R.string.Filters_disabled, Toast.LENGTH_SHORT).show();
                 return true;
@@ -187,7 +183,7 @@ public class SortAllFragment extends Fragment implements SortKits, View.OnClickL
                 filters[4] = bundle.getString("mediaFilter");
                 ibtnFilter.setBackgroundColor(Helper.getColor(getActivity(), R.color.colorAccent));
             }
-            cursor = dbConnector.filteredKits(filters, "_id DESC", categoryTab);
+            cursor = dbConnector.filteredKits(DbConnector.TABLE_KITS, filters, "_id DESC", categoryTab);
 //            long returnItemId = bundle.getLong("id");
             int returnItem = bundle.getInt("position");
             prepareListAndAdapter(cursor);
@@ -341,7 +337,7 @@ public class SortAllFragment extends Fragment implements SortKits, View.OnClickL
 
     @Override
     public void SortByBrandAsc() {
-        cursor = dbConnector.filteredKits(filters, "brand", categoryTab);
+        cursor = dbConnector.filteredKits(DbConnector.TABLE_KITS, filters, "brand", categoryTab);
         prepareListAndAdapter(cursor);
         ivSortBrand.setImageResource(R.drawable.ic_keyboard_arrow_up_black_24dp);
         sortBrand = true;
@@ -349,7 +345,7 @@ public class SortAllFragment extends Fragment implements SortKits, View.OnClickL
 
     @Override
     public void SortByBrandDesc() {
-        cursor = dbConnector.filteredKits(filters, "brand DESC", categoryTab);
+        cursor = dbConnector.filteredKits(DbConnector.TABLE_KITS, filters, "brand DESC", categoryTab);
         prepareListAndAdapter(cursor);
         ivSortBrand.setImageResource(R.drawable.ic_keyboard_arrow_down_black_24dp);
         sortBrand = false;
@@ -358,7 +354,7 @@ public class SortAllFragment extends Fragment implements SortKits, View.OnClickL
 
     @Override
     public void SortByScaleAsc() {
-        cursor = dbConnector.filteredKits(filters, "scale", categoryTab);
+        cursor = dbConnector.filteredKits(DbConnector.TABLE_KITS, filters, "scale", categoryTab);
         prepareListAndAdapter(cursor);
         ivSortScale.setImageResource(R.drawable.ic_keyboard_arrow_up_black_24dp);
         sortScale = true;
@@ -366,7 +362,7 @@ public class SortAllFragment extends Fragment implements SortKits, View.OnClickL
 
     @Override
     public void SortByScaleDesc() {
-        cursor = dbConnector.filteredKits(filters, "scale DESC", categoryTab);
+        cursor = dbConnector.filteredKits(DbConnector.TABLE_KITS, filters, "scale DESC", categoryTab);
         prepareListAndAdapter(cursor);
         ivSortScale.setImageResource(R.drawable.ic_keyboard_arrow_down_black_24dp);
         sortScale = false;
@@ -374,7 +370,7 @@ public class SortAllFragment extends Fragment implements SortKits, View.OnClickL
 
     @Override
     public void SortByDateAcs() {
-        cursor = dbConnector.filteredKits(filters, "_id", categoryTab);
+        cursor = dbConnector.filteredKits(DbConnector.TABLE_KITS, filters, "_id", categoryTab);
         prepareListAndAdapter(cursor);
         ivSortDate.setImageResource(R.drawable.ic_keyboard_arrow_up_black_24dp);
         sortDate = true;
@@ -382,7 +378,7 @@ public class SortAllFragment extends Fragment implements SortKits, View.OnClickL
 
     @Override
     public void SortByDateDesc() {
-        cursor = dbConnector.filteredKits(filters, "_id DESC", categoryTab);
+        cursor = dbConnector.filteredKits(DbConnector.TABLE_KITS, filters, "_id DESC", categoryTab);
         prepareListAndAdapter(cursor);
         ivSortDate.setImageResource(R.drawable.ic_keyboard_arrow_down_black_24dp);
         sortDate = false;
@@ -390,7 +386,7 @@ public class SortAllFragment extends Fragment implements SortKits, View.OnClickL
 
     @Override
     public void SortByNameAsc() {
-        cursor = dbConnector.filteredKits(filters, "kit_name", categoryTab);
+        cursor = dbConnector.filteredKits(DbConnector.TABLE_KITS, filters, "kit_name", categoryTab);
         prepareListAndAdapter(cursor);
         ivSortKitname.setImageResource(R.drawable.ic_keyboard_arrow_up_black_24dp);
         sortName = true;
@@ -398,7 +394,7 @@ public class SortAllFragment extends Fragment implements SortKits, View.OnClickL
 
     @Override
     public void SortByNameDesc() {
-        cursor = dbConnector.filteredKits(filters, "kit_name DESC", categoryTab);
+        cursor = dbConnector.filteredKits(DbConnector.TABLE_KITS, filters, "kit_name DESC", categoryTab);
         prepareListAndAdapter(cursor);
         ivSortKitname.setImageResource(R.drawable.ic_keyboard_arrow_down_black_24dp);
         sortName = false;
@@ -468,31 +464,31 @@ public class SortAllFragment extends Fragment implements SortKits, View.OnClickL
 
 
         final Spinner spFilterStatus = (Spinner)dialogView.findViewById(R.id.spStatus);
-        ArrayList<String> statusArray = dbConnector.getFilterFromIntData(DbConnector.COLUMN_STATUS);
+        ArrayList<String> statusArray = dbConnector.getFilterFromIntData(DbConnector.TABLE_KITS, DbConnector.COLUMN_STATUS);
         ArrayAdapter statusAdapter = new ArrayAdapter<>(getActivity(),
                 android.R.layout.simple_spinner_item, statusArray);
         spFilterStatus.setAdapter(statusAdapter);
 
         final Spinner spFilterMedia = (Spinner) dialogView.findViewById(R.id.spMedia);
-        ArrayList<String> mediaArray = dbConnector.getFilterFromIntData(DbConnector.COLUMN_MEDIA);
+        ArrayList<String> mediaArray = dbConnector.getFilterFromIntData(DbConnector.TABLE_KITS, DbConnector.COLUMN_MEDIA);
         ArrayAdapter mediaAdapter = new ArrayAdapter<>(getActivity(),
                 android.R.layout.simple_spinner_item, mediaArray);
         spFilterMedia.setAdapter(mediaAdapter);
 
         final Spinner spFilterScale = (Spinner)dialogView.findViewById(R.id.spFilterScale);
-        ArrayList<String> scalesArray = dbConnector.getFilterData(DbConnector.COLUMN_SCALE);
+        ArrayList<String> scalesArray = dbConnector.getFilterData(DbConnector.TABLE_KITS, DbConnector.COLUMN_SCALE);
         ArrayAdapter scalesAdapter = new ArrayAdapter<>(getActivity(),
                 android.R.layout.simple_spinner_item, scalesArray);
         spFilterScale.setAdapter(scalesAdapter);
 
         final Spinner spFilterBrand = (Spinner)dialogView.findViewById(R.id.spFilterBrands);
-        ArrayList<String> brandsArray = dbConnector.getFilterData(DbConnector.COLUMN_BRAND);
+        ArrayList<String> brandsArray = dbConnector.getFilterData(DbConnector.TABLE_KITS, DbConnector.COLUMN_BRAND);
         ArrayAdapter brandsAdapter = new ArrayAdapter<>(getActivity(),
                 android.R.layout.simple_spinner_item, brandsArray);
         spFilterBrand.setAdapter(brandsAdapter);
 
 
-        ArrayList<String> kitnamesArray = dbConnector.getFilterData(DbConnector.COLUMN_KIT_NAME);
+        ArrayList<String> kitnamesArray = dbConnector.getFilterData(DbConnector.TABLE_KITS, DbConnector.COLUMN_KIT_NAME);
 
         final AutoCompleteTextView acFilterKitname = (AutoCompleteTextView)dialogView
                 .findViewById(R.id.acFilterKitname);
@@ -511,10 +507,10 @@ public class SortAllFragment extends Fragment implements SortKits, View.OnClickL
                 String mediaFilter = "";
 
                 if (cbFilterStatus.isChecked()){
-                    statusFilter = spFilterStatus.getSelectedItem().toString();
+                    statusFilter = String.valueOf(spFilterStatus.getSelectedItemPosition()); //преобразовать в код
                 }
                 if (cbFilterMedia.isChecked()){
-                    mediaFilter = spFilterMedia.getSelectedItem().toString();
+                    mediaFilter = String.valueOf(spFilterMedia.getSelectedItemPosition());
                 }
 
                 if (cbFilterScale.isChecked()){
@@ -536,7 +532,7 @@ public class SortAllFragment extends Fragment implements SortKits, View.OnClickL
                     filters[3] = statusFilter;
                     filters[4] = mediaFilter;
 
-                    cursor = dbConnector.filteredKits(filters, "_id DESC", categoryTab);
+                    cursor = dbConnector.filteredKits(DbConnector.TABLE_KITS, filters, "_id DESC", categoryTab);
                     prepareListAndAdapter(cursor);
 
                     ibtnFilter.setBackgroundColor(Helper.getColor(getActivity(), R.color.colorAccent));

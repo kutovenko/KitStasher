@@ -520,7 +520,7 @@
                     android:layout_marginStart="20dp"
                     android:layout_marginTop="8dp"
                     android:ems="10"
-                    android:hint="@string/Purchased_from"
+                    android:hint="@string/Shop"
                     android:inputType="text" />
             </android.support.design.widget.TextInputLayout>
 
@@ -577,7 +577,7 @@
                 <ListView
                     android:id="@+id/lvAftermarket"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    android:layout_height="150dp" />
             </LinearLayout>
 
             <Button

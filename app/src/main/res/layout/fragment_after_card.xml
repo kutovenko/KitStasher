@@ -11,7 +11,7 @@
         <ImageView
             android:id="@+id/ivBoxart"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="200dp"
             app:srcCompat="@android:drawable/ic_menu_report_image" />
 
         <TextView
@@ -19,7 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="20dp"
-            android:text="Kit Name"
+            android:text="Aftermarket name"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
 
         <TextView
@@ -47,11 +47,20 @@
             android:text="1/72" />
 
         <TextView
-            android:id="@+id/tvScalemates"
+            android:id="@+id/textView27"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="20dp"
-            android:text="Scalemates" />
+            android:layout_gravity="center_horizontal"
+            android:gravity="center_horizontal"
+            android:text="@string/notes" />
+
+        <TextView
+            android:id="@+id/tvNotes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:background="@color/com_facebook_button_login_silver_background_color_pressed"
+            android:lines="3" />
 
         <TextView
             android:id="@+id/tvGoogle"
@@ -60,12 +69,30 @@
             android:layout_margin="20dp"
             android:text="Google" />
 
-        <Button
-            android:id="@+id/btnBack"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="20dp"
-            android:background="@drawable/button_light"
-            android:text="@string/Back" />
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnBack"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="20dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_light"
+                android:text="@string/Back" />
+
+            <Button
+                android:id="@+id/btnEditAftermarket"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="20dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_light"
+                android:text="@string/edit" />
+
+        </LinearLayout>
+
     </LinearLayout>
 </ScrollView>

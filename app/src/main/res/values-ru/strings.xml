@@ -217,4 +217,8 @@
     <string name="status_new">Запакован</string>
     <string name="status_opened">Открыт</string>
     <string name="status_started">Снят с литников</string>
+    <string name="Aftermarket_name">Название дополнения</string>
+    <string name="Media">Материал</string>
+    <string name="Shop">Магазин</string>
+    <string name="aftermarket">Дополнения</string>
 </resources>

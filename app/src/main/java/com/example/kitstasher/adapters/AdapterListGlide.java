@@ -72,7 +72,10 @@ public class AdapterListGlide extends CursorAdapter {
         String description = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_DESCRIPTION));
         String noengname = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_ORIGINAL_KIT_NAME));
 
-        String id = String.valueOf(cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_ID)));
+//        String id = String.valueOf(cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_ID)));
+//        String status = String.valueOf(cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_STATUS)));
+//        String media = String.valueOf(cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_MEDIA)));
+
 
 //        String noengname = String.valueOf(cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_ORIGINAL_KIT_NAME)));
         ship = Constants.CAT_SEA;
@@ -113,7 +116,7 @@ public class AdapterListGlide extends CursorAdapter {
         holder.tvFullKitname.setText(name);
         holder.tvDescription.setText(getKitDescription(description));
         holder.tvYear.setText(year);
-        holder.tvNoEngName.setText(noengname + id);
+        holder.tvNoEngName.setText(noengname);
 
         //Check - if URI - load local image, else - load from cloud
         if (!Helper.isBlank(uri)) {

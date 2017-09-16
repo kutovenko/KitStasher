@@ -20,6 +20,7 @@ import com.example.kitstasher.R;
 import com.example.kitstasher.activity.ChooserActivity;
 import com.example.kitstasher.activity.KitActivity;
 import com.example.kitstasher.adapters.AdapterListGlide;
+import com.example.kitstasher.other.Constants;
 import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.Helper;
 import com.example.kitstasher.other.SortKits;
@@ -145,6 +146,7 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
             public void onClick(View view) {
                 Intent intent = new Intent(context, ChooserActivity.class);
                 intent.putExtra("listname", listname);
+                intent.putExtra(Constants.EDIT_MODE, Constants.MODE_KIT);
                 startActivityForResult(intent, 10);
                 alertDialog.dismiss();
             }

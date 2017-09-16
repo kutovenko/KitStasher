@@ -8,6 +8,122 @@
     android:layout_weight="1"
     android:orientation="vertical"
     tools:context="com.example.kitstasher.activity.ListActivity">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/menu_background"
+        android:gravity="right|center"
+        android:orientation="horizontal">
+
+
+        <LinearLayout
+            android:id="@+id/linLayoutChooseSortDate"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="0.25"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/textView3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                android:gravity="right|center"
+                android:text="@string/date" />
+
+            <ImageView
+                android:id="@+id/ivChooseSortDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/ic_keyboard_arrow_down_black_24dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/linLayoutChooseSortBrand"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="0.25"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:gravity="end|center"
+                android:text="@string/Brand" />
+
+            <ImageView
+                android:id="@+id/ivChooseSortBrand"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/ic_keyboard_arrow_up_black_24dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/linLayoutChooseSortKitname"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="0.25"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                android:gravity="right|center"
+                android:text="@string/Name" />
+
+            <ImageView
+                android:id="@+id/ivChooseSortKitname"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/ic_keyboard_arrow_up_black_24dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/linLayoutChooseSortScale"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="0.25"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                android:gravity="right|center"
+                android:text="@string/Scale" />
+
+            <ImageView
+                android:id="@+id/ivChooseSortScale"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/ic_keyboard_arrow_up_black_24dp" />
+
+
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/ibtnChooseFilter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/ic_filter_list_black_24dp" />
+    </LinearLayout>
 
     <ListView
         android:id="@+id/lvChooser"
@@ -19,7 +135,7 @@
         android:layout_weight="1"
         android:choiceMode="multipleChoice"
         tools:layout_editor_absoluteX="8dp"
-        tools:layout_editor_absoluteY="8dp"></ListView>
+        tools:layout_editor_absoluteY="8dp"/>
 
     <LinearLayout
         android:layout_width="match_parent"

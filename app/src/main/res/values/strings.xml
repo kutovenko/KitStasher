@@ -342,6 +342,9 @@
     <string name="Status" >Status</string>
     <string name="Media">Media</string>
     <string name="aftermarket">Aftermarket</string>
+    <string name="Shop">Shop</string>
+    <string name="Aftermarket_name">Aftermarket Name</string>
+    <string name="Options">Settings</string>
 
 
 </resources>

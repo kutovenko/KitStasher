@@ -139,6 +139,8 @@ Prefixes and postfixes for links
     public static final String LISTS_FILE_NAME = "lists";
     public static final String LISTITEMS_FILE_NAME = "listitems";
     public static final String MYSHOPS_FILE_NAME = "myshops";
+    public static final String AFTER_FILE_NAME = "aftermarket";
+    public static final String KIT_AFTER_FILE_NAME = "kitandafter";
 
     //Defaults
     public static final String DEFAULT_CURRENCY = "def_curr";
@@ -171,5 +173,8 @@ Prefixes and postfixes for links
     public static final int STATUS_INPROGRESS = 3;
     public static final int STATUS_FINISHED = 4;
     public static final int STATUS_LOST = 5;
+
+    //Aftermarket bundles
+    public static final String AFTER_ID = "after_id";
 
 }
