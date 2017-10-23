@@ -32,7 +32,8 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
         btnViewStashAction.setOnClickListener(this);
         btnStatisticsAction = (Button)view.findViewById(R.id.btnStatisticsAction);
         btnStatisticsAction.setOnClickListener(this);
-
+        Button btnAftermarketAction = (Button) view.findViewById(R.id.btnAftermarketAction);
+        btnAftermarketAction.setOnClickListener(this);
 
         return view;
     }
@@ -40,6 +41,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
     public void onClick(View view) {
         android.support.v4.app.FragmentTransaction fragmentTransaction =
                 getFragmentManager().beginTransaction();
+        Bundle bundle = new Bundle();
 
         switch (view.getId()){
             case R.id.btnAddKitAction:
@@ -54,8 +56,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
                 break;
             case R.id.btnViewStashAction:
                 ViewStashFragment viewStashFragment = new ViewStashFragment();
-                Bundle bundle = new Bundle(1);
+//                Bundle bundle = new Bundle(2);
                 bundle.putInt(Constants.LIST_CATEGORY, 0);
+                bundle.putBoolean(Constants.AFTERMARKET_MODE, false);
                 viewStashFragment.setArguments(bundle);
                 fragmentTransaction.replace(R.id.mainactivityContainer, viewStashFragment);
                 fragmentTransaction.commit();
@@ -65,6 +68,15 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
                 fragmentTransaction.replace(R.id.mainactivityContainer, statisticsFragment);
                 fragmentTransaction.commit();
                 break;
+            case R.id.btnAftermarketAction:
+                AftermarketFragment aftermarketFragment = new AftermarketFragment();
+//                Bundle afterBundle = new Bundle(2);
+//                afterBundle.
+                bundle.putInt(Constants.LIST_CATEGORY, 0);
+                bundle.putBoolean(Constants.AFTERMARKET_MODE, true);
+                aftermarketFragment.setArguments(bundle);
+                fragmentTransaction.replace(R.id.mainactivityContainer, aftermarketFragment);
+                fragmentTransaction.commit();
         }
     }
 }

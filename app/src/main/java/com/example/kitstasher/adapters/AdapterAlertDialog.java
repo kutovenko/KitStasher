@@ -67,7 +67,7 @@ public class AdapterAlertDialog extends ArrayAdapter<Item> {
             return Constants.BOXART_URL_PREFIX
                     + url
                     + Constants.BOXART_URL_SMALL
-                    + Constants.BOXART_URL_POSTFIX;
+                    + Constants.JPG;
         }else{
             return "";
         }

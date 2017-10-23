@@ -22,8 +22,11 @@
     </style>
 
     <style name="AppTheme.ButtonAct" parent="Widget.AppCompat.Button.Colored">
-        <item name="colorButtonNormal">@color/act</item>
+        <!--<item name="colorButtonNormal">@color/act</item>-->
         <item name="android:textColor">@color/text</item>
+        <item name="android:background">@drawable/button</item>
+
+
     </style>
 
     <style name="AppTheme.ButtonConfirm" parent="Widget.AppCompat.Button.Colored">
@@ -36,4 +39,8 @@
         <item name="android:textColor">@color/text</item>
     </style>
 
+    <style name="AppTheme.LittleHeader" parent="TextAppearance.AppCompat.Small">
+        <item name="android:textColor">@color/text</item>
+        <item name="android:textStyle">bold</item>
+    </style>
 </resources>

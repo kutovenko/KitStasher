@@ -13,34 +13,24 @@ import com.example.kitstasher.adapters.AdapterViewStash;
 import com.example.kitstasher.other.Constants;
 
 /**
- * Created by Алексей on 21.04.2017.
+ * Created by Алексей on 29.09.2017.
  */
 
-public class ViewStashFragment extends Fragment{
-    private TabLayout tabLayout;
-    private ViewPager viewPager;
-    AdapterViewStash adapterViewStash;
-
-    public ViewStashFragment(){
+public class AftermarketFragment extends Fragment {
+    public AftermarketFragment() {
 
     }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-
         View view = inflater.inflate(R.layout.fragment_viewstash, container, false);
-        tabLayout = (TabLayout)view.findViewById(R.id.tabsViewStash);
+        TabLayout tabLayout = (TabLayout) view.findViewById(R.id.tabsViewStash);
         tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
-
-
-//        tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
-//        tabLayout.setTabMode(TabLayout.MODE_FIXED);
-        boolean aftermarketMode = getArguments().getBoolean("afterMode");
-
-        viewPager = (ViewPager)view.findViewById(R.id.viewpagerViewStash);
-        adapterViewStash = new AdapterViewStash(getChildFragmentManager(), getActivity(), aftermarketMode);
-        viewPager.setAdapter(adapterViewStash);
+        ViewPager viewPager = (ViewPager) view.findViewById(R.id.viewpagerViewStash);
+        viewPager.setAdapter(new AdapterViewStash(getChildFragmentManager(), getActivity(),
+                true));
 
         Bundle bundle = getArguments();
         if (!bundle.isEmpty()) {
@@ -49,15 +39,11 @@ public class ViewStashFragment extends Fragment{
             if (currentTab != 0) {
                 viewPager.setCurrentItem(currentTab);
             }
-        }else{
+        } else {
             int currentTab = 0;
             viewPager.setCurrentItem(currentTab);
         }
         tabLayout.setupWithViewPager(viewPager);
         return view;
-    }
-
-    public void refreshPages() {
-        adapterViewStash.notifyDataSetChanged();
     }
 }

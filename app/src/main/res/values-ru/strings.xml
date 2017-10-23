@@ -179,7 +179,7 @@
     <string name="Please_add_boxart_photo">Пожалуйста, добавьте фото коробки</string>
     <string name="Please_enter_data">Пожалуйста, внесите все нужные данные</string>
     <string name="Clear_date">Сбросить дату</string>
-    <string name="Date_not_set">Дата не установлена</string>
+    <string name="Date_not_set">Дата покупки</string>
     <string name="Place_of_purchase">Источник приобретения</string>
     <string name="Price">Цена</string>
     <string name="Purchased_from">Приобретено</string>
@@ -221,4 +221,8 @@
     <string name="Media">Материал</string>
     <string name="Shop">Магазин</string>
     <string name="aftermarket">Дополнения</string>
+    <string name="Or_enter">Или укажите:</string>
+    <string name="nav_aftermarket">Дополнения</string>
+    <string name="permission_denied_to_write">Нет разрешений на запись</string>
+    <string name="Your_device_cannot_take_pictures">Ваше устройство не поддерживает съемку</string>
 </resources>

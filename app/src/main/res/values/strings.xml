@@ -308,7 +308,7 @@
     <string name="Set">Set</string>
     <string name="Set_default_currency">Set default currency</string>
     <string name="Clear_date">Clear Date</string>
-    <string name="Date_not_set">Date not set</string>
+    <string name="Date_not_set">Set Date</string>
     <string name="myshops">My Shops</string>
     <string name="Filter">Filter</string>
     <string name="Filter_by">Filter by</string>
@@ -339,12 +339,22 @@
     <string name="status_inprogress">In progress</string>
     <string name="status_finished">Finished</string>
     <string name="status_lost_sold">Lost or Sold</string>
-    <string name="Status" >Status</string>
+    <string name="Status">Status</string>
     <string name="Media">Media</string>
     <string name="aftermarket">Aftermarket</string>
     <string name="Shop">Shop</string>
     <string name="Aftermarket_name">Aftermarket Name</string>
     <string name="Options">Settings</string>
+    <string name="Or_enter">Or Enter</string>
+    <string name="permission_denied_to_write">Permissions denied to write file</string>
+    <string name="nav_aftermarket">Aftermarket</string>
+    <string name="Main_information">Main information</string>
+    <string name="Purchase_info">Purchase information</string>
+    <string name="Category">Category</string>
+    <string name="please_add_boxart">Please add boxart image</string>
+    <string name="Lets_search">Let\'s search database!</string>
+    <string name="boxart_image">Boxart image</string>
+    <string name="kits">Kits</string>
 
 
 </resources>

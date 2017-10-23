@@ -104,9 +104,13 @@ public class SearchFragment extends Fragment implements AsyncApp42ServiceApi.App
                 android.R.layout.simple_dropdown_item_1line, myBrands);
         acBrand.addTextChangedListener(this);
         acBrand.setAdapter(acAdapterMybrands);
+        if (!isOnline()) {
+            btnCheck.setClickable(false);
+        }
 
         return view;
     }
+
 
     private boolean checkSearchFields() {
         boolean check = true; //Если true, проверка пройдена, можно записывать
@@ -194,7 +198,7 @@ public class SearchFragment extends Fragment implements AsyncApp42ServiceApi.App
                             R.string.permission_denied_to_use_camera, Toast.LENGTH_SHORT).show();
                     brcView.setVisibility(View.GONE);
                 }
-                return;
+//                return;
             }
 
             // other 'case' lines to check for other

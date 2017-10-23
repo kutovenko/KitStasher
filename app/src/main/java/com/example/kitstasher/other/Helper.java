@@ -1,11 +1,14 @@
 package com.example.kitstasher.other;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
 import android.support.v4.content.ContextCompat;
 import android.text.Html;
 import android.text.Spanned;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 
 import com.example.kitstasher.MyApplication;
 import com.example.kitstasher.R;
@@ -147,6 +150,19 @@ public class Helper {
         }
         return tag;
     }
+//
+//    public static String codeToDescription(String code){
+//        String desc = "";
+//        switch (code){
+//            case Constants.NEW_TOOL:
+//                desc = MyApplication.getContext().getResources().getString(R.string.new_tool);
+//                break;
+//            case Constants.REBOX:
+//                desc = MyApplication.getContext().getResources().getString(R.string.rebox);
+//                break;
+//        }
+//        return desc;
+//    }
 
     public static String tagToCode(String tag) {
         String code = tag;
@@ -220,11 +236,6 @@ public class Helper {
         return media;
     }
 
-//    public static int mediaToCode(String media){
-//        int code;
-//
-//        return code;
-//    }
 
     public static String codeToStatus(int code){
         String status;
@@ -270,6 +281,27 @@ public class Helper {
             result = Html.fromHtml(html);
         }
         return result;
+    }
+
+    public static void setListViewHeight(ListView listView) {
+        ListAdapter listAdapter = listView.getAdapter();
+        if (listAdapter == null)
+            return;
+
+        int desiredWidth = View.MeasureSpec.makeMeasureSpec(listView.getWidth(), View.MeasureSpec.UNSPECIFIED);
+        int totalHeight = 0;
+        View view = null;
+        for (int i = 0; i < listAdapter.getCount(); i++) {
+            view = listAdapter.getView(i, view, listView);
+            if (i == 0)
+                view.setLayoutParams(new ViewGroup.LayoutParams(desiredWidth, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+            view.measure(desiredWidth, View.MeasureSpec.UNSPECIFIED);
+            totalHeight += view.getMeasuredHeight();
+        }
+        ViewGroup.LayoutParams params = listView.getLayoutParams();
+        params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
+        listView.setLayoutParams(params);
     }
 
 

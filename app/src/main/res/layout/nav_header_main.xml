@@ -1,76 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/rlAppBarHeader"
     android:layout_width="match_parent"
     android:layout_height="@dimen/nav_header_height"
-    android:background="@color/colorPassive"
+    android:background="@color/colorPrimary"
     android:gravity="bottom"
     android:orientation="vertical"
-    android:theme="@style/ThemeOverlay.AppCompat.Dark">
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:theme="@style/ThemeOverlay.AppCompat.Dark"
+    android:weightSum="1">
 
-    <LinearLayout
+    <ImageView
+        android:id="@+id/img_profile"
+        android:layout_width="75dp"
+        android:layout_height="75dp"
+        android:layout_weight="0.28"
+        android:paddingTop="@dimen/nav_header_vertical_spacing"
+        app:srcCompat="@drawable/com_facebook_profile_picture_blank_square" />
+
+    <TextView
+        android:id="@+id/name"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal"
-        android:padding="@dimen/dp8"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true">
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/nav_header_vertical_spacing"
+        android:text="New User"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
 
-        <ImageView
-            android:id="@+id/img_profile"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            app:srcCompat="@drawable/com_facebook_profile_picture_blank_square" />
+    <TextView
+        android:id="@+id/tvVersion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="KitStasher 0.9" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_centerVertical="true"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:padding="@dimen/dp8">
+</LinearLayout><!--<?xml version="1.0" encoding="utf-8"?>--><!--<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"--><!--xmlns:app="http://schemas.android.com/apk/res-auto"--><!--xmlns:tools="http://schemas.android.com/tools"--><!--android:id="@+id/rlAppBarHeader"--><!--android:layout_width="match_parent"--><!--android:layout_height="@dimen/nav_header_height"--><!--android:background="@color/colorPrimary"--><!--android:gravity="bottom"--><!--android:orientation="vertical"--><!--android:theme="@style/ThemeOverlay.AppCompat.Dark">-->
 
-            <TextView
-                android:id="@+id/name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:gravity="center_vertical"
-                android:paddingTop="@dimen/nav_header_vertical_spacing"
-                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                tools:text="New User" />
+    <!--<LinearLayout--><!--android:layout_width="match_parent"--><!--android:layout_height="match_parent"--><!--android:layout_centerHorizontal="true"--><!--android:layout_centerVertical="true"--><!--android:orientation="vertical"--><!--android:padding="@dimen/dp8">-->
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal">
+    <!--<ImageView--><!--android:id="@+id/img_profile"--><!--android:layout_width="wrap_content"--><!--android:layout_height="wrap_content"--><!--app:srcCompat="@drawable/com_facebook_profile_picture_blank_square" />-->
 
-                <TextView
-                    android:id="@+id/textView15"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="KitStasher 0.8.1" />
+    <!--<LinearLayout--><!--android:layout_width="match_parent"--><!--android:layout_height="wrap_content"--><!--android:layout_centerVertical="true"--><!--android:orientation="vertical"--><!--android:padding="@dimen/dp8">-->
 
-            </LinearLayout>
+    <!--<TextView--><!--android:id="@+id/name"--><!--android:layout_width="wrap_content"--><!--android:layout_height="wrap_content"--><!--android:layout_gravity="bottom"--><!--android:gravity="center_vertical"--><!--android:paddingTop="@dimen/nav_header_vertical_spacing"--><!--android:textAppearance="@style/TextAppearance.AppCompat.Body1"--><!--tools:text="New User" />-->
 
-            <!--<TextView-->
-            <!--android:id="@+id/website"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content" />-->
+    <!--<TextView--><!--android:id="@+id/textView15"--><!--android:layout_width="match_parent"--><!--android:layout_height="wrap_content"--><!--android:text="KitStasher 0.8.2" />-->
 
-        </LinearLayout>
+    <!--&lt;!&ndash;<TextView&ndash;&gt;--><!--&lt;!&ndash;android:id="@+id/website"&ndash;&gt;--><!--&lt;!&ndash;android:layout_width="wrap_content"&ndash;&gt;--><!--&lt;!&ndash;android:layout_height="wrap_content" />&ndash;&gt;-->
 
-    </LinearLayout>
+    <!--</LinearLayout>-->
 
-    <!--<ImageView-->
-        <!--android:id="@+id/img_header_bg"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent"-->
-        <!--android:scaleType="fitXY" />-->
-        <!--android:src="@mipmap/ic_launcher" -->
+    <!--</LinearLayout>-->
+
+    <!--&lt;!&ndash;<ImageView&ndash;&gt;--><!--&lt;!&ndash;android:id="@+id/img_header_bg"&ndash;&gt;--><!--&lt;!&ndash;android:layout_width="match_parent"&ndash;&gt;--><!--&lt;!&ndash;android:layout_height="match_parent"&ndash;&gt;--><!--&lt;!&ndash;android:scaleType="fitXY" />&ndash;&gt;--><!--&lt;!&ndash;android:src="@mipmap/ic_launcher" &ndash;&gt;-->
 
 
-</RelativeLayout>
+    <!--</RelativeLayout>-->

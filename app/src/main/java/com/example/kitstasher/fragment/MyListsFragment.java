@@ -74,6 +74,8 @@ public class MyListsFragment extends Fragment implements View.OnClickListener {
         lvMyLists.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View v, int i, long l) {
+//                Bundle bundle = new Bundle();
+
                 Intent intent = new Intent(getActivity(), ListActivity.class);
                 intent.putExtra("list_name", l);
                 startActivity(intent);

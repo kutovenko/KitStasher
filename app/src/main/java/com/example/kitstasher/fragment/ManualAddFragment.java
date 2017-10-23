@@ -1,6 +1,5 @@
 package com.example.kitstasher.fragment;
 
-import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -17,10 +16,8 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatSpinner;
 import android.text.Editable;
@@ -35,7 +32,6 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,11 +39,11 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.kitstasher.R;
 import com.example.kitstasher.activity.MainActivity;
+import com.example.kitstasher.adapters.AdapterAddFragment;
+import com.example.kitstasher.adapters.AdapterAlertDialog;
 import com.example.kitstasher.objects.Aftermarket;
 import com.example.kitstasher.objects.Item;
 import com.example.kitstasher.objects.Kit;
-import com.example.kitstasher.adapters.AdapterAddFragment;
-import com.example.kitstasher.adapters.AdapterAlertDialog;
 import com.example.kitstasher.other.AsyncApp42ServiceApi;
 import com.example.kitstasher.other.Constants;
 import com.example.kitstasher.other.DbConnector;
@@ -94,8 +90,8 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     private EditText etBrandCat_no, etScale, etKitName, etKitNoengName, etNotes, etPrice;
     private Button btnAdd, btnCancel, btnCheckOnlineDatabase, btnClearDate;
     private AppCompatSpinner spYear, spDescription, spQuantity, spCurrency, spKitMedia;
-    private LinearLayout linLayoutMAir, linLayoutMCar, linLayoutMGround, linLayoutMOther,
-            linLayoutMSea, linLayoutMSpace, linLayoutMFigures, linLAyoutMFantasy;
+    //    private LinearLayout linLayoutMAir, linLayoutMCar, linLayoutMGround, linLayoutMOther,
+//            linLayoutMSea, linLayoutMSpace, linLayoutMFigures, linLAyoutMFantasy;
     private ImageView ivGetBoxart;
     private TextView tvPurchaseDate;
     private ProgressDialog progressDialog;
@@ -109,7 +105,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     private int status, media;
 
     private String defCurrency;
-    private char mode;
+    private char editMode;
     private int scale, quantity, y, month, day, price;
     private int spCurrencyPosition;
     private boolean isFoundOnline, isReported, wasSearchedOnline, isRbChanged;
@@ -140,6 +136,8 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 
 
     private final int MY_PERMISSIONS_REQUEST_CAMERA = 11;
+    private final int MY_PERMISSIONS_REQUEST_WRITE = 12;
+
 
     private long kit_id, after_id;
 
@@ -206,7 +204,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                         .load(Constants.BOXART_URL_PREFIX
                                 + savedInstanceState.getString(Constants.BOXART_URL)
                                 + Constants.BOXART_URL_LARGE
-                                + Constants.BOXART_URL_POSTFIX)
+                                + Constants.JPG)
                         .placeholder(ic_menu_camera)
                         .diskCacheStrategy(DiskCacheStrategy.ALL)
                         .into(ivGetBoxart);
@@ -217,7 +215,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             setCategory(savedInstanceState.getString(Constants.CATEGORY));
         }
 
-        checkPermissions();
+//        checkPermissions();
 
 
         //Обрабатываем список автодополнения брэндов
@@ -240,12 +238,6 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         }
 
 
-
-
-//        String[] descriptionItems = new String[]{getString(R.string.kittype),
-//                getString(R.string.new_tool), getString(R.string.reissue),
-//                getString(R.string.changed_parts), getString(R.string.new_decal),
-//                getString(R.string.changed_box), getString(R.string.repack)};
         String[] descriptionItems = new String[]{getString(R.string.kittype),
                 getString(R.string.newkit), getString(R.string.rebox)};
         descriptionAdapter = new ArrayAdapter<String>(getActivity(),
@@ -304,25 +296,25 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             listname = getArguments().getString(Constants.LISTNAME);
             switch (getArguments().getChar(Constants.EDIT_MODE)){
                 case 'l':
-                    mode = Constants.MODE_LIST;
+                    editMode = Constants.MODE_LIST;
                     break;
                 case 'm':
-                    mode = Constants.MODE_KIT;
+                    editMode = Constants.MODE_KIT;
                     break;
                 case 'a':
-                    mode = Constants.MODE_AFTERMARKET;
+                    editMode = Constants.MODE_AFTERMARKET;
                     break;
                 default:
-                    mode = Constants.MODE_KIT;
+                    editMode = Constants.MODE_KIT;
                     break;
             }
 //            if (getArguments().getChar(Constants.EDIT_MODE) == Constants.MODE_LIST){
-//                mode = Constants.MODE_LIST;
+//                editMode = Constants.MODE_LIST;
 //            }else{
-//                mode = 'm';
+//                editMode = 'm';
 //            }
 //        }else{
-//            mode = 'm';
+//            editMode = 'm';
         }
     }
 
@@ -338,19 +330,23 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         isFoundOnline = false;
         isReported = false;
         sendStatus = "";//Статус для последующей записи пропущенных в офлайне записей
-        mode = Constants.MODE_KIT; //// TODO: 06.09.2017 Check
+        editMode = Constants.MODE_KIT; //// TODO: 06.09.2017 Check
 
         brand = "";
         brandCatno = "";
         scale = 0;
+        if (editMode == Constants.MODE_AFTERMARKET) {
+            scale = getArguments().getInt(Constants.SCALE);
+            etScale.setText(String.valueOf(scale));
+        }
         kitName = "";
         kitNoengname = "";
         boxartUrl = "";
         boxartUri = "";
 
         if (getArguments() != null && getArguments().getChar(Constants.EDIT_MODE) == Constants.MODE_AFTERMARKET//???
-               && getArguments().getString("boxart_uri") != null){
-            boxartUri = getArguments().getString("boxart_uri");
+                && getArguments().getString(Constants.BOXART_URI) != null) {
+            boxartUri = getArguments().getString(Constants.BOXART_URI);
 
         }
 
@@ -409,37 +405,10 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                 .hasMedia(media)
         .build();
 
-//        if (mode == Constants.MODE_AFTERMARKET) {
+//        if (editMode == Constants.MODE_AFTERMARKET) {
             aftermarketName = "";
             aftemarketOriginalName = "";
             compilanceWith = "";
-
-
-//            brand = "";
-//            brandCatno = "";
-//
-//            scale = 0;
-//            category = Constants.CAT_OTHER;
-//            //Optional
-//            barcode = "";
-//
-//            description = "";
-//
-//            boxartUrl = "";
-//            scalematesUrl = "";
-//            boxartUri = "";
-//            year = "";
-//            onlineId = "";
-//            dateAdded = "";
-//            datePurchased = "";
-//
-//            quantity = 1;
-//            notes = "";
-//            price = 0;
-//            currency = "";
-//            sendStatus = "";
-//            placePurchased = "";
-
             aftermarket = new Aftermarket.AftermarketBuilder()
                     .hasBrand(brand)
                     .hasBrandCatno(brandCatno)
@@ -467,19 +436,6 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                     .hasMedia(media)
                     .hasListname(listname)
                     .build();
-//        }
-
-
-//        kit.setBarcode(barcode);
-//        kit.setBoxart_uri("");
-//        kit.setKit_noeng_name("");
-//        kit.setDescription("");
-//        kit.setYear("0");
-//        kit.setOnlineId("");
-//        kit.setPrice(price);
-//        kit.setNotes(notes);
-//        kit.setDatePurchased(datePurchased);
-//        kit.setCurrency(currency);
     }
 
     private void initUI() {
@@ -502,26 +458,26 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         acPurchasedFrom = (AutoCompleteTextView)view.findViewById(R.id.acPlacePurchased);
 
 
-        linLayoutMAir = (LinearLayout) view.findViewById(R.id.linLayoutMAir);
-        linLayoutMAir.setOnClickListener(this);
-        linLayoutMCar = (LinearLayout) view.findViewById(R.id.linLayoutMCar);
-        linLayoutMCar.setOnClickListener(this);
-        linLayoutMGround = (LinearLayout) view.findViewById(R.id.linLayoutMGround);
-        linLayoutMGround.setOnClickListener(this);
-        linLayoutMSea = (LinearLayout) view.findViewById(R.id.linLayoutMSea);
-        linLayoutMSea.setOnClickListener(this);
-        linLayoutMSpace = (LinearLayout) view.findViewById(R.id.linLayoutMSpace);
-        linLayoutMSpace.setOnClickListener(this);
-        linLayoutMOther = (LinearLayout) view.findViewById(R.id.linLayoutMOther);
-        linLayoutMOther.setOnClickListener(this);
-        linLAyoutMFantasy = (LinearLayout)view.findViewById(R.id.linLayoutMFantasy);
-        linLAyoutMFantasy.setOnClickListener(this);
-        linLayoutMFigures = (LinearLayout)view.findViewById(R.id.linLayoutMFigure);
-        linLayoutMFigures.setOnClickListener(this);
+//        linLayoutMAir = (LinearLayout) view.findViewById(R.id.linLayoutMAir);
+//        linLayoutMAir.setOnClickListener(this);
+//        linLayoutMCar = (LinearLayout) view.findViewById(R.id.linLayoutMCar);
+//        linLayoutMCar.setOnClickListener(this);
+//        linLayoutMGround = (LinearLayout) view.findViewById(R.id.linLayoutMGround);
+//        linLayoutMGround.setOnClickListener(this);
+//        linLayoutMSea = (LinearLayout) view.findViewById(R.id.linLayoutMSea);
+//        linLayoutMSea.setOnClickListener(this);
+//        linLayoutMSpace = (LinearLayout) view.findViewById(R.id.linLayoutMSpace);
+//        linLayoutMSpace.setOnClickListener(this);
+//        linLayoutMOther = (LinearLayout) view.findViewById(R.id.linLayoutMOther);
+//        linLayoutMOther.setOnClickListener(this);
+//        linLAyoutMFantasy = (LinearLayout)view.findViewById(R.id.linLayoutMFantasy);
+//        linLAyoutMFantasy.setOnClickListener(this);
+//        linLayoutMFigures = (LinearLayout)view.findViewById(R.id.linLayoutMFigure);
+//        linLayoutMFigures.setOnClickListener(this);
 
         spCurrency = (AppCompatSpinner)view.findViewById(R.id.spCurrency);
         spQuantity = (AppCompatSpinner)view.findViewById(R.id.spQuantity);
-        spKitMedia = (AppCompatSpinner)view.findViewById(R.id.spKitMedia);
+        spKitMedia = (AppCompatSpinner) view.findViewById(R.id.spAfterMedia);
 
         etNotes = (EditText)view.findViewById(R.id.etNotes);
         tvPurchaseDate = (TextView)view.findViewById(R.id.tvPurchaseDate);
@@ -541,32 +497,54 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         myShops = DbConnector.getAllShops();
     }
 
-    private void checkPermissions() {
-        //checking for permissions on Marshmallow+
-        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED) {
-            // Should we show an explanation?
-            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
-                    Manifest.permission.CAMERA)) {
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-
-            } else {
-                // No explanation needed, we can request the permission.
-                ActivityCompat.requestPermissions(getActivity(),
-                        new String[]{Manifest.permission.CAMERA},
-                        MY_PERMISSIONS_REQUEST_CAMERA);
-            }
-        }else{
-            ivGetBoxart.setOnClickListener(this);
-        }
-    }
+//    private void checkPermissions() {
+//        //checking for permissions on Marshmallow+
+//        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA)
+//                != PackageManager.PERMISSION_GRANTED) {
+//            ivGetBoxart.setClickable(false);
+//            // Should we show an explanation?
+//            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
+//                    Manifest.permission.CAMERA)) {
+//                // Show an explanation to the user *asynchronously* -- don't block
+//                // this thread waiting for the user's response! After the user
+//                // sees the explanation, try again to request the permission.
+//
+//            } else {
+//                // No explanation needed, we can request the permission.
+//                ActivityCompat.requestPermissions(getActivity(),
+//                        new String[]{Manifest.permission.CAMERA},
+//                        MY_PERMISSIONS_REQUEST_CAMERA);
+//            }
+//        }else{
+//            ivGetBoxart.setOnClickListener(this);
+//        }
+//        //Permissions for write
+//        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
+//                != PackageManager.PERMISSION_GRANTED) {
+//            ivGetBoxart.setClickable(false);
+//            // Should we show an explanation?
+//            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
+//                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+//                // Show an explanation to the user *asynchronously* -- don't block
+//                // this thread waiting for the user's response! After the user
+//                // sees the explanation, try again to request the permission.
+//
+//            } else {
+//                // No explanation needed, we can request the permission.
+//                ActivityCompat.requestPermissions(getActivity(),
+//                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+//                        MY_PERMISSIONS_REQUEST_WRITE);
+//            }
+//        }else{
+//            ivGetBoxart.setOnClickListener(this);
+//        }
+//    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_CAMERA: {
+            case MY_PERMISSIONS_REQUEST_CAMERA:
+//                {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -577,7 +555,18 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                     ivGetBoxart.setImageResource(R.drawable.ic_cancel_black_24dp);
                 }
                 return;
-            }
+//            }
+            case MY_PERMISSIONS_REQUEST_WRITE:
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    ivGetBoxart.setOnClickListener(this);
+                } else {
+                    Toast.makeText(getActivity(),
+                            R.string.permission_denied_to_write, Toast.LENGTH_SHORT).show();
+                    ivGetBoxart.setImageResource(R.drawable.ic_cancel_black_24dp);
+                }
+                return;
         }
     }
 
@@ -715,7 +704,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                         }
 //                        saveOnline(kit);
                         ////////////////////////
-                        if (mode == Constants.MODE_KIT) {//из ручного добавления
+                        if (editMode == Constants.MODE_KIT) {//из ручного добавления
                             if (isOnline()) {
                                 writeToLocalDatabase(kit); //writes kit to database
                                 if (wasSearchedOnline && !isFoundOnline) {
@@ -740,7 +729,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                                 clearFields();
                                 returnToScan();
                             }
-                        }else if (mode == Constants.MODE_LIST){ //из списков
+                        } else if (editMode == Constants.MODE_LIST) { //из списков
                             writeToLocalDatabase(kit);
                             Toast.makeText(getActivity(), R.string.Kit_added_to_list, Toast.LENGTH_SHORT).show();
                             sendStatus = "";
@@ -756,7 +745,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                             fragmentTransaction.replace(R.id.llListsContainer, listViewFragment);
                             fragmentTransaction.commit();
 
-                        }else if (mode == Constants.MODE_AFTERMARKET)
+                        } else if (editMode == Constants.MODE_AFTERMARKET)
                         { //запись в афтемаркет
                             writeToLocalDatabase(aftermarket);
                             Toast.makeText(getActivity(), R.string.Kit_added_to_list, Toast.LENGTH_SHORT).show();
@@ -785,7 +774,9 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 
                             android.support.v4.app.FragmentTransaction fragmentTransaction =
                                     getFragmentManager().beginTransaction();
-                            fragmentTransaction.replace(R.id.linLayoutKitContainer, kitEditFragment);
+                            fragmentTransaction.replace(R.id.frameLayoutEditContainer, kitEditFragment);
+
+//                            fragmentTransaction.replace(R.id.linLayoutKitContainer, kitEditFragment);
                             fragmentTransaction.commit();
 
                         }
@@ -801,46 +792,46 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 
             ////////RadioButtons
 
-            case R.id.linLayoutMAir:
-                isRbChanged = true;
-                clearTags();
-                setTag(Constants.CAT_AIR);
-                break;
-            case R.id.linLayoutMGround:
-                isRbChanged = true;
-                clearTags();
-                setTag(Constants.CAT_GROUND);
-                break;
-            case R.id.linLayoutMSea:
-                isRbChanged = true;
-                clearTags();
-                setTag(Constants.CAT_SEA);
-                break;
-            case R.id.linLayoutMSpace:
-                isRbChanged = true;
-                clearTags();
-                setTag(Constants.CAT_SPACE);
-                break;
-            case R.id.linLayoutMCar:
-                isRbChanged = true;
-                clearTags();
-                setTag(Constants.CAT_AUTOMOTO);
-                break;
-            case R.id.linLayoutMOther:
-                isRbChanged = true;
-                clearTags();
-                setTag(Constants.CAT_OTHER);
-                break;
-            case R.id.linLayoutMFigure:
-                isRbChanged = true;
-                clearTags();
-                setTag(Constants.CAT_FIGURES);
-                break;
-            case R.id.linLayoutMFantasy:
-                isRbChanged = true;
-                clearTags();
-                setTag(Constants.CAT_FANTASY);
-                break;
+//            case R.id.linLayoutMAir:
+//                isRbChanged = true;
+//                clearTags();
+//                setTag(Constants.CAT_AIR);
+//                break;
+//            case R.id.linLayoutMGround:
+//                isRbChanged = true;
+//                clearTags();
+//                setTag(Constants.CAT_GROUND);
+//                break;
+//            case R.id.linLayoutMSea:
+//                isRbChanged = true;
+//                clearTags();
+//                setTag(Constants.CAT_SEA);
+//                break;
+//            case R.id.linLayoutMSpace:
+//                isRbChanged = true;
+//                clearTags();
+//                setTag(Constants.CAT_SPACE);
+//                break;
+//            case R.id.linLayoutMCar:
+//                isRbChanged = true;
+//                clearTags();
+//                setTag(Constants.CAT_AUTOMOTO);
+//                break;
+//            case R.id.linLayoutMOther:
+//                isRbChanged = true;
+//                clearTags();
+//                setTag(Constants.CAT_OTHER);
+//                break;
+//            case R.id.linLayoutMFigure:
+//                isRbChanged = true;
+//                clearTags();
+//                setTag(Constants.CAT_FIGURES);
+//                break;
+//            case R.id.linLayoutMFantasy:
+//                isRbChanged = true;
+//                clearTags();
+//                setTag(Constants.CAT_FANTASY);
+//                break;
 
             case R.id.ivGetBoxart:
                 try {
@@ -926,57 +917,57 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     private void setTag(String cat) {
 
         switch (cat) {
-            case Constants.CAT_AIR:
-                linLayoutMAir.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAccent));
-                category = Constants.CAT_AIR;
-                break;
-            case Constants.CAT_GROUND:
-                linLayoutMGround.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAccent));
-                category = Constants.CAT_GROUND;
-                break;
-            case Constants.CAT_SEA:
-                linLayoutMSea.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAccent));
-                category = Constants.CAT_SEA;
-                break;
-            case Constants.CAT_SPACE:
-                linLayoutMSpace.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAccent));
-                category = Constants.CAT_SPACE;
-                break;
-            case Constants.CAT_AUTOMOTO:
-                linLayoutMCar.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAccent));
-                category = Constants.CAT_AUTOMOTO;
-                break;
-            case Constants.CAT_FIGURES:
-                linLayoutMFigures.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAccent));
-                category = Constants.CAT_FIGURES;
-                break;
-            case Constants.CAT_FANTASY:
-                linLAyoutMFantasy.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAccent));
-                category = Constants.CAT_FANTASY;
-                break;
-            case Constants.CAT_OTHER:
-                linLayoutMOther.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAccent));
-                category = Constants.CAT_OTHER;
-                break;
+//            case Constants.CAT_AIR:
+//                linLayoutMAir.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAccent));
+//                category = Constants.CAT_AIR;
+//                break;
+//            case Constants.CAT_GROUND:
+//                linLayoutMGround.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAccent));
+//                category = Constants.CAT_GROUND;
+//                break;
+//            case Constants.CAT_SEA:
+//                linLayoutMSea.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAccent));
+//                category = Constants.CAT_SEA;
+//                break;
+//            case Constants.CAT_SPACE:
+//                linLayoutMSpace.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAccent));
+//                category = Constants.CAT_SPACE;
+//                break;
+//            case Constants.CAT_AUTOMOTO:
+//                linLayoutMCar.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAccent));
+//                category = Constants.CAT_AUTOMOTO;
+//                break;
+//            case Constants.CAT_FIGURES:
+//                linLayoutMFigures.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAccent));
+//                category = Constants.CAT_FIGURES;
+//                break;
+//            case Constants.CAT_FANTASY:
+//                linLAyoutMFantasy.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAccent));
+//                category = Constants.CAT_FANTASY;
+//                break;
+//            case Constants.CAT_OTHER:
+//                linLayoutMOther.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAccent));
+//                category = Constants.CAT_OTHER;
+//                break;
         }
     }
 
     private void clearTags() {
-        linLayoutMSpace.setBackgroundColor(ContextCompat.getColor(context, R.color.colorItem));
-        linLayoutMAir.setBackgroundColor(ContextCompat.getColor(context, R.color.colorItem));
-        linLayoutMSea.setBackgroundColor(ContextCompat.getColor(context, R.color.colorItem));
-        linLayoutMGround.setBackgroundColor(ContextCompat.getColor(context, R.color.colorItem));
-        linLayoutMCar.setBackgroundColor(ContextCompat.getColor(context, R.color.colorItem));
-        linLayoutMOther.setBackgroundColor(ContextCompat.getColor(context, R.color.colorItem));
-        linLAyoutMFantasy.setBackgroundColor(ContextCompat.getColor(context, R.color.colorItem));
-        linLayoutMFigures.setBackgroundColor(ContextCompat.getColor(context, R.color.colorItem));
+//        linLayoutMSpace.setBackgroundColor(ContextCompat.getColor(context, R.color.colorItem));
+//        linLayoutMAir.setBackgroundColor(ContextCompat.getColor(context, R.color.colorItem));
+//        linLayoutMSea.setBackgroundColor(ContextCompat.getColor(context, R.color.colorItem));
+//        linLayoutMGround.setBackgroundColor(ContextCompat.getColor(context, R.color.colorItem));
+//        linLayoutMCar.setBackgroundColor(ContextCompat.getColor(context, R.color.colorItem));
+//        linLayoutMOther.setBackgroundColor(ContextCompat.getColor(context, R.color.colorItem));
+//        linLAyoutMFantasy.setBackgroundColor(ContextCompat.getColor(context, R.color.colorItem));
+//        linLayoutMFigures.setBackgroundColor(ContextCompat.getColor(context, R.color.colorItem));
 
     }
 
     /*
 * Writes kit object to local Sqlite database*/
     private void writeToLocalDatabase(Object itemSave) {
-        if (mode == Constants.MODE_KIT) {
+        if (editMode == Constants.MODE_KIT) {
             dbConnector.addKitRec((Kit) itemSave);
 //            dbConnector.addKitRec(
 //                    kitSave.getBarcode(),
@@ -999,9 +990,9 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 //                    price,
 //                    currency
 //            );
-        }else if (mode == Constants.MODE_LIST) {
+        } else if (editMode == Constants.MODE_LIST) {
             dbConnector.addListItem((Kit)itemSave, listname);
-        }else if (mode == Constants.MODE_AFTERMARKET){
+        } else if (editMode == Constants.MODE_AFTERMARKET) {
             long aftId = dbConnector.addAftermarket((Aftermarket)itemSave);
             incomeKitId = getArguments().getLong("id");
             dbConnector.addAfterToKit(incomeKitId, aftId);
@@ -1035,7 +1026,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 
     /*Checks if local database already includes this kit*/
     private boolean isInLocalBase(String brand, String brand_catno) {
-        if (mode == 'l'){
+        if (editMode == 'l') {
             if (dbConnector.searchListForDoubles(listname, brand, brand_catno)) {
                 return true;
             }
@@ -1050,7 +1041,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 * Gets data from form fields, trim strings and add them to kit object fields*/
     private void getFieldsValues() {
 //        Object object;
-        if (mode == Constants.MODE_AFTERMARKET){
+        if (editMode == Constants.MODE_AFTERMARKET) {
 //            object = aftermarket;
 
 //            compilanceWith = "";
@@ -1252,7 +1243,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         isFoundOnline = false;
         wasSearchedOnline = false;
         ivGetBoxart.setImageResource(R.drawable.ic_menu_camera);
-        ivGetBoxart.setBackgroundResource(R.drawable.button_inversed);
+        ivGetBoxart.setBackgroundResource(R.drawable.button);
         spDescription.setSelection(0);
         spYear.setSelection(0);
 
@@ -1273,7 +1264,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         isFoundOnline = false;
         isReported = false;
         sendStatus = "";//Статус для последующей записи пропущенных в офлайне записей
-        mode = 'm';
+        editMode = 'm';
 
         brand = "";
         brandCatno = "";
@@ -1702,7 +1693,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                             .load(Constants.BOXART_URL_PREFIX
                                     + kitToAdd.getBoxart_url()
                                     + Constants.BOXART_URL_LARGE
-                                    + Constants.BOXART_URL_POSTFIX)
+                                    + Constants.JPG)
                             .placeholder(ic_menu_camera)
                             .diskCacheStrategy(DiskCacheStrategy.ALL)
                             .into(ivGetBoxart);
@@ -1841,8 +1832,8 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             // Получим кадрированное изображение
             boxartPic = extras.getParcelable("data");
 
-            boxartPic = Bitmap.createScaledBitmap(boxartPic, Constants.SIZE_UP_MEDIUM_WIDTH,
-                    Constants.SIZE_UP_MEDIUM_HEIGHT, false);
+            boxartPic = Bitmap.createScaledBitmap(boxartPic, Constants.SIZE_FULL_WIDTH,
+                    Constants.SIZE_FULL_HEIGHT, false);
             bytes = new ByteArrayOutputStream();
             boxartPic.compress(Bitmap.CompressFormat.JPEG, 70, bytes);
             ivGetBoxart.setImageBitmap(boxartPic);
@@ -1851,6 +1842,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 //        if (resultCode != getActivity().RESULT_OK){
 //        }
     }
+
 
     private void performCrop(Uri picUri){
         try {
@@ -1876,10 +1868,10 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     /**Writes boxart image file to local directory**/
     private void writeBoxartFile(ByteArrayOutputStream baos, Bitmap bitmap) {
         String pictureName = "";
-        if (mode == Constants.MODE_KIT) {
-            pictureName = kit.getBrand() + kit.getBrandCatno() + Constants.BOXART_URL_POSTFIX; //todo добавить description
-        }else if (mode == Constants.MODE_AFTERMARKET){
-            pictureName = aftermarket.getBrand() + aftermarket.getBrandCatno() + Constants.BOXART_URL_POSTFIX; //todo добавить description
+        if (editMode == Constants.MODE_KIT) {
+            pictureName = kit.getBrand() + kit.getBrandCatno() + Constants.JPG; //todo добавить description
+        } else if (editMode == Constants.MODE_AFTERMARKET) {
+            pictureName = aftermarket.getBrand() + aftermarket.getBrandCatno() + Constants.JPG; //todo добавить description
         }
         File exportDir = new File(Environment.getExternalStorageDirectory(), "Kitstasher");
         File boxartImageFile = new File(exportDir + File.separator + pictureName);
@@ -1909,12 +1901,40 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             e.printStackTrace();
         }
         boxartUri = pictureName;
-        if (mode == Constants.MODE_LIST || mode == Constants.MODE_KIT){
+        if (editMode == Constants.MODE_LIST || editMode == Constants.MODE_KIT) {
             kit.setBoxart_uri(pictureName);
-        }else if (mode == Constants.MODE_AFTERMARKET){
+        } else if (editMode == Constants.MODE_AFTERMARKET) {
             aftermarket.setBoxartUri(pictureName);
         }
     }
+
+//    private void setPic() {
+//        // Get the dimensions of the View
+////        int targetW = mImageView.getWidth();
+////        int targetH = mImageView.getHeight();
+//
+//        int targetW = 720;
+//        int targetH = 450;
+//
+//
+//        // Get the dimensions of the bitmap
+//        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+//        bmOptions.inJustDecodeBounds = true;
+//        BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
+//        int photoW = bmOptions.outWidth;
+//        int photoH = bmOptions.outHeight;
+//
+//        // Determine how much to scale down the image
+//        int scaleFactor = Math.min(photoW/targetW, photoH/targetH);
+//
+//        // Decode the image file into a Bitmap sized to fill the View
+//        bmOptions.inJustDecodeBounds = false;
+//        bmOptions.inSampleSize = scaleFactor;
+////        bmOptions.inPurgeable = true;
+//
+//        Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
+//        ivGetBoxart.setImageBitmap(bitmap);
+//    }
 
     private void saveWithBoxartToParse(Bitmap bmp, Kit kitSave){
 
@@ -1939,7 +1959,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         }else{
             nameBody = "-t" + String.valueOf(width);
         }
-        fullName = name + nameBody + Constants.BOXART_URL_POSTFIX;
+        fullName = name + nameBody + Constants.JPG;
         final ParseFile file = new ParseFile(fullName, data);
         ParseObject boxartToSave = new ParseObject("Boxart");
         boxartToSave.put("image", file);
@@ -1976,8 +1996,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         matrix.postScale(scaleWidth, scaleHeight);
 
         // Recreate the new Bitmap
-        Bitmap resizedBitmap = Bitmap.createScaledBitmap(bm, newWidth, newHeight,false);
-        return resizedBitmap;
+        return Bitmap.createScaledBitmap(bm, newWidth, newHeight, false);
 
     }
 

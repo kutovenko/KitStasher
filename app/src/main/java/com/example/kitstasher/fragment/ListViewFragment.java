@@ -18,12 +18,14 @@ import android.widget.ListView;
 
 import com.example.kitstasher.R;
 import com.example.kitstasher.activity.ChooserActivity;
-import com.example.kitstasher.activity.KitActivity;
+import com.example.kitstasher.activity.ViewActivity;
 import com.example.kitstasher.adapters.AdapterListGlide;
 import com.example.kitstasher.other.Constants;
 import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.Helper;
 import com.example.kitstasher.other.SortKits;
+
+import java.util.ArrayList;
 
 import static com.example.kitstasher.activity.MainActivity.REQUEST_CODE_POSITION;
 
@@ -33,6 +35,7 @@ import static com.example.kitstasher.activity.MainActivity.REQUEST_CODE_POSITION
 
 public class ListViewFragment extends Fragment implements View.OnClickListener, SortKits {
     private ListView lvListAllItems;
+    private ArrayList<Long> ids;
     private Cursor cursor;
     private DbConnector dbConnector;
     private boolean sortDate, sortName, sortScale, sortBrand;
@@ -157,19 +160,40 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
     public void prepareListAndAdapter(Cursor cursor){
 
         AdapterListGlide adapterListGlide = new AdapterListGlide(context, cursor);
+        ids = new ArrayList<Long>();
+
+        for (int i = 0; i < adapterListGlide.getCount(); i++) {
+            ids.add(adapterListGlide.getItemId(i)); //заполняем список идентификаторов
+        }
         lvListAllItems.setAdapter(adapterListGlide);
 
         lvListAllItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(context, KitActivity.class);
-                intent.putExtra("position", position);
-                intent.putExtra("id", id);
-                intent.putExtra("mode", 'l');
+                Intent intent = new Intent(context, ViewActivity.class);
+                intent.putExtra(Constants.POSITION, position);
+                intent.putExtra(Constants.ID, id);
+                intent.putExtra(Constants.EDIT_MODE, 'l');
+                intent.putExtra(Constants.IDS, ids);
+                intent.putExtra(Constants.SCALE_FILTER, "");
+                intent.putExtra(Constants.BRAND_FILTER, "");
+                intent.putExtra(Constants.KITNAME_FILTER, "");
+                intent.putExtra(Constants.MEDIA_FILTER, "");
+                intent.putExtra(Constants.STATUS_FILTER, "");
                 startActivityForResult(intent, REQUEST_CODE_POSITION);
             }
         });
     }
+
+
+    //Подготовка списка брэндов и адаптера
+//    public void prepareListAndAdapter(Cursor cursor){
+//        lgAdapter = new AdapterListGlide(mContext, cursor);
+//
+//        lvKits.setAdapter(lgAdapter);
+//
+//    }
+
 
     private void setActive(int  linLayout, ImageView arrow){
         linLayoutListScale.setBackgroundColor(Color.TRANSPARENT);

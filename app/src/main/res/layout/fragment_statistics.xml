@@ -1,8 +1,8 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent">
+    android:layout_height="fill_parent"
+    android:background="@color/colorBackground">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -10,55 +10,56 @@
         android:orientation="vertical">
 
         <LinearLayout
-            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
             <ImageView
+                android:id="@+id/ivProfilePic"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:srcCompat="@drawable/com_facebook_profile_picture_blank_square"
-                android:id="@+id/ivProfilePic"
-                android:layout_marginTop="16dp"
                 android:layout_marginBottom="16dp"
                 android:layout_marginLeft="20dp"
-                android:layout_marginRight="20dp" />
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="16dp"
+                app:srcCompat="@drawable/com_facebook_profile_picture_blank_square" />
 
             <TextView
-                android:text="@string/new_user"
+                android:id="@+id/tvUserName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/tvUserName"
+                android:layout_marginBottom="16dp"
                 android:gravity="center_horizontal"
-                android:layout_marginBottom="16dp" />
+                android:text="@string/new_user"
+                android:textAppearance="@style/AppTheme.LittleHeader" />
 
         </LinearLayout>
 
         <LinearLayout
-            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
-            android:gravity="center_vertical|center_horizontal">
+            android:gravity="center_vertical|center_horizontal"
+            android:orientation="vertical">
 
             <TextView
-                android:text="@string/the_world_s"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
                 android:id="@+id/textView2"
-                android:layout_weight="1"
-                android:gravity="center_vertical|center_horizontal" />
-
-            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/tvScore"
                 android:layout_weight="1"
                 android:gravity="center_vertical|center_horizontal"
-                android:layout_marginBottom="16dp"
-                android:textSize="36sp"
-                android:textColor="@color/colorSecondary" />
+                android:text="@string/the_world_s"
+                android:textAppearance="@style/AppTheme.LittleHeader" />
+
+            <TextView
+                android:id="@+id/tvScore"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:layout_weight="1"
+                android:gravity="center_vertical|center_horizontal"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
             <Button
                 android:id="@+id/btnCheckNow"
@@ -66,6 +67,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:background="@drawable/button"
                 android:padding="8dp"
                 android:text="@string/check_now"
                 android:theme="@style/AppTheme.ButtonAct" />
@@ -105,7 +107,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="0" />
+                        android:text="0"
+                        android:textColor="@color/text" />
                 </TableRow>
 
                 <TableRow
@@ -126,7 +129,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="0" />
+                        android:text="0"
+                        android:textColor="@color/text" />
                 </TableRow>
 
                 <TableRow
@@ -147,7 +151,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="0" />
+                        android:text="0"
+                        android:textColor="@color/text" />
                 </TableRow>
 
                 <TableRow

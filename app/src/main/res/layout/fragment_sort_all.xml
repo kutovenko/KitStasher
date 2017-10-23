@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
+    android:id="@+id/linLayoutViewAllContainer"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/com_facebook_button_login_silver_background_color"
+    android:orientation="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/menu_background"
+        android:background="@color/com_facebook_button_border_color_focused"
         android:gravity="right|center"
         android:orientation="horizontal">
 
@@ -20,7 +19,7 @@
         <LinearLayout
             android:id="@+id/linLayoutSortDate"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="0.25"
             android:gravity="center_horizontal"
             android:orientation="vertical">
@@ -45,7 +44,7 @@
         <LinearLayout
             android:id="@+id/linLayoutSortBrand"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="0.25"
             android:gravity="center_horizontal"
             android:orientation="vertical">
@@ -69,7 +68,7 @@
         <LinearLayout
             android:id="@+id/linLayoutSortKitname"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="0.25"
             android:gravity="center_horizontal"
             android:orientation="vertical">
@@ -93,7 +92,7 @@
         <LinearLayout
             android:id="@+id/linLayoutSortScale"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="0.25"
             android:gravity="center_horizontal"
             android:orientation="vertical">
@@ -119,7 +118,8 @@
         <ImageButton
             android:id="@+id/ibtnFilter"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="top"
             app:srcCompat="@drawable/ic_filter_list_black_24dp" />
     </LinearLayout>
 
@@ -127,9 +127,9 @@
         android:id="@+id/lvKits"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
         android:layout_marginTop="8dp"
-        android:divider="@android:color/transparent"
-        android:dividerHeight="8.0sp"
-        android:paddingLeft="20dp"
-        android:paddingRight="20dp" />
+        android:divider="@color/colorPrimary"
+        android:dividerHeight="1px" />
 </LinearLayout>

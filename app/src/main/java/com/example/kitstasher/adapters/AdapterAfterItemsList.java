@@ -30,12 +30,17 @@ public class AdapterAfterItemsList extends CursorAdapter {
     private Context context;
     private long kitId;
     private String listname;
+    private char editMode;
+    private boolean demoMode;
 
-    public AdapterAfterItemsList(Context context, Cursor c, int flags, long kitId, String listname) {
+    public AdapterAfterItemsList(Context context, Cursor c, int flags, long kitId, String listname,
+                                 char editMode, boolean demoMode) {
         super(context, c, 0);
         this.context = context;
         this.kitId = kitId;
         this.listname = listname;
+        this.editMode = editMode;
+        this.demoMode = demoMode;
     }
 
     static class ViewHolder {
@@ -59,6 +64,9 @@ public class AdapterAfterItemsList extends CursorAdapter {
         holder.tvItemAfterCatno = (TextView)view.findViewById(R.id.tvItemAfterCatno);
         holder.ivItemAfterBoxart = (ImageView)view.findViewById(R.id.ivItemAfterBoxart);
         holder.ibRemoveAftermarket = (ImageButton)view.findViewById(R.id.ibRemoveAftermarket);
+        if (demoMode == true) {
+            holder.ibRemoveAftermarket.setVisibility(View.GONE);
+        }
 
         Object obj = cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_ID));
         holder.ibRemoveAftermarket.setTag(obj);

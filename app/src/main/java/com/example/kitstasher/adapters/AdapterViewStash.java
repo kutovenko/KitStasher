@@ -7,16 +7,8 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
 import com.example.kitstasher.R;
-import com.example.kitstasher.fragment.SortAirFragment;
 import com.example.kitstasher.fragment.SortAllFragment;
-import com.example.kitstasher.fragment.SortCarBikeFragment;
-import com.example.kitstasher.fragment.SortFantasyFragment;
-import com.example.kitstasher.fragment.SortFiguresFragment;
-import com.example.kitstasher.fragment.SortGroundFragment;
-import com.example.kitstasher.fragment.SortOtherFragment;
-import com.example.kitstasher.fragment.SortSeaFragment;
-import com.example.kitstasher.fragment.SortSpaceFragment;
-import com.example.kitstasher.fragment.ViewStashFragment;
+import com.example.kitstasher.other.Constants;
 
 /**
  * Created by Алексей on 22.04.2017.
@@ -25,48 +17,70 @@ import com.example.kitstasher.fragment.ViewStashFragment;
 public class AdapterViewStash extends FragmentStatePagerAdapter {
     private static int FRAGMENT_COUNT = 9;
     private Context mContext;
+    private boolean aftermarketMode;
 
-    public AdapterViewStash(FragmentManager fm, Context context) {
+    public AdapterViewStash(FragmentManager fm, Context context, boolean aftermarketMode) {
         super(fm);
         mContext = context;
+        this.aftermarketMode = aftermarketMode;
     }
 
     @Override
     public Fragment getItem(int position) {
+        Bundle bundle = new Bundle();
+        SortAllFragment fragment = new SortAllFragment();
         switch (position){
             case 0:
-                return new SortAllFragment();
+                bundle.putInt("categoryTab", 0);
+                bundle.putBoolean(Constants.AFTERMARKET_MODE, aftermarketMode);
+                fragment.setArguments(bundle);
+                return fragment;
             case 1:
-                return new SortAirFragment();
+                bundle.putInt("categoryTab", 1);
+                bundle.putBoolean(Constants.AFTERMARKET_MODE, aftermarketMode);
+                fragment.setArguments(bundle);
+                return fragment;
             case 2:
-                return new SortGroundFragment();
+                bundle.putInt("categoryTab", 2);
+                bundle.putBoolean(Constants.AFTERMARKET_MODE, aftermarketMode);
+                fragment.setArguments(bundle);
+                return fragment;
             case 3:
-                return new SortSeaFragment();
+                bundle.putInt("categoryTab", 3);
+                bundle.putBoolean(Constants.AFTERMARKET_MODE, aftermarketMode);
+                fragment.setArguments(bundle);
+                return fragment;
             case 4:
-                return new SortSpaceFragment();
+                bundle.putInt("categoryTab", 4);
+                bundle.putBoolean(Constants.AFTERMARKET_MODE, aftermarketMode);
+                fragment.setArguments(bundle);
+                return fragment;
             case 5:
-                return new SortCarBikeFragment();
+                bundle.putInt("categoryTab", 5);
+                bundle.putBoolean(Constants.AFTERMARKET_MODE, aftermarketMode);
+                fragment.setArguments(bundle);
+                return fragment;
             case 6:
-                return new SortFiguresFragment();
+                bundle.putInt("categoryTab", 6);
+                bundle.putBoolean(Constants.AFTERMARKET_MODE, aftermarketMode);
+                fragment.setArguments(bundle);
+                return fragment;
             case 7:
-                return new SortFantasyFragment();
+                bundle.putInt("categoryTab", 7);
+                bundle.putBoolean(Constants.AFTERMARKET_MODE, aftermarketMode);
+                fragment.setArguments(bundle);
+                return fragment;
             case 8:
-                return new SortOtherFragment();
-
-
+                bundle.putInt("categoryTab", 8);
+                bundle.putBoolean(Constants.AFTERMARKET_MODE, aftermarketMode);
+                fragment.setArguments(bundle);
+                return fragment;
         }
         return null;
     }
 
-//            @Override
-//            public Object instantiateItem(ViewGroup container, int position) {
-//
-//                ListView listView = new ListView(mContext);
-////                listView.setTag();
-//                return super.instantiateItem(container, position);
-//            }
 
-            @Override
+    @Override
     public int getCount() {
         return FRAGMENT_COUNT;
     }
@@ -96,8 +110,12 @@ public class AdapterViewStash extends FragmentStatePagerAdapter {
         return null;
     }
 
-    public static Fragment openViewStash(){
-        return new ViewStashFragment();
+    public int getItemPosition(Object object) {
+        return POSITION_NONE;
     }
+
+//    public static Fragment openViewStash(){
+//        return new ViewStashFragment();
+//    }
 
 }

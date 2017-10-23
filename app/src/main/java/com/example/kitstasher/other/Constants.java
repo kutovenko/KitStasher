@@ -89,13 +89,13 @@ Prefixes and postfixes for links
     public static final String BOXART_URL_PREFIX = "https://www.scalemates.com/";
     public static final String BOXART_SIZE = "boxart_size";
 
-    //    public static final String BOXART_URL_POSTFIX = ".jpg";
+    //    public static final String JPG = ".jpg";
     public static final String BOXART_URL_COMPANY_SUFFIX = "210";
 //    public static final String BOXART_URL_SMALL = "t210";
     public static final String BOXART_URL_SMALL = "t";
     public static final String BOXART_URL_MEDIUM = "t280";
     public static final String BOXART_URL_LARGE = "pristine";
-    public static final String BOXART_URL_POSTFIX = ".jpg";
+    public static final String JPG = ".jpg";
     public static final String SCALEMATES_PREFIX = "https://www.scalemates.com/kits/";
 
     public static final String APP_FOLDER = "/Kitstasher/";
@@ -119,8 +119,8 @@ Prefixes and postfixes for links
     public static final String SIZE_SMALL = "-t140";
 
     // Image Dimensions
-    public static final int SIZE_FULL_HEIGHT = 86; //исправить!
-    public static final int SIZE_FULL_WIDTH = 140;
+    public static final int SIZE_FULL_HEIGHT = 450; //исправить!
+    public static final int SIZE_FULL_WIDTH = 720;
     public static final int SIZE_UP_MEDIUM_HEIGHT = 393;
     public static final int SIZE_UP_MEDIUM_WIDTH = 640;
     public static final int SIZE_MEDIUM_HEIGHT = 172;
@@ -130,7 +130,7 @@ Prefixes and postfixes for links
 
     //ManualAdd
     public static final String BOXART_IMAGE = "boxartImage";
-    public static final String CATEGORY = "category";
+    //    public static final String CATEGORY = "category";
     public static final String BOXART_URL = "boxart_url";
 
     //Backup and Restore
@@ -177,4 +177,46 @@ Prefixes and postfixes for links
     //Aftermarket bundles
     public static final String AFTER_ID = "after_id";
 
+    //other
+    public static final String POSITION = "position";
+    public static final String ID = "id";
+    public static final String CATEGORY = "category";
+    public static final String TAG = "tag";
+    public static final String SCALE_FILTER = "scaleFilter";
+    public static final String BRAND_FILTER = "brandFilter";
+    public static final String KITNAME_FILTER = "kitnameFilter";
+    public static final String STATUS_FILTER = "statusFilter";
+    public static final String MEDIA_FILTER = "mediaFilter";
+
+    public static final String SORT_BY = "sortBy";
+    public static final String KITNAME = "kitname";
+    public static final String CURSOR_POSITION = "cursorPosition";
+    public static final String BRAND = "brand";
+    public static final String CATNO = "catno";
+    public static final String IDS = "ids";
+    public static final String STATUS = "status";
+    public static final String MEDIA = "media";
+    public static final String QUANTITY = "quantity";
+    public static final String NOTES = "notes";
+    public static final String URL = "url";
+    public static final String URI = "uri";
+    public static final String SCALE = "scale";
+    public static final String YEAR = "year";
+    public static final String DESCRIPTION = "description";
+    public static final String ORIGINAL_NAME = "originalname";
+
+    public static final String KIT_ID = "kit_id";
+
+    public static final String BOXART_URI = "boxart_uri";
+    public static final String SCALEMATES = "scalemates";
+    public static final String SHOP = "shop";
+    public static final String PURCHASE_DATE = "purchaseDate";
+    public static final String PRICE = "price";
+    public static final String CURRENCY = "currency";
+
+    public static final String NEW_TOOL = "1";
+    public static final String REBOX = "2";
+    //Sorting
+    public static final String _ID = "_id";
+    public static final String AFTERMARKET_MODE = "aftermarketMode";
 }

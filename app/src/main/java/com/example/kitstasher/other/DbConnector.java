@@ -6,9 +6,9 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.example.kitstasher.MyApplication;
 import com.example.kitstasher.R;
 import com.example.kitstasher.objects.Aftermarket;
+import com.example.kitstasher.objects.Item;
 import com.example.kitstasher.objects.Kit;
 
 import java.util.ArrayList;
@@ -50,7 +50,7 @@ public class DbConnector {
 
     public static final String COLUMN_STATUS = "status";
     public static final String COLUMN_MEDIA = "media";
-
+    public static final String COLUMN_SCALEMATES_URL = "scalemates";
 
     ///////// TABLE BRANDS /////////
 
@@ -133,11 +133,24 @@ public class DbConnector {
     public static final String KIT_AFTER_AFTERID = "afterid";
     public static final String KIT_AFTER_LISTNAME = "after_listname";
 
+    //////// TABLE BRAND_BARCODE ///////////////
+    public static final String TABLE_BRAND_BARCODE = "brand_bc";
+    public static final String BB_COLUMN_BRAND = "bb_brand";
+    public static final String BB_COLUMN_BARCODE = "bb_barcode";
+    public static final String BB_COLUMN_SOURCE = "bb_source";
 
 
     //////////////////////////////////
     ///////// CREATE SCRIPTS /////////
     /////////////////////////////////
+
+    private static final String CREATE_TABLE_BRAND_BARCODE =
+            "create table " + TABLE_BRAND_BARCODE + "(" +
+                    COLUMN_ID + " integer primary key autoincrement, " + // Локальный ключ -0
+                    BB_COLUMN_BRAND + " text," + //
+                    BB_COLUMN_BARCODE + " text," + //
+                    BB_COLUMN_SOURCE + " text" + //место покупки - 22
+                    ");";
 
     private static final String CREATE_TABLE_KIT_AFTER_CONNECTIONS =
             "create table " + TABLE_KIT_AFTER_CONNECTIONS + "(" +
@@ -189,6 +202,7 @@ public class DbConnector {
                     MYLISTSITEMS_LISTNAME + " text," +
                     COLUMN_STATUS + " text," + //начат/использован
                     COLUMN_MEDIA  + " text," + //материал
+                    COLUMN_SCALEMATES_URL + " text," + //материал
 
                     KIT_AFTER_AFTERDESIGNEDFOR + " text," +
                     COLUMN_PURCHASE_PLACE + " text" + //место покупки - 22
@@ -221,6 +235,8 @@ public class DbConnector {
                     COLUMN_QUANTITY + " integer," + //количество - 19
                     COLUMN_NOTES + " text," + //заметки - 20
                     COLUMN_CURRENCY + " text," + //валюта - 21
+                    COLUMN_SCALEMATES_URL + " text," + //материал
+
 
                     COLUMN_STATUS + " text," + //начат/использован
                     COLUMN_MEDIA  + " text," + //материал
@@ -276,6 +292,7 @@ public class DbConnector {
 
                     COLUMN_STATUS + " text," + //начат/использован
                     COLUMN_MEDIA  + " text," + //материал
+                    COLUMN_SCALEMATES_URL + " text," + //материал
 
                     MYLISTSITEMS_LISTNAME + " text" + // Локальный ключ -23
 
@@ -319,14 +336,15 @@ public class DbConnector {
                     COLUMN_IS_DELETED + " integer," + // - 14
                     COLUMN_DATE + " text," +// дата добавления? LOCAL? - 15
                     COLUMN_YEAR + " text," + // год выпуска набора - 16
+                    COLUMN_SCALEMATES_URL + " text," + //материал
 
                     COLUMN_PURCHASE_DATE + " text," + //дата покупки -17
-                    COLUMN_PRICE + " text," + //цена -18
+                    COLUMN_PRICE + " integer," + //цена -18
                     COLUMN_QUANTITY + " integer," + //количество - 19
                     COLUMN_NOTES + " text," + //заметки - 20
                     COLUMN_CURRENCY + " text," + //валюта - 21
                     COLUMN_PURCHASE_PLACE + " text," + //место покупки - 22
-                    COLUMN_STATUS + " text," + //начат/использован
+                    COLUMN_STATUS + " integer," + //начат/использован
                     COLUMN_MEDIA  + " text" + //материал
                     ");";
 
@@ -505,6 +523,60 @@ public class DbConnector {
 
     public void clearTable(String table)   {
         mDB.delete(table, null,null);
+    }
+
+    //////////////UNIVERSAL//////////
+
+    //    все из таблицы
+    public Cursor getAllFromTable(String tableName, String sortBy) {
+        return mDB.query(tableName, null, null, null, null, null, sortBy);
+    }
+
+    public void addRec(Item item) {
+        ContentValues cv = new ContentValues();
+
+//        if (item.getClass() == Kit.class){
+//            cv.put(COLUMN_BARCODE, item.getBarcode());
+////        String string = kit.getBarcode();
+//            cv.put(COLUMN_BRAND, item.getBrand());
+//            cv.put(COLUMN_BRAND_CATNO, item.getBrandCatno());
+//            cv.put(COLUMN_SCALE, item.getScale());
+//            cv.put(COLUMN_KIT_NAME, item.getKit_name());
+//            cv.put(COLUMN_DESCRIPTION, item.getDescription());
+//            cv.put(COLUMN_ORIGINAL_KIT_NAME, item.getKit_noeng_name());
+//
+//            cv.put(COLUMN_CATEGORY, item.getCategory());
+////        cv.put(COLUMN_COLLECTION, kit.get  + " text," + //коллекция - для группировки и других функций - 9
+////        cv.put(COLUMN_SEND_STATUS, kit.getSe + " text," + //для отслеживания офлайн отправок LOCAL - 10
+//            cv.put(COLUMN_ID_ONLINE, item.getOnlineId());
+//            //заметки? LOCAL?
+//            cv.put(COLUMN_BOXART_URI, item.getBoxart_uri());
+//            cv.put(COLUMN_BOXART_URL, item.getBoxart_url());
+////        cv.put(COLUMN_IS_DELETED, kit.get + " int," + // - 14
+//            cv.put(COLUMN_DATE, item.getDate_added());
+//            cv.put(COLUMN_YEAR, item.getYear());
+//
+//            cv.put(COLUMN_PURCHASE_DATE, item.getDatePurchased());
+//            cv.put(COLUMN_PRICE, item.getPrice());
+//            cv.put(COLUMN_QUANTITY, item.getQuantity());
+//            cv.put(COLUMN_NOTES, item.getNotes());
+//            cv.put(COLUMN_CURRENCY, item.getCurrency());
+//            cv.put(COLUMN_SEND_STATUS, item.getSendStatus());
+//            cv.put(COLUMN_PURCHASE_PLACE, item.getPlacePurchased());
+
+
+//                MYLISTSITEMS_LISTNAME +
+
+        mDB.insert(TABLE_KITS, null, cv);
+
+//        }
+//
+
+
+    }
+
+    public void editRec() {
+
     }
 
     //////////////KITS//////////////
@@ -1311,6 +1383,7 @@ public class DbConnector {
             db.execSQL(CREATE_TABLE_AFTERMARKET);
             db.execSQL(CREATE_TABLE_AFTERMARKET_MYLISTITEMS);
             db.execSQL(CREATE_TABLE_KIT_AFTER_CONNECTIONS);
+            db.execSQL(CREATE_TABLE_BRAND_BARCODE);
         }
 
         @Override

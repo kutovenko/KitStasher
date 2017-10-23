@@ -1,35 +1,55 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/colorBackground"
     android:orientation="vertical"
-    android:weightSum="4">
+    android:weightSum="5">
 
     <Button
         android:id="@+id/btnAddKitAction"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="16dp"
         android:layout_weight="1"
+        android:background="@color/com_facebook_button_login_silver_background_color_pressed"
         android:text="@string/Add_Kit" />
 
     <Button
         android:id="@+id/btnViewStashAction"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
         android:layout_weight="1"
+        android:background="@color/com_facebook_button_login_silver_background_color_pressed"
         android:text="@string/View_Stash" />
+
+    <Button
+        android:id="@+id/btnAftermarketAction"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:layout_weight="1"
+        android:background="@color/com_facebook_button_login_silver_background_color_pressed"
+        android:text="@string/aftermarket" />
 
     <Button
         android:id="@+id/btnSearchAction"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
         android:layout_weight="1"
+        android:background="@color/com_facebook_button_login_silver_background_color_pressed"
         android:text="@string/What_in_the_box" />
 
     <Button
         android:id="@+id/btnStatisticsAction"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="16dp"
         android:layout_weight="1"
+        android:background="@color/com_facebook_button_login_silver_background_color_pressed"
         android:text="@string/View_Statistics" />
 
 </LinearLayout>

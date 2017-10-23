@@ -21,10 +21,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -61,10 +63,10 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
     private EditText etDetFullKitname, etDetFullBrand, etDetFullBrandCatNo, etDetFullScale,
             etDetFullKitNoengname,
             etFullNotes, etFullPrice, etPurchasedFrom;
-    private LinearLayout linLayoutAir, linLayoutGround, linLayoutSea, linLayoutSpace, linLayoutCar,
-            linLayoutOther, linLayoutFigures, linLayoutFantasy;
-    private Button btnSaveEdit, btnCancelEdit, btnDelete, btnRestoreImage, btnAddBoxart, btnClearDate,
-            btnAddAftermarket;
+    //    private LinearLayout linLayoutAir, linLayoutGround, linLayoutSea, linLayoutSpace, linLayoutCar,
+//            linLayoutOther, linLayoutFigures, linLayoutFantasy;
+//    private Button btnSaveEdit, btnCancelEdit, btnDelete, btnRestoreImage, btnAddBoxart, btnClearDate,
+//            btnAddAftermarket;
     private AppCompatSpinner spKitDescription, spKitYear, spQuantity, spCurrency, spKitMedia, spKitStatus;
     private String categoryTab, category, listname; // для переключения к вкладке. при изменении совпадает с category, иначе то, что было (пришло или сохранено в записи)
     private String brand, catno, kitname;
@@ -100,7 +102,7 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.fragment_after_edit, container, false);
+        view = inflater.inflate(R.layout.fragment_item_edit, container, false);
         afterId = getArguments().getLong("after_id");
         context = getActivity();
         dbConnector = new DbConnector(context);
@@ -381,7 +383,7 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
             return Constants.BOXART_URL_PREFIX
                     + url
                     + getSuffix()
-                    + Constants.BOXART_URL_POSTFIX;
+                    + Constants.JPG;
         }else{
             return "";
         }
@@ -548,52 +550,52 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
     }
 
     private void setTag(String category) {
-        switch (category){
-            case Constants.CAT_AIR:
-                linLayoutAir.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
-//                categoryToReturn = 1;
-                break;
-            case Constants.CAT_GROUND:
-                linLayoutGround.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
-//                categoryToReturn = 2;
-                break;
-            case Constants.CAT_SEA:
-                linLayoutSea.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
-//                categoryToReturn = 3;
-                break;
-            case Constants.CAT_SPACE:
-                linLayoutSpace.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
-//                categoryToReturn = 4;
-                break;
-            case Constants.CAT_AUTOMOTO:
-                linLayoutCar.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
-//                categoryToReturn = 5;
-                break;
-            case Constants.CAT_FANTASY:
-                linLayoutFantasy.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
-//                categoryToReturn = 7;
-                break;
-            case Constants.CAT_FIGURES:
-                linLayoutFigures.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
-//                categoryToReturn = 6;
-                break;
-            case Constants.CAT_OTHER:
-                linLayoutOther.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
-//                categoryToReturn = 8;
-                break;
-        }
+//        switch (category){
+//            case Constants.CAT_AIR:
+//                linLayoutAir.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
+////                categoryToReturn = 1;
+//                break;
+//            case Constants.CAT_GROUND:
+//                linLayoutGround.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
+////                categoryToReturn = 2;
+//                break;
+//            case Constants.CAT_SEA:
+//                linLayoutSea.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
+////                categoryToReturn = 3;
+//                break;
+//            case Constants.CAT_SPACE:
+//                linLayoutSpace.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
+////                categoryToReturn = 4;
+//                break;
+//            case Constants.CAT_AUTOMOTO:
+//                linLayoutCar.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
+////                categoryToReturn = 5;
+//                break;
+//            case Constants.CAT_FANTASY:
+//                linLayoutFantasy.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
+////                categoryToReturn = 7;
+//                break;
+//            case Constants.CAT_FIGURES:
+//                linLayoutFigures.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
+////                categoryToReturn = 6;
+//                break;
+//            case Constants.CAT_OTHER:
+//                linLayoutOther.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
+////                categoryToReturn = 8;
+//                break;
+//        }
     }
 
-    private void clearTags() {
-        linLayoutSpace.setBackgroundColor(Helper.getColor(context, R.color.colorItem));
-        linLayoutAir.setBackgroundColor(Helper.getColor(context, R.color.colorItem));
-        linLayoutSea.setBackgroundColor(Helper.getColor(context, R.color.colorItem));
-        linLayoutGround.setBackgroundColor(Helper.getColor(context, R.color.colorItem));
-        linLayoutCar.setBackgroundColor(Helper.getColor(context, R.color.colorItem));
-        linLayoutOther.setBackgroundColor(Helper.getColor(context, R.color.colorItem));
-        linLayoutFigures.setBackgroundColor(Helper.getColor(context, R.color.colorItem));
-        linLayoutFantasy.setBackgroundColor(Helper.getColor(context, R.color.colorItem));
-    }
+//    private void clearTags() {
+//        linLayoutSpace.setBackgroundColor(Helper.getColor(context, R.color.colorItem));
+//        linLayoutAir.setBackgroundColor(Helper.getColor(context, R.color.colorItem));
+//        linLayoutSea.setBackgroundColor(Helper.getColor(context, R.color.colorItem));
+//        linLayoutGround.setBackgroundColor(Helper.getColor(context, R.color.colorItem));
+//        linLayoutCar.setBackgroundColor(Helper.getColor(context, R.color.colorItem));
+//        linLayoutOther.setBackgroundColor(Helper.getColor(context, R.color.colorItem));
+//        linLayoutFigures.setBackgroundColor(Helper.getColor(context, R.color.colorItem));
+//        linLayoutFantasy.setBackgroundColor(Helper.getColor(context, R.color.colorItem));
+//    }
 
 
     private void writeBoxartFile(File exportDir) {
@@ -660,60 +662,102 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
     }
 
     private void initUI(){
-        ivEditorBoxart = (ImageView)view.findViewById(R.id.ivEditorBoxart);
+
+        ivEditorBoxart = (ImageView) view.findViewById(R.id.ivEditBoxart);
         ivEditorBoxart.setOnClickListener(this);
-        etDetFullKitname = (EditText)view.findViewById(R.id.etDetFullKitname);
-        etDetFullBrand = (EditText)view.findViewById(R.id.etDetFullBrand);
-        etDetFullBrandCatNo = (EditText)view.findViewById(R.id.etDetFullBrandCatNo);
-        etDetFullScale = (EditText)view.findViewById(R.id.etDetFullScale);
-        etDetFullKitNoengname = (EditText)view.findViewById(R.id.etDetKitOrigName);
 
-        linLayoutAir = (LinearLayout)view.findViewById(R.id.linLayoutSelectAir);
-        linLayoutAir.setOnClickListener(this);
-        linLayoutCar = (LinearLayout)view.findViewById(R.id.linLayoutSelectCar);
-        linLayoutCar.setOnClickListener(this);
-        linLayoutGround = (LinearLayout)view.findViewById(R.id.linLayoutSelectGround);
-        linLayoutGround.setOnClickListener(this);
-        linLayoutOther = (LinearLayout)view.findViewById(R.id.linLayoutSelectOther);
-        linLayoutOther.setOnClickListener(this);
-        linLayoutSea = (LinearLayout)view.findViewById(R.id.linLayoutSelectSea);
-        linLayoutSea.setOnClickListener(this);
-        linLayoutSpace = (LinearLayout)view.findViewById(R.id.linLayoutSelectSpace);
-        linLayoutSpace.setOnClickListener(this);
-        linLayoutFantasy = (LinearLayout)view.findViewById(R.id.linLayoutSelectFantasy);
-        linLayoutFantasy.setOnClickListener(this);
-        linLayoutFigures = (LinearLayout)view.findViewById(R.id.linLayoutSelectFigures);
-        linLayoutFigures.setOnClickListener(this);
+        etDetFullBrand = (AutoCompleteTextView) view.findViewById(R.id.acEditBrand); //ac
+        etPurchasedFrom = (EditText) view.findViewById(R.id.acEditShop); //ac
 
-        btnSaveEdit = (Button)view.findViewById(R.id.btnSaveEdit);
+        etDetFullKitname = (EditText) view.findViewById(R.id.etEditName);
+        etDetFullBrandCatNo = (EditText) view.findViewById(R.id.etEditCatno);
+        etDetFullScale = (EditText) view.findViewById(R.id.etEditScale);
+        etDetFullKitNoengname = (EditText) view.findViewById(R.id.etEditOrigName);
+        etFullNotes = (EditText) view.findViewById(R.id.etEditNotes);
+        etFullPrice = (EditText) view.findViewById(R.id.etEditPrice);
+
+
+        Button btnSaveEdit = (Button) view.findViewById(R.id.btnEditSave);
         btnSaveEdit.setOnClickListener(this);
-        btnCancelEdit = (Button)view.findViewById(R.id.btnCancelEdit);
+        Button btnCancelEdit = (Button) view.findViewById(R.id.btnEditCancel);
         btnCancelEdit.setOnClickListener(this);
-        btnDelete = (Button)view.findViewById(R.id.btnDelete);
-        btnDelete.setOnClickListener(this);
-        btnAddBoxart = (Button)view.findViewById(R.id.btnAddBoxart);
-        btnAddBoxart.setOnClickListener(this);
-        btnRestoreImage = (Button)view.findViewById(R.id.btnRestoreImage);
+//        Button btnDelete = (Button)view.findViewById(R.id.btnEditDelete);
+//        btnDelete.setOnClickListener(this);
+        ImageButton btnRestoreImage = (ImageButton) view.findViewById(R.id.ibtnRestoreImage);
         btnRestoreImage.setOnClickListener(this);
+        Button btnClearDate = (Button) view.findViewById(R.id.btnEditClearDate);
+        btnClearDate.setOnClickListener(this);
+        Button btnAddAftermarket = (Button) view.findViewById(R.id.btnAddAftermarket);
+        btnAddAftermarket.setOnClickListener(this);
 
-        spKitDescription = (AppCompatSpinner)view.findViewById(R.id.spKitDescription);
-        spKitYear = (AppCompatSpinner)view.findViewById(R.id.spKitYear);
+        spKitDescription = (AppCompatSpinner) view.findViewById(R.id.spEditDescription);
+        spKitYear = (AppCompatSpinner) view.findViewById(R.id.spEditYear);
+        spCurrency = (AppCompatSpinner) view.findViewById(R.id.spEditCurrency);
+        spQuantity = (AppCompatSpinner) view.findViewById(R.id.spEditQuantity);
+        spKitMedia = (AppCompatSpinner) view.findViewById(R.id.spEditMedia);
+        spKitStatus = (AppCompatSpinner) view.findViewById(R.id.spEditStatus);
+        AppCompatSpinner spCategory = (AppCompatSpinner) view.findViewById(R.id.spEditCategory);
 
-        spCurrency = (AppCompatSpinner)view.findViewById(R.id.spFullCurrency);
-        spQuantity = (AppCompatSpinner)view.findViewById(R.id.spFullQuantity);
-        spKitMedia = (AppCompatSpinner)view.findViewById(R.id.spKitMedia);
-        spKitStatus = (AppCompatSpinner)view.findViewById(R.id.spKitStatus);
-
-
-        etFullNotes = (EditText)view.findViewById(R.id.etFullNotes);
-        etFullPrice = (EditText)view.findViewById(R.id.etFullPrice);
-        etPurchasedFrom = (EditText)view.findViewById(R.id.etFullPurchasedFrom);
-
-        tvMPurchaseDate = (TextView)view.findViewById(R.id.tvMSelectPurchaseDate);
+        tvMPurchaseDate = (TextView) view.findViewById(R.id.tvEditPurchaseDate);
         tvMPurchaseDate.setOnClickListener(this);
 
-        btnClearDate = (Button)view.findViewById(R.id.btnMClearDate);
-        btnClearDate.setOnClickListener(this);
+        ListView lvAftermarket = (ListView) view.findViewById(R.id.lvEditAftermarket);
+        lvAftermarket.setVisibility(View.GONE);
+
+//        ivEditorBoxart = (ImageView)view.findViewById(R.id.ivEditorAfterBoxart);
+//        ivEditorBoxart.setOnClickListener(this);
+//        etDetFullKitname = (EditText)view.findViewById(R.id.etDetFullAftername);
+//        etDetFullBrand = (EditText)view.findViewById(R.id.etDetAfterFullBrand);
+//        etDetFullBrandCatNo = (EditText)view.findViewById(R.id.etDetAfterFullBrandCatNo);
+//        etDetFullScale = (EditText)view.findViewById(R.id.etDetAfterFullScale);
+//        etDetFullKitNoengname = (EditText)view.findViewById(R.id.etDetAfterOrigName);
+//
+//        linLayoutAir = (LinearLayout)view.findViewById(R.id.linLayoutAfterSelectAir);
+//        linLayoutAir.setOnClickListener(this);
+//        linLayoutCar = (LinearLayout)view.findViewById(R.id.linLayoutAfterSelectCar);
+//        linLayoutCar.setOnClickListener(this);
+//        linLayoutGround = (LinearLayout)view.findViewById(R.id.linLayoutAfterSelectGround);
+//        linLayoutGround.setOnClickListener(this);
+//        linLayoutOther = (LinearLayout)view.findViewById(R.id.linLayoutAfterSelectOther);
+//        linLayoutOther.setOnClickListener(this);
+//        linLayoutSea = (LinearLayout)view.findViewById(R.id.linLayoutAfterSelectSea);
+//        linLayoutSea.setOnClickListener(this);
+//        linLayoutSpace = (LinearLayout)view.findViewById(R.id.linLayoutAfterSelectSpace);
+//        linLayoutSpace.setOnClickListener(this);
+//        linLayoutFantasy = (LinearLayout)view.findViewById(R.id.linLayoutAfterSelectFantasy);
+//        linLayoutFantasy.setOnClickListener(this);
+//        linLayoutFigures = (LinearLayout)view.findViewById(R.id.linLayoutAfterSelectFigures);
+//        linLayoutFigures.setOnClickListener(this);
+//
+//        btnSaveEdit = (Button)view.findViewById(R.id.btnAfterSaveEdit);
+//        btnSaveEdit.setOnClickListener(this);
+//        btnCancelEdit = (Button)view.findViewById(R.id.btnAfterCancelEdit);
+//        btnCancelEdit.setOnClickListener(this);
+//        btnDelete = (Button)view.findViewById(R.id.btnAfterDelete);
+//        btnDelete.setOnClickListener(this);
+//        btnAddBoxart = (Button)view.findViewById(R.id.btnAddAfterBoxart);
+//        btnAddBoxart.setOnClickListener(this);
+//        btnRestoreImage = (Button)view.findViewById(R.id.btnRestoreAfterImage);
+//        btnRestoreImage.setOnClickListener(this);
+//
+//        spKitDescription = (AppCompatSpinner)view.findViewById(R.id.spKitDescription);
+//        spKitYear = (AppCompatSpinner)view.findViewById(R.id.spAfterYear);
+//
+//        spCurrency = (AppCompatSpinner)view.findViewById(R.id.spAfterFullCurrency);
+//        spQuantity = (AppCompatSpinner)view.findViewById(R.id.spAfterFullQuantity);
+//        spKitMedia = (AppCompatSpinner)view.findViewById(R.id.spAfterMedia);
+//        spKitStatus = (AppCompatSpinner)view.findViewById(R.id.spAfterStatus);
+//
+//
+//        etFullNotes = (EditText)view.findViewById(R.id.etAfterFullNotes);
+//        etFullPrice = (EditText)view.findViewById(R.id.etAfterFullPrice);
+//        etPurchasedFrom = (EditText)view.findViewById(R.id.etAfterFullPurchasedFrom);
+//
+//        tvMPurchaseDate = (TextView)view.findViewById(R.id.tvAfterMSelectPurchaseDate);
+//        tvMPurchaseDate.setOnClickListener(this);
+//
+//        btnClearDate = (Button)view.findViewById(R.id.btnAfterMClearDate);
+//        btnClearDate.setOnClickListener(this);
 
 //        btnAddAftermarket = (Button)view.findViewById(R.id.btnAddAftermarket);
 //        btnAddAftermarket.setOnClickListener(this);
@@ -739,7 +783,7 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
             check = false;
         }
 //        if (bmBoxartPic == null){
-//            Toast.makeText(KitActivity.this, R.string.Please_add_boxart_photo, Toast.LENGTH_SHORT).show();
+//            Toast.makeText(ViewActivity.this, R.string.Please_add_boxart_photo, Toast.LENGTH_SHORT).show();
 //            check = false;
 //        }
         return check;
@@ -749,62 +793,62 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-            case R.id.linLayoutSelectAir:
-                category = Constants.CAT_AIR;
-                isRbChanged = true;
-                clearTags();
-                setTag(category);
-                break;
-            case R.id.linLayoutSelectGround:
-                category = Constants.CAT_GROUND;
-                isRbChanged = true;
-                clearTags();
-                setTag(category);
-                break;
-            case R.id.linLayoutSelectSea:
-                category = Constants.CAT_SEA;
-                isRbChanged = true;
-                clearTags();
-                setTag(category);
-                break;
-            case R.id.linLayoutSelectSpace:
-                category = Constants.CAT_SPACE;
-                isRbChanged = true;
-                clearTags();
-                setTag(category);
-                break;
-            case R.id.linLayoutSelectOther:
-                category = Constants.CAT_OTHER;
-                isRbChanged = true;
-                clearTags();
-                setTag(category);
-                break;
-            case R.id.linLayoutSelectCar:
-                category = Constants.CAT_AUTOMOTO;
-                isRbChanged = true;
-                clearTags();
-                setTag(category);
-                break;
-            case R.id.linLayoutSelectFigures:
-                category = Constants.CAT_FIGURES;
-                isRbChanged = true;
-                clearTags();
-                setTag(category);
-                break;
-            case R.id.linLayoutSelectFantasy:
-                category = Constants.CAT_FANTASY;
-                isRbChanged = true;
-                clearTags();
-                setTag(category);
-                break;
-
-            case R.id.ivEditorBoxart:
-//                viewPicture();
-                break;
+//            case R.id.linLayoutAfterSelectAir:
+//                category = Constants.CAT_AIR;
+//                isRbChanged = true;
+//                clearTags();
+//                setTag(category);
+//                break;
+//            case R.id.linLayoutAfterSelectGround:
+//                category = Constants.CAT_GROUND;
+//                isRbChanged = true;
+//                clearTags();
+//                setTag(category);
+//                break;
+//            case R.id.linLayoutAfterSelectSea:
+//                category = Constants.CAT_SEA;
+//                isRbChanged = true;
+//                clearTags();
+//                setTag(category);
+//                break;
+//            case R.id.linLayoutAfterSelectSpace:
+//                category = Constants.CAT_SPACE;
+//                isRbChanged = true;
+//                clearTags();
+//                setTag(category);
+//                break;
+//            case R.id.linLayoutAfterSelectOther:
+//                category = Constants.CAT_OTHER;
+//                isRbChanged = true;
+//                clearTags();
+//                setTag(category);
+//                break;
+//            case R.id.linLayoutAfterSelectCar:
+//                category = Constants.CAT_AUTOMOTO;
+//                isRbChanged = true;
+//                clearTags();
+//                setTag(category);
+//                break;
+//            case R.id.linLayoutAfterSelectFigures:
+//                category = Constants.CAT_FIGURES;
+//                isRbChanged = true;
+//                clearTags();
+//                setTag(category);
+//                break;
+//            case R.id.linLayoutAfterSelectFantasy:
+//                category = Constants.CAT_FANTASY;
+//                isRbChanged = true;
+//                clearTags();
+//                setTag(category);
+//                break;
+//
+//            case R.id.ivEditorAfterBoxart:
+////                viewPicture();
+//                break;
 
 
 ///////////////////////////////////////////////////////////////////////////////
-            case R.id.btnSaveEdit:
+            case R.id.btnEditSave:
                 if (checkAllFields()) {
                     if (bmBoxartPic != null) {
                         size = Constants.SIZE_FULL;
@@ -855,8 +899,8 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
 ////                bundle.putLong("kitid", cursor.getLong(cursor.getColumnIndex(DbConnector.COLUMN_ID)));
 //                    bundle.putInt("position", position);
 //                    bundle.putInt("category", categoryToReturn);
-                    bundle.putLong("after_id", afterId);
-                    bundle.putString("boxart_uri", pictureName);
+                    bundle.putLong(Constants.AFTER_ID, afterId);
+                    bundle.putString(Constants.BOXART_URI, pictureName);
                     fragment.setArguments(bundle);
                     android.support.v4.app.FragmentTransaction fragmentTransaction =
                             getFragmentManager().beginTransaction();
@@ -870,7 +914,7 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-            case R.id.btnCancelEdit:
+            case R.id.btnEditCancel:
 
                 AftermarketCardFragment fragment = new AftermarketCardFragment();
                 Bundle bundle = new Bundle();
@@ -885,31 +929,31 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
 
             ///////////////////////////////////////////////////////////////////////////////////
 
-            case R.id.btnDelete:
-                dbConnector.deleteAftermarketById(afterId);
-                break;
+//            case R.id.btnEditDelete:
+//                dbConnector.deleteAftermarketById(afterId);
+//                break;
 
-            case R.id.btnAddBoxart:
+            case R.id.ivEditBoxart:
                 takePicture();
                 break;
 
-            case R.id.btnRestoreImage:
+            case R.id.ibtnRestoreImage:
                 ContentValues cvUri = new ContentValues();
                 cvUri.put("boxart_uri", "");
                 dbConnector.editRecById(afterId, cvUri);
                 setBoxartImage();
                 break;
 
-            case R.id.tvMSelectPurchaseDate:
+            case R.id.tvEditPurchaseDate:
                 isDateChanged = true;
                 DialogFragment newFragment = new SelectDateFragment();
                 Bundle timeBundle = new Bundle(1);
-                timeBundle.putString("caller", "KitActivity");
+                timeBundle.putString("caller", "ViewActivity");
                 newFragment.setArguments(timeBundle);
                 newFragment.show(getFragmentManager(), "DatePicker");
                 break;
 
-            case R.id.btnMClearDate:
+            case R.id.btnEditClearDate:
                 purchaseDate = "";
                 tvMPurchaseDate.setText(R.string.Date_not_set);
                 break;
