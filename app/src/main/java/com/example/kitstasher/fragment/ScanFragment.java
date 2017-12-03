@@ -1,14 +1,10 @@
 package com.example.kitstasher.fragment;
 
-import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
@@ -24,7 +20,6 @@ import com.example.kitstasher.objects.Kit;
 import com.example.kitstasher.other.AsyncApp42ServiceApi;
 import com.example.kitstasher.other.Constants;
 import com.example.kitstasher.other.DbConnector;
-import com.example.kitstasher.other.Helper;
 import com.example.kitstasher.other.OnFragmentInteractionListener;
 import com.google.zxing.ResultPoint;
 import com.google.zxing.integration.android.IntentIntegrator;
@@ -53,7 +48,7 @@ import static com.example.kitstasher.activity.MainActivity.asyncService;
 public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42StorageServiceListener {
 
     private String barcode, docId, brand, brand_catno, kit_name,
-    kit_noeng_name, sendStatus, date, boxart_url, category, description, scalemates_page, boxart_uri,
+            kit_noeng_name, sendStatus, date, boxart_url, category, description, scalemates_page, boxart_uri,
             prototype, year, showKit, onlineId, listname;
     private int status, media;
 
@@ -129,58 +124,58 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
         price = 0;
         currency = "";
 
-        checkPermissions();
+//        checkPermissions();
 //        initiateScanner(getCallback());
         return view;
-}
-
-    private void checkPermissions() {
-        //checking for permissions on Marshmallow+
-        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED) {
-            // Should we show an explanation?
-            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
-                    Manifest.permission.CAMERA)) {
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-
-            } else {
-                // No explanation needed, we can request the permission.
-                ActivityCompat.requestPermissions(getActivity(),
-                        new String[]{Manifest.permission.CAMERA},
-                        MY_PERMISSIONS_REQUEST_CAMERA);
-            }
-        }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_CAMERA: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    initiateScanner(getCallback());
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
-                } else {
-
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-                    Toast.makeText(getActivity(),
-                            R.string.permission_denied_to_use_camera, Toast.LENGTH_SHORT).show();
-                    barcodeView.setVisibility(View.GONE);
-                }
-                return;
-            }
-
-            // other 'case' lines to check for other
-            // permissions this app might request
-        }
-    }
+//    private void checkPermissions() {
+//        //checking for permissions on Marshmallow+
+//        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA)
+//                != PackageManager.PERMISSION_GRANTED) {
+//            // Should we show an explanation?
+//            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
+//                    Manifest.permission.CAMERA)) {
+//                // Show an explanation to the user *asynchronously* -- don't block
+//                // this thread waiting for the user's response! After the user
+//                // sees the explanation, try again to request the permission.
+//
+//            } else {
+//                // No explanation needed, we can request the permission.
+//                ActivityCompat.requestPermissions(getActivity(),
+//                        new String[]{Manifest.permission.CAMERA},
+//                        MY_PERMISSIONS_REQUEST_CAMERA);
+//            }
+//        }
+//    }
+//
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode,
+//                                           String permissions[], int[] grantResults) {
+//        switch (requestCode) {
+//            case MY_PERMISSIONS_REQUEST_CAMERA: {
+//                // If request is cancelled, the result arrays are empty.
+//                if (grantResults.length > 0
+//                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//
+//                    initiateScanner(getCallback());
+//                    // permission was granted, yay! Do the
+//                    // contacts-related task you need to do.
+//                } else {
+//
+//                    // permission denied, boo! Disable the
+//                    // functionality that depends on this permission.
+//                    Toast.makeText(getActivity(),
+//                            R.string.permission_denied_to_use_camera, Toast.LENGTH_SHORT).show();
+//                    barcodeView.setVisibility(View.GONE);
+//                }
+//                return;
+//            }
+//
+//            // other 'case' lines to check for other
+//            // permissions this app might request
+//        }
+//    }
 
 
     // Проверяем, откуда обратились к редактору
@@ -197,31 +192,32 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
         }
     }
 
-private BarcodeCallback getCallback(){
-    BarcodeCallback cb = new BarcodeCallback() {
-        @Override
-        public void barcodeResult(BarcodeResult result) {
-            if (result.getText() == null || result.getText().equals(barcode)) {
-                // Prevent duplicate scans
-                return;
-            }else{
-                barcode = result.getResult().toString();
-                //Check for doubles in local DB and then in cloud
-                if (isInLocalBase(barcode)){
-                    Toast.makeText(getActivity(), getString(R.string.entry_already_exist),
-                            Toast.LENGTH_SHORT).show();
-                    initiateScanner(getCallback());
-                }else {
-                    searchCloud(barcode);
+    private BarcodeCallback getCallback() {
+        BarcodeCallback cb = new BarcodeCallback() {
+            @Override
+            public void barcodeResult(BarcodeResult result) {
+                if (result.getText() == null || result.getText().equals(barcode)) {
+                    // Prevent duplicate scans
+                    return;
+                } else {
+                    barcode = result.getResult().toString();
+                    //Check for doubles in local DB and then in cloud
+                    if (isInLocalBase(barcode)) {
+                        Toast.makeText(getActivity(), getString(R.string.entry_already_exist),
+                                Toast.LENGTH_SHORT).show();
+                        initiateScanner(getCallback());
+                    } else {
+                        searchCloud(barcode);
+                    }
                 }
             }
-        }
-        @Override
-        public void possibleResultPoints(List<ResultPoint> resultPoints) {
-        }
-    };
-    return cb;
-}
+
+            @Override
+            public void possibleResultPoints(List<ResultPoint> resultPoints) {
+            }
+        };
+        return cb;
+    }
 
     private void initiateScanner(BarcodeCallback callback) {
         IntentIntegrator scanIntegrator = new IntentIntegrator(getActivity());
@@ -249,7 +245,7 @@ private BarcodeCallback getCallback(){
     private void searchCloud(String bc) {
         progressDialog = ProgressDialog.show(getActivity(), "", getString(R.string.searching));
         progressDialog.setCancelable(true);
-// TODO: 14.07.2017 ошибка в баркоде java.lang.StringIndexOutOfBoundsException: length=8; regionStart=0; regionLength=12 
+// TODO: 14.07.2017 ошибка в баркоде java.lang.StringIndexOutOfBoundsException: length=8; regionStart=0; regionLength=12
         Query query = QueryBuilder.build(Constants.TAG_BARCODE,
                 bc.substring(0, bc.length() - 1), QueryBuilder.Operator.LIKE);
         asyncService.findDocByQuery(Constants.App42DBName, Constants.CollectionName, query, this);
@@ -369,11 +365,15 @@ private BarcodeCallback getCallback(){
                 description = object.getString(Constants.TAG_DESCRIPTION);
 //                description = getKitDescription(object.getString(Constants.TAG_DESCRIPTION));
                 boxart_url = object.getString(Constants.TAG_BOXART_URL);
-                category = Helper.codeToTag(object.getString(Constants.TAG_CATEGORY));
+//                category = Helper.codeToTag(object.getString(Constants.TAG_CATEGORY));
+                category = String.valueOf(object.getInt(Constants.TAG_CATEGORY));
+//                category = object.getString(Constants.TAG_CATEGORY);
+
+                scalemates_page = object.getString(Constants.TAG_SCALEMATES_PAGE);
+
                 scale = Integer.valueOf(object.getString(Constants.TAG_SCALE)); //// TODO: 10.05.2017 подумать, когда преобразовывать
                 prototype = object.getString(Constants.TAG_PROTOTYPE);
 
-                scalemates_page = object.getString(Constants.TAG_SCALEMATES_PAGE); // TODO: 04.05.2017 убрать
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -414,7 +414,7 @@ private BarcodeCallback getCallback(){
                 if (item == 0){
                     openManualAdd();
                 }else {
-                    Kit kitToAdd = itemsForDb.get(item - 1);//// TODO: 11.07.2017 добавить год в базу
+                    Kit kitToAdd = itemsForDb.get(item - 1);// TODO: 11.07.2017 добавить год в базу
                     kitToAdd.setDate_added(date);
                     kitToAdd.setNotes(notes);
                     kitToAdd.setDatePurchased(purchaseDate);
@@ -425,6 +425,7 @@ private BarcodeCallback getCallback(){
                     kitToAdd.setOnlineId("");
                     kitToAdd.setBoxart_uri("");
                     kitToAdd.setPlacePurchased("");
+                    kitToAdd.setScalemates_url(scalemates_page);
 
                     kitToAdd.setStatus(status);
                     kitToAdd.setMedia(media);
@@ -481,8 +482,6 @@ private BarcodeCallback getCallback(){
                 case "6":
                     desc = "";
             }
-
-
         }
         return desc;
     }

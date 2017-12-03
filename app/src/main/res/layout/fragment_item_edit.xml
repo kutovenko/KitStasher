@@ -7,7 +7,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="vertical">
 
         <LinearLayout
@@ -26,38 +26,8 @@
                 android:layout_marginBottom="16dp"
                 android:layout_marginTop="16dp"
                 android:layout_weight="1"
-                app:srcCompat="@android:drawable/ic_menu_report_image" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginBottom="16dp"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:layout_weight="1"
-                android:background="@color/colorBackgroundDark"
-                android:orientation="horizontal">
-
-                <ImageButton
-                    android:id="@+id/ibtnRestoreImage"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_marginRight="16dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/button"
-                    android:padding="4dp"
-                    app:srcCompat="@android:drawable/ic_menu_report_image" />
-
-                <ImageButton
-                    android:id="@+id/ibMakePhoto"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:background="@drawable/button"
-                    android:padding="4dp"
-                    app:srcCompat="@drawable/ic_menu_camera" />
-
-            </LinearLayout>
+                app:srcCompat="@android:drawable/ic_menu_report_image"
+                android:contentDescription="@string/boxart_image" />
 
         </LinearLayout>
 
@@ -76,10 +46,11 @@
 
                 <EditText
                     android:id="@+id/etEditName"
+                    style="@style/MyTextEdit"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ems="10"
-                    android:hint="@string/name"
+                    android:hint="@string/Name_required"
                     android:inputType="textCapWords" />
 
             </android.support.design.widget.TextInputLayout>
@@ -90,6 +61,7 @@
 
                 <EditText
                     android:id="@+id/etEditOrigName"
+                    style="@style/MyTextEdit"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -106,6 +78,7 @@
 
                 <AutoCompleteTextView
                     android:id="@+id/acEditBrand"
+                    style="@style/MyAutoComplete"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
@@ -129,6 +102,7 @@
 
                     <EditText
                         android:id="@+id/etEditCatno"
+                        style="@style/MyTextEdit"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:ems="10"
@@ -145,6 +119,7 @@
 
                     <EditText
                         android:id="@+id/etEditScale"
+                        style="@style/MyTextEdit"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
@@ -161,6 +136,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginLeft="4dp"
+                android:layout_marginTop="8dp"
                 android:layout_weight="2.8"
                 android:orientation="horizontal">
 
@@ -171,7 +147,7 @@
                     android:layout_marginRight="16dp"
                     android:layout_marginTop="4dp"
                     android:text="@string/Category"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+                    android:textAppearance="@style/TextTheme" />
 
                 <android.support.v7.widget.AppCompatSpinner
                     android:id="@+id/spEditCategory"
@@ -189,7 +165,7 @@
             android:layout_marginBottom="8dp"
             android:layout_marginLeft="16dp"
             android:layout_marginTop="16dp"
-            android:text="Main properties"
+            android:text="@string/Main_information"
             android:textColor="@color/text"
             android:textStyle="bold" />
 
@@ -211,7 +187,7 @@
                     android:layout_marginBottom="4dp"
                     android:layout_weight="1"
                     android:text="@string/Status"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+                    android:textAppearance="@style/TextTheme" />
 
                 <android.support.v7.widget.AppCompatSpinner
                     android:id="@+id/spEditStatus"
@@ -231,7 +207,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/Media"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+                    android:textAppearance="@style/TextTheme" />
 
                 <android.support.v7.widget.AppCompatSpinner
                     android:id="@+id/spEditMedia"
@@ -251,7 +227,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/kittype"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+                    android:textAppearance="@style/TextTheme" />
 
                 <android.support.v7.widget.AppCompatSpinner
                     android:id="@+id/spEditDescription"
@@ -270,7 +246,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/year"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+                    android:textAppearance="@style/TextTheme" />
 
                 <android.support.v7.widget.AppCompatSpinner
                     android:id="@+id/spEditYear"
@@ -289,8 +265,7 @@
             android:layout_marginLeft="16dp"
             android:layout_marginTop="16dp"
             android:text="@string/notes"
-            android:textColor="@color/text"
-            android:textStyle="bold" />
+            android:textAppearance="@style/AppTheme.LittleHeader" />
 
         <EditText
             android:id="@+id/etEditNotes"
@@ -302,7 +277,8 @@
             android:inputType="textMultiLine"
             android:maxLines="6"
             android:minLines="3"
-            android:padding="4dp" />
+            android:padding="4dp"
+            android:textAppearance="@style/TextAppearance.AppCompat.Small" />
 
         <TextView
             android:id="@+id/textView20"
@@ -312,8 +288,7 @@
             android:layout_marginLeft="16dp"
             android:layout_marginTop="16dp"
             android:text="@string/Purchase_info"
-            android:textColor="@color/text"
-            android:textStyle="bold" />
+            android:textAppearance="@style/AppTheme.LittleHeader" />
 
         <LinearLayout
             android:id="@+id/LinLayiutPurchase"
@@ -337,7 +312,7 @@
                     android:layout_marginLeft="4dp"
                     android:layout_weight="1"
                     android:text="@string/Quantity"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+                    android:textAppearance="@style/TextTheme" />
 
                 <android.support.v7.widget.AppCompatSpinner
                     android:id="@+id/spEditQuantity"
@@ -354,6 +329,7 @@
 
                 <AutoCompleteTextView
                     android:id="@+id/acEditShop"
+                    style="@style/MyAutoComplete"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -378,6 +354,7 @@
 
                     <EditText
                         android:id="@+id/etEditPrice"
+                        style="@style/MyTextEdit"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
@@ -412,7 +389,7 @@
                 android:gravity="center_vertical|center_horizontal"
                 android:padding="8dp"
                 android:text="@string/purchase_date"
-                android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+                android:textAppearance="@style/TextTheme" />
 
             <Button
                 android:id="@+id/btnEditClearDate"
@@ -438,8 +415,7 @@
                 android:layout_marginLeft="16dp"
                 android:layout_marginTop="16dp"
                 android:text="@string/aftermarket"
-                android:textColor="@color/text"
-                android:textStyle="bold" />
+                android:textAppearance="@style/AppTheme.LittleHeader" />
 
             <ListView
                 android:id="@+id/lvEditAftermarket"
@@ -457,7 +433,8 @@
                 android:layout_marginRight="16dp"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/button"
-                android:text="+" />
+                android:text="+"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
         </LinearLayout>
 
@@ -468,17 +445,17 @@
             android:layout_margin="16dp"
             android:orientation="horizontal">
 
-            <Button
-                android:id="@+id/btnEditCancel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="16dp"
-                android:layout_weight="1"
-                android:background="@drawable/button"
-                android:baselineAligned="false"
-                android:drawableTop="@drawable/ic_clear_black_24dp"
-                android:padding="8dp"
-                android:text="@string/clear" />
+            <!--<Button-->
+            <!--android:id="@+id/btnEditCancel"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_marginRight="16dp"-->
+            <!--android:layout_weight="1"-->
+            <!--android:background="@drawable/button"-->
+            <!--android:baselineAligned="false"-->
+            <!--android:drawableTop="@drawable/ic_clear_black_24dp"-->
+            <!--android:padding="8dp"-->
+            <!--android:text="@string/clear" />-->
 
             <Button
                 android:id="@+id/btnEditSave"

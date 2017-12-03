@@ -6,18 +6,20 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatSpinner;
 import android.text.Editable;
@@ -26,7 +28,6 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -37,10 +38,13 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.example.kitstasher.BuildConfig;
 import com.example.kitstasher.R;
+import com.example.kitstasher.activity.CropActivity;
 import com.example.kitstasher.activity.MainActivity;
 import com.example.kitstasher.adapters.AdapterAddFragment;
 import com.example.kitstasher.adapters.AdapterAlertDialog;
+import com.example.kitstasher.adapters.AdapterSpinner;
 import com.example.kitstasher.objects.Aftermarket;
 import com.example.kitstasher.objects.Item;
 import com.example.kitstasher.objects.Kit;
@@ -59,45 +63,49 @@ import com.shephertz.app42.paas.sdk.android.App42Exception;
 import com.shephertz.app42.paas.sdk.android.storage.Query;
 import com.shephertz.app42.paas.sdk.android.storage.QueryBuilder;
 import com.shephertz.app42.paas.sdk.android.storage.Storage;
+import com.yalantis.ucrop.UCrop;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+
+import moe.feng.common.stepperview.VerticalStepperItemView;
 
 import static android.R.drawable.ic_menu_camera;
 import static android.app.Activity.RESULT_OK;
-import static com.example.kitstasher.activity.MainActivity.REQUEST_CODE_CAMERA;
 import static com.example.kitstasher.activity.MainActivity.REQUEST_CODE_CROP;
 import static com.example.kitstasher.activity.MainActivity.asyncService;
 
+//import com.example.kitstasher.activity.UCropActivity;
+
 /**
- * Created by Алексей on 21.04.2017.
+ * Created by Алексей on 21.04.2017. Manual add items to database
  */
 
 public class ManualAddFragment extends Fragment implements View.OnClickListener, TextWatcher,
-        AsyncApp42ServiceApi.App42StorageServiceListener, OnFragmentInteractionListener,
-        AdapterView.OnItemSelectedListener {
+        AsyncApp42ServiceApi.App42StorageServiceListener, OnFragmentInteractionListener
+//        ,AdapterView.OnItemSelectedListener
+{
     private View view;
     private EditText etBrandCat_no, etScale, etKitName, etKitNoengName, etNotes, etPrice;
-    private Button btnAdd, btnCancel, btnCheckOnlineDatabase, btnClearDate;
-    private AppCompatSpinner spYear, spDescription, spQuantity, spCurrency, spKitMedia;
-    //    private LinearLayout linLayoutMAir, linLayoutMCar, linLayoutMGround, linLayoutMOther,
-//            linLayoutMSea, linLayoutMSpace, linLayoutMFigures, linLAyoutMFantasy;
+    private Button btnCheckOnlineDatabase, btnContinueStep;
+    //    private Button btnNextStepper1, btnNextStepper2, btnNextStepper3,
+//    btnStepper2Back, btnStepper3Back, btnStepper4Back;
+    private AppCompatSpinner spYear, spDescription, spQuantity, spCurrency, spKitMedia, spCategory;
     private ImageView ivGetBoxart;
-    private TextView tvPurchaseDate;
+    private TextView tvPurchaseDate, tvModeKit, tvModeAftermarket;
     private ProgressDialog progressDialog;
+    private String imageFileName;
 
     private String aftermarketName, aftemarketOriginalName, compilanceWith;
-    private long incomeKitId;
 
     private String barcode, brand, brandCatno, kitName, sendStatus, kitNoengname, dateAdded, datePurchased,
             boxartUrl, category, boxartUri, fbId, description, year, onlineId, listname, notes,
@@ -106,9 +114,9 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 
     private String defCurrency;
     private char editMode;
-    private int scale, quantity, y, month, day, price;
+    private int scale, quantity, price;
     private int spCurrencyPosition;
-    private boolean isFoundOnline, isReported, wasSearchedOnline, isRbChanged;
+    private boolean isFoundOnline, isReported, wasSearchedOnline;
 
     private Context context;
     private DbConnector dbConnector;
@@ -128,22 +136,21 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 
     private Bitmap boxartPic;
     private ByteArrayOutputStream bytes;
-    private String currentDocId;
 
     private Kit kit;
     private Aftermarket aftermarket;
     private ArrayAdapter<String> descriptionAdapter, yearsAdapter, mediaAdapter;
 
+    static final int REQUEST_TAKE_PHOTO = 1;
+    private String mCurrentPhotoPath; //path for use with ACTION_VIEW intents
 
-    private final int MY_PERMISSIONS_REQUEST_CAMERA = 11;
-    private final int MY_PERMISSIONS_REQUEST_WRITE = 12;
+    private VerticalStepperItemView stepper_0, stepper_1, stepper_2, stepper_3, stepper_4;
 
-
-    private long kit_id, after_id;
-
+    private String parseImageUrl, parseThumbnailUrl;
+    private Uri photoPath;
 
     public ManualAddFragment() {
-        // Required empty public constructor
+
     }
 
 
@@ -174,6 +181,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         super.onSaveInstanceState(outState);
         if (boxartPic != null){
             outState.putParcelable(Constants.BOXART_IMAGE, boxartPic);
+            outState.putString("imagePath", mCurrentPhotoPath);
         }
         if (kit != null){
             outState.putString(Constants.BOXART_URL, kit.getBoxart_url());
@@ -184,7 +192,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.fragment_tabbed_manualadd2, container, false);
+        view = inflater.inflate(R.layout.fragment_tabbed_manualadd, container, false);
 //Соединение с локальной БД
         dbConnector = new DbConnector(getActivity());
         dbConnector.open();
@@ -194,11 +202,13 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         prepareMyList();
         checkMode();
         initUI();
+        stepper_0.setState(1);
+        stepper_0.setNormalColor(Color.GREEN);
 
-        setTag(category);
 
         if (savedInstanceState != null){
             if (savedInstanceState.getString(Constants.BOXART_URL) != null) {
+                mCurrentPhotoPath = savedInstanceState.getString("imagePath");
                 Glide
                         .with(context)
                         .load(Constants.BOXART_URL_PREFIX
@@ -212,11 +222,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                     boxartPic = savedInstanceState.getParcelable(Constants.BOXART_IMAGE);
                     ivGetBoxart.setImageBitmap(boxartPic);
             }
-            setCategory(savedInstanceState.getString(Constants.CATEGORY));
         }
-
-//        checkPermissions();
-
 
         //Обрабатываем список автодополнения брэндов
         acAdapterMybrands = new ArrayAdapter<String>(getActivity(),
@@ -232,38 +238,66 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 
 
         if (!isOnline()) {
-            btnCheckOnlineDatabase.setEnabled(false);
-        } else {
-            btnCheckOnlineDatabase.setEnabled(true);
+            btnCheckOnlineDatabase.setClickable(false);
+//            btnCheckOnlineDatabase.setVisibility(View.GONE);
+//            btnContinueStep.setVisibility(View.VISIBLE);
+            stepper_0.setTitle(R.string.brand_and_name);
+            setAllSteps(1);
         }
+        if (editMode == Constants.MODE_AFTERMARKET) {
+            setAftermarketMode();
+        } else if (editMode == Constants.MODE_KIT) {
+            setKitMode();
+        }
+//        else {
+//            btnCheckOnlineDatabase.setVisibility(View.VISIBLE);
+//            btnContinueStep.setVisibility(View.GONE);
+//        }
 
 
-        String[] descriptionItems = new String[]{getString(R.string.kittype),
+        String[] descriptionItems = new String[]{getString(R.string.unknown),
                 getString(R.string.newkit), getString(R.string.rebox)};
-        descriptionAdapter = new ArrayAdapter<String>(getActivity(),
-                android.R.layout.simple_spinner_dropdown_item, descriptionItems);
+        descriptionAdapter = new ArrayAdapter<>(getActivity(),
+                R.layout.simple_spinner_item, descriptionItems);
         spDescription.setAdapter(descriptionAdapter);
 
-        ArrayList<String> years = new ArrayList<String>();
+        ArrayList<String> years = new ArrayList<>();
         int thisYear = Calendar.getInstance().get(Calendar.YEAR);
-            years.add(getString(R.string.year));
+        years.add(getString(R.string.unknown));
         for (int i = thisYear; i >= 1930; i--) {
             years.add(Integer.toString(i));
         }
-        yearsAdapter = new ArrayAdapter<String>(getActivity(),
-                android.R.layout.simple_spinner_item, years);
+        yearsAdapter = new ArrayAdapter<>(getActivity(),
+                R.layout.simple_spinner_item, years);
         spYear.setAdapter(yearsAdapter);
 
         Integer[] quants = new Integer[]{1,2,3,4,5,6,7,8,9,10};
-        ArrayAdapter quantityAdapter = new ArrayAdapter<Integer>(getActivity(),
-                android.R.layout.simple_spinner_item, quants);
+        ArrayAdapter quantityAdapter = new ArrayAdapter<>(getActivity(),
+                R.layout.simple_spinner_item, quants);
         spQuantity.setAdapter(quantityAdapter);
         spQuantity.setSelection(0, true);
 
-        String[] currencies = new String[]{"BYN", "EUR", "RUR", "UAH", "USD"};
-        currencyAdapter = new ArrayAdapter<String>(getActivity(),
-                android.R.layout.simple_spinner_item, currencies);
+        Cursor currCursor = dbConnector.getAllFromTable(DbConnector.TABLE_CURRENCIES,
+                DbConnector.CURRENCIES_COLUMN_CURRENCY);
+        currCursor.moveToFirst();
+        String[] currencies = new String[currCursor.getCount()];
+        for (int i = 0; i < currCursor.getCount(); i++) {
+            currencies[i] = currCursor.getString(1);
+            currCursor.moveToNext();
+        }
+        currencyAdapter = new ArrayAdapter<String>(context,
+                R.layout.simple_spinner_item, currencies);
         spCurrency.setAdapter(currencyAdapter);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        String defaultCurrency = sharedPreferences.getString(Constants.DEFAULT_CURRENCY, "");
+        int spCurrencyPosition = currencyAdapter.getPosition(defaultCurrency);
+        spCurrency.setSelection(spCurrencyPosition);
+//
+//        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+//        defCurrency = sharedPreferences.getString(Constants.DEFAULT_CURRENCY, "");
+//        spCurrencyPosition = currencyAdapter.getPosition(defCurrency);
+//        spCurrency.setSelection(spCurrencyPosition);
+
 
         String[] mediaTypes = new String[]{
                 getString(R.string.media_other),
@@ -277,16 +311,22 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                 getString(R.string.media_3dprint),
                 getString(R.string.media_multimedia)
         };
-        mediaAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item,
+        mediaAdapter = new ArrayAdapter<>(context, R.layout.simple_spinner_item,
                 mediaTypes);
         spKitMedia.setAdapter(mediaAdapter);
         spKitMedia.setSelection(1);
 
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        defCurrency = sharedPreferences.getString(Constants.DEFAULT_CURRENCY, "");
-        spCurrencyPosition = currencyAdapter.getPosition(defCurrency);
-        spCurrency.setSelection(spCurrencyPosition);
 
+        String[] categories = new String[]{getString(R.string.other), getString(R.string.air), getString(R.string.ground),
+                getString(R.string.sea), getString(R.string.space), getString(R.string.auto_moto),
+                getString(R.string.Figures), getString(R.string.Fantasy)};
+        int[] icons = new int[]{R.drawable.ic_check_box_outline_blank_black_24dp, R.drawable.ic_tag_air_black_24dp, R.drawable.ic_tag_afv_black_24dp,
+                R.drawable.ic_tag_ship_black_24dp, R.drawable.ic_tag_space_black_24dp,
+                R.drawable.ic_directions_car_black_24dp, R.drawable.ic_wc_black_24dp,
+                R.drawable.ic_android_black_24dp};
+        AdapterSpinner adapterSpinner = new AdapterSpinner(context, icons, categories);
+        spCategory.setAdapter(adapterSpinner);
+        spCategory.setSelection(Integer.parseInt(Helper.tagToCode(category)));
 
         return view;
     }
@@ -308,13 +348,6 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                     editMode = Constants.MODE_KIT;
                     break;
             }
-//            if (getArguments().getChar(Constants.EDIT_MODE) == Constants.MODE_LIST){
-//                editMode = Constants.MODE_LIST;
-//            }else{
-//                editMode = 'm';
-//            }
-//        }else{
-//            editMode = 'm';
         }
     }
 
@@ -326,7 +359,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 
         //экономим обращения к онлайновой базе - если уже искали, не искать.
         wasSearchedOnline = false;
-        isRbChanged = false;
+//        isRbChanged = false;
         isFoundOnline = false;
         isReported = false;
         sendStatus = "";//Статус для последующей записи пропущенных в офлайне записей
@@ -359,7 +392,8 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         }
         description = "";
         year = "0";
-        category = Constants.CAT_OTHER;
+//        category = Constants.CAT_OTHER;
+        category = Constants.CODE_OTHER;
         onlineId = "";
         price = 0;
         notes = "";
@@ -439,135 +473,74 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     }
 
     private void initUI() {
-        btnCheckOnlineDatabase = (Button) view.findViewById(R.id.btnCheckOnlineDb);
+        btnCheckOnlineDatabase = view.findViewById(R.id.btnCheckOnlineDb);
         btnCheckOnlineDatabase.setOnClickListener(this);
-        btnAdd = (Button) view.findViewById(R.id.btnMAdd);
+//        btnContinueStep = view.findViewById(R.id.btnContinueStep);
+//        btnContinueStep.setOnClickListener(this);
+        Button btnAdd = view.findViewById(R.id.btnMAdd);
         btnAdd.setOnClickListener(this);
-        btnCancel = (Button) view.findViewById(R.id.btnMCancel);
+        Button btnCancel = view.findViewById(R.id.btnMCancel);
         btnCancel.setOnClickListener(this);
-        ivGetBoxart = (ImageView) view.findViewById(R.id.ivGetBoxart);
-//        ivGetBoxart.setOnClickListener(this);
-        etBrandCat_no = (EditText) view.findViewById(R.id.etBrandCat_no);
-        etScale = (EditText) view.findViewById(R.id.etScale);
-        etKitName = (EditText) view.findViewById(R.id.etKitName);
-        etKitNoengName = (EditText) view.findViewById(R.id.etKitNoengName);
-        spDescription = (AppCompatSpinner) view.findViewById(R.id.spDescription);
-        spYear = (AppCompatSpinner) view.findViewById(R.id.spYear);
-
-        acTvBrand = (AutoCompleteTextView) view.findViewById(R.id.acTvBrand);
-        acPurchasedFrom = (AutoCompleteTextView)view.findViewById(R.id.acPlacePurchased);
+        ivGetBoxart = view.findViewById(R.id.ivGetBoxart);
+        ivGetBoxart.setOnClickListener(this);
+        etBrandCat_no = view.findViewById(R.id.etBrandCat_no);
+        etScale = view.findViewById(R.id.etScale);
+        etKitName = view.findViewById(R.id.etKitName);
+        etKitNoengName = view.findViewById(R.id.etKitNoengName);
+        spDescription = view.findViewById(R.id.spDescription);
+        spYear = view.findViewById(R.id.spYear);
+        spCategory = view.findViewById(R.id.spCategory);
 
 
-//        linLayoutMAir = (LinearLayout) view.findViewById(R.id.linLayoutMAir);
-//        linLayoutMAir.setOnClickListener(this);
-//        linLayoutMCar = (LinearLayout) view.findViewById(R.id.linLayoutMCar);
-//        linLayoutMCar.setOnClickListener(this);
-//        linLayoutMGround = (LinearLayout) view.findViewById(R.id.linLayoutMGround);
-//        linLayoutMGround.setOnClickListener(this);
-//        linLayoutMSea = (LinearLayout) view.findViewById(R.id.linLayoutMSea);
-//        linLayoutMSea.setOnClickListener(this);
-//        linLayoutMSpace = (LinearLayout) view.findViewById(R.id.linLayoutMSpace);
-//        linLayoutMSpace.setOnClickListener(this);
-//        linLayoutMOther = (LinearLayout) view.findViewById(R.id.linLayoutMOther);
-//        linLayoutMOther.setOnClickListener(this);
-//        linLAyoutMFantasy = (LinearLayout)view.findViewById(R.id.linLayoutMFantasy);
-//        linLAyoutMFantasy.setOnClickListener(this);
-//        linLayoutMFigures = (LinearLayout)view.findViewById(R.id.linLayoutMFigure);
-//        linLayoutMFigures.setOnClickListener(this);
+        acTvBrand = view.findViewById(R.id.acTvBrand);
+        acPurchasedFrom = view.findViewById(R.id.acPlacePurchased);
+        spCurrency = view.findViewById(R.id.spCurrency);
+        spQuantity = view.findViewById(R.id.spQuantity);
+        spKitMedia = view.findViewById(R.id.spAfterMedia);
 
-        spCurrency = (AppCompatSpinner)view.findViewById(R.id.spCurrency);
-        spQuantity = (AppCompatSpinner)view.findViewById(R.id.spQuantity);
-        spKitMedia = (AppCompatSpinner) view.findViewById(R.id.spAfterMedia);
-
-        etNotes = (EditText)view.findViewById(R.id.etNotes);
-        tvPurchaseDate = (TextView)view.findViewById(R.id.tvPurchaseDate);
+        etNotes = view.findViewById(R.id.etNotes);
+        tvPurchaseDate = view.findViewById(R.id.tvPurchaseDate);
         tvPurchaseDate.setText(R.string.Date_not_set);
         tvPurchaseDate.setOnClickListener(this);
-        etPrice = (EditText)view.findViewById(R.id.etPrice);
-        btnClearDate = (Button)view.findViewById(R.id.btnClearDate);
+        etPrice = view.findViewById(R.id.etPrice);
+        Button btnClearDate = view.findViewById(R.id.btnClearDate);
         btnClearDate.setOnClickListener(this);
+
+        stepper_0 = view.findViewById(R.id.stepper_0);
+        stepper_0.setPadding(0, 16, 0, 0);
+        stepper_1 = view.findViewById(R.id.stepper_1);
+        stepper_2 = view.findViewById(R.id.stepper_2);
+        stepper_3 = view.findViewById(R.id.stepper_3);
+        stepper_4 = view.findViewById(R.id.stepper_4);
+        stepper_4.setIsLastStep(true);
+
+//        btnNextStepper1 = view.findViewById(R.id.btnNextStepper1);
+//        btnNextStepper1.setOnClickListener(this);
+//        btnNextStepper2 = view.findViewById(R.id.btnNextStepper2);
+//        btnNextStepper2.setOnClickListener(this);
+//        btnNextStepper3 = view.findViewById(R.id.btnNextStepper3);
+//        btnNextStepper3.setOnClickListener(this);
+//
+//        btnStepper2Back = view.findViewById(R.id.btnStepper2Back);
+//        btnStepper2Back.setOnClickListener(this);
+//        btnStepper3Back = view.findViewById(R.id.btnStepper3Back);
+//        btnStepper3Back.setOnClickListener(this);
+//        btnStepper4Back = view.findViewById(R.id.btnStepper4Back);
+//        btnStepper4Back.setOnClickListener(this);
+
+        tvModeKit = view.findViewById(R.id.tvModeKit);
+        tvModeKit.setOnClickListener(this);
+        tvModeAftermarket = view.findViewById(R.id.tvModeAftermarket);
+        tvModeAftermarket.setOnClickListener(this);
     }
 
 
     //Подготовка автодополняемого списка брэндов и магазинов
     private void prepareMyList() {
-        myBrands = new ArrayList<String>();
+        myBrands = new ArrayList<>();
         myBrands = DbConnector.getAllBrands();
-        myShops = new ArrayList<String>();
+        myShops = new ArrayList<>();
         myShops = DbConnector.getAllShops();
-    }
-
-//    private void checkPermissions() {
-//        //checking for permissions on Marshmallow+
-//        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA)
-//                != PackageManager.PERMISSION_GRANTED) {
-//            ivGetBoxart.setClickable(false);
-//            // Should we show an explanation?
-//            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
-//                    Manifest.permission.CAMERA)) {
-//                // Show an explanation to the user *asynchronously* -- don't block
-//                // this thread waiting for the user's response! After the user
-//                // sees the explanation, try again to request the permission.
-//
-//            } else {
-//                // No explanation needed, we can request the permission.
-//                ActivityCompat.requestPermissions(getActivity(),
-//                        new String[]{Manifest.permission.CAMERA},
-//                        MY_PERMISSIONS_REQUEST_CAMERA);
-//            }
-//        }else{
-//            ivGetBoxart.setOnClickListener(this);
-//        }
-//        //Permissions for write
-//        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
-//                != PackageManager.PERMISSION_GRANTED) {
-//            ivGetBoxart.setClickable(false);
-//            // Should we show an explanation?
-//            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
-//                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-//                // Show an explanation to the user *asynchronously* -- don't block
-//                // this thread waiting for the user's response! After the user
-//                // sees the explanation, try again to request the permission.
-//
-//            } else {
-//                // No explanation needed, we can request the permission.
-//                ActivityCompat.requestPermissions(getActivity(),
-//                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-//                        MY_PERMISSIONS_REQUEST_WRITE);
-//            }
-//        }else{
-//            ivGetBoxart.setOnClickListener(this);
-//        }
-//    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_CAMERA:
-//                {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    ivGetBoxart.setOnClickListener(this);
-                } else {
-                    Toast.makeText(getActivity(),
-                            R.string.permission_denied_to_use_camera, Toast.LENGTH_SHORT).show();
-                    ivGetBoxart.setImageResource(R.drawable.ic_cancel_black_24dp);
-                }
-                return;
-//            }
-            case MY_PERMISSIONS_REQUEST_WRITE:
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    ivGetBoxart.setOnClickListener(this);
-                } else {
-                    Toast.makeText(getActivity(),
-                            R.string.permission_denied_to_write, Toast.LENGTH_SHORT).show();
-                    ivGetBoxart.setImageResource(R.drawable.ic_cancel_black_24dp);
-                }
-                return;
-        }
     }
 
     //Проверки заполнения полей
@@ -604,7 +577,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             etBrandCat_no.setError(getString(R.string.enter_cat_no));
             check = false;
         }
-        if (TextUtils.isEmpty(etScale.getText()) || etScale.getText().equals("0")) {
+        if (TextUtils.isEmpty(etScale.getText()) || etScale.getText().toString().equals("0")) {
             etScale.setError(getString(R.string.enter_scale));
             check = false;
         }
@@ -672,7 +645,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                         // и при следующем запуске уже берет из нее
                         dbConnector.addBrand(newBrand);
                     }
-                    acAdapterMybrands = new ArrayAdapter<String>(
+                    acAdapterMybrands = new ArrayAdapter<>(
                             getActivity(),
                             android.R.layout.simple_dropdown_item_1line, myBrands);
                     acTvBrand.setAdapter(acAdapterMybrands);
@@ -689,7 +662,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                         // и при следующем запуске уже берет из нее
                         dbConnector.addShop(newShop);
                     }
-                    acAdapterMyshops = new ArrayAdapter<String>(
+                    acAdapterMyshops = new ArrayAdapter<>(
                             getActivity(),
                             android.R.layout.simple_dropdown_item_1line, myShops);
                     acPurchasedFrom.setAdapter(acAdapterMyshops);
@@ -698,18 +671,14 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                 //******************************************************************
                 if (checkAllFields()) {//Проверяем все поля - начальная проверка
                     getFieldsValues(); //getting data from form fields and prepare kit object
-                    if (!isInLocalBase(kit.getBrand(), kit.getBrandCatno())) {
-                        if (bytes != null && boxartPic != null) {
-                            writeBoxartFile(bytes, boxartPic); //now kit has boxartUri
-                        }
-//                        saveOnline(kit);
-                        ////////////////////////
-                        if (editMode == Constants.MODE_KIT) {//из ручного добавления
+                    ////////////////////////
+                    if (editMode == Constants.MODE_KIT) {//из ручного добавления
+                        if (!isInLocalBase(kit.getBrand(), kit.getBrandCatno())) {
                             if (isOnline()) {
                                 writeToLocalDatabase(kit); //writes kit to database
                                 if (wasSearchedOnline && !isFoundOnline) {
-                                    if (boxartPic != null) {
-                                        saveWithBoxartToParse(boxartPic, kit);
+                                    if (!TextUtils.isEmpty(mCurrentPhotoPath)) {
+                                        saveWithBoxartToParse(mCurrentPhotoPath, kit);
                                     }
                                     clearFields();
                                     returnToScan();
@@ -729,117 +698,79 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                                 clearFields();
                                 returnToScan();
                             }
-                        } else if (editMode == Constants.MODE_LIST) { //из списков
-                            writeToLocalDatabase(kit);
-                            Toast.makeText(getActivity(), R.string.Kit_added_to_list, Toast.LENGTH_SHORT).show();
-                            sendStatus = "";
-                            clearFields();
-                            returnToScan();
+                        } else {
+                            Toast.makeText(getActivity(), R.string.entry_already_exist,
+                                    Toast.LENGTH_SHORT).show();
+                            break;
+                        }
+                    } else if (editMode == Constants.MODE_LIST) { //из списков
+                        //todo проверка на наличие в списке?
+                        writeToLocalDatabase(kit);
+                        Toast.makeText(getActivity(), R.string.Kit_added_to_list, Toast.LENGTH_SHORT).show();
+                        sendStatus = "";
+                        clearFields();
+                        returnToScan();
 
-                            ListViewFragment listViewFragment = new ListViewFragment();
-                            Bundle bundle = new Bundle(1);
-                            bundle.putString("listname", listname);
-                            listViewFragment.setArguments(bundle);
-                            android.support.v4.app.FragmentTransaction fragmentTransaction =
-                                    getFragmentManager().beginTransaction();
-                            fragmentTransaction.replace(R.id.llListsContainer, listViewFragment);
-                            fragmentTransaction.commit();
+                        ListViewFragment listViewFragment = new ListViewFragment();
+                        Bundle bundle = new Bundle(1);
+                        bundle.putString(Constants.LISTNAME, listname);
+                        listViewFragment.setArguments(bundle);
+                        android.support.v4.app.FragmentTransaction fragmentTransaction =
+                                getFragmentManager().beginTransaction();
+                        fragmentTransaction.replace(R.id.llListsContainer, listViewFragment);
+                        fragmentTransaction.commit();
 
-                        } else if (editMode == Constants.MODE_AFTERMARKET)
-                        { //запись в афтемаркет
+                    } else if (editMode == Constants.MODE_AFTERMARKET) {
+                        if (!isInLocalBase(kit.getBrand(), kit.getBrandCatno())) {
+
+
+                            //запись в афтемаркет
                             writeToLocalDatabase(aftermarket);
                             Toast.makeText(getActivity(), R.string.Kit_added_to_list, Toast.LENGTH_SHORT).show();
                             sendStatus = "";
                             clearFields();
 
-//                            returnToScan();
+                            if (getArguments() != null) {
+                                int position = getArguments().getInt(Constants.LIST_POSITION);
+                                int categoryToReturn = getArguments().getInt(Constants.LIST_CATEGORY);
+                                long after_id = getArguments().getLong(Constants.AFTER_ID);
+                                long kit_id = getArguments().getLong(Constants.ID);
 
-                            int position = getArguments().getInt(Constants.LIST_POSITION);
-                            int categoryToReturn = getArguments().getInt(Constants.LIST_CATEGORY);
-                            long after_id = getArguments().getLong("after_id");
-                            long kit_id = getArguments().getLong("id");
 
-                            KitEditFragment kitEditFragment = new KitEditFragment();
+                                ItemEditFragment itemEditFragment = new ItemEditFragment();
 
-                            Bundle bundle = new Bundle(5);
-                            bundle.putInt("position", position);
-                            bundle.putInt("category", categoryToReturn);
-                            bundle.putLong("id", kit_id);
-                            bundle.putLong("after_id", after_id);
-                            bundle.putChar(Constants.EDIT_MODE, Constants.MODE_AFTERMARKET);
-                            kitEditFragment.setArguments(bundle);
-//                            Bundle bundle = new Bundle(1);
-//                            bundle.putString("listname", listname);
-//                            listViewFragment.setArguments(bundle);
+                                Bundle bundle = new Bundle(5);
+                                bundle.putInt(Constants.POSITION, position);
+                                bundle.putInt(Constants.CATEGORY, categoryToReturn);
+                                bundle.putLong(Constants.ID, kit_id);
+                                bundle.putLong(Constants.AFTER_ID, after_id);
+//                                bundle.putChar(Constants.EDIT_MODE, Constants.MODE_KIT);
+                                bundle.putChar(Constants.EDIT_MODE, Constants.MODE_AFTERMARKET);
+                                itemEditFragment.setArguments(bundle);
 
-                            android.support.v4.app.FragmentTransaction fragmentTransaction =
-                                    getFragmentManager().beginTransaction();
-                            fragmentTransaction.replace(R.id.frameLayoutEditContainer, kitEditFragment);
-
-//                            fragmentTransaction.replace(R.id.linLayoutKitContainer, kitEditFragment);
-                            fragmentTransaction.commit();
-
+                                android.support.v4.app.FragmentTransaction fragmentTransaction =
+                                        getFragmentManager().beginTransaction();
+                                fragmentTransaction.replace(R.id.frameLayoutEditContainer, itemEditFragment);
+                                fragmentTransaction.commit();
+                            }
                         }
                     } else {
                         Toast.makeText(getActivity(), R.string.entry_already_exist,
                                 Toast.LENGTH_SHORT).show();
+                        break;
                     }
+
                 } else {
                     //Проверяем все поля - начальная проверка не пройдена!
                     Toast.makeText(getActivity(), R.string.Please_enter_data, Toast.LENGTH_SHORT).show();
+                    setAllSteps(1);
                 }
                 break;
 
-            ////////RadioButtons
-
-//            case R.id.linLayoutMAir:
-//                isRbChanged = true;
-//                clearTags();
-//                setTag(Constants.CAT_AIR);
-//                break;
-//            case R.id.linLayoutMGround:
-//                isRbChanged = true;
-//                clearTags();
-//                setTag(Constants.CAT_GROUND);
-//                break;
-//            case R.id.linLayoutMSea:
-//                isRbChanged = true;
-//                clearTags();
-//                setTag(Constants.CAT_SEA);
-//                break;
-//            case R.id.linLayoutMSpace:
-//                isRbChanged = true;
-//                clearTags();
-//                setTag(Constants.CAT_SPACE);
-//                break;
-//            case R.id.linLayoutMCar:
-//                isRbChanged = true;
-//                clearTags();
-//                setTag(Constants.CAT_AUTOMOTO);
-//                break;
-//            case R.id.linLayoutMOther:
-//                isRbChanged = true;
-//                clearTags();
-//                setTag(Constants.CAT_OTHER);
-//                break;
-//            case R.id.linLayoutMFigure:
-//                isRbChanged = true;
-//                clearTags();
-//                setTag(Constants.CAT_FIGURES);
-//                break;
-//            case R.id.linLayoutMFantasy:
-//                isRbChanged = true;
-//                clearTags();
-//                setTag(Constants.CAT_FANTASY);
-//                break;
-
             case R.id.ivGetBoxart:
-                try {
-                    // Намерение для запуска камеры
-                    Intent captureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
-//                    captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, "");
-                    startActivityForResult(captureIntent, REQUEST_CODE_CAMERA);
+                try {
+                    dispatchTakePictureIntent();
                 } catch (ActivityNotFoundException e) {
                     // Выводим сообщение об ошибке
                     String errorMessage = getString(R.string.camera_failure);
@@ -858,203 +789,166 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             case R.id.btnClearDate:
                 datePurchased = "";
                 tvPurchaseDate.setText(R.string.Date_not_set);
+                break;
+
+//            case R.id.btnNextStepper1:
+//                if(isBoxartSet()) {
+//                    setAllSteps(0);
+//                    stepper_0.setState(2);
+//                    stepper_1.setState(2);
+//                    stepper_2.setState(1);
+//                }
+//                break;
+//            case R.id.btnNextStepper2:
+//                setAllSteps(0);
+//                stepper_0.setState(2);
+//                stepper_1.setState(2);
+//                stepper_2.setState(2);
+//                stepper_3.setState(1);
+//                break;
+//            case R.id.btnNextStepper3:
+//                setAllSteps(0);
+//                stepper_0.setState(2);
+//                stepper_1.setState(2);
+//                stepper_2.setState(2);
+//                stepper_3.setState(2);
+//                stepper_4.setState(1);
+//                break;
+//
+//            case R.id.btnContinueStep:
+//                if (checkSearchFields()) {
+//                    setAllSteps(0);
+//                    stepper_0.setState(2);
+//                    stepper_1.setState(1);
+//                }
+//                break;
+//
+//            case R.id.btnStepper2Back://todo доделать
+//                stepper_1.setState(1);
+//                break;
+//            case R.id.btnStepper3Back:
+//                stepper_2.setState(1);
+//                break;
+//            case R.id.btnStepper4Back:
+//                stepper_3.setState(1);
+//                break;
+//
+            case R.id.tvModeKit:
+                setKitMode();
+                break;
+            case R.id.tvModeAftermarket:
+                setAftermarketMode();
+                break;
         }
     }
 
-
-
-    private void searchKitOnline(Kit kitToSearch) { //// TODO: 04.09.2017 Helper
-
-
-        Query q1 = QueryBuilder.build(Constants.TAG_BRAND, kitToSearch.getBrand().trim(),
-                QueryBuilder.Operator.EQUALS);
-        Query q2 = QueryBuilder.build(Constants.TAG_BRAND_CATNO, kitToSearch.getBrandCatno().trim(),
-                QueryBuilder.Operator.EQUALS);
-        Query query = QueryBuilder.compoundOperator(q1, QueryBuilder.Operator.AND, q2);
-        asyncService.findDocByQuery(Constants.App42DBName, Constants.CollectionName, query, this);
-
-        wasSearchedOnline = true;
+    private boolean isBoxartSet() {
+        return (boxartPic != null);
     }
 
-
-    ///////////RadioButtons
-    private void setCategory(String cat) {
-        switch (cat) {
-            case Constants.CAT_AIR:
-                isRbChanged = true;
-                clearTags();
-                setTag(cat);
-                break;
-            case Constants.CAT_GROUND:
-                isRbChanged = true;
-                clearTags();
-                setTag(cat);
-                break;
-            case Constants.CAT_SEA:
-                isRbChanged = true;
-                clearTags();
-                setTag(cat);
-                break;
-            case Constants.CAT_SPACE:
-                isRbChanged = true;
-                clearTags();
-                setTag(cat);
-                break;
-            case Constants.CAT_OTHER:
-                isRbChanged = true;
-                clearTags();
-                setTag(cat);
-                break;
-            case Constants.CAT_AUTOMOTO:
-                isRbChanged = true;
-                clearTags();
-                setTag(cat);
-                break;
-
+    private void dispatchTakePictureIntent() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null) {
+            if (Helper.getExternalStorageState() == Helper.StorageState.WRITEABLE) {
+                File photoFile = createImageFile();
+                if (photoFile != null) {
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                        photoPath = FileProvider.getUriForFile(context,
+                                BuildConfig.APPLICATION_ID + ".provider",
+                                photoFile);
+                    } else {
+                        photoPath = Uri.fromFile(photoFile);
+                    }
+                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoPath);
+                    startActivityForResult(takePictureIntent, MainActivity.REQUEST_CODE_CAMERA);
+                }
+            }
         }
     }
 
-    private void setTag(String cat) {
-
-        switch (cat) {
-//            case Constants.CAT_AIR:
-//                linLayoutMAir.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAccent));
-//                category = Constants.CAT_AIR;
-//                break;
-//            case Constants.CAT_GROUND:
-//                linLayoutMGround.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAccent));
-//                category = Constants.CAT_GROUND;
-//                break;
-//            case Constants.CAT_SEA:
-//                linLayoutMSea.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAccent));
-//                category = Constants.CAT_SEA;
-//                break;
-//            case Constants.CAT_SPACE:
-//                linLayoutMSpace.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAccent));
-//                category = Constants.CAT_SPACE;
-//                break;
-//            case Constants.CAT_AUTOMOTO:
-//                linLayoutMCar.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAccent));
-//                category = Constants.CAT_AUTOMOTO;
-//                break;
-//            case Constants.CAT_FIGURES:
-//                linLayoutMFigures.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAccent));
-//                category = Constants.CAT_FIGURES;
-//                break;
-//            case Constants.CAT_FANTASY:
-//                linLAyoutMFantasy.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAccent));
-//                category = Constants.CAT_FANTASY;
-//                break;
-//            case Constants.CAT_OTHER:
-//                linLayoutMOther.setBackgroundColor(ContextCompat.getColor(context, R.color.colorAccent));
-//                category = Constants.CAT_OTHER;
-//                break;
+    private File createImageFile() {
+//        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        imageFileName = getTimestamp();
+        File storageDir = getActivity().getExternalFilesDir("boxart");
+        if (!storageDir.exists()) {
+            storageDir.mkdirs();
         }
+        File image = null;
+        try {
+            image = File.createTempFile(
+                    imageFileName,  /* prefix */
+                    Constants.JPG,         /* suffix */
+                    storageDir      /* directory */
+            );
+        } catch (IOException e) {
+            Toast.makeText(context, "Нельзя создать файл", Toast.LENGTH_LONG).show();
+        }
+        mCurrentPhotoPath = image.getAbsolutePath();
+//        Toast.makeText(context, mCurrentPhotoPath, Toast.LENGTH_LONG).show();
+        return image;
     }
 
-    private void clearTags() {
-//        linLayoutMSpace.setBackgroundColor(ContextCompat.getColor(context, R.color.colorItem));
-//        linLayoutMAir.setBackgroundColor(ContextCompat.getColor(context, R.color.colorItem));
-//        linLayoutMSea.setBackgroundColor(ContextCompat.getColor(context, R.color.colorItem));
-//        linLayoutMGround.setBackgroundColor(ContextCompat.getColor(context, R.color.colorItem));
-//        linLayoutMCar.setBackgroundColor(ContextCompat.getColor(context, R.color.colorItem));
-//        linLayoutMOther.setBackgroundColor(ContextCompat.getColor(context, R.color.colorItem));
-//        linLAyoutMFantasy.setBackgroundColor(ContextCompat.getColor(context, R.color.colorItem));
-//        linLayoutMFigures.setBackgroundColor(ContextCompat.getColor(context, R.color.colorItem));
-
+    private String getTimestamp() {
+        return new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
     }
+
 
     /*
 * Writes kit object to local Sqlite database*/
     private void writeToLocalDatabase(Object itemSave) {
         if (editMode == Constants.MODE_KIT) {
             dbConnector.addKitRec((Kit) itemSave);
-//            dbConnector.addKitRec(
-//                    kitSave.getBarcode(),
-//                    kitSave.getBrand(),
-//                    kitSave.getBrandCatno(),
-//                    kitSave.getScale(),
-//                    kitSave.getKit_name(),
-//                    kitSave.getKit_noeng_name(),
-//                    sendStatus,
-//                    dateAdded,
-//                    kitSave.getBoxart_url(),
-//                    kitSave.getCategory(),
-//                    kitSave.getBoxart_uri(),
-////                kit.getOnlineId(),
-//                    kitSave.getDescription(),
-//                    kitSave.getYear(),
-//                    notes,
-//                    datePurchased,
-//                    quantity,
-//                    price,
-//                    currency
-//            );
         } else if (editMode == Constants.MODE_LIST) {
             dbConnector.addListItem((Kit)itemSave, listname);
         } else if (editMode == Constants.MODE_AFTERMARKET) {
             long aftId = dbConnector.addAftermarket((Aftermarket)itemSave);
-            incomeKitId = getArguments().getLong("id");
-            dbConnector.addAfterToKit(incomeKitId, aftId);
+            if (getArguments() != null && getArguments().containsKey(Constants.ID)) {
+                Long incomeKitId = getArguments().getLong(Constants.ID);
+                dbConnector.addAfterToKit(incomeKitId, aftId);
+            }
         }
-//            dbConnector.addListItem(
-//                    kitSave.getBarcode(),
-//                    kitSave.getBrand(),
-//                    kitSave.getBrandCatno(),
-//                    kitSave.getScale(),
-//                    kitSave.getKit_name(),
-//                    kitSave.getKit_noeng_name(),
-//                    sendStatus,
-//                    dateAdded,
-//                    kitSave.getBoxart_url(),
-//                    kitSave.getCategory(),
-//                    kitSave.getBoxart_uri(),
-////                kit.getOnlineId(),
-//                    kitSave.getDescription(),
-//                    kitSave.getYear(),
-//                    notes,
-//                    datePurchased,
-//                    quantity,
-//                    price,
-//                    currency,
-//                    listname);
-//        }
-
     }
-
-
 
     /*Checks if local database already includes this kit*/
     private boolean isInLocalBase(String brand, String brand_catno) {
-        if (editMode == 'l') {
+        if (editMode == Constants.MODE_LIST) {
             if (dbConnector.searchListForDoubles(listname, brand, brand_catno)) {
                 return true;
             }
-        }else {
-            if (dbConnector.searchForDoubles(brand, brand_catno)) {
+        } else if (editMode == Constants.MODE_KIT) {
+            if (dbConnector.searchForDoubles(editMode, brand, brand_catno)) {
+                return true;
+            }
+        } else if (editMode == Constants.MODE_AFTERMARKET) {
+            if (dbConnector.searchForDoubles(editMode, brand, brand_catno)) {
                 return true;
             }
         }
         return false;
     }
-/*
-* Gets data from form fields, trim strings and add them to kit object fields*/
+
+    private void setAllSteps(int state) {
+        stepper_0.setState(state);
+        stepper_1.setState(state);
+        stepper_2.setState(state);
+        stepper_3.setState(state);
+        stepper_4.setState(state);
+    }
+
+
     private void getFieldsValues() {
-//        Object object;
         if (editMode == Constants.MODE_AFTERMARKET) {
-//            object = aftermarket;
-
-//            compilanceWith = "";
-
             aftermarket.setBrand(acTvBrand.getText().toString().trim());
             aftermarket.setBrandCatno(etBrandCat_no.getText().toString().trim());
             aftermarket.setScale(Integer.parseInt(etScale.getText().toString()));
             aftermarket.setAftermarketName(etKitName.getText().toString().trim());
             aftermarket.setAftemarketOriginalName(etKitNoengName.getText().toString().trim());
             aftermarket.setBarcode(barcode);
-            aftermarket.setCategory(category);
+
+            String cat = String.valueOf(spCategory.getSelectedItemPosition());
+            aftermarket.setCategory(cat);
             String y = spYear.getSelectedItem().toString();
-            if (!y.equals(getString(R.string.year))){
+            if (!y.equals(getString(R.string.unknown))) {
                 aftermarket.setYear(y);
             }else{
                 aftermarket.setYear("");
@@ -1080,7 +974,6 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                 price = 0;
             }
             aftermarket.setPrice(price);
-            //SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
             if (!tvPurchaseDate.getText().toString().equals("")
                     && tvPurchaseDate.getText().toString().equals(R.string.Date_not_set)) {
                 datePurchased = tvPurchaseDate.getText().toString();
@@ -1097,7 +990,6 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             aftermarket.setListname(listname);
 
         }else{
-//            object = kit;
             kit.setBrand(acTvBrand.getText().toString().trim());
             kit.setBrandCatno(etBrandCat_no.getText().toString().trim());
             kit.setScale(Integer.parseInt(etScale.getText().toString()));
@@ -1106,11 +998,12 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             kit.setBarcode(barcode);
             kit.setCategory(category);
             String y = spYear.getSelectedItem().toString();
-            if (!y.equals(getString(R.string.year))){
+            if (!y.equals(getString(R.string.unknown))) {
                 kit.setYear(y);
             }else{
                 kit.setYear("");
             }
+            kit.setScalemates_url(scalematesUrl);
 
             kit.setMedia(spKitMedia.getSelectedItemPosition());
 
@@ -1147,57 +1040,6 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             kit.setBoxart_uri(boxartUri);
             kit.setBoxart_url(boxartUrl);
         }
-
-
-
-//        kit.setBrand(acTvBrand.getText().toString().trim());
-//        kit.setBrandCatno(etBrandCat_no.getText().toString().trim());
-//        kit.setScale(Integer.parseInt(etScale.getText().toString()));
-//        kit.setKit_name(etKitName.getText().toString().trim());
-//        kit.setKit_noeng_name(etKitNoengName.getText().toString().trim());
-//        kit.setBarcode(barcode);
-//        kit.setCategory(category);
-//        String y = spYear.getSelectedItem().toString();
-//        if (!y.equals(getString(R.string.year))){
-//            kit.setYear(y);
-//        }else{
-//            kit.setYear("");
-//        }
-//        String d = spDescription.getSelectedItem().toString();
-//        if (!d.equals(getString(R.string.kittype))){
-//            kit.setDescription(descToCode(d));
-//        }else{
-//            kit.setDescription(Constants.CODE_OTHER);
-//        }
-//        currency = spCurrency.getSelectedItem().toString();
-//        kit.setCurrency(currency);
-//        quantity = spQuantity.getSelectedItemPosition() + 1;
-//        kit.setQuantity(quantity);
-//        notes = etNotes.getText().toString();
-//        kit.setNotes(notes);
-//        if (!etPrice.getText().toString().equals("")){
-//        price = Integer.parseInt(etPrice.getText().toString()) * 100;
-//        }else{
-//            price = 0;
-//        }
-//        kit.setPrice(price);
-//        //SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
-//        if (!tvPurchaseDate.getText().toString().equals("")
-//                && tvPurchaseDate.getText().toString().equals(R.string.Date_not_set)) {
-//            datePurchased = tvPurchaseDate.getText().toString();
-//        }else{
-//            datePurchased = "";
-//        }
-//
-//        placePurchased = acPurchasedFrom.getText().toString().trim();
-//        kit.setPlacePurchased(placePurchased);
-//
-//        kit.setDatePurchased(datePurchased);
-//        kit.setBoxart_uri(boxartUri);
-//        kit.setBoxart_url(boxartUrl);
-
-
-
     }
 
     private String descToCode(String d) {
@@ -1254,13 +1096,12 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         tvPurchaseDate.setText(R.string.Date_not_set);
         acPurchasedFrom.setText("");
 
-        setCategory(Constants.CAT_OTHER);
-//todo добавить новые поля
-        clearTags();
+        setAllSteps(0);
+        stepper_0.setState(1);
         kit = new Kit.KitBuilder().build();
         //экономим обращения к онлайновой базе - если уже искали, не искать.
         wasSearchedOnline = false;
-        isRbChanged = false;
+//        isRbChanged = false;
         isFoundOnline = false;
         isReported = false;
         sendStatus = "";//Статус для последующей записи пропущенных в офлайне записей
@@ -1276,7 +1117,8 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         barcode = "";
         description = "";
         year = "0";
-        category = Constants.CAT_OTHER;
+        category = Constants.CODE_OTHER;
+//        category = Constants.CAT_OTHER;
         onlineId = "";
         price = 0;
         notes = "";
@@ -1601,15 +1443,14 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 * variants in dialog. Only boxart url is added at once.*/
     @Override
     public void onFindDocSuccess(Storage response){
-        String showKit = "";
-        final List<Kit> itemsToShow = new ArrayList<Kit>();
+        String showKit;
+        final List<Kit> itemsToShow = new ArrayList<>();
         final List<Item> itemList = new ArrayList<Item>();
-
 
         wasSearchedOnline = true;
         isFoundOnline = true;
         final ValueContainer <String> urlContainer = new ValueContainer<>();
-        urlContainer.setVal("");//todo???
+        urlContainer.setVal("");
         final ValueContainer<String> categoryContainer;
         categoryContainer = new ValueContainer<>();
         final ValueContainer<String> barcodeContainer = new ValueContainer<>();
@@ -1617,13 +1458,14 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         //Нашли по коду в базе
         ArrayList<Storage.JSONDocument> jsonDocList = response.getJsonDocList();
         for (int i = 0; i < jsonDocList.size(); i++) {
-//            onlineId = jsonDocList.get(i).getDocId();
             String in = jsonDocList.get(i).getJsonDoc();
             try {
                 JSONObject reader = new JSONObject(in);
                 //Containers should be first in list, not working otherwise
                 urlContainer.setVal(reader.getString(Constants.TAG_BOXART_URL));
-                categoryContainer.setVal(Helper.codeToTag(reader.getString(Constants.TAG_CATEGORY)));
+//                categoryContainer.setVal(Helper.codeToTag(reader.getString(Constants.TAG_CATEGORY)));
+                categoryContainer.setVal(reader.getString(Constants.TAG_CATEGORY));
+
                 barcodeContainer.setVal(reader.getString(Constants.TAG_BARCODE));
 
                 brand = reader.getString(Constants.TAG_BRAND);
@@ -1632,11 +1474,9 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                 kitName = reader.getString(Constants.TAG_KIT_NAME);
                 kitNoengname = reader.getString(Constants.TAG_NOENG_NAME);
                 barcode = reader.getString(Constants.TAG_BARCODE);
-//                boxartUrl = reader.getString(Constants.TAG_BOXART_URL);
                 description = reader.getString(Constants.TAG_DESCRIPTION);
-
-//                description = getKitDescription(reader.getString(Constants.TAG_DESCRIPTION));
                 year = reader.getString(Constants.TAG_YEAR);
+                scalematesUrl = reader.getString(Constants.TAG_SCALEMATES_PAGE);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -1657,10 +1497,9 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                     .hasKit_noeng_name(kitNoengname)
                     .hasBoxart_url(urlContainer.getVal())
                     .hasBarcode(barcodeContainer.getVal())
+                    .hasScalemates_url(scalematesUrl)
 
                     .hasYear(year)
-//                    .hasOnlineId(onlineId)
-
                     .build();
             itemsToShow.add(kitToShow);
         }
@@ -1672,6 +1511,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         builder.setAdapter(adapterAlertDialog, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int item) {
+                setAllSteps(1);
                     Kit kitToAdd = itemsToShow.get(item);
                     etScale.setText(String.valueOf(kitToAdd.getScale()));
                     etKitName.setText(kitToAdd.getKit_name());
@@ -1679,12 +1519,11 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                 setKitYear(kitToAdd.getYear());
                 setDescription(kitToAdd.getDescription());
 
-
                     barcode = kitToAdd.getBarcode();//todo???
+
                 if (wasSearchedOnline && isFoundOnline) {
                     boxartUrl = kitToAdd.getBoxart_url();
                     kit.setBoxart_url(kitToAdd.getBoxart_url());
-                    setCategory(kitToAdd.getCategory());
                 }else{
                     kit.setBoxart_url("");
                 }
@@ -1704,6 +1543,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         AlertDialog alert = builder.create();
         alert.show();
     }
+
 
     private void setDescription(String description) {
         if (!description.equals("")) {
@@ -1757,17 +1597,11 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         }
     }
 
-    private String getKitYear(String y) {
-        if (y.equals(getString(R.string.year))){
-            return "";
-        }else{
-            return y;
-        }
-    }
-
 
     @Override
     public void onFindDocFailed(App42Exception ex) {
+        setAllSteps(1);
+//        stepper_1.setState(1);
         Toast.makeText(getActivity(),
                 R.string.nothing_found_online,
                 Toast.LENGTH_SHORT).show();
@@ -1778,10 +1612,6 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     @Override
     public void onDocumentInserted(Storage response) {
 
-        //save image to App42 - no need
-//        progressDialog.dismiss();
-//        currentDocId = response.getJsonDocList().get(0).getDocId();
-//        Toast.makeText(getActivity(), currentDocId, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -1800,17 +1630,15 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 
     }
 
-    // In the child fragment.
+    // Passing data from scanFragment In the child fragment.
     public void onAttachToParentFragment(Fragment fragment) {
         try {
             mListener = (OnFragmentInteractionListener) fragment;
-
         } catch (ClassCastException e) {
             throw new ClassCastException(
                     fragment.toString() + " must implement OnPlayerSelectionSetListener");
         }
     }
-
 
     @Override
     public void onFragmentInteraction(String b) {
@@ -1823,141 +1651,52 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == getActivity().RESULT_OK && requestCode == MainActivity.REQUEST_CODE_CAMERA
-                && data != null && data.getData() != null) {
-            performCrop(data.getData());
-        }
-        if (resultCode == RESULT_OK && requestCode == MainActivity.REQUEST_CODE_CROP) {
-            Bundle extras = data.getExtras();
-            // Получим кадрированное изображение
-            boxartPic = extras.getParcelable("data");
-
-            boxartPic = Bitmap.createScaledBitmap(boxartPic, Constants.SIZE_FULL_WIDTH,
-                    Constants.SIZE_FULL_HEIGHT, false);
-            bytes = new ByteArrayOutputStream();
-            boxartPic.compress(Bitmap.CompressFormat.JPEG, 70, bytes);
-            ivGetBoxart.setImageBitmap(boxartPic);
-            ivGetBoxart.setBackgroundResource(0);
-        }
-//        if (resultCode != getActivity().RESULT_OK){
-//        }
-    }
-
-
-    private void performCrop(Uri picUri){
-        try {
-            // Намерение для кадрирования. Не все устройства поддерживают его
-            Intent cropIntent = new Intent("com.android.camera.action.CROP");
-            cropIntent.setDataAndType(picUri, "image/*");
-            cropIntent.putExtra("crop", "true");
-            cropIntent.putExtra("aspectX", Constants.SIZE_FULL_WIDTH);
-            cropIntent.putExtra("aspectY", Constants.SIZE_FULL_HEIGHT);
-            cropIntent.putExtra("outputX", Constants.SIZE_FULL_WIDTH);
-            cropIntent.putExtra("outputY", Constants.SIZE_FULL_HEIGHT);
-            cropIntent.putExtra("scale", true);
-            cropIntent.putExtra("return-data", true);
+        if (resultCode == RESULT_OK && requestCode == MainActivity.REQUEST_CODE_CAMERA
+                ) {
+            Intent cropIntent = new Intent(getActivity(), CropActivity.class);
+            cropIntent.putExtra(Constants.FILE_URI, mCurrentPhotoPath);
             startActivityForResult(cropIntent, REQUEST_CODE_CROP);
         }
-        catch(ActivityNotFoundException anfe){
-            String errorMessage = getString(R.string.Sorry_no_crop);
-            Toast toast = Toast.makeText(getActivity(), errorMessage, Toast.LENGTH_SHORT);
-            toast.show();
+        if (resultCode != RESULT_OK) {
+            Toast.makeText(getActivity(), R.string.camera_failure, Toast.LENGTH_LONG).show();
+        }
+
+        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_CROP) {
+            final Uri resultUri = UCrop.getOutput(data);
+            boxartPic = BitmapFactory.decodeFile(mCurrentPhotoPath);
+            boxartUri = mCurrentPhotoPath;
+            ivGetBoxart.setImageBitmap(boxartPic);
+        } else if (resultCode == UCrop.RESULT_ERROR) {
+//            final Throwable cropError = UCrop.getError(data);
+//            String s = String.valueOf(resultUri);
+            Toast.makeText(getActivity(), R.string.crop_error, Toast.LENGTH_SHORT).show();
         }
     }
 
-    /**Writes boxart image file to local directory**/
-    private void writeBoxartFile(ByteArrayOutputStream baos, Bitmap bitmap) {
-        String pictureName = "";
-        if (editMode == Constants.MODE_KIT) {
-            pictureName = kit.getBrand() + kit.getBrandCatno() + Constants.JPG; //todo добавить description
-        } else if (editMode == Constants.MODE_AFTERMARKET) {
-            pictureName = aftermarket.getBrand() + aftermarket.getBrandCatno() + Constants.JPG; //todo добавить description
-        }
-        File exportDir = new File(Environment.getExternalStorageDirectory(), "Kitstasher");
-        File boxartImageFile = new File(exportDir + File.separator + pictureName);
-        try {
-            boxartImageFile.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        FileOutputStream fo = null;
-        try {
-            fo = new FileOutputStream(boxartImageFile);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        if (baos == null){
-            baos = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 70, baos);
-        }
-        try {
-            fo.write(bytes.toByteArray());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            fo.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        boxartUri = pictureName;
-        if (editMode == Constants.MODE_LIST || editMode == Constants.MODE_KIT) {
-            kit.setBoxart_uri(pictureName);
-        } else if (editMode == Constants.MODE_AFTERMARKET) {
-            aftermarket.setBoxartUri(pictureName);
-        }
-    }
 
-//    private void setPic() {
-//        // Get the dimensions of the View
-////        int targetW = mImageView.getWidth();
-////        int targetH = mImageView.getHeight();
-//
-//        int targetW = 720;
-//        int targetH = 450;
-//
-//
-//        // Get the dimensions of the bitmap
-//        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-//        bmOptions.inJustDecodeBounds = true;
-//        BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
-//        int photoW = bmOptions.outWidth;
-//        int photoH = bmOptions.outHeight;
-//
-//        // Determine how much to scale down the image
-//        int scaleFactor = Math.min(photoW/targetW, photoH/targetH);
-//
-//        // Decode the image file into a Bitmap sized to fill the View
-//        bmOptions.inJustDecodeBounds = false;
-//        bmOptions.inSampleSize = scaleFactor;
-////        bmOptions.inPurgeable = true;
-//
-//        Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
-//        ivGetBoxart.setImageBitmap(bitmap);
-//    }
-
-    private void saveWithBoxartToParse(Bitmap bmp, Kit kitSave){
-
+    private void saveWithBoxartToParse(String imagePath, Kit kitSave) {
 //        String name = kitSave.getBrand() + kitSave.getBrandCatno();
-        saveWithResize(kitSave, bmp, Constants.SIZE_FULL_HEIGHT, Constants.SIZE_FULL_WIDTH);
-//        saveWithResize(kitSave, name, bmp, Constants.SIZE_MEDIUM_HEIGHT, Constants.SIZE_MEDIUM_WIDTH);
-//        saveWithResize(kitSave, name, bmp, Constants.SIZE_SMALL_HEIGHT, Constants.SIZE_SMALL_WIDTH);
-//        saveWithResize(kitSave, name, bmp, 393, 640);
-
-
+//        saveFullImage(String imagePath, Kit kitSave);
+        try {
+            saveThumbnail(kitSave, imagePath, Constants.SIZE_SMALL_HEIGHT, Constants.SIZE_SMALL_WIDTH);
+            saveThumbnail(kitSave, imagePath, Constants.SIZE_FULL_HEIGHT, Constants.SIZE_FULL_WIDTH);
+        } catch (Exception ex) {
+            sendStatus = "n";
+        }
     }
 
-    private void saveWithResize(final Kit kitSave, Bitmap bmp, int height, final int width) {
+    private void saveThumbnail(final Kit kitSave, String imagePath, int height, final int width) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        Bitmap bmp = BitmapFactory.decodeFile(imagePath);
         getResizedBitmap(bmp, height, width).compress(Bitmap.CompressFormat.JPEG, 100, stream);
         byte[] data = stream.toByteArray();
-        String name = kit.getBrand() + kit.getBrandCatno();
-        String fullName = "";
+        String name = imageFileName;
+        String fullName;
         String nameBody;
-        if (width == Constants.SIZE_FULL_WIDTH){
-            nameBody = "-pristine";
+        if (height != Constants.SIZE_FULL_HEIGHT) {
+            nameBody = "-t";
         }else{
-            nameBody = "-t" + String.valueOf(width);
+            nameBody = "-720";
         }
         fullName = name + nameBody + Constants.JPG;
         final ParseFile file = new ParseFile(fullName, data);
@@ -1969,15 +1708,12 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             @Override
             public void done(ParseException ex) {
                 if (ex == null) {
-                    if (width == Constants.SIZE_FULL_WIDTH){
-//                    boxartUrl = file.getUrl();
-//                    kitSave.setBoxart_url(boxartUrl);
-//                        saveOnline(kitSave);
-//                        boxartUrl = file.getUrl();
                         kitSave.setBoxart_url(file.getUrl());
+                    parseThumbnailUrl = file.getUrl();//?
                         saveOnline(kitSave);
-                    }
                 } else {
+                    sendStatus = "n";
+//                    Toast.makeText(context, "parse error", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -1988,33 +1724,17 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         int height = bm.getHeight();
         float scaleWidth = ((float) newWidth) / width;
         float scaleHeight = ((float) newHeight) / height;
-
         // Create a matrix for the manipulation
         Matrix matrix = new Matrix();
-
         // Resize the bit map
         matrix.postScale(scaleWidth, scaleHeight);
-
         // Recreate the new Bitmap
         return Bitmap.createScaledBitmap(bm, newWidth, newHeight, false);
-
     }
-
     private String getBoxartDescription() {
-        String desc = "";
-//        String y = spYear.getSelectedItem().toString();
-//        if (!y.equals(getString(R.string.year))){
-//            kit.setYear(y);
-//        }else{
-//            kit.setYear("");
-//        }
-//        String d = spDescription.getSelectedItem().toString();
-//        if (!d.equals(getString(R.string.kittype))){
-//            kit.setDescription(descToCode(d));
-//        }
-
-        desc = spYear.getSelectedItem().toString() + "-" +  spDescription.getSelectedItem().toString();
-        return desc;
+//        String desc = "";
+        return spYear.getSelectedItem().toString() + "-" + spDescription.getSelectedItem().toString();
+//        return desc;
     }
 
     private void saveOnline(Kit kitSave) {
@@ -2033,16 +1753,24 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         kitTowrite.put("kit_name", kitSave.getKit_name());
         kitTowrite.put("kitNoengname", kitSave.getKit_noeng_name());
         kitTowrite.put("category", Helper.tagToCode(kitSave.getCategory()));
-        if (kitSave.getBoxart_url() != null
-                ) {
-            kitTowrite.put("boxartUrl", kitSave.getBoxart_url());
+        if (!TextUtils.isEmpty(kitSave.getBoxart_url())) {
+            kitTowrite.put(Constants.BOXART_URL, kitSave.getBoxart_url());
         }
         kitTowrite.put("description", kitSave.getDescription());
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences(Constants.ACCOUNT_PREFS,
                 Context.MODE_PRIVATE);
         kitTowrite.put("owner_id", sharedPreferences.getString(Constants.USER_ID_FACEBOOK, ""));
         kitTowrite.put("year", kitSave.getYear());
-        kitTowrite.saveInBackground();
+        kitTowrite.saveInBackground(new SaveCallback() {
+            @Override
+            public void done(ParseException ex) {
+                if (ex == null) {
+//                    Toast.makeText(context, "parse dobe", Toast.LENGTH_SHORT).show();
+                } else {
+//                    Toast.makeText(context, "parse error" + ex.toString(), Toast.LENGTH_LONG).show();
+                }
+            }
+        });
     }
     /*
     * Writes new entry to NewKit class of Parse database. After moderation it will be added
@@ -2050,44 +1778,66 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     private void saveToNewKit(Kit kitSave){
         ParseObject kitTowrite = new ParseObject("NewKits");
         kitTowrite.put("barcode", kitSave.getBarcode());
-        kitTowrite.put("brand", kitSave.getBrand());
+        kitTowrite.put(Constants.BRAND, kitSave.getBrand());
         kitTowrite.put("brandCatno", kitSave.getBrandCatno());
-        kitTowrite.put("scale", kitSave.getScale());
+        kitTowrite.put(Constants.SCALE, kitSave.getScale());
         kitTowrite.put("kit_name", kitSave.getKit_name());
         kitTowrite.put("kitNoengname", kitSave.getKit_noeng_name());
-        kitTowrite.put("category", Helper.tagToCode(kitSave.getCategory()));
-        if (kitSave.getBoxart_url() != null
-                ) {
-            kitTowrite.put("boxartUrl", kitSave.getBoxart_url());
+        kitTowrite.put(Constants.CATEGORY, Helper.tagToCode(kitSave.getCategory()));
+        if (!TextUtils.isEmpty(kitSave.getBoxart_url())) {
+            kitTowrite.put(Constants.BOXART_URL, kitSave.getBoxart_url());
         }
-        kitTowrite.put("description", kitSave.getDescription());
+        kitTowrite.put(Constants.DESCRIPTION, kitSave.getDescription());
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences(Constants.ACCOUNT_PREFS,
-                Context.MODE_PRIVATE);
+                Context.MODE_PRIVATE); //todo Здесь ошибка сохранения онлайн!!!!!!!!!!!!!!!!!!!!!!!!
         kitTowrite.put("owner_id", sharedPreferences.getString(Constants.USER_ID_FACEBOOK, ""));
-        kitTowrite.put("year", kitSave.getYear());
+        kitTowrite.put(Constants.YEAR, kitSave.getYear());
         kitTowrite.saveInBackground();
     }
 
-    @Override
-    public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
-        // On selecting a spinner item
-        if(adapterView.getId() == R.id.spDescription)
-        {
-            description = adapterView.getItemAtPosition(position).toString();        }
-        else if(adapterView.getId() == R.id.spYear)
-        {
-            if ((adapterView.getItemAtPosition(position)).toString().equals
-                    (getString(R.string.year))){
-                year = "0";
-            }else {
-                year = adapterView.getItemAtPosition(position).toString();
-            }
-        }
-    }
-
-    @Override
-    public void onNothingSelected(AdapterView<?> adapterView) {
+    private void setKitMode() {
+        editMode = Constants.MODE_KIT;
+        stepper_0.setTitle(R.string.search_by_code);
+        tvModeKit.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
+        tvModeKit.setTextColor(Helper.getColor(context, R.color.colorItem));
+        tvModeAftermarket.setBackgroundColor(Helper.getColor(context, R.color.colorPassive));
+        tvModeAftermarket.setTextColor(Helper.getColor(context, R.color.colorText));
+        btnCheckOnlineDatabase.setVisibility(View.VISIBLE);
+        setAllSteps(0);
+        stepper_0.setState(1);
 
     }
 
+    private void setAftermarketMode() {
+        editMode = Constants.MODE_AFTERMARKET;
+        stepper_0.setTitle(R.string.brand_and_name);
+        tvModeAftermarket.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
+        tvModeAftermarket.setTextColor(Helper.getColor(context, R.color.colorItem));
+        tvModeKit.setBackgroundColor(Helper.getColor(context, R.color.colorPassive));
+        tvModeKit.setTextColor(Helper.getColor(context, R.color.colorText));
+        btnCheckOnlineDatabase.setVisibility(View.GONE);
+        setAllSteps(1);
+    }
+
+//    @Override
+//    public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
+//        if(adapterView.getId() == R.id.spDescription){
+//            description = adapterView.getItemAtPosition(position).toString();
+//        }
+//        if(adapterView.getId() == R.id.spYear){
+//            if ((adapterView.getItemAtPosition(position)).toString().equals (getString(R.string.unknown))){
+//                year = "0";
+//            }else {
+//                year = adapterView.getItemAtPosition(position).toString();
+//            }
+//        }
+//        if(adapterView.getId() == R.id.spCategory){
+//            category = String.valueOf(spCategory.getSelectedItemPosition());
+//        }
+//    }
+//
+//    @Override
+//    public void onNothingSelected(AdapterView<?> adapterView) {
+//
+//    }
 }

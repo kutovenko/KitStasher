@@ -86,7 +86,7 @@ Prefixes and postfixes for links
     public static final String LIST_CATEGORY = "category";
     public static final String BOXART_PIC = "boxart_pic";
 
-    public static final String BOXART_URL_PREFIX = "https://www.scalemates.com/";
+    public static final String BOXART_URL_PREFIX = "https://www.scalemates.com";
     public static final String BOXART_SIZE = "boxart_size";
 
     //    public static final String JPG = ".jpg";
@@ -114,7 +114,8 @@ Prefixes and postfixes for links
     public static final String PARSE_REGISTERED = "registered";
 
     ///
-    public static final String SIZE_FULL = "-pristine";
+//    public static final String SIZE_FULL = "-pristine";
+    public static final String SIZE_FULL = "-720";
     public static final String SIZE_MEDIUM = "-t280";
     public static final String SIZE_SMALL = "-t140";
 
@@ -151,6 +152,9 @@ Prefixes and postfixes for links
     public static final Character MODE_KIT = 'm';
     public static final Character MODE_LIST = 'l';
     public static final Character MODE_AFTERMARKET = 'a';
+    public static final Character MODE_AFTER_KIT = 'k';
+    public static final Character MODE_VIEW_FROM_KIT = 'v';
+    public static final Character MODE_EDIT_FROM_KIT = 'e';
 
     public static final String PASS_ID = "passid";
 
@@ -176,6 +180,7 @@ Prefixes and postfixes for links
 
     //Aftermarket bundles
     public static final String AFTER_ID = "after_id";
+    public static final String ITEM_ID = "item_id";
 
     //other
     public static final String POSITION = "position";
@@ -219,4 +224,17 @@ Prefixes and postfixes for links
     //Sorting
     public static final String _ID = "_id";
     public static final String AFTERMARKET_MODE = "aftermarketMode";
+
+    //Cropping
+    public static final String FILE_URI = "fileUri";
+    public static final String CROPPED_URI = "croppedUri";
+    //Parse
+    public static final String PARSE_BARCODE = "barcode";
+    public static final String PARSE_BRAND = "brand";
+    public static final String PARSE_BRAND_CATNO = "brand_catno";
+    public static final String PARSE_BOXART_URL = "boxart_url";
+    public static final String PARSE_THUMBNAIL_URL = "thumbnail_url";
+
+    public static final String POSITIONS = "positions";
+    public static final String EMPTY = "";
 }

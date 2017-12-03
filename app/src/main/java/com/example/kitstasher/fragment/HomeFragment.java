@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import com.example.kitstasher.R;
+import com.example.kitstasher.activity.MainActivity;
 import com.example.kitstasher.other.Constants;
 
 /**
@@ -15,7 +16,7 @@ import com.example.kitstasher.other.Constants;
  */
 
 public class HomeFragment extends Fragment implements View.OnClickListener {
-    Button btnAddAction, btnSearchAction, btnViewStashAction, btnStatisticsAction;
+//    Button btnAddAction, btnSearchAction, btnViewStashAction, btnStatisticsAction, btnMylistsAction;
 
     public HomeFragment(){
 
@@ -24,16 +25,21 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
-        btnAddAction = (Button)view.findViewById(R.id.btnAddKitAction);
+        Button btnAddAction = view.findViewById(R.id.btnAddKitAction);
         btnAddAction.setOnClickListener(this);
-        btnSearchAction = (Button)view.findViewById(R.id.btnSearchAction);
-        btnSearchAction.setOnClickListener(this);
-        btnViewStashAction = (Button)view.findViewById(R.id.btnViewStashAction);
+        Button btnViewStashAction = view.findViewById(R.id.btnViewStashAction);
         btnViewStashAction.setOnClickListener(this);
-        btnStatisticsAction = (Button)view.findViewById(R.id.btnStatisticsAction);
+        Button btnMylistsAction = view.findViewById(R.id.btnMylistsAction);
+        btnMylistsAction.setOnClickListener(this);
+        Button btnSearchAction = view.findViewById(R.id.btnSearchAction);
+        btnSearchAction.setOnClickListener(this);
+        Button btnStatisticsAction = view.findViewById(R.id.btnStatisticsAction);
         btnStatisticsAction.setOnClickListener(this);
-        Button btnAftermarketAction = (Button) view.findViewById(R.id.btnAftermarketAction);
+        Button btnAftermarketAction = view.findViewById(R.id.btnAftermarketAction);
         btnAftermarketAction.setOnClickListener(this);
+
+        ((MainActivity) getActivity())
+                .setActionBarTitle(getActivity().getResources().getString(R.string.nav_home));
 
         return view;
     }
@@ -55,17 +61,12 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
                 fragmentTransaction.commit();
                 break;
             case R.id.btnViewStashAction:
-                ViewStashFragment viewStashFragment = new ViewStashFragment();
+                KitsFragment kitsFragment = new KitsFragment();
 //                Bundle bundle = new Bundle(2);
                 bundle.putInt(Constants.LIST_CATEGORY, 0);
                 bundle.putBoolean(Constants.AFTERMARKET_MODE, false);
-                viewStashFragment.setArguments(bundle);
-                fragmentTransaction.replace(R.id.mainactivityContainer, viewStashFragment);
-                fragmentTransaction.commit();
-                break;
-            case R.id.btnStatisticsAction:
-                StatisticsFragment statisticsFragment = new StatisticsFragment();
-                fragmentTransaction.replace(R.id.mainactivityContainer, statisticsFragment);
+                kitsFragment.setArguments(bundle);
+                fragmentTransaction.replace(R.id.mainactivityContainer, kitsFragment);
                 fragmentTransaction.commit();
                 break;
             case R.id.btnAftermarketAction:
@@ -77,6 +78,18 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
                 aftermarketFragment.setArguments(bundle);
                 fragmentTransaction.replace(R.id.mainactivityContainer, aftermarketFragment);
                 fragmentTransaction.commit();
+                break;
+            case R.id.btnMylistsAction:
+                MyListsFragment myListsFragment = new MyListsFragment();
+                fragmentTransaction.replace(R.id.mainactivityContainer, myListsFragment);
+                fragmentTransaction.commit();
+                break;
+            case R.id.btnStatisticsAction:
+                StatisticsFragment statisticsFragment = new StatisticsFragment();
+                fragmentTransaction.replace(R.id.mainactivityContainer, statisticsFragment);
+                fragmentTransaction.commit();
+                break;
+
         }
     }
 }

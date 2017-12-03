@@ -6,12 +6,12 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
@@ -21,6 +21,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.kitstasher.R;
+import com.example.kitstasher.activity.AftermarketActivity;
 import com.example.kitstasher.activity.EditActivity;
 import com.example.kitstasher.adapters.AdapterAfterItemsList;
 import com.example.kitstasher.other.Constants;
@@ -28,28 +29,20 @@ import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.Helper;
 
 import java.io.File;
-import java.util.ArrayList;
 
 
 /**
- * Created by Алексей on 03.09.2017.
+ * Created by Алексей on 03.09.2017. Main display
  */
 
-public class KitCardFragment extends Fragment {
+public class ItemCardFragment extends Fragment {
     private Context context;
-    private ImageView ivBoxart, ivCategory;
-    private TextView tvKitname, tvBrand, tvBrandcatno, tvScale, tvScalematesUrl, tvGoogleUrl,
-            tvStatus, tvMedia, tvYear, tvNotes, tvQuantity, tvShop, tvDatePurchased,
-            tvPrice, tvCurrency;
-    private ListView lvAftermarket;
-    private Button btnBack, btnEdit;
-    private String category;
+    private ImageView ivCategory;
+    private String category, tableName;
     private final int EDIT_ACTIVITY_CODE = 21;
     private boolean demoMode;
 
-    private ArrayList<Long> list;
-
-    public KitCardFragment() {
+    public ItemCardFragment() {
         super();
     }
 
@@ -66,6 +59,7 @@ public class KitCardFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+        //todo REFACTOR
         DbConnector dbConnector = new DbConnector(context);
         dbConnector.open();
         final long id = getArguments().getLong(Constants.ID);
@@ -81,25 +75,22 @@ public class KitCardFragment extends Fragment {
         final DbConnector dbConnector = new DbConnector(context);
         dbConnector.open();
 
-        final Fragment thisFragment = this;
-
-
         final char mode = getArguments().getChar(Constants.EDIT_MODE);
+        switch (mode) {
+            case 'a':
+                tableName = DbConnector.TABLE_AFTERMARKET;
+                break;
+            case 'm':
+                tableName = DbConnector.TABLE_KITS;
+                break;
+            case 'l':
+                tableName = DbConnector.TABLE_MYLISTSITEMS;
+                break;
+        }
 
-        final int cursorPosition = getArguments().getInt(Constants.CURSOR_POSITION);
+        final int position = getArguments().getInt(Constants.POSITION);
         final long id = getArguments().getLong(Constants.ID);
-        list = (ArrayList<Long>) getArguments().getSerializable(Constants.IDS);
-//        final String sortBy = getArguments().getString(Constants.SORT_BY);
-//        final int categoryToReturn = getArguments().getInt(Constants.LIST_CATEGORY);
-//        final String scaleFilter = getArguments().getString(Constants.SCALE_FILTER);
-//        final String brandFilter = getArguments().getString(Constants.BRAND_FILTER);
-//        final String kitnameFilter = getArguments().getString(Constants.KITNAME_FILTER);
-//        final String statusFilter = getArguments().getString(Constants.STATUS_FILTER);
-//        final String mediaFilter = getArguments().getString(Constants.MEDIA_FILTER);
-//        final int position = getArguments().getInt(Constants.LIST_POSITION);
-
-
-        final Cursor cursor = dbConnector.getRecById(id);
+        final Cursor cursor = dbConnector.getItemById(tableName, id);
         cursor.moveToFirst();
         final String kitname = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_KIT_NAME));
 
@@ -112,7 +103,10 @@ public class KitCardFragment extends Fragment {
         category = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_CATEGORY));
         final String year = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_YEAR));
         final String description = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_DESCRIPTION));
-        final String origName = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_ORIGINAL_KIT_NAME));
+//        String origName = Constants.EMPTY;
+//        if (mode != Constants.MODE_AFTERMARKET){
+        final String origName = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_ORIGINAL_NAME));
+//        }
         final String notes = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_NOTES));
         final int media = cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_MEDIA));
         final int quantity = cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_QUANTITY));
@@ -122,14 +116,15 @@ public class KitCardFragment extends Fragment {
         final int price = cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_PRICE));
         final String currency = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_CURRENCY));
         String listname = "";
+        demoMode = true;
 
-
-        btnEdit = (Button) view.findViewById(R.id.btnEdit);
+        Button btnEdit = view.findViewById(R.id.btnEdit);
+//        final String finalOrigName = origName;
         btnEdit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getActivity(), EditActivity.class);
-                intent.putExtra(Constants.CURSOR_POSITION, cursorPosition);
+                intent.putExtra(Constants.POSITION, position);
                 intent.putExtra(Constants.EDIT_MODE, mode);
                 intent.putExtra(Constants.ID, id);
                 intent.putExtra(Constants.LIST_CATEGORY, category);
@@ -151,100 +146,63 @@ public class KitCardFragment extends Fragment {
                 intent.putExtra(Constants.PURCHASE_DATE, purchaseDate);
                 intent.putExtra(Constants.PRICE, price);
                 intent.putExtra(Constants.CURRENCY, currency);
-                demoMode = true;
+
                 getActivity().startActivityForResult(intent, EDIT_ACTIVITY_CODE);
             }
         });
 
-//        Button btnDelete = (Button)view.findViewById(R.id.btnDelete);
-//        btnDelete.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                if (mode == Constants.MODE_LIST){
-//                    dbConnector.delListItem(id);
-//                }else {
-//                    dbConnector.delRec(id);
-//                }
-//
-//
-//
-////                getFragmentManager().popBackStack();
-////                if (cursorPosition != 0){
-//                    list.remove(cursorPosition);
-//                    Intent intent = new Intent(getActivity(), ViewActivity.class);
-//                    intent.putExtra(Constants.IDS, list);
-//
-//                intent.putExtra(Constants.SORT_BY, sortBy);
-//                intent.putExtra(Constants.EDIT_MODE, mode);
-//                intent.putExtra(Constants.LIST_CATEGORY, categoryToReturn);
-//                intent.putExtra(Constants.LIST_POSITION, position);
-//                intent.putExtra(Constants.SCALE_FILTER, scaleFilter);
-//                intent.putExtra(Constants.BRAND_FILTER, brandFilter);
-//                intent.putExtra(Constants.KITNAME_FILTER, kitnameFilter);
-//                intent.putExtra(Constants.STATUS_FILTER, statusFilter);
-//                intent.putExtra(Constants.MEDIA_FILTER, mediaFilter);
-//                intent.putExtra("was_deleted", true);
-//
-//
-//                startActivity(intent);
-//
-////                FragmentManager manager = getActivity().getSupportFragmentManager();
-////                FragmentTransaction trans = manager.beginTransaction();
-////                trans.remove(thisFragment);
-////                trans.commit();
-////                manager.popBackStack();
-////                }else{
-////                    1;
-////                }
-//            }
-//        });
 
-        ivBoxart = (ImageView)view.findViewById(R.id.ivBoxart);
-        tvKitname = (TextView)view.findViewById(R.id.tvKitname);
+        ImageView ivBoxart = view.findViewById(R.id.ivBoxart);
+        TextView tvKitname = view.findViewById(R.id.tvKitname);
         tvKitname.setText(kitname);
-        tvBrand = (TextView)view.findViewById(R.id.tvBrand);
-        tvBrand.setText(brand);
-        tvBrandcatno = (TextView)view.findViewById(R.id.tvCatno);
+        TextView tvOriginalKitName = view.findViewById(R.id.tvOriginalKitName);
+        tvOriginalKitName.setText(origName);
+        TextView tvBrand = view.findViewById(R.id.tvBrand);
+        tvBrand.setText(brand); //todo ????
+        TextView tvBrandcatno = view.findViewById(R.id.tvCatno);
         tvBrandcatno.setText(catno);
-        tvScale = (TextView)view.findViewById(R.id.tvScale);
+        TextView tvScale = view.findViewById(R.id.tvScale);
         tvScale.setText("1/" + String.valueOf(scale));
-        ivCategory = (ImageView) view.findViewById(R.id.ivCategory);
+        ivCategory = view.findViewById(R.id.ivCategory);
 
-        tvStatus = (TextView) view.findViewById(R.id.tvStatus);
+        TextView tvStatus = view.findViewById(R.id.tvStatus);
         tvStatus.setText(codeToStatus(status));
-        tvMedia = (TextView) view.findViewById(R.id.tvMedia);
+        TextView tvMedia = view.findViewById(R.id.tvMedia);
         tvMedia.setText(codeToMedia(media));
-        TextView tvDesc = (TextView) view.findViewById(R.id.tvDesc);
+        TextView tvDesc = view.findViewById(R.id.tvDesc);
         tvDesc.setText(codeToDescription(description));
-        tvYear = (TextView) view.findViewById(R.id.tvYear);
+        TextView tvYear = view.findViewById(R.id.tvYear);
         tvYear.setText(year);
-        tvShop = (TextView) view.findViewById(R.id.tvShop);
+        TextView tvShop = view.findViewById(R.id.tvShop);
         tvShop.setText(shop);
 
-        tvNotes = (TextView) view.findViewById(R.id.tvNotes);
+        TextView tvNotes = view.findViewById(R.id.tvNotes);
         if (!notes.equals("")) {
             tvNotes.setText(notes);
         }
-        tvQuantity = (TextView) view.findViewById(R.id.tvQuantity);
+        TextView tvQuantity = view.findViewById(R.id.tvQuantity);
         tvQuantity.setText(String.valueOf(quantity));
-        tvShop = (TextView) view.findViewById(R.id.tvShop);
-        tvShop.setText(shop);
-        tvDatePurchased = (TextView) view.findViewById(R.id.tvDatePurchased);
+        TextView tvDatePurchased = view.findViewById(R.id.tvDatePurchased);
         tvDatePurchased.setText(purchaseDate);
-        tvPrice = (TextView) view.findViewById(R.id.tvPrice);
+        TextView tvPrice = view.findViewById(R.id.tvPrice);
         tvPrice.setText(String.valueOf(price / 100));
-        tvCurrency = (TextView) view.findViewById(R.id.tvCurrency);
+        TextView tvCurrency = view.findViewById(R.id.tvCurrency);
         tvCurrency.setText(currency);
-        lvAftermarket = (ListView) view.findViewById(R.id.lvAftermarket);
-        tvScalematesUrl = (TextView)view.findViewById(R.id.tvScalemates);
+        ListView lvAftermarket = view.findViewById(R.id.lvAftermarket);
+        TextView tvScalematesUrl = view.findViewById(R.id.tvScalemates);
         tvScalematesUrl.setClickable(true);
         tvScalematesUrl.setMovementMethod(LinkMovementMethod.getInstance());
+
         String scalematesText = "<a href='https://www.scalemates.com/"
                 + scalematesUrl
                 + "'> " + getString(R.string.Look_up_on_Scalemates) + "</a>";
-        tvScalematesUrl.setText(Helper.fromHtml(scalematesText));
+        if (scalematesUrl != null) {
+            tvScalematesUrl.setText(Helper.fromHtml(scalematesText));
+        } else {
+            tvScalematesUrl.setText("");
+        }
 
-        tvGoogleUrl = (TextView)view.findViewById(R.id.tvGoogle);
+        TextView tvGoogleUrl = view.findViewById(R.id.tvGoogle);
         tvGoogleUrl.setClickable(true);
         tvGoogleUrl.setMovementMethod(LinkMovementMethod.getInstance());
         String googleText = "<a href='https://www.google.com/search?"
@@ -256,19 +214,14 @@ public class KitCardFragment extends Fragment {
         if (!Helper.isBlank(uri)) {
             Glide
                     .with(context)
-                    .load(new File(Uri.parse(Environment.getExternalStorageDirectory()
-                            + Constants.APP_FOLDER + uri).getPath()))
-//                    .placeholder(ic_menu_camera)
+                    .load(new File(Uri.parse(uri).getPath()))
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
-                    //.crossFade()
                     .into(ivBoxart);
         } else {
             Glide
                     .with(context)
                     .load(composeUrl(url))
-//                .placeholder(ic_menu_camera)
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
-//                    .crossFade()
                     .into(ivBoxart);
         }
 
@@ -276,9 +229,20 @@ public class KitCardFragment extends Fragment {
         AdapterAfterItemsList afterAdapter = new AdapterAfterItemsList(context, aCursor, 0, id,
                 listname, mode, demoMode);
         lvAftermarket.setAdapter(afterAdapter);
-        lvAftermarket.setClickable(false);
+//        lvAftermarket.setClickable(true);
 
         setListViewHeightBasedOnChildren(lvAftermarket);
+
+        lvAftermarket.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Intent intent = new Intent(context, AftermarketActivity.class);
+                intent.putExtra(Constants.AFTER_ID, l);
+                intent.putExtra(Constants.ID, id);
+                startActivity(intent);
+            }
+        });
+
         setCategoryImage();
         return view;
     }
@@ -365,35 +329,28 @@ public class KitCardFragment extends Fragment {
     }
 
     private void setCategoryImage() {
-        String ship = Constants.CAT_SEA;
-        String air = Constants.CAT_AIR;
-        String ground = Constants.CAT_GROUND;
-        String space = Constants.CAT_SPACE;
-        String other = Constants.CAT_OTHER;
-        String car = Constants.CAT_AUTOMOTO;
-
-        if (ship.equals(category)) {
+        if (Constants.CODE_SEA.equals(category)) {
             ivCategory.setImageResource(R.drawable.ic_tag_ship_black_24dp);
         }
-        if (air.equals(category)) {
+        if (Constants.CODE_AIR.equals(category)) {
             ivCategory.setImageResource(R.drawable.ic_tag_air_black_24dp);
         }
-        if (ground.equals(category)) {
+        if (Constants.CODE_GROUND.equals(category)) {
             ivCategory.setImageResource(R.drawable.ic_tag_afv_black_24dp);
         }
-        if (space.equals(category)) {
+        if (Constants.CODE_SPACE.equals(category)) {
             ivCategory.setImageResource(R.drawable.ic_tag_space_black_24dp);
         }
-        if (other.equals(category)) {
+        if (Constants.CODE_OTHER.equals(category)) {
             ivCategory.setImageResource(R.drawable.ic_check_box_outline_blank_black_24dp);
         }
-        if (car.equals(category)) {
+        if (Constants.CODE_AUTOMOTO.equals(category)) {
             ivCategory.setImageResource(R.drawable.ic_directions_car_black_24dp);
         }
-        if (Constants.CAT_FIGURES.equals(category)) {
+        if (Constants.CODE_FIGURES.equals(category)) {
             ivCategory.setImageResource(R.drawable.ic_wc_black_24dp);
         }
-        if (Constants.CAT_FANTASY.equals(category)) {
+        if (Constants.CODE_FANTASY.equals(category)) {
             ivCategory.setImageResource(R.drawable.ic_android_black_24dp);
         }
     }
@@ -427,10 +384,10 @@ public class KitCardFragment extends Fragment {
         if (!Helper.isBlank(url)) {
             return Constants.BOXART_URL_PREFIX
                     + url
-                    + "pristine"
+                    + Constants.BOXART_URL_LARGE
                     + Constants.JPG;
         }else{
-            return "";
+            return ""; //TODO проверить!!!
         }
     }
 

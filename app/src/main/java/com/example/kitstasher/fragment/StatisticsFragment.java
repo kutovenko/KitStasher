@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -16,10 +18,12 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.kitstasher.R;
+import com.example.kitstasher.activity.MainActivity;
 import com.example.kitstasher.other.CircleTransform;
 import com.example.kitstasher.other.Constants;
 import com.example.kitstasher.other.DbConnector;
@@ -62,6 +66,7 @@ public class StatisticsFragment extends Fragment implements View.OnClickListener
     private TextView tvDailyRecord;
     private ImageView ivProfilePic;
     private int totalStash;
+    private String cloudId;
 
     private DbConnector dbConnector;
     private Cursor brandsList;
@@ -100,13 +105,19 @@ public class StatisticsFragment extends Fragment implements View.OnClickListener
         // Setting UI elements
         Button btnCheckNow = (Button) view.findViewById(R.id.btnCheckNow);
         btnCheckNow.setOnClickListener(this);
-        TextView tvUserName = (TextView) view.findViewById(R.id.tvUserName);
-        ivProfilePic = (ImageView)view.findViewById(R.id.ivProfilePic);
+        if (!isOnline()) {
+            btnCheckNow.setClickable(false);
+            Toast.makeText(getActivity(), R.string.no_internet_connection, Toast.LENGTH_SHORT).show();
+        }
+        TextView tvUserName = view.findViewById(R.id.tvUserName);
+        ivProfilePic = view.findViewById(R.id.ivProfilePic);
         // Setting statistics counters
-        tvGlobalCounter = (TextView)view.findViewById(R.id.tvScore);
-        tvTotalStashCount = (TextView)view.findViewById(R.id.tvTotalStashCount);
-        tvAddedToday = (TextView)view.findViewById(R.id.tvAddedToday);
-        tvDailyRecord = (TextView)view.findViewById(R.id.tvDailyRecord);
+        tvGlobalCounter = view.findViewById(R.id.tvScore);
+        tvTotalStashCount = view.findViewById(R.id.tvTotalStashCount);
+        tvAddedToday = view.findViewById(R.id.tvAddedToday);
+        tvDailyRecord = view.findViewById(R.id.tvDailyRecord);
+        ((MainActivity) getActivity())
+                .setActionBarTitle(getActivity().getResources().getString(R.string.nav_statistics));
 
         // Getting shared preferences.
         sharedPreferences = getApplicationContext().getSharedPreferences(Constants.ACCOUNT_PREFS, Context.MODE_PRIVATE);
@@ -114,6 +125,7 @@ public class StatisticsFragment extends Fragment implements View.OnClickListener
         // Setting up basic statistics (total stash, max stash by day, etc.)
         getAndSetStats();
 
+        cloudId = sharedPreferences.getString(Constants.USER_ID_FACEBOOK, "");
         // Getting Facebook userpic URL
         String accountPictureUrl = sharedPreferences.getString(Constants.PROFILE_PICTURE_URL_FACEBOOK, null);
         // Loading profile image
@@ -164,12 +176,18 @@ public class StatisticsFragment extends Fragment implements View.OnClickListener
             addBrandData();
 
             // Preparing Categories data
-            float countAir = dbConnector.getByTag(Constants.CAT_AIR).getCount();
-            float countSea = dbConnector.getByTag(Constants.CAT_SEA).getCount();
-            float countGround = dbConnector.getByTag(Constants.CAT_GROUND).getCount();
-            float countSpace = dbConnector.getByTag(Constants.CAT_SPACE).getCount();
-            float countCarBike = dbConnector.getByTag(Constants.CAT_AUTOMOTO).getCount();
-            float countOther = dbConnector.getByTag(Constants.CAT_OTHER).getCount();
+//            float countAir = dbConnector.getByTag(Constants.CAT_AIR).getCount();
+//            float countSea = dbConnector.getByTag(Constants.CAT_SEA).getCount();
+//            float countGround = dbConnector.getByTag(Constants.CAT_GROUND).getCount();
+//            float countSpace = dbConnector.getByTag(Constants.CAT_SPACE).getCount();
+//            float countCarBike = dbConnector.getByTag(Constants.CAT_AUTOMOTO).getCount();
+//            float countOther = dbConnector.getByTag(Constants.CAT_OTHER).getCount();
+            float countAir = dbConnector.getByTag(Constants.CODE_AIR).getCount();
+            float countSea = dbConnector.getByTag(Constants.CODE_SEA).getCount();
+            float countGround = dbConnector.getByTag(Constants.CODE_GROUND).getCount();
+            float countSpace = dbConnector.getByTag(Constants.CODE_SPACE).getCount();
+            float countCarBike = dbConnector.getByTag(Constants.CODE_AUTOMOTO).getCount();
+            float countOther = dbConnector.getByTag(Constants.CODE_OTHER).getCount();
 
             cxData = new String[]{
                     getString(R.string.air) + String.valueOf((int) countAir),
@@ -408,7 +426,7 @@ public class StatisticsFragment extends Fragment implements View.OnClickListener
      */
     private void sendDataToParse() {
         ParseQuery<ParseObject> query = ParseQuery.getQuery("Top_users");
-        query.whereEqualTo("ownerId", Constants.USER_ID_FACEBOOK);
+        query.whereEqualTo("ownerId", cloudId);
         query.getFirstInBackground(new GetCallback<ParseObject>() {
             public void done(ParseObject object, ParseException e) {
                 if (e == null) {
@@ -459,5 +477,11 @@ public class StatisticsFragment extends Fragment implements View.OnClickListener
             }
         });
     }
-}
 
+    public boolean isOnline() {//// TODO: 06.09.2017 Helper
+        ConnectivityManager cm =
+                (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
+    }
+}

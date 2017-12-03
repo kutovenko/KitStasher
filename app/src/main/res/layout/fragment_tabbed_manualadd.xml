@@ -1,0 +1,493 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvModeKit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@color/colorAccent"
+                android:gravity="center_vertical|center_horizontal"
+                android:padding="16dp"
+                android:text="@string/kitCaps"
+                android:textColor="@color/colorItem" />
+
+            <TextView
+                android:id="@+id/tvModeAftermarket"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@color/com_facebook_button_background_color_disabled"
+                android:gravity="center_vertical|center_horizontal"
+                android:padding="16dp"
+                android:text="@string/aftermarketCaps" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="16dp"
+            android:orientation="vertical">
+
+
+            <moe.feng.common.stepperview.VerticalStepperItemView
+                android:id="@+id/stepper_0"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="24dp"
+                app:step_index="1"
+                app:step_summary=""
+                app:step_title="@string/search_by_code">
+
+                <LinearLayout
+                    android:id="@+id/linLayoutSearch"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="16dp"
+                    android:orientation="vertical">
+
+                    <android.support.design.widget.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <AutoCompleteTextView
+                            android:id="@+id/acTvBrand"
+                            style="@style/MyAutoComplete"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_centerVertical="true"
+                            android:layout_weight="1"
+                            android:completionThreshold="1"
+                            android:hint="@string/manufacturer"
+                            android:inputType="textCapWords"
+                            android:textColorHint="@android:color/background_dark" />
+
+
+                    </android.support.design.widget.TextInputLayout>
+
+                    <android.support.design.widget.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <EditText
+                            android:id="@+id/etBrandCat_no"
+                            style="@style/MyTextEdit"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:ems="10"
+                            android:hint="@string/Catalog_code"
+                            android:inputType="textCapCharacters"
+                            android:textColorHighlight="@color/colorSecondaryDark"
+                            android:textColorHint="@color/colorAccent" />
+                    </android.support.design.widget.TextInputLayout>
+
+                    <Button
+                        android:id="@+id/btnCheckOnlineDb"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginTop="8dp"
+                        android:layout_weight="2.8"
+                        android:background="@drawable/button"
+                        android:drawableTop="@drawable/ic_search_black_24dp"
+                        android:padding="8dp"
+                        android:text="@string/Search_by_code" />
+
+                </LinearLayout>
+
+            </moe.feng.common.stepperview.VerticalStepperItemView>
+
+            <moe.feng.common.stepperview.VerticalStepperItemView
+                android:id="@+id/stepper_1"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="24dp"
+                app:step_index="2"
+                app:step_summary=""
+                app:step_title="@string/Boxart">
+
+                <LinearLayout
+                    android:id="@+id/linLayoutBoxart"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="16dp"
+                    android:layout_weight="2.8"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:id="@+id/ivGetBoxart"
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:layout_weight="2.8"
+                        android:background="@drawable/button"
+                        android:clickable="true"
+                        android:contentDescription="@string/add_boxart"
+                        android:focusable="true"
+                        app:srcCompat="@drawable/ic_menu_camera" />
+
+                </LinearLayout>
+
+            </moe.feng.common.stepperview.VerticalStepperItemView>
+
+
+            <moe.feng.common.stepperview.VerticalStepperItemView
+                android:id="@+id/stepper_2"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="24dp"
+                app:step_index="3"
+                app:step_summary=""
+                app:step_title="@string/Main_information">
+
+                <LinearLayout
+                    android:id="@+id/linLayoutInfo"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="16dp"
+                    android:orientation="vertical">
+
+                    <android.support.design.widget.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <EditText
+                            android:id="@+id/etKitName"
+                            style="@style/MyTextEdit"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:ems="10"
+                            android:hint="@string/Name_required"
+                            android:inputType="textCapWords" />
+                    </android.support.design.widget.TextInputLayout>
+
+                    <android.support.design.widget.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <EditText
+                            android:id="@+id/etKitNoengName"
+                            style="@style/MyTextEdit"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:ems="10"
+                            android:hint="@string/Non_english_name"
+                            android:inputType="textCapSentences" />
+                    </android.support.design.widget.TextInputLayout>
+
+                    <android.support.design.widget.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1">
+
+                        <EditText
+                            android:id="@+id/etScale"
+                            style="@style/MyTextEdit"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:ems="10"
+                            android:hint="@string/Scale_required"
+                            android:inputType="phone" />
+
+
+                    </android.support.design.widget.TextInputLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_weight="2.8"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/textView25"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/category"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+                        <android.support.v7.widget.AppCompatSpinner
+                            android:id="@+id/spCategory"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1" />
+                    </LinearLayout>
+
+                    <TableLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginBottom="16dp"
+                        android:layout_weight="1">
+
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_marginBottom="4dp">
+
+                            <TextView
+                                android:id="@+id/textView24"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:text="@string/Media"
+                                android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+                            <android.support.v7.widget.AppCompatSpinner
+                                android:id="@+id/spAfterMedia"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1" />
+
+                        </TableRow>
+
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_marginBottom="4dp">
+
+                            <TextView
+                                android:id="@+id/textView46"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="@string/kittype"
+                                android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+                            <android.support.v7.widget.AppCompatSpinner
+                                android:id="@+id/spDescription"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1" />
+
+                        </TableRow>
+
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent">
+
+                            <TextView
+                                android:id="@+id/textView45"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="@string/year"
+                                android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+                            <android.support.v7.widget.AppCompatSpinner
+                                android:id="@+id/spYear"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1" />
+                        </TableRow>
+
+                    </TableLayout>
+
+                    <android.support.design.widget.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+
+                        <EditText
+                            android:id="@+id/etNotes"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:background="@color/com_facebook_button_login_silver_background_color_pressed"
+                            android:ems="10"
+                            android:gravity="start"
+                            android:hint="@string/notes"
+                            android:inputType="textCapSentences|textMultiLine"
+                            android:lines="3"
+                            android:padding="4dp" />
+
+                    </android.support.design.widget.TextInputLayout>
+                </LinearLayout>
+
+            </moe.feng.common.stepperview.VerticalStepperItemView>
+
+
+            <moe.feng.common.stepperview.VerticalStepperItemView
+                android:id="@+id/stepper_3"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="24dp"
+                app:step_index="4"
+                app:step_summary=""
+
+                app:step_title="@string/Purchase_info">
+
+                <LinearLayout
+                    android:id="@+id/linLayoutPurchase"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="vertical"
+                    android:weightSum="3">
+
+                    <LinearLayout
+                        android:id="@+id/LinLayoutPurchaseInfo"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/textView14"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/Quantity"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+                        <android.support.v7.widget.AppCompatSpinner
+                            android:id="@+id/spQuantity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_horizontal"
+                            android:layout_weight="1" />
+
+                    </LinearLayout>
+
+                    <android.support.design.widget.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <AutoCompleteTextView
+                            android:id="@+id/acPlacePurchased"
+                            style="@style/MyAutoComplete"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            android:layout_weight="1"
+                            android:hint="@string/Shop"
+                            android:inputType="text" />
+                    </android.support.design.widget.TextInputLayout>
+
+                    <LinearLayout
+                        android:id="@+id/linLayoutDate"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginBottom="8dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/tvPurchaseDate"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_gravity="center_horizontal"
+                            android:layout_marginRight="8dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/button"
+                            android:gravity="center_vertical|center_horizontal"
+                            android:text="@string/Date_not_set"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+                        <Button
+                            android:id="@+id/btnClearDate"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_gravity="center_horizontal"
+                            android:layout_weight="1"
+                            android:background="@drawable/button"
+                            android:text="@string/clear" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/linLayoutPrice"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <android.support.design.widget.TextInputLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1">
+
+                            <EditText
+                                android:id="@+id/etPrice"
+                                style="@style/MyTextEdit"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:ems="10"
+                                android:gravity="start"
+                                android:hint="@string/price"
+                                android:inputType="numberDecimal" />
+
+                        </android.support.design.widget.TextInputLayout>
+
+
+                        <android.support.v7.widget.AppCompatSpinner
+                            android:id="@+id/spCurrency"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_gravity="center_horizontal"
+                            android:layout_weight="1" />
+                    </LinearLayout>
+                </LinearLayout>
+
+            </moe.feng.common.stepperview.VerticalStepperItemView>
+
+            <moe.feng.common.stepperview.VerticalStepperItemView
+                android:id="@+id/stepper_4"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="24dp"
+                android:layout_marginTop="24dp"
+
+                app:step_index="5"
+                app:step_summary=""
+                app:step_title="@string/save">
+
+                <LinearLayout
+                    android:id="@+id/linLayoutButtons"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:layout_marginTop="16dp"
+                    android:orientation="horizontal"
+                    android:theme="@style/Widget.AppCompat.ButtonBar">
+
+                    <Button
+                        android:id="@+id/btnMCancel"
+                        style="@style/Widget.AppCompat.Button.Borderless"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="16dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/button"
+                        android:baselineAligned="false"
+                        android:drawableTop="@drawable/ic_clear_black_24dp"
+                        android:padding="8dp"
+                        android:text="@string/clear" />
+
+                    <Button
+                        android:id="@+id/btnMAdd"
+                        style="@style/Widget.AppCompat.Button.Borderless"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@drawable/button"
+                        android:drawableTop="@drawable/ic_save_black_24dp"
+                        android:padding="8dp"
+                        android:text="@string/save" />
+                </LinearLayout>
+            </moe.feng.common.stepperview.VerticalStepperItemView>
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

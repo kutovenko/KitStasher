@@ -1,10 +1,5 @@
 package com.example.kitstasher.objects;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-
-import com.example.kitstasher.other.Constants;
-
 /**
  * Created by Алексей on 14.05.2017.
  */
@@ -55,6 +50,4 @@ public class User {
     public void setBack4appId(String back4appId) {
         this.back4appId = back4appId;
     }
-
-
 }

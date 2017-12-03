@@ -19,5 +19,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:layout_weight="1"
-        android:text="TextView" />
+        android:text="TextView"
+        android:textAppearance="@style/TextTheme" />
 </LinearLayout>

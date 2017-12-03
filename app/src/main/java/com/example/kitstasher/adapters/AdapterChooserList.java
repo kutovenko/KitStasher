@@ -22,8 +22,6 @@ import com.example.kitstasher.other.DbConnector;
 import java.util.ArrayList;
 import java.util.List;
 
-import static android.R.drawable.ic_menu_camera;
-
 /**
  * Created by Алексей on 14.08.2017.
  */
@@ -112,44 +110,71 @@ public class AdapterChooserList extends CursorAdapter {
         holder.tvScale.setText(scale);
 
 
-        if (Constants.CAT_SEA.equals(category)) {
+        if (Constants.CODE_SEA.equals(category)) {
             holder.ivChooseKitCategory.setImageResource(R.drawable.ic_tag_ship_black_24dp);
         }
-        if (Constants.CAT_AIR.equals(category)) {
+        if (Constants.CODE_AIR.equals(category)) {
             holder.ivChooseKitCategory.setImageResource(R.drawable.ic_tag_air_black_24dp);
         }
-        if (Constants.CAT_GROUND.equals(category)) {
+        if (Constants.CODE_GROUND.equals(category)) {
             holder.ivChooseKitCategory.setImageResource(R.drawable.ic_tag_afv_black_24dp);
         }
-        if (Constants.CAT_SPACE.equals(category)) {
+        if (Constants.CODE_SPACE.equals(category)) {
             holder.ivChooseKitCategory.setImageResource(R.drawable.ic_tag_space_black_24dp);
         }
-        if (Constants.CAT_OTHER.equals(category)) {
+        if (Constants.CODE_OTHER.equals(category)) {
             holder.ivChooseKitCategory.setImageResource(R.drawable.ic_check_box_outline_blank_black_24dp);
         }
-        if (Constants.CAT_AUTOMOTO.equals(category)){
+        if (Constants.CODE_AUTOMOTO.equals(category)) {
             holder.ivChooseKitCategory.setImageResource(R.drawable.ic_directions_car_black_24dp);
         }
-        if (Constants.CAT_FANTASY.equals(category)){
+        if (Constants.CODE_FANTASY.equals(category)) {
             Glide
                     .with(context)
                     .load(R.drawable.ic_android_black_24dp)
-                    .placeholder(ic_menu_camera)
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
-                    //.crossFade()
                     .into(holder.ivChooseKitCategory);
-//            holder.ivChooseKitCategory.setImageResource(R.drawable.ic_android_black_24dp);
         }
-        if (Constants.CAT_FIGURES.equals(category)){
+        if (Constants.CODE_FIGURES.equals(category)) {
             Glide
                     .with(context)
                     .load(R.drawable.ic_wc_black_24dp)
-                    .placeholder(ic_menu_camera)
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
-                    //.crossFade()
                     .into(holder.ivChooseKitCategory);
-//            holder.ivChooseKitCategory.setImageResource(R.drawable.ic_wc_black_24dp);
         }
+
+//        if (Constants.CAT_SEA.equals(category)) {
+//            holder.ivChooseKitCategory.setImageResource(R.drawable.ic_tag_ship_black_24dp);
+//        }
+//        if (Constants.CAT_AIR.equals(category)) {
+//            holder.ivChooseKitCategory.setImageResource(R.drawable.ic_tag_air_black_24dp);
+//        }
+//        if (Constants.CAT_GROUND.equals(category)) {
+//            holder.ivChooseKitCategory.setImageResource(R.drawable.ic_tag_afv_black_24dp);
+//        }
+//        if (Constants.CAT_SPACE.equals(category)) {
+//            holder.ivChooseKitCategory.setImageResource(R.drawable.ic_tag_space_black_24dp);
+//        }
+//        if (Constants.CAT_OTHER.equals(category)) {
+//            holder.ivChooseKitCategory.setImageResource(R.drawable.ic_check_box_outline_blank_black_24dp);
+//        }
+//        if (Constants.CAT_AUTOMOTO.equals(category)){
+//            holder.ivChooseKitCategory.setImageResource(R.drawable.ic_directions_car_black_24dp);
+//        }
+//        if (Constants.CAT_FANTASY.equals(category)){
+//            Glide
+//                    .with(context)
+//                    .load(R.drawable.ic_android_black_24dp)
+//                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+//                    .into(holder.ivChooseKitCategory);
+//        }
+//        if (Constants.CAT_FIGURES.equals(category)){
+//            Glide
+//                    .with(context)
+//                    .load(R.drawable.ic_wc_black_24dp)
+//                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+//                    .into(holder.ivChooseKitCategory);
+//        }
 
 
         holder.cbChoose = (CheckBox)view.findViewById(R.id.cbChoose);

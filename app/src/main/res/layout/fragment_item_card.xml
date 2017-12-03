@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<ScrollView
+
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -36,6 +38,14 @@
                 android:text="Kit Name"
                 android:textAppearance="@style/TextAppearance.AppCompat.Large.Inverse" />
 
+            <TextView
+                android:id="@+id/tvOriginalKitName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="48dp"
+                android:layout_weight="0.12"
+                android:textAppearance="@android:style/TextAppearance.Material.Small.Inverse" />
+
         </LinearLayout>
 
         <LinearLayout
@@ -65,8 +75,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Manufacturer"
-                    android:textColor="@color/space"
-                    android:textStyle="bold" />
+                    android:textAppearance="@style/AppTheme.LittleHeader" />
 
                 <TextView
                     android:id="@+id/tvCatno"
@@ -74,8 +83,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="bottom"
                     android:text="Catno"
-                    android:textColor="@color/space"
-                    android:textStyle="bold" />
+                    android:textAppearance="@style/AppTheme.LittleHeader" />
 
             </LinearLayout>
 
@@ -98,9 +106,8 @@
             android:layout_marginLeft="16dp"
             android:layout_marginTop="16dp"
             android:layout_weight="0.12"
-            android:text="Main properties"
-            android:textColor="@color/text"
-            android:textStyle="bold" />
+            android:text="@string/Main_information"
+            android:textAppearance="@style/AppTheme.LittleHeader" />
 
         <TableLayout
             android:layout_width="match_parent"
@@ -118,7 +125,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/Status" />
+                    android:text="@string/Status"
+                    android:textAppearance="@style/TextTheme" />
 
                 <TextView
                     android:id="@+id/tvStatus"
@@ -126,7 +134,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="right"
-                    android:textColor="@color/text" />
+                    android:textAppearance="@style/TextTheme" />
             </TableRow>
 
             <TableRow
@@ -138,7 +146,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/Media" />
+                    android:text="@string/Media"
+                    android:textAppearance="@style/TextTheme" />
 
                 <TextView
                     android:id="@+id/tvMedia"
@@ -146,7 +155,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="right"
-                    android:textColor="@color/text" />
+                    android:textAppearance="@style/TextTheme" />
             </TableRow>
 
             <TableRow
@@ -158,7 +167,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/Description" />
+                    android:text="@string/Description"
+                    android:textAppearance="@style/TextTheme" />
 
                 <TextView
                     android:id="@+id/tvDesc"
@@ -166,7 +176,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="right"
-                    android:textColor="@color/text" />
+                    android:textAppearance="@style/TextTheme" />
             </TableRow>
 
             <TableRow
@@ -178,7 +188,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/year" />
+                    android:text="@string/year"
+                    android:textAppearance="@style/TextTheme" />
 
                 <TextView
                     android:id="@+id/tvYear"
@@ -186,7 +197,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="right"
-                    android:textColor="@color/text" />
+                    android:textAppearance="@style/TextTheme" />
             </TableRow>
         </TableLayout>
 
@@ -200,8 +211,7 @@
             android:layout_marginTop="16dp"
             android:layout_weight="0.12"
             android:text="@string/notes"
-            android:textColor="@color/space"
-            android:textStyle="bold" />
+            android:textAppearance="@style/AppTheme.LittleHeader" />
 
         <TextView
             android:id="@+id/tvNotes"
@@ -214,7 +224,8 @@
             android:background="@color/com_facebook_button_login_silver_background_color_pressed"
             android:maxLines="4"
             android:minLines="2"
-            android:padding="4dp" />
+            android:padding="4dp"
+            android:textAppearance="@style/TextTheme" />
 
         <TextView
             android:id="@+id/tvAftermarketTitle"
@@ -224,9 +235,8 @@
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
             android:layout_weight="0.12"
-            android:text="Aftermarket"
-            android:textColor="@color/space"
-            android:textStyle="bold" />
+            android:text="@string/aftermarket"
+            android:textAppearance="@style/AppTheme.LittleHeader" />
 
         <ListView
             android:id="@+id/lvAftermarket"
@@ -244,9 +254,8 @@
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
             android:layout_weight="0.12"
-            android:text="Purchase Information"
-            android:textColor="@color/space"
-            android:textStyle="bold" />
+            android:text="@string/Purchase_info"
+            android:textAppearance="@style/AppTheme.LittleHeader" />
 
         <TableLayout
             android:id="@+id/tableLayoutPurchase"
@@ -266,7 +275,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/Quantity" />
+                    android:text="@string/Quantity"
+                    android:textAppearance="@style/TextTheme" />
 
                 <TextView
                     android:id="@+id/tvQuantity"
@@ -274,7 +284,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="right"
-                    android:textColor="@color/text" />
+                    android:textAppearance="@style/TextTheme" />
             </TableRow>
 
             <TableRow
@@ -286,7 +296,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/Place_of_purchase" />
+                    android:text="@string/Place_of_purchase"
+                    android:textAppearance="@style/TextTheme" />
 
                 <TextView
                     android:id="@+id/tvShop"
@@ -294,7 +305,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="right"
-                    android:textColor="@color/text" />
+                    android:textAppearance="@style/TextTheme" />
             </TableRow>
 
             <TableRow
@@ -306,7 +317,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/purchase_date" />
+                    android:text="@string/purchase_date"
+                    android:textAppearance="@style/TextTheme" />
 
                 <TextView
                     android:id="@+id/tvDatePurchased"
@@ -314,7 +326,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="right"
-                    android:textColor="@color/text" />
+                    android:textAppearance="@style/TextTheme" />
             </TableRow>
 
             <TableRow
@@ -326,7 +338,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/Price" />
+                    android:text="@string/Price"
+                    android:textAppearance="@style/TextTheme" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -340,7 +353,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:gravity="right"
-                        android:textColor="@color/text" />
+                        android:textAppearance="@style/TextTheme" />
 
                     <TextView
                         android:id="@+id/tvCurrency"
@@ -348,7 +361,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:gravity="right"
-                        android:textColor="@color/text" />
+                        android:textAppearance="@style/TextTheme" />
                 </LinearLayout>
 
             </TableRow>
@@ -362,9 +375,8 @@
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
             android:layout_weight="0.12"
-            android:text="On the Net"
-            android:textColor="@color/space"
-            android:textStyle="bold" />
+            android:text="@string/on_the_net"
+            android:textAppearance="@style/AppTheme.LittleHeader" />
 
         <TextView
             android:id="@+id/tvGoogle"

@@ -3,6 +3,7 @@
     <color name="colorPrimary">#7c8fc8</color>
     <color name="colorSecondary">#1a237e</color>
     <color name="colorPrimaryDark">#00ACFF</color>
+    <color name="colorBackground">#f4f6f8</color>
 
     <color name="colorAccent">#415dae</color>
     <color name="colorHighlight">#dedee6</color>
@@ -10,7 +11,6 @@
 
     <color name="colorItem">#ffffff</color>
     <color name="colorText">#263238</color>
-    <color name="colorBackground">#f4f6f8</color>
     <color name="colorBackgroundDark">#263238</color>
 
 

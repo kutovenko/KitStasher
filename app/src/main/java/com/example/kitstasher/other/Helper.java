@@ -1,12 +1,17 @@
 package com.example.kitstasher.other;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Build;
+import android.os.Environment;
 import android.support.v4.content.ContextCompat;
 import android.text.Html;
 import android.text.Spanned;
+import android.view.Display;
+import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
@@ -304,15 +309,94 @@ public class Helper {
         listView.setLayoutParams(params);
     }
 
+    public enum StorageState {
+        NOT_AVAILABLE, WRITEABLE, READ_ONLY
+    }
 
-//    public String getScreenOrientation(){
-//        // TODO: 13.08.2017 move to Helper
-//        Display display = ((WindowManager) this.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
-//        int rotation = display.getRotation();
-//        if (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270){
-//            return "landscape";
-//        }else{
-//            return "portrait";
+    public static StorageState getExternalStorageState() {
+        StorageState result = StorageState.NOT_AVAILABLE;
+        String state = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(state)) {
+            return StorageState.WRITEABLE;
+        } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+            return StorageState.READ_ONLY;
+        }
+        return result;
+    }
+
+    private static String getScreenOrientation(Context context) {
+        Display display = null;
+        if (((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)) != null) {
+            display = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+        }
+        int rotation = display.getRotation();
+        if (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270) {
+            return "landscape";
+        } else {
+            return "portrait";
+        }
+    }
+
+    public static String composeUrl(String url, Context context) {
+        if (!Helper.isBlank(url)) {
+            return Constants.BOXART_URL_PREFIX
+                    + url
+                    + getSuffix(context)
+                    + Constants.JPG;
+        } else {
+            return "";
+        }
+    }
+
+    private static String getSuffix(Context context) {
+        String suffix = Constants.BOXART_URL_LARGE;
+        SharedPreferences preferences = context.getSharedPreferences(Constants.BOXART_SIZE,
+                Context.MODE_PRIVATE);
+        if (preferences != null) {
+            String temp = preferences.getString("boxart_size", "");
+            switch (temp) {
+                case Constants.BOXART_URL_COMPANY_SUFFIX:
+                    suffix = "";
+                    break;
+                case Constants.BOXART_URL_SMALL:
+                    suffix = Constants.BOXART_URL_SMALL;
+                    break;
+                case Constants.BOXART_URL_MEDIUM:
+                    suffix = Constants.BOXART_URL_MEDIUM;
+                    break;
+                case Constants.BOXART_URL_LARGE:
+                    suffix = Constants.BOXART_URL_LARGE;
+                    break;
+                default:
+                    break;
+            }
+        }
+        return suffix;
+    }
+
+
+//    public static boolean checkPermissions(Context context, String... permissions) {
+//        for (String permission : permissions) {
+//            if (!checkPermission(context, permission)) {
+//                return false;
+//            }
+//        }
+//        return true;
+//    }
+//
+//    public static boolean checkPermission(Context context, String permission) {
+//        return ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED;
+//    }
+//
+//    public static boolean isDeviceInfoGranted(Context context) {
+//        return checkPermission(context, Manifest.permission.READ_PHONE_STATE);
+//    }
+//
+//    public static void requestPermissions(Object o, int permissionId, String... permissions) {
+//        if (o instanceof Fragment) {
+//            Fragment.requestPermissions((Fragment) o, permissions, permissionId);
+//        } else if (o instanceof Activity) {
+//            ActivityCompat.requestPermissions((AppCompatActivity) o, permissions, permissionId);
 //        }
 //    }
 }

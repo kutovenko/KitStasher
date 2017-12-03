@@ -26,7 +26,6 @@ import android.widget.Toast;
 
 import com.example.kitstasher.R;
 import com.example.kitstasher.adapters.AdapterChooserList;
-import com.example.kitstasher.adapters.AdapterListGlide;
 import com.example.kitstasher.objects.Kit;
 import com.example.kitstasher.other.Constants;
 import com.example.kitstasher.other.DbConnector;
@@ -42,7 +41,7 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
     private DbConnector dbConnector;
     private Cursor cursor;
     private String listname;
-    private char mode;
+    private char editMode;
     private String tableMode;
     private long kitId;
     
@@ -64,15 +63,15 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
         initVariables();
         initUI();
 
-        if (mode == Constants.MODE_AFTERMARKET){
+        if (editMode == Constants.MODE_AFTERMARKET) {
             cursor = dbConnector.getAllAftermarket("_id DESC");
-        }else if (mode == Constants.MODE_KIT){
+        } else if (editMode == Constants.MODE_KIT || editMode == Constants.MODE_LIST) {
             cursor = dbConnector.getAllData("_id DESC");
         }
 
-        stashList = (ListView)findViewById(R.id.lvChooser);
+        stashList = findViewById(R.id.lvChooser);
 //        AdapterChooserList stashListAdapter =
-//                new AdapterChooserList(this, cursor, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER, mode);
+//                new AdapterChooserList(this, cursor, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER, editMode);
 //        stashList.setAdapter(stashListAdapter);
         prepareListAndAdapter(cursor);
 
@@ -95,18 +94,18 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
             public boolean onLongClick(View view) {
                 filters = new String[0];
                 ibtnChooseFilter.setBackgroundColor(Color.TRANSPARENT);
-                cursor = dbConnector.filteredKits(tableMode, filters, "_id DESC", categoryTab);
+                cursor = dbConnector.filteredKits(tableMode, filters, "_id DESC", categoryTab, listname);
                 prepareListAndAdapter(cursor);
                 Toast.makeText(ChooserActivity.this, R.string.Filters_disabled, Toast.LENGTH_SHORT).show();
                 return true;
             }
         });
 
-        Button doneButton = (Button)findViewById(R.id.btnChooseDone);
+        Button doneButton = findViewById(R.id.btnChooseDone);
         doneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mode == Constants.MODE_KIT) {
+                if (editMode == Constants.MODE_KIT) {
                     if (choosedIds != null && !choosedIds.isEmpty()) {
                         for (int i = 0; i < choosedIds.size(); i++) {
                             long l = Long.valueOf(choosedIds.get(i));
@@ -127,7 +126,7 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
                         choosedIds.clear();
                     }
                     finish();
-                }else if (mode == Constants.MODE_AFTERMARKET){
+                } else if (editMode == Constants.MODE_AFTER_KIT) {
                     if (choosedIds != null && !choosedIds.isEmpty()) {
                         for (int i = 0; i < choosedIds.size(); i++) {
                             long afterId = Long.valueOf(choosedIds.get(i));
@@ -151,7 +150,7 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
             }
         });
 
-        Button cancelButton = (Button)findViewById(R.id.btnChooseCancelled);
+        Button cancelButton = findViewById(R.id.btnChooseCancelled);
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -187,10 +186,10 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
     private void initVariables() {
         dbConnector = new DbConnector(this);
         dbConnector.open();
-        mode = getIntent().getExtras().getChar(Constants.EDIT_MODE);
-        if (mode == Constants.MODE_KIT){
+        editMode = getIntent().getExtras().getChar(Constants.EDIT_MODE);
+        if (editMode == Constants.MODE_KIT) {
             tableMode = DbConnector.TABLE_KITS;
-        }else if (mode == Constants.MODE_AFTERMARKET){
+        } else if (editMode == Constants.MODE_AFTERMARKET) {
             tableMode = DbConnector.TABLE_AFTERMARKET;
             kitId = getIntent().getExtras().getLong("kitId");
         }
@@ -279,7 +278,7 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
 
     public void prepareListAndAdapter(Cursor cursor){
         AdapterChooserList stashListAdapter =
-                new AdapterChooserList(this, cursor, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER, mode);
+                new AdapterChooserList(this, cursor, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER, editMode);
         stashList.setAdapter(stashListAdapter);
 
     }
@@ -296,7 +295,7 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
             String category = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_CATEGORY));
             String year = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_YEAR));
             String description = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_DESCRIPTION));
-            String kit_noengname = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_ORIGINAL_KIT_NAME));
+        String kit_noengname = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_ORIGINAL_NAME));
             String barcode = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_BARCODE));
             String status = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_SEND_STATUS));
             String date = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_DATE));
@@ -341,59 +340,59 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     public void SortByBrandAsc() {
-        cursor = dbConnector.filteredKits(tableMode, filters, "brand", categoryTab);
+        cursor = dbConnector.filteredKits(tableMode, filters, "brand", categoryTab, listname);
         prepareListAndAdapter(cursor);
-        ivSortBrand.setImageResource(R.drawable.ic_keyboard_arrow_up_black_24dp);
+        ivSortBrand.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
         sortBrand = true;
     }
 
     public void SortByBrandDesc() {
-        cursor = dbConnector.filteredKits(tableMode, filters, "brand DESC", categoryTab);
+        cursor = dbConnector.filteredKits(tableMode, filters, "brand DESC", categoryTab, listname);
         prepareListAndAdapter(cursor);
-        ivSortBrand.setImageResource(R.drawable.ic_keyboard_arrow_down_black_24dp);
+        ivSortBrand.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
         sortBrand = false;
 
     }
 
     public void SortByScaleAsc() {
-        cursor = dbConnector.filteredKits(tableMode, filters, "scale", categoryTab);
+        cursor = dbConnector.filteredKits(tableMode, filters, "scale", categoryTab, listname);
         prepareListAndAdapter(cursor);
-        ivSortScale.setImageResource(R.drawable.ic_keyboard_arrow_up_black_24dp);
+        ivSortScale.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
         sortScale = true;
     }
 
     public void SortByScaleDesc() {
-        cursor = dbConnector.filteredKits(tableMode, filters, "scale DESC", categoryTab);
+        cursor = dbConnector.filteredKits(tableMode, filters, "scale DESC", categoryTab, listname);
         prepareListAndAdapter(cursor);
-        ivSortScale.setImageResource(R.drawable.ic_keyboard_arrow_down_black_24dp);
+        ivSortScale.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
         sortScale = false;
     }
 
     public void SortByDateAcs() {
-        cursor = dbConnector.filteredKits(tableMode, filters, "_id", categoryTab);
+        cursor = dbConnector.filteredKits(tableMode, filters, "_id", categoryTab, listname);
         prepareListAndAdapter(cursor);
-        ivSortDate.setImageResource(R.drawable.ic_keyboard_arrow_up_black_24dp);
+        ivSortDate.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
         sortDate = true;
     }
 
     public void SortByDateDesc() {
-        cursor = dbConnector.filteredKits(tableMode, filters, "_id DESC", categoryTab);
+        cursor = dbConnector.filteredKits(tableMode, filters, "_id DESC", categoryTab, listname);
         prepareListAndAdapter(cursor);
-        ivSortDate.setImageResource(R.drawable.ic_keyboard_arrow_down_black_24dp);
+        ivSortDate.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
         sortDate = false;
     }
 
     public void SortByNameAsc() {
-        cursor = dbConnector.filteredKits(tableMode, filters, "kit_name", categoryTab);
+        cursor = dbConnector.filteredKits(tableMode, filters, "kit_name", categoryTab, listname);
         prepareListAndAdapter(cursor);
-        ivSortKitname.setImageResource(R.drawable.ic_keyboard_arrow_up_black_24dp);
+        ivSortKitname.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
         sortName = true;
     }
 
     public void SortByNameDesc() {
-        cursor = dbConnector.filteredKits(tableMode, filters, "kit_name DESC", categoryTab);
+        cursor = dbConnector.filteredKits(tableMode, filters, "kit_name DESC", categoryTab, listname);
         prepareListAndAdapter(cursor);
-        ivSortKitname.setImageResource(R.drawable.ic_keyboard_arrow_down_black_24dp);
+        ivSortKitname.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
         sortName = false;
     }
 
@@ -513,7 +512,7 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
                     filters[3] = statusFilter;
                     filters[4] = mediaFilter;
 
-                    cursor = dbConnector.filteredKits(tableMode, filters, "_id DESC", categoryTab);
+                    cursor = dbConnector.filteredKits(tableMode, filters, "_id DESC", categoryTab, listname);
                     prepareListAndAdapter(cursor);
 
                     ibtnChooseFilter.setBackgroundColor(Helper.getColor(ChooserActivity.this, R.color.colorAccent));

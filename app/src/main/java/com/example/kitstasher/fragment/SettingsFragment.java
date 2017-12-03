@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.kitstasher.R;
+import com.example.kitstasher.activity.MainActivity;
 import com.example.kitstasher.adapters.AdapterSettings;
 
 /**
@@ -32,6 +33,9 @@ public class SettingsFragment extends Fragment{
         viewPager = (ViewPager)view.findViewById(R.id.viewpagerSettings);
         viewPager.setAdapter(new AdapterSettings(getChildFragmentManager(), getActivity()));
         tabLayout.setupWithViewPager(viewPager);
+
+        ((MainActivity) getActivity())
+                .setActionBarTitle(getActivity().getResources().getString(R.string.nav_more));
 
         return view;
     }

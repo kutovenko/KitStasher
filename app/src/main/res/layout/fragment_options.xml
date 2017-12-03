@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/colorBackground">
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -33,7 +32,8 @@
                 android:layout_height="match_parent"
                 android:layout_marginBottom="8dp"
                 android:layout_weight="1"
-                android:text="@string/Backup_text" />
+                android:text="@string/Backup_text"
+                android:textAppearance="@style/TextTheme" />
 
             <Button
                 android:id="@+id/btnBackup"
@@ -61,7 +61,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 android:layout_weight="1"
-                android:text="@string/Restore_database" />
+                android:text="@string/Restore_database"
+                android:textAppearance="@style/TextTheme" />
 
             <Button
                 android:id="@+id/btnRestore"
@@ -107,7 +108,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 android:layout_weight="1"
-                android:text="@string/export_text" />
+                android:text="@string/export_text"
+                android:textAppearance="@style/TextTheme" />
 
             <Button
                 android:id="@+id/btnRepairImages"
@@ -140,12 +142,57 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/textView11"
+                android:id="@+id/textView23"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:layout_weight="1"
+                android:text="@string/add_new_currency"
+                android:textAppearance="@style/TextTheme" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="16dp"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <android.support.design.widget.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
+
+                    <EditText
+                        android:id="@+id/etNewCurrency"
+                        style="@style/MyTextEdit"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="8dp"
+                        android:ems="10"
+                        android:hint="@string/Currency"
+                        android:inputType="textCapCharacters" />
+                </android.support.design.widget.TextInputLayout>
+
+                <Button
+                    android:id="@+id/btnAddCurrency"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@drawable/button"
+                    android:padding="8dp"
+                    android:text="@string/add" />
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/textView22"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
+                android:layout_marginBottom="16dp"
                 android:layout_weight="1"
-                android:text="@string/Set_default_currency" />
+                android:text="@string/Set_default_currency"
+                android:textAppearance="@style/TextTheme" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -158,6 +205,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_gravity="center_horizontal"
+                    android:layout_margin="8dp"
                     android:layout_weight="1" />
 
                 <Button

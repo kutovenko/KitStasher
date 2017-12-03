@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <external-files-path
+        name="boxart"
+        path="/boxart" />
+    <!--<external-path name="boxart" path="Android/data/com.example.kitstasher/boxart" />-->
+    <!--<external-files-path name="boxart" path="boxart/" />-->
+</paths>

@@ -12,7 +12,8 @@
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:gravity="center_horizontal"
-        android:text="@string/Long_tap_to_delete" />
+        android:text="@string/Long_tap_to_delete"
+        android:textAppearance="@style/TextTheme" />
 
     <!--<LinearLayout-->
     <!--android:layout_width="match_parent"-->

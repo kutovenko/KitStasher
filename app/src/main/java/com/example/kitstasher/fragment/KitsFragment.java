@@ -13,32 +13,25 @@ import com.example.kitstasher.adapters.AdapterViewStash;
 import com.example.kitstasher.other.Constants;
 
 /**
- * Created by Алексей on 21.04.2017.
+ * Created by Алексей on 21.04.2017. ViewPager
  */
 
-public class ViewStashFragment extends Fragment{
-    private TabLayout tabLayout;
-    private ViewPager viewPager;
+public class KitsFragment extends Fragment {
     AdapterViewStash adapterViewStash;
 
-    public ViewStashFragment(){
+    public KitsFragment() {
 
     }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
-
         View view = inflater.inflate(R.layout.fragment_viewstash, container, false);
-        tabLayout = (TabLayout)view.findViewById(R.id.tabsViewStash);
+        TabLayout tabLayout = view.findViewById(R.id.tabsViewStash);
         tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
 
-
-//        tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
-//        tabLayout.setTabMode(TabLayout.MODE_FIXED);
         boolean aftermarketMode = getArguments().getBoolean("afterMode");
 
-        viewPager = (ViewPager)view.findViewById(R.id.viewpagerViewStash);
+        ViewPager viewPager = view.findViewById(R.id.viewpagerViewStash);
         adapterViewStash = new AdapterViewStash(getChildFragmentManager(), getActivity(), aftermarketMode);
         viewPager.setAdapter(adapterViewStash);
 

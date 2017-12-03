@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="Catalog_code">Каталожный код</string>
+    <string name="Catalog_code">* Каталожный код</string>
     <string name="Description">Описание</string>
     <string name="Help">Справка</string>
     <string name="Kit_name">Название</string>
-    <string name="Name">Название</string>
+    <string name="Name_required">* Название</string>
     <string name="Non_english_name">Название (не латиницей)</string>
     <string name="Scale">Масштаб</string>
+    <string name="Scale_required">* Масштаб</string>
     <string name="Scale_1">Масштаб 1/</string>
     <string name="Sea">Флот</string>
     <string name="Air">Авиация</string>
@@ -14,7 +15,7 @@
     <string name="Ground">Техника</string>
     <string name="Search_by_code">Искать по коду</string>
     <string name="_1">1/</string>
-    <string name="by_manufacturer">По брэндам</string>
+    <string name="by_manufacturer">По брендам</string>
     <string name="camera">Камера</string>
     <string name="cancel">Отмена</string>
     <string name="cancelled">Отменено</string>
@@ -38,7 +39,7 @@
     <string name="item_deleted">Запись удалена</string>
     <string name="kit_added">Набор добавлен в базу</string>
     <string name="latest_added_first">Последние добавленные наверху</string>
-    <string name="manufacturer">Брэнд</string>
+    <string name="manufacturer">* Производитель</string>
     <string name="moved_to_trash">Отправлено в Корзину!</string>
     <string name="name">Название</string>
     <string name="nav_account">Аккаунт</string>
@@ -73,7 +74,7 @@
     <string name="action_sign_in">Зарегистрироваться</string>
     <string name="action_sign_in_short">Войти</string>
     <string name="completed">Завершено</string>
-    <string name="enter_brand">Укажите брэнд</string>
+    <string name="enter_brand">Укажите бренд</string>
     <string name="enter_cat_no">Укажите каталожный код</string>
     <string name="enter_kit_name">Укажите название</string>
     <string name="enter_scale">Укажите масштаб</string>
@@ -225,4 +226,36 @@
     <string name="nav_aftermarket">Дополнения</string>
     <string name="permission_denied_to_write">Нет разрешений на запись</string>
     <string name="Your_device_cannot_take_pictures">Ваше устройство не поддерживает съемку</string>
+    <string name="edit_image">Редактор картинок</string>
+    <string name="Main_information">Основные сведения</string>
+    <string name="Purchase_info">Сведения о покупке</string>
+    <string name="Category">Категория</string>
+    <string name="please_add_boxart">Пожалуйста, добавьте боксарт</string>
+    <string name="Lets_search">Поищем в онлайне!</string>
+    <string name="boxart_image">Снимок боксарта</string>
+    <string name="kits">Наборы</string>
+    <string name="next">Далее</string>
+    <string name="price">Цена</string>
+    <string name="category">Категория</string>
+    <string name="aftermarketCaps">ДОПОЛНЕНИЕ</string>
+    <string name="kitCaps">НАБОР</string>
+    <string name="Boxart">* Боксарт</string>
+    <string name="crop_error">Ошибка обрезки</string>
+    <string name="error_deleting_boxart_image">Ошибка удаления файла боксарта</string>
+    <string name="Do_you_wish_to_delete">Удалить из базы?</string>
+    <string name="Lets_search_online_db">Давайте поищем в онлайновой базе!</string>
+    <string name="search_online">Давайте поищем в онлайне!</string>
+    <string name="brand_and_name">Производитель и название</string>
+    <string name="nav_kits">Наборы</string>
+    <string name="unknown">неизвестный</string>
+    <string name="search_by_code">Давайте поищем по коду</string>
+    <string name="mystash_header">-- МОЯ КОЛЛЕКЦИЯ --</string>
+    <string name="shops">Магазины</string>
+    <string name="please_choose">Выберите:</string>
+    <string name="add_new_currency">Добавить новую валюту</string>
+    <string name="on_the_net">В Сети</string>
+    <string name="change_boxart">Поменять боксарт</string>
+    <string name="reset_to_default_boxart">Сбросить боксарт</string>
+    <string name="take_picture">Сделать новое фото боксарта</string>
+    <string name="Do_you_wish_to_delete_from_list">Удалить запись из списка?</string>
 </resources>

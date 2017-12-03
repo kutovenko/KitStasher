@@ -62,7 +62,8 @@ public class LoginActivity extends AppCompatActivity {
         Parse.initialize(new Parse.Configuration.Builder(this)
                 .applicationId(getString(R.string.parse_application_id))
                 .clientKey(getString(R.string.parse_client_key))
-                .server(getString(R.string.parse_server_url)).build());
+                .server(getString(R.string.parse_server_url))
+                .build());
 
         sharedPreferences = getApplicationContext().getSharedPreferences(Constants.ACCOUNT_PREFS,
                 Context.MODE_PRIVATE);
@@ -81,8 +82,9 @@ public class LoginActivity extends AppCompatActivity {
                 accessToken = loginResult.getAccessToken();
                 //Retrieving and saving of Facebook user ID
                 final String fbID = loginResult.getAccessToken().getUserId();
-                editor.putString(Constants.USER_ID_FACEBOOK, fbID);
-                editor.commit();
+                setSprefData(Constants.USER_ID_FACEBOOK, fbID);
+//                editor.putString(Constants.USER_ID_FACEBOOK, fbID);
+//                editor.commit(); //todo setPref()
 
                 //Container for data from inner object
                 final ValueContainer<String> fbName;

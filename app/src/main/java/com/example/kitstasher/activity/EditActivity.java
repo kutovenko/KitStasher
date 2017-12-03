@@ -1,15 +1,17 @@
 package com.example.kitstasher.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
 import com.example.kitstasher.R;
-import com.example.kitstasher.fragment.AftermarketEditFragment;
-import com.example.kitstasher.fragment.KitEditFragment;
+import com.example.kitstasher.fragment.ItemEditFragment;
 import com.example.kitstasher.other.Constants;
 
 public class EditActivity extends AppCompatActivity {
 //    private Long[] ids;
+
+    private final int REQUEST_AFTER_KIT = 10;
 
 
     @Override
@@ -24,7 +26,7 @@ public class EditActivity extends AppCompatActivity {
 
         String sortBy = getIntent().getExtras().getString(Constants.SORT_BY);
 
-        int cursorPosition = getIntent().getExtras().getInt(Constants.LIST_POSITION);
+        int position = getIntent().getExtras().getInt(Constants.POSITION);
         long id = getIntent().getExtras().getLong(Constants.ID);
         char editMode = getIntent().getExtras().getChar(Constants.EDIT_MODE);
         Long afterId = 0L;
@@ -62,9 +64,9 @@ public class EditActivity extends AppCompatActivity {
 
         switch (editMode) {
             case 'm':
-                KitEditFragment editFragment = new KitEditFragment();
+                ItemEditFragment editFragment = new ItemEditFragment();
                 Bundle bundleKit = new Bundle();
-                bundleKit.putInt(Constants.CURSOR_POSITION, cursorPosition);
+                bundleKit.putInt(Constants.POSITION, position);
                 bundleKit.putChar(Constants.EDIT_MODE, editMode);
 //                bundle.putInt(Constants.LIST_POSITION, position);
                 bundleKit.putLong(Constants.ID, id); //id записи, по которой кликнули в списке
@@ -91,9 +93,9 @@ public class EditActivity extends AppCompatActivity {
                 break;
 
             case 'l':
-                KitEditFragment listFragment = new KitEditFragment();
+                ItemEditFragment listFragment = new ItemEditFragment();
                 Bundle bundleList = new Bundle();
-                bundleList.putInt(Constants.CURSOR_POSITION, cursorPosition);
+                bundleList.putInt(Constants.POSITION, position);
                 bundleList.putChar(Constants.EDIT_MODE, editMode);
 //                bundle.putInt(Constants.LIST_POSITION, position);
                 bundleList.putLong(Constants.ID, id); //id записи, по которой кликнули в списке
@@ -121,12 +123,13 @@ public class EditActivity extends AppCompatActivity {
                 break;
 
             case 'a':
-                AftermarketEditFragment aftermarketEditFragment = new AftermarketEditFragment();
+                ItemEditFragment itemEditFragment = new ItemEditFragment();
                 //Loading fragment with kit list
                 Bundle bundle = new Bundle();
                 bundle.putChar(Constants.EDIT_MODE, editMode);
-                bundle.putInt(Constants.LIST_POSITION, cursorPosition);
+                bundle.putInt(Constants.POSITION, position);
                 bundle.putLong(Constants.KIT_ID, id);
+                bundle.putLong(Constants.ID, id);
                 bundle.putLong(Constants.AFTER_ID, afterId);
                 bundle.putString(Constants.LIST_CATEGORY, category);
 
@@ -137,15 +140,22 @@ public class EditActivity extends AppCompatActivity {
                 bundle.putString(Constants.STATUS_FILTER, statusFilter);
                 bundle.putString(Constants.MEDIA_FILTER, mediaFilter);
 
-                aftermarketEditFragment.setArguments(bundle);
+                itemEditFragment.setArguments(bundle);
                 android.support.v4.app.FragmentTransaction fragmentTransactionAfter =
                         getSupportFragmentManager().beginTransaction();
-                fragmentTransactionAfter.replace(R.id.frameLayoutEditContainer, aftermarketEditFragment);
+                fragmentTransactionAfter.replace(R.id.frameLayoutEditContainer, itemEditFragment);
 
                 fragmentTransactionAfter.commit();
                 break;
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK && requestCode == REQUEST_AFTER_KIT) {
+
+        }
+    }
 
 }

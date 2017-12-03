@@ -12,12 +12,9 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.Display;
 import android.view.LayoutInflater;
-import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -28,6 +25,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.kitstasher.R;
@@ -38,47 +36,45 @@ import com.example.kitstasher.adapters.AdapterListGlide;
 import com.example.kitstasher.other.Constants;
 import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.Helper;
-import com.example.kitstasher.other.SortKits;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import static com.example.kitstasher.activity.MainActivity.REQUEST_CODE_POSITION;
+import static com.example.kitstasher.activity.MainActivity.REQUEST_CODE_VIEW;
 
 /**
  * Created by Алексей on 22.04.2017.
  * Loads and manages kits data
+ * Может быть открыт в двух ситуациях: при просмотре таблицы китов и при просмотре таблицы афтера.
  */
 
-public class SortAllFragment extends Fragment implements SortKits, View.OnClickListener,
+public class SortAllFragment extends Fragment implements View.OnClickListener,
         LoaderManager.LoaderCallbacks<Cursor>, TextWatcher {
     DbConnector dbConnector;
     Cursor cursor;
+    private Context context;
 
+    private View view;
     private ImageButton ibtnFilter;
-    //Для списка сортировок
-    private boolean sortBrand, sortDate, sortScale, sortName;
-    public int categoryTab;
-//    final public int categoryTab = 0;
-
-    private LinearLayout linLayoutViewAllContainer,
-            linLayoutBrand, linLayoutScale, linLayoutDate,
+    private LinearLayout linLayoutViewAllContainer, linLayoutBrand, linLayoutScale, linLayoutDate,
             linLayoutKitname;
     private ImageView ivSortBrand, ivSortScale, ivSortDate, ivSortKitname;
-    View view;
+    private ListView lvKits;
+
     public static String allTag;
-
-
-    ListView lvKits;
-    AdapterListGlide lgAdapter;
-    private Context mContext;
-    String[] filters;
+    private boolean sortBrand, sortDate, sortScale, sortName,
+            aftermarketMode; //отвечает за просмотр таблицы афтемаркета, переключает курсор
+    public int categoryTab;
+    private String sortBy, activeTable;
+    private char editMode;
 
     private ArrayList<Long> ids;
-    private String sortBy;
-    private char editMode;
-    private String tableName;
-    private boolean aftermarketMode;
+    private ArrayList<Integer> positions;
+    String[] filters;
+
+    AdapterListGlide lgAdapter;
+
 
     public SortAllFragment() {
     }
@@ -106,54 +102,56 @@ public class SortAllFragment extends Fragment implements SortKits, View.OnClickL
     @Override
     public View onCreateView(final LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        mContext = getActivity();
+        context = getActivity();
         view = inflater.inflate(R.layout.fragment_sort_all, container, false);
         allTag = this.getTag();
         sortBy = "_id DESC";
-
         categoryTab = getArguments().getInt("categoryTab");
-
-
         aftermarketMode = getArguments().getBoolean(Constants.AFTERMARKET_MODE);
-
-
-        lgAdapter = new AdapterListGlide(mContext, cursor);
-
-//        if (getScreenOrientation().equals("portrait")){
-            initPortraitUi();
-//        }else {
-//            initLandscapeUi();
-//        }
+        lgAdapter = new AdapterListGlide(context, cursor);
+        initPortraitUi();
 
         if (aftermarketMode) {
-            linLayoutViewAllContainer.setBackgroundColor(Color.LTGRAY);
             editMode = Constants.MODE_AFTERMARKET;
+            activeTable = DbConnector.TABLE_AFTERMARKET;
             ((MainActivity) getActivity())
                     .setActionBarTitle(getActivity().getResources().getString(R.string.aftermarket));
         } else {
             editMode = Constants.MODE_KIT;
+            activeTable = DbConnector.TABLE_KITS;
             ((MainActivity) getActivity())
                     .setActionBarTitle(getActivity().getResources().getString(R.string.kits));
         }
-
-        ibtnFilter.setBackgroundColor(Color.TRANSPARENT);
-
-        lvKits = (ListView)view.findViewById(R.id.lvKits);
-
 
         lvKits.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent;
                 if (aftermarketMode) {
+                    //переходим в активити афтера, там просмотр
                     intent = new Intent(getParentFragment().getActivity(), AftermarketActivity.class);
-                    intent.putExtra(Constants.AFTER_ID, id);
+//                    intent = new Intent(getParentFragment().getActivity(), ViewActivity.class);
+                    intent.putExtra(Constants.AFTER_ID, id);//ид афтемаркета, на котором должен открыться пейджер!
+                    intent.putExtra(Constants.ID, id);//ид афтемаркета, на котором должен открыться пейджер
+                    // отправляем режим редактирования - кит (таблица кита), афтер, если смотрим таблицу афтера - излишне, мы в афтермоде
+                    intent.putExtra(Constants.EDIT_MODE, Constants.MODE_AFTERMARKET);
+
+
+//                    intent = new Intent(getParentFragment().getActivity(), AftermarketActivity.class);
+//                    intent.putExtra(Constants.AFTER_ID, id);
                 } else {
+                    //переход в активити просмотра китов
                     intent = new Intent(getParentFragment().getActivity(), ViewActivity.class);
-                    intent.putExtra(Constants.ID, id);
+                    intent.putExtra(Constants.ID, id);//ид, на котором откротся пейджер
+                    intent.putExtra(Constants.EDIT_MODE, Constants.MODE_KIT); //надо ли????????????
+
                 }
-                intent.putExtra(Constants.EDIT_MODE, editMode); //режим редактирования
-                intent.putExtra(Constants.POSITION, position);
+
+//                intent.putExtra(Constants.EDIT_MODE, editMode); //мы смотрим киты или афтер? -
+
+                //общие параметры для передачи
+                intent.putExtra(Constants.POSITION, position);//ид открытия пейджера
+                intent.putExtra(Constants.SORT_BY, sortBy);
 
                 intent.putExtra(Constants.CATEGORY, categoryTab);
                 intent.putExtra(Constants.TAG, allTag);
@@ -166,17 +164,20 @@ public class SortAllFragment extends Fragment implements SortKits, View.OnClickL
                 intent.putExtra(Constants.STATUS_FILTER, filters[3]);
                 intent.putExtra(Constants.MEDIA_FILTER, filters[4]);
                 intent.putExtra(Constants.IDS, ids);
+                intent.putExtra(Constants.POSITIONS, positions);
                 intent.putExtra(Constants.SORT_BY, sortBy);
                 intent.putExtra("filters", (Serializable) filters);
 
-                getActivity().startActivityForResult(intent, REQUEST_CODE_POSITION);
+                intent.putExtra(Constants.LISTNAME, Constants.EMPTY); //мы идем из карточки кита, не из списка
+
+                getActivity().startActivityForResult(intent, REQUEST_CODE_VIEW); //интент на просмотр в пейджере
+                // пойдет или в китакт или в афтерактивити
             }
         });
         lvKits.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
                 showDeleteDialog(l);
-//                showFilterDialog();
                 return false;
             }
         });
@@ -191,22 +192,22 @@ public class SortAllFragment extends Fragment implements SortKits, View.OnClickL
         sortScale = true;
         sortBrand = true;
 
-
+        ibtnFilter.setBackgroundColor(Color.TRANSPARENT);
         ibtnFilter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                     showFilterDialog();
             }
         });
-
         ibtnFilter.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
                 filters = new String[0];
                 ibtnFilter.setBackgroundColor(Color.TRANSPARENT);
-                cursor = dbConnector.filteredKits(DbConnector.TABLE_KITS, filters, "_id DESC", categoryTab);
+                cursor = dbConnector.filteredKits(activeTable, filters, "_id DESC", categoryTab,
+                        Constants.EMPTY);
                 prepareListAndAdapter(cursor);
-                Toast.makeText(mContext, R.string.Filters_disabled, Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, R.string.Filters_disabled, Toast.LENGTH_SHORT).show();
                 return true;
             }
         });
@@ -224,54 +225,54 @@ public class SortAllFragment extends Fragment implements SortKits, View.OnClickL
     public void returnToList(){
         Bundle bundle = getParentFragment().getArguments();
         if (bundle != null) {
-            if (bundle.getString("scaleFilter") != null) {
+            if (bundle.getString(Constants.SCALE_FILTER) != null) {
                 filters = new String[5];
-                filters[0] = bundle.getString("scaleFilter");
-                filters[1] = bundle.getString("brandFilter");
-                filters[2] = bundle.getString("kitnameFilter");
-                filters[3] = bundle.getString("statusFilter");
-                filters[4] = bundle.getString("mediaFilter");
+                filters[0] = bundle.getString(Constants.SCALE_FILTER);
+                filters[1] = bundle.getString(Constants.BRAND_FILTER);
+                filters[2] = bundle.getString(Constants.KITNAME_FILTER);
+                filters[3] = bundle.getString(Constants.STATUS_FILTER);
+                filters[4] = bundle.getString(Constants.MEDIA_FILTER);
                 ibtnFilter.setBackgroundColor(Helper.getColor(getActivity(), R.color.colorAccent));
             }
 
             aftermarketMode = getArguments().getBoolean(Constants.AFTERMARKET_MODE);
             if (aftermarketMode) {
-                cursor = dbConnector.filteredKits(DbConnector.TABLE_AFTERMARKET, filters, "_id DESC", categoryTab);
+                cursor = dbConnector.filteredKits(activeTable, filters, "_id DESC", categoryTab,
+                        Constants.EMPTY);
             } else {
-                cursor = dbConnector.filteredKits(DbConnector.TABLE_KITS, filters, "_id DESC", categoryTab);
+                cursor = dbConnector.filteredKits(activeTable, filters, "_id DESC", categoryTab,
+                        Constants.EMPTY);
             }
 
-
-//            cursor = dbConnector.filteredKits(DbConnector.TABLE_KITS, filters, "_id DESC", categoryTab);
-            int returnItem = bundle.getInt("position");
+            int returnItem = bundle.getInt(Constants.POSITION);
             prepareListAndAdapter(cursor);
-            lvKits.setSelectionFromTop(returnItem, 0); //todo нужно ди возвращаться на позицию?
+            lvKits.setSelectionFromTop(returnItem, 0);
         }
     }
 
-    //Подготовка списка брэндов и адаптера
     public void prepareListAndAdapter(Cursor cursor){
-        lgAdapter = new AdapterListGlide(mContext, cursor);
-        ids = new ArrayList<Long>();
+        lgAdapter = new AdapterListGlide(context, cursor);
+        ids = new ArrayList<>();
+        positions = new ArrayList<>();
         for (int i = 0; i < lgAdapter.getCount(); i++) {
             ids.add(lgAdapter.getItemId(i)); //заполняем список идентификаторов
+            positions.add(i); ///////////// TODO
         }
-        lvKits.setAdapter(lgAdapter);
-
-    }
-
-    public void refreshList() {
-        lgAdapter.notifyDataSetChanged();
         lvKits.setAdapter(lgAdapter);
     }
 
     private void setActive(int  linLayout, ImageView arrow){
         linLayoutScale.setBackgroundColor(Color.TRANSPARENT);
+        setTextColor(linLayoutScale, 0);
         linLayoutBrand.setBackgroundColor(Color.TRANSPARENT);
+        setTextColor(linLayoutBrand, 0);
         linLayoutDate.setBackgroundColor(Color.TRANSPARENT);
+        setTextColor(linLayoutDate, 0);
         linLayoutKitname.setBackgroundColor(Color.TRANSPARENT);
-        LinearLayout activeLayout = (LinearLayout)view.findViewById(linLayout);
+        setTextColor(linLayoutKitname, 0);
+        LinearLayout activeLayout = view.findViewById(linLayout);
         activeLayout.setBackgroundColor(Helper.getColor(getActivity(), R.color.colorAccent));
+        setTextColor(activeLayout, 1);
 
         ivSortBrand.setVisibility(View.INVISIBLE);
         ivSortKitname.setVisibility(View.INVISIBLE);
@@ -280,10 +281,23 @@ public class SortAllFragment extends Fragment implements SortKits, View.OnClickL
         arrow.setVisibility(View.VISIBLE);
     }
 
+    private void setTextColor(LinearLayout linearLayout, int mode) { //todo helper
+        View view = linearLayout.getChildAt(0);
+        int color;
+        if (mode == 0) {
+            color = Helper.getColor(getActivity(), R.color.colorPassive);
+        } else {
+            color = Helper.getColor(getActivity(), R.color.colorItem);
+        }
+        if (view instanceof TextView) {
+            TextView textView = (TextView) view;
+            textView.setTextColor(color);
+        }
+    }
+
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            //Кнопки сортировки списка
             case R.id.linLayoutSortBrand:
                 setActive(R.id.linLayoutSortBrand, ivSortBrand);
 
@@ -326,7 +340,6 @@ public class SortAllFragment extends Fragment implements SortKits, View.OnClickL
                 sortBrand = true;
                 sortScale = true;
                 sortName = true;
-
                 break;
 
             case R.id.linLayoutSortKitname:
@@ -346,171 +359,114 @@ public class SortAllFragment extends Fragment implements SortKits, View.OnClickL
     }
 
     private void initPortraitUi(){
-        linLayoutViewAllContainer = (LinearLayout) view.findViewById(R.id.linLayoutViewAllContainer);
+        linLayoutViewAllContainer = view.findViewById(R.id.linLayoutViewAllContainer);
 
-        linLayoutBrand = (LinearLayout)view.findViewById(R.id.linLayoutSortBrand);
+        linLayoutBrand = view.findViewById(R.id.linLayoutSortBrand);
         linLayoutBrand.setOnClickListener(this);
-        linLayoutScale = (LinearLayout)view.findViewById(R.id.linLayoutSortScale);
+        linLayoutScale = view.findViewById(R.id.linLayoutSortScale);
         linLayoutScale.setOnClickListener(this);
-        linLayoutDate = (LinearLayout)view.findViewById(R.id.linLayoutSortDate);
+        linLayoutDate = view.findViewById(R.id.linLayoutSortDate);
         linLayoutDate.setOnClickListener(this);
-        linLayoutKitname = (LinearLayout)view.findViewById(R.id.linLayoutSortKitname);
+        linLayoutKitname = view.findViewById(R.id.linLayoutSortKitname);
         linLayoutKitname.setOnClickListener(this);
 
-        ivSortBrand = (ImageView)view.findViewById(R.id.ivSortBrand);
+        ivSortBrand = view.findViewById(R.id.ivSortBrand);
         ivSortBrand.setVisibility(View.INVISIBLE);
-        ivSortDate = (ImageView)view.findViewById(R.id.ivSortDate);
+        ivSortDate = view.findViewById(R.id.ivSortDate);
         ivSortDate.setVisibility(View.INVISIBLE);
-        ivSortScale = (ImageView)view.findViewById(R.id.ivSortScale);
+        ivSortScale = view.findViewById(R.id.ivSortScale);
         ivSortScale.setVisibility(View.INVISIBLE);
-        ivSortKitname = (ImageView)view.findViewById(R.id.ivSortKitname);
+        ivSortKitname = view.findViewById(R.id.ivSortKitname);
         ivSortKitname.setVisibility(View.INVISIBLE);
 
-        ibtnFilter = (ImageButton)view.findViewById(R.id.ibtnFilter);
+        ibtnFilter = view.findViewById(R.id.ibtnFilter);
         ibtnFilter.setBackgroundColor(Color.TRANSPARENT);
 
+        lvKits = view.findViewById(R.id.lvKits);
+
     }
 
-    private void initLandscapeUi(){
-        linLayoutBrand = (LinearLayout)view.findViewById(R.id.linLayoutSortBrand);
-        linLayoutBrand.setOnClickListener(this);
-        linLayoutScale = (LinearLayout)view.findViewById(R.id.linLayoutSortScale);
-        linLayoutScale.setOnClickListener(this);
-        linLayoutDate = (LinearLayout)view.findViewById(R.id.linLayoutSortDate);
-        linLayoutDate.setOnClickListener(this);
-        linLayoutKitname = (LinearLayout)view.findViewById(R.id.linLayoutSortKitname);
-        linLayoutKitname.setOnClickListener(this);
-
-        ivSortBrand = (ImageView)view.findViewById(R.id.ivSortBrand);
-        ivSortBrand.setVisibility(View.INVISIBLE);
-        ivSortDate = (ImageView)view.findViewById(R.id.ivSortDate);
-        ivSortDate.setVisibility(View.INVISIBLE);
-        ivSortScale = (ImageView)view.findViewById(R.id.ivSortScale);
-        ivSortScale.setVisibility(View.INVISIBLE);
-        ivSortKitname = (ImageView)view.findViewById(R.id.ivSortKitname);
-        ivSortKitname.setVisibility(View.INVISIBLE);
-
-        ibtnFilter = (ImageButton)view.findViewById(R.id.ibtnFilter);
-        ibtnFilter.setBackgroundColor(Color.TRANSPARENT);
-    }
-
-    private String getScreenOrientation(){
-        Display display = ((WindowManager) getActivity().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
-        int rotation = display.getRotation();
-        if (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270){
-            return "landscape";
-        }else{
-            return "portrait";
-        }
-    }
-
-    @Override
     public void SortByBrandAsc() {
-        cursor = dbConnector.filteredKits(DbConnector.TABLE_KITS, filters, "brand", categoryTab);
+        cursor = dbConnector.filteredKits(activeTable, filters, "brand", categoryTab, Constants.EMPTY);
         prepareListAndAdapter(cursor);
-        ivSortBrand.setImageResource(R.drawable.ic_keyboard_arrow_up_black_24dp);
+        ivSortBrand.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
         sortBrand = true;
         sortBy = "brand";
     }
 
-    @Override
     public void SortByBrandDesc() {
-        cursor = dbConnector.filteredKits(DbConnector.TABLE_KITS, filters, "brand DESC", categoryTab);
+        cursor = dbConnector.filteredKits(activeTable, filters, "brand DESC", categoryTab, Constants.EMPTY);
         prepareListAndAdapter(cursor);
-        ivSortBrand.setImageResource(R.drawable.ic_keyboard_arrow_down_black_24dp);
+        ivSortBrand.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
         sortBrand = false;
         sortBy = "brand DESC";
-
     }
 
-    @Override
     public void SortByScaleAsc() {
-        cursor = dbConnector.filteredKits(DbConnector.TABLE_KITS, filters, "scale", categoryTab);
+        cursor = dbConnector.filteredKits(activeTable, filters, "scale", categoryTab, Constants.EMPTY);
         prepareListAndAdapter(cursor);
-        ivSortScale.setImageResource(R.drawable.ic_keyboard_arrow_up_black_24dp);
+        ivSortScale.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
         sortScale = true;
         sortBy = "scale";
     }
 
-    @Override
     public void SortByScaleDesc() {
-        cursor = dbConnector.filteredKits(DbConnector.TABLE_KITS, filters, "scale DESC", categoryTab);
+        cursor = dbConnector.filteredKits(activeTable, filters, "scale DESC", categoryTab, Constants.EMPTY);
         prepareListAndAdapter(cursor);
-        ivSortScale.setImageResource(R.drawable.ic_keyboard_arrow_down_black_24dp);
+        ivSortScale.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
         sortScale = false;
         sortBy = "scale DESC";
     }
 
-    @Override
     public void SortByDateAcs() {
-        cursor = dbConnector.filteredKits(DbConnector.TABLE_KITS, filters, "_id", categoryTab);
+        cursor = dbConnector.filteredKits(activeTable, filters, "_id", categoryTab, Constants.EMPTY);
         prepareListAndAdapter(cursor);
-        ivSortDate.setImageResource(R.drawable.ic_keyboard_arrow_up_black_24dp);
+        ivSortDate.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
         sortDate = true;
         sortBy = "_id";
     }
 
-    @Override
     public void SortByDateDesc() {
-        cursor = dbConnector.filteredKits(DbConnector.TABLE_KITS, filters, "_id DESC", categoryTab);
+        cursor = dbConnector.filteredKits(activeTable, filters, "_id DESC", categoryTab, Constants.EMPTY);
         prepareListAndAdapter(cursor);
-        ivSortDate.setImageResource(R.drawable.ic_keyboard_arrow_down_black_24dp);
+        ivSortDate.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
         sortDate = false;
         sortBy = "_id DESC";
     }
 
-    @Override
     public void SortByNameAsc() {
-        cursor = dbConnector.filteredKits(DbConnector.TABLE_KITS, filters, "kit_name", categoryTab);
+        cursor = dbConnector.filteredKits(activeTable, filters, "kit_name", categoryTab, Constants.EMPTY);
         prepareListAndAdapter(cursor);
-        ivSortKitname.setImageResource(R.drawable.ic_keyboard_arrow_up_black_24dp);
+        ivSortKitname.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
         sortName = true;
         sortBy = "kit_name";
     }
 
-    @Override
     public void SortByNameDesc() {
-        cursor = dbConnector.filteredKits(DbConnector.TABLE_KITS, filters, "kit_name DESC", categoryTab);
+        cursor = dbConnector.filteredKits(activeTable, filters, "kit_name DESC", categoryTab, Constants.EMPTY);
         prepareListAndAdapter(cursor);
-        ivSortKitname.setImageResource(R.drawable.ic_keyboard_arrow_down_black_24dp);
+        ivSortKitname.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
         sortName = false;
         sortBy = "kit_name DESC";
     }
 
-
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return null;
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-
-    }
-
     private void showDeleteDialog(final long l) {
         final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
-//        LayoutInflater inflater = LayoutInflater.from(getActivity());
-//        final View dialogView = inflater.inflate(R.layout.list_alertdialog, null);
-//        dialogBuilder.setView(dialogView);
-//
-//        final EditText etNewListName = (EditText) dialogView.findViewById(R.id.etNewListName);
-
-        dialogBuilder.setTitle("Do you wish to delete this item from your stash?");
+        dialogBuilder.setTitle(R.string.Do_you_wish_to_delete);
         dialogBuilder.setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
+                File file = new File(getImagePath(l));
+                file.delete();
+//               if(file.delete()) {
                 dbConnector.delRec(l);
-                cursor = dbConnector.filteredKits(DbConnector.TABLE_KITS, filters, "_id DESC", categoryTab);
-//// TODO: 15.10.2017 поменять на универсальную переменную имени таблицы
-//                lgAdapter.notifyDataSetChanged();
-                ((ViewStashFragment) getParentFragment()).refreshPages();
+//               }else{
+//                   Toast.makeText(context, R.string.error_deleting_boxart_image, Toast.LENGTH_SHORT).show();
+//               }
 
-
+//                boolean deleted = file.delete();
+//                dbConnector.delRec(l);
+                cursor = dbConnector.filteredKits(activeTable, filters, "_id DESC", categoryTab, Constants.EMPTY);
+                ((KitsFragment) getParentFragment()).refreshPages();
                 prepareListAndAdapter(cursor);
             }
         });
@@ -522,13 +478,19 @@ public class SortAllFragment extends Fragment implements SortKits, View.OnClickL
         d.show();
     }
 
+    private String getImagePath(Long l) {
+        Cursor imageCursor = dbConnector.getItemById(activeTable, l);
+        imageCursor.moveToFirst();
+        return imageCursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BOXART_URI));
+    }
+
     public void showFilterDialog() {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = LayoutInflater.from(getActivity());
         final View dialogView = inflater.inflate(R.layout.alertdialog_filter, null);
         dialogBuilder.setView(dialogView);
 
-        final CheckBox cbFilterStatus = (CheckBox)dialogView.findViewById(R.id.cbStatus);
+        final CheckBox cbFilterStatus = dialogView.findViewById(R.id.cbStatus);
         cbFilterStatus.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -536,7 +498,7 @@ public class SortAllFragment extends Fragment implements SortKits, View.OnClickL
             }
         });
 
-        final CheckBox cbFilterMedia = (CheckBox)dialogView.findViewById(R.id.cbMedia);
+        final CheckBox cbFilterMedia = dialogView.findViewById(R.id.cbMedia);
         cbFilterMedia.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -544,7 +506,7 @@ public class SortAllFragment extends Fragment implements SortKits, View.OnClickL
             }
         });
 
-        final CheckBox cbFilterScale = (CheckBox)dialogView.findViewById(R.id.cbScale);
+        final CheckBox cbFilterScale = dialogView.findViewById(R.id.cbScale);
         cbFilterScale.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -552,7 +514,7 @@ public class SortAllFragment extends Fragment implements SortKits, View.OnClickL
             }
         });
 
-        final CheckBox cbFilterBrand = (CheckBox)dialogView.findViewById(R.id.cbBrand);
+        final CheckBox cbFilterBrand = dialogView.findViewById(R.id.cbBrand);
         cbFilterBrand.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -560,7 +522,7 @@ public class SortAllFragment extends Fragment implements SortKits, View.OnClickL
             }
         });
 
-        final CheckBox cbFilterKitname = (CheckBox)dialogView.findViewById(R.id.cbKitname);
+        final CheckBox cbFilterKitname = dialogView.findViewById(R.id.cbKitname);
         cbFilterKitname.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -569,34 +531,34 @@ public class SortAllFragment extends Fragment implements SortKits, View.OnClickL
         });
 
 
-        final Spinner spFilterStatus = (Spinner)dialogView.findViewById(R.id.spStatus);
-        ArrayList<String> statusArray = dbConnector.getFilterFromIntData(DbConnector.TABLE_KITS, DbConnector.COLUMN_STATUS);
+        final Spinner spFilterStatus = dialogView.findViewById(R.id.spStatus);
+        ArrayList<String> statusArray = dbConnector.getFilterFromIntData(activeTable, DbConnector.COLUMN_STATUS);
         ArrayAdapter statusAdapter = new ArrayAdapter<>(getActivity(),
-                android.R.layout.simple_spinner_item, statusArray);
+                R.layout.simple_spinner_item, statusArray);
         spFilterStatus.setAdapter(statusAdapter);
 
-        final Spinner spFilterMedia = (Spinner) dialogView.findViewById(R.id.spMedia);
-        ArrayList<String> mediaArray = dbConnector.getFilterFromIntData(DbConnector.TABLE_KITS, DbConnector.COLUMN_MEDIA);
+        final Spinner spFilterMedia = dialogView.findViewById(R.id.spMedia);
+        ArrayList<String> mediaArray = dbConnector.getFilterFromIntData(activeTable, DbConnector.COLUMN_MEDIA);
         ArrayAdapter mediaAdapter = new ArrayAdapter<>(getActivity(),
-                android.R.layout.simple_spinner_item, mediaArray);
+                R.layout.simple_spinner_item, mediaArray);
         spFilterMedia.setAdapter(mediaAdapter);
 
-        final Spinner spFilterScale = (Spinner)dialogView.findViewById(R.id.spFilterScale);
-        ArrayList<String> scalesArray = dbConnector.getFilterData(DbConnector.TABLE_KITS, DbConnector.COLUMN_SCALE);
+        final Spinner spFilterScale = dialogView.findViewById(R.id.spFilterScale);
+        ArrayList<String> scalesArray = dbConnector.getFilterData(activeTable, DbConnector.COLUMN_SCALE);
         ArrayAdapter scalesAdapter = new ArrayAdapter<>(getActivity(),
-                android.R.layout.simple_spinner_item, scalesArray);
+                R.layout.simple_spinner_item, scalesArray);
         spFilterScale.setAdapter(scalesAdapter);
 
-        final Spinner spFilterBrand = (Spinner)dialogView.findViewById(R.id.spFilterBrands);
-        ArrayList<String> brandsArray = dbConnector.getFilterData(DbConnector.TABLE_KITS, DbConnector.COLUMN_BRAND);
+        final Spinner spFilterBrand = dialogView.findViewById(R.id.spFilterBrands);
+        ArrayList<String> brandsArray = dbConnector.getFilterData(activeTable, DbConnector.COLUMN_BRAND);
         ArrayAdapter brandsAdapter = new ArrayAdapter<>(getActivity(),
-                android.R.layout.simple_spinner_item, brandsArray);
+                R.layout.simple_spinner_item, brandsArray);
         spFilterBrand.setAdapter(brandsAdapter);
 
 
-        ArrayList<String> kitnamesArray = dbConnector.getFilterData(DbConnector.TABLE_KITS, DbConnector.COLUMN_KIT_NAME);
+        ArrayList<String> kitnamesArray = dbConnector.getFilterData(activeTable, DbConnector.COLUMN_KIT_NAME);
 
-        final AutoCompleteTextView acFilterKitname = (AutoCompleteTextView)dialogView
+        final AutoCompleteTextView acFilterKitname = dialogView
                 .findViewById(R.id.acFilterKitname);
         ArrayAdapter acFilterKitnameAdapter = new ArrayAdapter<>(getActivity(),
                 android.R.layout.simple_dropdown_item_1line, kitnamesArray);
@@ -638,7 +600,7 @@ public class SortAllFragment extends Fragment implements SortKits, View.OnClickL
                     filters[3] = statusFilter;
                     filters[4] = mediaFilter;
 
-                    cursor = dbConnector.filteredKits(DbConnector.TABLE_KITS, filters, sortBy, categoryTab);
+                    cursor = dbConnector.filteredKits(activeTable, filters, sortBy, categoryTab, Constants.EMPTY);
                     prepareListAndAdapter(cursor);
 
                     ibtnFilter.setBackgroundColor(Helper.getColor(getActivity(), R.color.colorAccent));
@@ -652,6 +614,23 @@ public class SortAllFragment extends Fragment implements SortKits, View.OnClickL
         AlertDialog b = dialogBuilder.create();
         b.show();
     }
+
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
+    }
+
 
     @Override
     public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {

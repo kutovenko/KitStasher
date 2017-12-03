@@ -12,7 +12,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
-import android.provider.MediaStore;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.AppCompatSpinner;
@@ -24,7 +23,6 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -33,6 +31,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.kitstasher.R;
+import com.example.kitstasher.adapters.AdapterSpinner;
 import com.example.kitstasher.other.Constants;
 import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.Helper;
@@ -67,8 +66,9 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
 //            linLayoutOther, linLayoutFigures, linLayoutFantasy;
 //    private Button btnSaveEdit, btnCancelEdit, btnDelete, btnRestoreImage, btnAddBoxart, btnClearDate,
 //            btnAddAftermarket;
-    private AppCompatSpinner spKitDescription, spKitYear, spQuantity, spCurrency, spKitMedia, spKitStatus;
-    private String categoryTab, category, listname; // для переключения к вкладке. при изменении совпадает с category, иначе то, что было (пришло или сохранено в записи)
+    private AppCompatSpinner spKitDescription, spKitYear, spQuantity,
+            spCurrency, spKitMedia, spKitStatus, spCategory;
+    private String category, listname; // для переключения к вкладке. при изменении совпадает с category, иначе то, что было (пришло или сохранено в записи)
     private String brand, catno, kitname;
     private int scale;
     private int quantity;
@@ -134,7 +134,7 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
 
         category = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_CATEGORY)); //беру категогию из записи
         /////////////////////// радиокнопки
-        setTag(category);
+//        setTag(category);
         brand = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BRAND));
         etDetFullBrand.setText(brand);
         catno = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BRAND_CATNO));
@@ -150,6 +150,18 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
         }
         etPurchasedFrom.setText(cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_PURCHASE_PLACE)));
 
+        String[] categories = new String[]{getString(R.string.other), getString(R.string.air), getString(R.string.ground),
+                getString(R.string.sea), getString(R.string.space), getString(R.string.auto_moto),
+                getString(R.string.Figures), getString(R.string.Fantasy)};
+        int[] icons = new int[]{R.drawable.ic_check_box_outline_blank_black_24dp, R.drawable.ic_tag_air_black_24dp, R.drawable.ic_tag_afv_black_24dp,
+                R.drawable.ic_tag_ship_black_24dp, R.drawable.ic_tag_space_black_24dp,
+                R.drawable.ic_directions_car_black_24dp, R.drawable.ic_wc_black_24dp,
+                R.drawable.ic_android_black_24dp};
+        AdapterSpinner adapterSpinner = new AdapterSpinner(context, icons, categories);
+        spCategory.setAdapter(adapterSpinner);
+        spCategory.setSelection(Integer.parseInt(Helper.tagToCode(category)));
+
+
         String[] descriptionItems = new String[]{getString(R.string.kittype),
                 getString(R.string.newkit),
                 getString(R.string.rebox),
@@ -158,28 +170,28 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
 //                getString(R.string.changed_parts), getString(R.string.new_decal),
 //                getString(R.string.changed_box), getString(R.string.repack)
         };
-        descriptionAdapter = new ArrayAdapter<String>(context,
+        descriptionAdapter = new ArrayAdapter<>(context,
                 android.R.layout.simple_spinner_dropdown_item, descriptionItems);
         spKitDescription.setAdapter(descriptionAdapter);
         spKitDescription.setSelection(2);
 
-        ArrayList<String> years = new ArrayList<String>();
+        ArrayList<String> years = new ArrayList<>();
         int thisYear = Calendar.getInstance().get(Calendar.YEAR);
         years.add(getString(R.string.year));
         for (int i = thisYear; i >= 1930; i--) {
             years.add(Integer.toString(i));
         }
-        yearsAdapter = new ArrayAdapter<String>(context,
+        yearsAdapter = new ArrayAdapter<>(context,
                 android.R.layout.simple_spinner_item, years);
         spKitYear.setAdapter(yearsAdapter);
 
         String[] currencies = new String[]{"BYN", "EUR", "RUR", "UAH", "USD"};
-        currencyAdapter = new ArrayAdapter<String>(context,
+        currencyAdapter = new ArrayAdapter<>(context,
                 android.R.layout.simple_spinner_item, currencies);
         spCurrency.setAdapter(currencyAdapter);
 
         Integer[] quants = new Integer[]{1,2,3,4,5,6,7,8,9,10};
-        quantityAdapter = new ArrayAdapter<Integer>(context,
+        quantityAdapter = new ArrayAdapter<>(context,
                 android.R.layout.simple_spinner_item, quants);
         spQuantity.setAdapter(quantityAdapter);
 
@@ -214,9 +226,9 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
         spKitMedia.setSelection(cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_STATUS)));
 
 
-        if (cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_AFTERMARKET_ORIGINAL_NAME)) != null){
+        if (cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_ORIGINAL_NAME)) != null) {
             etDetFullKitNoengname.setText(cursor.getString(cursor.getColumnIndex
-                    (DbConnector.COLUMN_AFTERMARKET_ORIGINAL_NAME)));
+                    (DbConnector.COLUMN_ORIGINAL_NAME)));
         }
         if (cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_PRICE)) != 0){
             etFullPrice.setText(String.valueOf(cursor.getInt(cursor.getColumnIndex
@@ -367,7 +379,7 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
                 pictureName = cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_BOXART_URI));
             }
         }else if (cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_BOXART_URL)) != null){
-           String boxart_url = cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_BOXART_URL));
+            String boxart_url = cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_BOXART_URL));
             ivEditorBoxart.setBackgroundResource(0);
             Glide
                     .with(context)
@@ -375,6 +387,15 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
                     .placeholder(ic_menu_camera)
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(ivEditorBoxart);
+        } else if (cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_BOXART_URI)) != null) {
+            String boxart_uri = cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_BOXART_URI));
+            Glide
+                    .with(context)
+                    .load(new File(Uri.parse(boxart_uri).getPath()))
+                    .placeholder(ic_menu_camera)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .into(ivEditorBoxart);
+            Toast.makeText(context, boxart_uri, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -456,7 +477,7 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
             cv.put(DbConnector.COLUMN_PURCHASE_DATE, "");
         }
         if (etDetFullKitNoengname.getText() != null) {
-            cv.put(DbConnector.COLUMN_AFTERMARKET_ORIGINAL_NAME, etDetFullKitNoengname.getText().toString().trim());
+            cv.put(DbConnector.COLUMN_ORIGINAL_NAME, etDetFullKitNoengname.getText().toString().trim());
         }
         if (etFullPrice.getText().toString().trim().equals("")) {
             cv.put(DbConnector.COLUMN_PRICE, 0);
@@ -466,7 +487,9 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
 
         }
         cv.put(DbConnector.COLUMN_NOTES, etFullNotes.getText().toString().trim());
-        cv.put(DbConnector.COLUMN_CATEGORY, category);
+        String cat = String.valueOf(spCategory.getSelectedItemPosition());
+//        cv.put(DbConnector.COLUMN_CATEGORY, Helper.codeToTag(cat));
+        cv.put(DbConnector.COLUMN_CATEGORY, cat);
 
         if (pictureName != null || pictureName.length() > 0) {
             cv.put(DbConnector.COLUMN_BOXART_URI, pictureName);
@@ -509,17 +532,17 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
     }
 
 
-    private void takePicture() {
-        try {
-            // Намерение для запуска камеры
-            Intent captureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            startActivityForResult(captureIntent, CAMERA_CAPTURE);
-        } catch (ActivityNotFoundException e) {
-            // Выводим сообщение об ошибке
-            String errorMessage = "Ваше устройство не поддерживает съемку";
-            Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show();
-        }
-    }
+//    private void takePicture() {
+//        try {
+//            // Намерение для запуска камеры
+//            Intent captureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+//            startActivityForResult(captureIntent, CAMERA_CAPTURE);
+//        } catch (ActivityNotFoundException e) {
+//            // Выводим сообщение об ошибке
+//            String errorMessage = "Ваше устройство не поддерживает съемку";
+//            Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show();
+//        }
+//    }
 
     private String getAfterDescription(String d) {
         String desc = "";
@@ -537,65 +560,10 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
             desc = "1";
         }else if (d.equals(getString(R.string.rebox))){
             desc = "2";
-//        }else if (d.equals(getString(R.string.new_decal))){
-//            desc = "3";
-//        }else if (d.equals(getString(R.string.changed_box))){
-//            desc = "4";
-//        }else if (d.equals(getString(R.string.repack))){
-//            desc = "5";
-//        }else if (d.equals(getString(R.string.reissue))){
-//            desc = "6";
         }
         return desc;
     }
 
-    private void setTag(String category) {
-//        switch (category){
-//            case Constants.CAT_AIR:
-//                linLayoutAir.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
-////                categoryToReturn = 1;
-//                break;
-//            case Constants.CAT_GROUND:
-//                linLayoutGround.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
-////                categoryToReturn = 2;
-//                break;
-//            case Constants.CAT_SEA:
-//                linLayoutSea.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
-////                categoryToReturn = 3;
-//                break;
-//            case Constants.CAT_SPACE:
-//                linLayoutSpace.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
-////                categoryToReturn = 4;
-//                break;
-//            case Constants.CAT_AUTOMOTO:
-//                linLayoutCar.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
-////                categoryToReturn = 5;
-//                break;
-//            case Constants.CAT_FANTASY:
-//                linLayoutFantasy.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
-////                categoryToReturn = 7;
-//                break;
-//            case Constants.CAT_FIGURES:
-//                linLayoutFigures.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
-////                categoryToReturn = 6;
-//                break;
-//            case Constants.CAT_OTHER:
-//                linLayoutOther.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
-////                categoryToReturn = 8;
-//                break;
-//        }
-    }
-
-//    private void clearTags() {
-//        linLayoutSpace.setBackgroundColor(Helper.getColor(context, R.color.colorItem));
-//        linLayoutAir.setBackgroundColor(Helper.getColor(context, R.color.colorItem));
-//        linLayoutSea.setBackgroundColor(Helper.getColor(context, R.color.colorItem));
-//        linLayoutGround.setBackgroundColor(Helper.getColor(context, R.color.colorItem));
-//        linLayoutCar.setBackgroundColor(Helper.getColor(context, R.color.colorItem));
-//        linLayoutOther.setBackgroundColor(Helper.getColor(context, R.color.colorItem));
-//        linLayoutFigures.setBackgroundColor(Helper.getColor(context, R.color.colorItem));
-//        linLayoutFantasy.setBackgroundColor(Helper.getColor(context, R.color.colorItem));
-//    }
 
 
     private void writeBoxartFile(File exportDir) {
@@ -663,104 +631,45 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
 
     private void initUI(){
 
-        ivEditorBoxart = (ImageView) view.findViewById(R.id.ivEditBoxart);
-        ivEditorBoxart.setOnClickListener(this);
+        ivEditorBoxart = view.findViewById(R.id.ivEditBoxart);
+//        ivEditorBoxart.setOnClickListener(this);
 
         etDetFullBrand = (AutoCompleteTextView) view.findViewById(R.id.acEditBrand); //ac
-        etPurchasedFrom = (EditText) view.findViewById(R.id.acEditShop); //ac
+        etPurchasedFrom = view.findViewById(R.id.acEditShop); //ac
 
-        etDetFullKitname = (EditText) view.findViewById(R.id.etEditName);
-        etDetFullBrandCatNo = (EditText) view.findViewById(R.id.etEditCatno);
-        etDetFullScale = (EditText) view.findViewById(R.id.etEditScale);
-        etDetFullKitNoengname = (EditText) view.findViewById(R.id.etEditOrigName);
-        etFullNotes = (EditText) view.findViewById(R.id.etEditNotes);
-        etFullPrice = (EditText) view.findViewById(R.id.etEditPrice);
+        etDetFullKitname = view.findViewById(R.id.etEditName);
+        etDetFullBrandCatNo = view.findViewById(R.id.etEditCatno);
+        etDetFullScale = view.findViewById(R.id.etEditScale);
+        etDetFullKitNoengname = view.findViewById(R.id.etEditOrigName);
+        etFullNotes = view.findViewById(R.id.etEditNotes);
+        etFullPrice = view.findViewById(R.id.etEditPrice);
 
 
-        Button btnSaveEdit = (Button) view.findViewById(R.id.btnEditSave);
+        Button btnSaveEdit = view.findViewById(R.id.btnEditSave);
         btnSaveEdit.setOnClickListener(this);
-        Button btnCancelEdit = (Button) view.findViewById(R.id.btnEditCancel);
-        btnCancelEdit.setOnClickListener(this);
-//        Button btnDelete = (Button)view.findViewById(R.id.btnEditDelete);
-//        btnDelete.setOnClickListener(this);
-        ImageButton btnRestoreImage = (ImageButton) view.findViewById(R.id.ibtnRestoreImage);
-        btnRestoreImage.setOnClickListener(this);
-        Button btnClearDate = (Button) view.findViewById(R.id.btnEditClearDate);
+//        Button btnCancelEdit = view.findViewById(R.id.btnEditCancel);
+//        btnCancelEdit.setOnClickListener(this);
+//        ImageButton btnRestoreImage = (ImageButton) view.findViewById(R.id.ibtnRestoreImage);
+//        btnRestoreImage.setOnClickListener(this);
+        Button btnClearDate = view.findViewById(R.id.btnEditClearDate);
         btnClearDate.setOnClickListener(this);
-        Button btnAddAftermarket = (Button) view.findViewById(R.id.btnAddAftermarket);
+        Button btnAddAftermarket = view.findViewById(R.id.btnAddAftermarket);
         btnAddAftermarket.setOnClickListener(this);
 
-        spKitDescription = (AppCompatSpinner) view.findViewById(R.id.spEditDescription);
-        spKitYear = (AppCompatSpinner) view.findViewById(R.id.spEditYear);
-        spCurrency = (AppCompatSpinner) view.findViewById(R.id.spEditCurrency);
-        spQuantity = (AppCompatSpinner) view.findViewById(R.id.spEditQuantity);
-        spKitMedia = (AppCompatSpinner) view.findViewById(R.id.spEditMedia);
-        spKitStatus = (AppCompatSpinner) view.findViewById(R.id.spEditStatus);
-        AppCompatSpinner spCategory = (AppCompatSpinner) view.findViewById(R.id.spEditCategory);
+        spKitDescription = view.findViewById(R.id.spEditDescription);
+        spKitYear = view.findViewById(R.id.spEditYear);
+        spCurrency = view.findViewById(R.id.spEditCurrency);
+        spQuantity = view.findViewById(R.id.spEditQuantity);
+        spKitMedia = view.findViewById(R.id.spEditMedia);
+        spKitStatus = view.findViewById(R.id.spEditStatus);
+//        AppCompatSpinner spCategory = view.findViewById(R.id.spEditCategory);
+        spCategory = view.findViewById(R.id.spEditCategory);
 
         tvMPurchaseDate = (TextView) view.findViewById(R.id.tvEditPurchaseDate);
         tvMPurchaseDate.setOnClickListener(this);
 
         ListView lvAftermarket = (ListView) view.findViewById(R.id.lvEditAftermarket);
         lvAftermarket.setVisibility(View.GONE);
-
-//        ivEditorBoxart = (ImageView)view.findViewById(R.id.ivEditorAfterBoxart);
-//        ivEditorBoxart.setOnClickListener(this);
-//        etDetFullKitname = (EditText)view.findViewById(R.id.etDetFullAftername);
-//        etDetFullBrand = (EditText)view.findViewById(R.id.etDetAfterFullBrand);
-//        etDetFullBrandCatNo = (EditText)view.findViewById(R.id.etDetAfterFullBrandCatNo);
-//        etDetFullScale = (EditText)view.findViewById(R.id.etDetAfterFullScale);
-//        etDetFullKitNoengname = (EditText)view.findViewById(R.id.etDetAfterOrigName);
-//
-//        linLayoutAir = (LinearLayout)view.findViewById(R.id.linLayoutAfterSelectAir);
-//        linLayoutAir.setOnClickListener(this);
-//        linLayoutCar = (LinearLayout)view.findViewById(R.id.linLayoutAfterSelectCar);
-//        linLayoutCar.setOnClickListener(this);
-//        linLayoutGround = (LinearLayout)view.findViewById(R.id.linLayoutAfterSelectGround);
-//        linLayoutGround.setOnClickListener(this);
-//        linLayoutOther = (LinearLayout)view.findViewById(R.id.linLayoutAfterSelectOther);
-//        linLayoutOther.setOnClickListener(this);
-//        linLayoutSea = (LinearLayout)view.findViewById(R.id.linLayoutAfterSelectSea);
-//        linLayoutSea.setOnClickListener(this);
-//        linLayoutSpace = (LinearLayout)view.findViewById(R.id.linLayoutAfterSelectSpace);
-//        linLayoutSpace.setOnClickListener(this);
-//        linLayoutFantasy = (LinearLayout)view.findViewById(R.id.linLayoutAfterSelectFantasy);
-//        linLayoutFantasy.setOnClickListener(this);
-//        linLayoutFigures = (LinearLayout)view.findViewById(R.id.linLayoutAfterSelectFigures);
-//        linLayoutFigures.setOnClickListener(this);
-//
-//        btnSaveEdit = (Button)view.findViewById(R.id.btnAfterSaveEdit);
-//        btnSaveEdit.setOnClickListener(this);
-//        btnCancelEdit = (Button)view.findViewById(R.id.btnAfterCancelEdit);
-//        btnCancelEdit.setOnClickListener(this);
-//        btnDelete = (Button)view.findViewById(R.id.btnAfterDelete);
-//        btnDelete.setOnClickListener(this);
-//        btnAddBoxart = (Button)view.findViewById(R.id.btnAddAfterBoxart);
-//        btnAddBoxart.setOnClickListener(this);
-//        btnRestoreImage = (Button)view.findViewById(R.id.btnRestoreAfterImage);
-//        btnRestoreImage.setOnClickListener(this);
-//
-//        spKitDescription = (AppCompatSpinner)view.findViewById(R.id.spKitDescription);
-//        spKitYear = (AppCompatSpinner)view.findViewById(R.id.spAfterYear);
-//
-//        spCurrency = (AppCompatSpinner)view.findViewById(R.id.spAfterFullCurrency);
-//        spQuantity = (AppCompatSpinner)view.findViewById(R.id.spAfterFullQuantity);
-//        spKitMedia = (AppCompatSpinner)view.findViewById(R.id.spAfterMedia);
-//        spKitStatus = (AppCompatSpinner)view.findViewById(R.id.spAfterStatus);
-//
-//
-//        etFullNotes = (EditText)view.findViewById(R.id.etAfterFullNotes);
-//        etFullPrice = (EditText)view.findViewById(R.id.etAfterFullPrice);
-//        etPurchasedFrom = (EditText)view.findViewById(R.id.etAfterFullPurchasedFrom);
-//
-//        tvMPurchaseDate = (TextView)view.findViewById(R.id.tvAfterMSelectPurchaseDate);
-//        tvMPurchaseDate.setOnClickListener(this);
-//
-//        btnClearDate = (Button)view.findViewById(R.id.btnAfterMClearDate);
-//        btnClearDate.setOnClickListener(this);
-
-//        btnAddAftermarket = (Button)view.findViewById(R.id.btnAddAftermarket);
-//        btnAddAftermarket.setOnClickListener(this);
     }
 
     private boolean checkAllFields() {
@@ -793,61 +702,6 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-//            case R.id.linLayoutAfterSelectAir:
-//                category = Constants.CAT_AIR;
-//                isRbChanged = true;
-//                clearTags();
-//                setTag(category);
-//                break;
-//            case R.id.linLayoutAfterSelectGround:
-//                category = Constants.CAT_GROUND;
-//                isRbChanged = true;
-//                clearTags();
-//                setTag(category);
-//                break;
-//            case R.id.linLayoutAfterSelectSea:
-//                category = Constants.CAT_SEA;
-//                isRbChanged = true;
-//                clearTags();
-//                setTag(category);
-//                break;
-//            case R.id.linLayoutAfterSelectSpace:
-//                category = Constants.CAT_SPACE;
-//                isRbChanged = true;
-//                clearTags();
-//                setTag(category);
-//                break;
-//            case R.id.linLayoutAfterSelectOther:
-//                category = Constants.CAT_OTHER;
-//                isRbChanged = true;
-//                clearTags();
-//                setTag(category);
-//                break;
-//            case R.id.linLayoutAfterSelectCar:
-//                category = Constants.CAT_AUTOMOTO;
-//                isRbChanged = true;
-//                clearTags();
-//                setTag(category);
-//                break;
-//            case R.id.linLayoutAfterSelectFigures:
-//                category = Constants.CAT_FIGURES;
-//                isRbChanged = true;
-//                clearTags();
-//                setTag(category);
-//                break;
-//            case R.id.linLayoutAfterSelectFantasy:
-//                category = Constants.CAT_FANTASY;
-//                isRbChanged = true;
-//                clearTags();
-//                setTag(category);
-//                break;
-//
-//            case R.id.ivEditorAfterBoxart:
-////                viewPicture();
-//                break;
-
-
-///////////////////////////////////////////////////////////////////////////////
             case R.id.btnEditSave:
                 if (checkAllFields()) {
                     if (bmBoxartPic != null) {
@@ -866,7 +720,6 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
                             exportDir.mkdirs();
                         }
                         writeBoxartFile(exportDir);
-//                        writeBoxartToCloud();
 
                         bmBoxartPic = Bitmap.createScaledBitmap(bmBoxartPic, 280, 172, false);
                         size = Constants.SIZE_MEDIUM;
@@ -890,15 +743,6 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
 
                     AftermarketCardFragment fragment = new AftermarketCardFragment();
                     Bundle bundle = new Bundle();
-//                    bundle.putChar(Constants.EDIT_MODE, Constants.MODE_AFTERMARKET);
-//                    bundle.putString("listname", listname);
-//                    bundle.putString("brand", brand);
-//                    bundle.putString("catno", catno);
-//                    bundle.putInt("scale", scale);
-//                    bundle.putString("kitname", kitname);
-////                bundle.putLong("kitid", cursor.getLong(cursor.getColumnIndex(DbConnector.COLUMN_ID)));
-//                    bundle.putInt("position", position);
-//                    bundle.putInt("category", categoryToReturn);
                     bundle.putLong(Constants.AFTER_ID, afterId);
                     bundle.putString(Constants.BOXART_URI, pictureName);
                     fragment.setArguments(bundle);
@@ -914,35 +758,31 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-            case R.id.btnEditCancel:
-
-                AftermarketCardFragment fragment = new AftermarketCardFragment();
-                Bundle bundle = new Bundle();
-                bundle.putLong("after_id", afterId);
-                bundle.putString("boxart_uri", pictureName);
-                fragment.setArguments(bundle);
-                android.support.v4.app.FragmentTransaction fragmentTransaction =
-                        getFragmentManager().beginTransaction();
-                fragmentTransaction.replace(R.id.linlayoutAftermarketContainer, fragment);
-                fragmentTransaction.commit();
-                break;
+//            case R.id.btnEditCancel:
+//
+//                AftermarketCardFragment fragment = new AftermarketCardFragment();
+//                Bundle bundle = new Bundle();
+//                bundle.putLong("after_id", afterId);
+//                bundle.putString("boxart_uri", pictureName);
+//                fragment.setArguments(bundle);
+//                android.support.v4.app.FragmentTransaction fragmentTransaction =
+//                        getFragmentManager().beginTransaction();
+//                fragmentTransaction.replace(R.id.linlayoutAftermarketContainer, fragment);
+//                fragmentTransaction.commit();
+//                break;
 
             ///////////////////////////////////////////////////////////////////////////////////
 
-//            case R.id.btnEditDelete:
-//                dbConnector.deleteAftermarketById(afterId);
+//            case R.id.ivEditBoxart:
+//                takePicture();
 //                break;
 
-            case R.id.ivEditBoxart:
-                takePicture();
-                break;
-
-            case R.id.ibtnRestoreImage:
-                ContentValues cvUri = new ContentValues();
-                cvUri.put("boxart_uri", "");
-                dbConnector.editRecById(afterId, cvUri);
-                setBoxartImage();
-                break;
+//            case R.id.ibtnRestoreImage:
+//                ContentValues cvUri = new ContentValues();
+//                cvUri.put("boxart_uri", "");
+//                dbConnector.editRecById(afterId, cvUri);
+//                setBoxartImage();
+//                break;
 
             case R.id.tvEditPurchaseDate:
                 isDateChanged = true;

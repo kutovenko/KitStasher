@@ -53,13 +53,13 @@
     <!--EditKitDetailsFragment-->
     <string name="moved_to_trash">Moved to trash!</string>
     <!--ScanFragment-->
-    <string name="searching_online">Searchng online ...</string>
+    <string name="searching_online">Searching online …</string>
     <string name="no_matches_online">No matches in online base. Be the first to add!</string>
     <string name="scan_cancelled">Scan cancelled</string>
     <!--ManualAddFragment-->
     <string name="scale">Scale</string>
     <string name="name">Name</string>
-    <string name="manufacturer">Manufacturer</string>
+    <string name="manufacturer">* Manufacturer</string>
     <string name="cancelled">Canсelled</string>
     <string name="nothing_found_online">Sorry, nothing in online database. Let\'s add manually!</string>
     <string name="kit_added">Kit Added to Stash</string>
@@ -68,7 +68,7 @@
     <string name="export_from_db_to_file">Export from database to file</string>
     <string name="import_from_file_to_db">Import from file to database</string>
     <string name="import_to_db_started">Starting import to database, please wait</string>
-    <string name="import_completed">Import succesfully completed</string>
+    <string name="import_completed">Import successfully completed</string>
     <!--Preference-names-->
     <string name="clearDb" translatable="false">clearDb</string>
     <string name="exportDb" translatable="false">exportDb</string>
@@ -88,7 +88,7 @@
     <string name="nothing_to_delete">Nothing to delete</string>
     <string name="delete">Delete</string>
     <string name="restore">Restore</string>
-    <!--ViewStashFragment-->
+    KitsFragmentment-->
     <string name="date">Date</string>
 
     <!--Layouts-->
@@ -106,13 +106,14 @@
     <!--ManualAdd Form-->
     <string name="Search_by_code">Search by Code</string>
     <string name="Non_english_name">Non-English Name (if any)</string>
-    <string name="Catalog_code">Catalog Code</string>
+    <string name="Catalog_code">* Catalog Code</string>
     <string name="Scale_1">Scale 1/</string>
     <string name="Description">Description</string>
     <string name="Kit_name">Kit Name</string>
     <string name="Brand">Brand</string>
-    <string name="Name">Kit Name</string>
+    <string name="Name_required">* Kit Name</string>
     <string name="Scale">Scale</string>
+    <string name="Scale_required">* Scale</string>
     <!--Categories-->
     <string name="Ship">Ship</string>
     <string name="Air">Air</string>
@@ -355,6 +356,32 @@
     <string name="Lets_search">Let\'s search database!</string>
     <string name="boxart_image">Boxart image</string>
     <string name="kits">Kits</string>
+    <string name="edit_image">Edit Image</string>
+    <string name="next">Next</string>
+    <string name="price">Price</string>
+    <string name="category">Category</string>
+    <string name="Do_you_wish_to_delete">Do you wish to delete this item from your stash?</string>
+    <string name="Lets_search_online_db">Let\'s search online database!</string>
+    <string name="aftermarketCaps">AFTERMARKET</string>
+    <string name="kitCaps">KIT</string>
+    <string name="Boxart">* Boxart</string>
+    <string name="error_deleting_boxart_image">Error deleting boxart image</string>
+    <string name="crop_error">Crop Error</string>
+    <string name="Your_device_cannot_take_pictures">"Your device can not take pictures "</string>
+    <string name="search_online">Let\'search online database!</string>
+    <string name="brand_and_name">Manufacturer and kit name</string>
+    <string name="nav_kits">Kits</string>
+    <string name="search_by_code">Let\'s search by code</string>
+    <string name="unknown">Unknown</string>
+    <string name="mystash_header">-- MY STASH --</string>
+    <string name="shops">Shops</string>
+    <string name="please_choose">Please choose:</string>
+    <string name="Do_you_wish_to_delete_from_list">Do you wish to delete this item from list?</string>
+    <string name="take_picture">Take new boxart picture</string>
+    <string name="reset_to_default_boxart">Reset to default boxart</string>
+    <string name="change_boxart">Change boxart</string>
+    <string name="on_the_net">On the Net</string>
+    <string name="add_new_currency">Add new currency</string>
 
 
 </resources>

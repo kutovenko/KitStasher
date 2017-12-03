@@ -2,25 +2,15 @@ package com.example.kitstasher.adapters;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.net.Uri;
-import android.os.Environment;
 import android.support.v4.widget.CursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.kitstasher.R;
-import com.example.kitstasher.other.Constants;
 import com.example.kitstasher.other.DbConnector;
-
-import java.io.File;
-
-import static android.R.drawable.ic_menu_camera;
 
 /**
  * Created by Алексей on 13.09.2017.
@@ -43,9 +33,9 @@ public class AdapterAfterItemsList extends CursorAdapter {
         this.demoMode = demoMode;
     }
 
-    static class ViewHolder {
+    private static class ViewHolder {
         private TextView tvItemAfterName, tvItemAfterBrand, tvItemAfterCatno;
-        private ImageView ivItemAfterBoxart;
+        //        private ImageView ivItemAfterBoxart;
         private ImageButton ibRemoveAftermarket;
     }
 
@@ -59,12 +49,12 @@ public class AdapterAfterItemsList extends CursorAdapter {
         final DbConnector dbConnector = new DbConnector(context);
         dbConnector.open();
         ViewHolder holder = new ViewHolder();
-        holder.tvItemAfterName = (TextView)view.findViewById(R.id.tvItemAfterName);
-        holder.tvItemAfterBrand = (TextView)view.findViewById(R.id.tvItemAfterBrand);
-        holder.tvItemAfterCatno = (TextView)view.findViewById(R.id.tvItemAfterCatno);
-        holder.ivItemAfterBoxart = (ImageView)view.findViewById(R.id.ivItemAfterBoxart);
-        holder.ibRemoveAftermarket = (ImageButton)view.findViewById(R.id.ibRemoveAftermarket);
-        if (demoMode == true) {
+        holder.tvItemAfterName = view.findViewById(R.id.tvItemAfterName);
+        holder.tvItemAfterBrand = view.findViewById(R.id.tvItemAfterBrand);
+        holder.tvItemAfterCatno = view.findViewById(R.id.tvItemAfterCatno);
+//        holder.ivItemAfterBoxart = (ImageView)view.findViewById(R.id.ivItemAfterBoxart);
+        holder.ibRemoveAftermarket = view.findViewById(R.id.ibRemoveAftermarket);
+        if (demoMode) {
             holder.ibRemoveAftermarket.setVisibility(View.GONE);
         }
 
@@ -83,25 +73,24 @@ public class AdapterAfterItemsList extends CursorAdapter {
                 changeCursor(newcursor);
                 notifyDataSetChanged();
             }
-
         });
 
         String name = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_AFTERMARKET_NAME));
         String brand = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BRAND));
         String catno = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BRAND_CATNO));
-        String uri =  cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BOXART_URI));
+//        String uri =  cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BOXART_URI));
 
         holder.tvItemAfterName.setText(name);
         holder.tvItemAfterBrand.setText(brand);
         holder.tvItemAfterCatno.setText(catno);
 
-        Glide
-                .with(context)
-                .load(new File(Uri.parse(Environment.getExternalStorageDirectory()
-                        + Constants.APP_FOLDER + uri).getPath()))
-                .placeholder(ic_menu_camera)
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                //.crossFade()
-                .into(holder.ivItemAfterBoxart);
+//        Glide
+//                .with(context)
+//                .load(new File(Uri.parse(Environment.getExternalStorageDirectory()
+//                        + Constants.APP_FOLDER + uri).getPath()))
+//                .placeholder(ic_menu_camera)
+//                .diskCacheStrategy(DiskCacheStrategy.ALL)
+//                //.crossFade()
+//                .into(holder.ivItemAfterBoxart);
     }
 }

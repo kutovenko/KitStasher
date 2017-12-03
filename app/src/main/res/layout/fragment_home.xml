@@ -3,7 +3,7 @@
     android:layout_height="match_parent"
     android:background="@color/colorBackground"
     android:orientation="vertical"
-    android:weightSum="5">
+    android:weightSum="6">
 
     <Button
         android:id="@+id/btnAddKitAction"
@@ -11,8 +11,8 @@
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:layout_weight="1"
-        android:background="@color/com_facebook_button_login_silver_background_color_pressed"
-        android:text="@string/Add_Kit" />
+        android:background="@drawable/button"
+        android:text="@string/add" />
 
     <Button
         android:id="@+id/btnViewStashAction"
@@ -21,8 +21,8 @@
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:layout_weight="1"
-        android:background="@color/com_facebook_button_login_silver_background_color_pressed"
-        android:text="@string/View_Stash" />
+        android:background="@drawable/button"
+        android:text="@string/kits" />
 
     <Button
         android:id="@+id/btnAftermarketAction"
@@ -30,8 +30,19 @@
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:layout_weight="1"
-        android:background="@color/com_facebook_button_login_silver_background_color_pressed"
+        android:background="@drawable/button"
         android:text="@string/aftermarket" />
+
+    <Button
+        android:id="@+id/btnMylistsAction"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_weight="1"
+        android:background="@drawable/button"
+        android:text="@string/Mylists" />
 
     <Button
         android:id="@+id/btnSearchAction"
@@ -40,7 +51,7 @@
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:layout_weight="1"
-        android:background="@color/com_facebook_button_login_silver_background_color_pressed"
+        android:background="@drawable/button"
         android:text="@string/What_in_the_box" />
 
     <Button
@@ -49,7 +60,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:layout_weight="1"
-        android:background="@color/com_facebook_button_login_silver_background_color_pressed"
-        android:text="@string/View_Statistics" />
+        android:background="@drawable/button"
+        android:text="@string/nav_statistics" />
 
 </LinearLayout>

@@ -6,6 +6,14 @@
     android:layout_marginStart="20dp"
     android:orientation="vertical">
 
+    <TextView
+        android:id="@+id/textView13"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="@string/please_choose"
+        android:textAppearance="@style/AppTheme.LittleHeader" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -13,6 +21,7 @@
 
         <CheckBox
             android:id="@+id/cbStatus"
+            style="@style/CheckboxTheme"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -32,6 +41,7 @@
 
         <CheckBox
             android:id="@+id/cbMedia"
+            style="@style/CheckboxTheme"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -51,6 +61,7 @@
 
         <CheckBox
             android:id="@+id/cbScale"
+            style="@style/CheckboxTheme"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/Scale_1" />
@@ -71,8 +82,10 @@
 
         <CheckBox
             android:id="@+id/cbBrand"
+            style="@style/CheckboxTheme"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginRight="8dp"
             android:text="@string/Brand" />
 
         <Spinner
@@ -92,6 +105,7 @@
 
         <CheckBox
             android:id="@+id/cbKitname"
+            style="@style/CheckboxTheme"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -99,6 +113,7 @@
 
         <AutoCompleteTextView
             android:id="@+id/acFilterKitname"
+            style="@style/MyAutoComplete"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"

@@ -8,15 +8,18 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import com.example.kitstasher.R;
 import com.example.kitstasher.objects.Aftermarket;
-import com.example.kitstasher.objects.Item;
 import com.example.kitstasher.objects.Kit;
 
 import java.util.ArrayList;
 
 public class DbConnector {
 
-    public static final String DB_NAME = "myscalestash";
+    private static final String DB_NAME = "myscalestash";
     private static final int DB_VERSION = 1;
+
+    private final Context mCtx;
+    private static DBHelper mDBHelper;
+    private static SQLiteDatabase mDB;
 
     ///////// TABLE KITS /////////
 
@@ -30,7 +33,7 @@ public class DbConnector {
     public static final String COLUMN_KIT_NAME = "kit_name";
     public static final String COLUMN_DESCRIPTION = "description";
     public static final String COLUMN_SCALE = "scale";
-    public static final String COLUMN_ORIGINAL_KIT_NAME = "original_kit_name";
+    public static final String COLUMN_ORIGINAL_NAME = "original_name";
     public static final String COLUMN_CATEGORY = "category";
     public static final String COLUMN_COLLECTION = "collection";
     public static final String COLUMN_SEND_STATUS = "send_status";
@@ -111,7 +114,7 @@ public class DbConnector {
     ////////// TABLE AFTEMARKET /////////
     public static final String TABLE_AFTERMARKET = "aftermarket";
     public static final String COLUMN_AFTERMARKET_NAME = "kit_name"; //after_name одинаково для фильтра
-    public static final String COLUMN_AFTERMARKET_ORIGINAL_NAME = "after_orig_name";
+//    public static final String COLUMN_ORIGINAL_NAME = "after_orig_name";
 
     ///////// TABLE AFTERMARKET_MYLIST /////////
     public static final String TABLE_AFTERMARKET_MYLIST_ITEMS = "after_mylistitems";
@@ -180,7 +183,7 @@ public class DbConnector {
                     COLUMN_SCALE + " integer," + //масштаб - 4
                     COLUMN_AFTERMARKET_NAME + " text," + //название набора - 5
                     COLUMN_DESCRIPTION + " text," + //описание, продолжение названия - 6
-                    COLUMN_AFTERMARKET_ORIGINAL_NAME + " text," + //название на оригинальном языке, - 7
+                    COLUMN_ORIGINAL_NAME + " text," + //название на оригинальном языке, - 7
                     // если отличается
                     COLUMN_CATEGORY + " text," + //тег (самолет, корабль, и тд - 8
                     COLUMN_COLLECTION  + " text," + //коллекция - для группировки и других функций - 9
@@ -199,13 +202,13 @@ public class DbConnector {
                     COLUMN_NOTES + " text," + //заметки - 20
                     COLUMN_CURRENCY + " text," + //валюта - 21
 
-                    MYLISTSITEMS_LISTNAME + " text," +
-                    COLUMN_STATUS + " text," + //начат/использован
+                    MYLISTSITEMS_LISTNAME + " text," + //22
+                    COLUMN_STATUS + " text," + //начат/использован //23
                     COLUMN_MEDIA  + " text," + //материал
-                    COLUMN_SCALEMATES_URL + " text," + //материал
+                    COLUMN_SCALEMATES_URL + " text," + //материал - 24
 
-                    KIT_AFTER_AFTERDESIGNEDFOR + " text," +
-                    COLUMN_PURCHASE_PLACE + " text" + //место покупки - 22
+                    KIT_AFTER_AFTERDESIGNEDFOR + " text," + //25
+                    COLUMN_PURCHASE_PLACE + " text" + //место покупки - 26
                     ");";
 
     private static final String CREATE_TABLE_AFTERMARKET_MYLISTITEMS =
@@ -217,7 +220,7 @@ public class DbConnector {
                     COLUMN_SCALE + " integer," + //масштаб - 4
                     COLUMN_AFTERMARKET_NAME + " text," + //название набора - 5
                     COLUMN_DESCRIPTION + " text," + //описание, продолжение названия - 6
-                    COLUMN_AFTERMARKET_ORIGINAL_NAME + " text," + //название на оригинальном языке, - 7
+                    COLUMN_ORIGINAL_NAME + " text," + //название на оригинальном языке, - 7
                     // если отличается
                     COLUMN_CATEGORY + " text," + //тег (самолет, корабль, и тд - 8
                     COLUMN_COLLECTION  + " text," + //коллекция - для группировки и других функций - 9
@@ -270,7 +273,7 @@ public class DbConnector {
                     COLUMN_SCALE + " integer," + //масштаб - 4
                     COLUMN_KIT_NAME + " text," + //название набора - 5
                     COLUMN_DESCRIPTION + " text," + //описание, продолжение названия - 6
-                    COLUMN_ORIGINAL_KIT_NAME + " text," + //название на оригинальном языке, - 7
+                    COLUMN_ORIGINAL_NAME + " text," + //название на оригинальном языке, - 7
                     // если отличается
                     COLUMN_CATEGORY + " text," + //тег (самолет, корабль, и тд - 8
                     COLUMN_COLLECTION  + " text," + //коллекция - для группировки и других функций - 9
@@ -290,11 +293,11 @@ public class DbConnector {
                     COLUMN_CURRENCY + " text," + //валюта - 21
                     COLUMN_PURCHASE_PLACE + " text," + //место покупки - 22
 
-                    COLUMN_STATUS + " text," + //начат/использован
-                    COLUMN_MEDIA  + " text," + //материал
-                    COLUMN_SCALEMATES_URL + " text," + //материал
+                    COLUMN_STATUS + " text," + //начат/использован - 23
+                    COLUMN_MEDIA + " text," + //материал - 24
+                    COLUMN_SCALEMATES_URL + " text," + //скейлмейтс -25
 
-                    MYLISTSITEMS_LISTNAME + " text" + // Локальный ключ -23
+                    MYLISTSITEMS_LISTNAME + " text" + // Локальный ключ -26
 
                     ");";
 
@@ -324,7 +327,7 @@ public class DbConnector {
                     COLUMN_SCALE + " integer," + //масштаб - 4
                     COLUMN_KIT_NAME + " text," + //название набора - 5
                     COLUMN_DESCRIPTION + " text," + //описание, продолжение названия - 6
-                    COLUMN_ORIGINAL_KIT_NAME + " text," + //название на оригинальном языке, - 7
+                    COLUMN_ORIGINAL_NAME + " text," + //название на оригинальном языке, - 7
                                                             // если отличается
                     COLUMN_CATEGORY + " text," + //тег (самолет, корабль, и тд - 8
                     COLUMN_COLLECTION  + " text," + //коллекция - для группировки и других функций - 9
@@ -336,16 +339,16 @@ public class DbConnector {
                     COLUMN_IS_DELETED + " integer," + // - 14
                     COLUMN_DATE + " text," +// дата добавления? LOCAL? - 15
                     COLUMN_YEAR + " text," + // год выпуска набора - 16
-                    COLUMN_SCALEMATES_URL + " text," + //материал
+                    COLUMN_SCALEMATES_URL + " text," + //материал - 17
 
-                    COLUMN_PURCHASE_DATE + " text," + //дата покупки -17
-                    COLUMN_PRICE + " integer," + //цена -18
-                    COLUMN_QUANTITY + " integer," + //количество - 19
-                    COLUMN_NOTES + " text," + //заметки - 20
-                    COLUMN_CURRENCY + " text," + //валюта - 21
-                    COLUMN_PURCHASE_PLACE + " text," + //место покупки - 22
-                    COLUMN_STATUS + " integer," + //начат/использован
-                    COLUMN_MEDIA  + " text" + //материал
+                    COLUMN_PURCHASE_DATE + " text," + //дата покупки -18
+                    COLUMN_PRICE + " integer," + //цена -19
+                    COLUMN_QUANTITY + " integer," + //количество - 20
+                    COLUMN_NOTES + " text," + //заметки - 21
+                    COLUMN_CURRENCY + " text," + //валюта - 22
+                    COLUMN_PURCHASE_PLACE + " text," + //место покупки - 23
+                    COLUMN_STATUS + " integer," + //начат/использован - 24
+                    COLUMN_MEDIA + " text" + //материал - 25
                     ");";
 
     private static final String CREATE_TABLE_BRANDS =
@@ -477,6 +480,13 @@ public class DbConnector {
                     " UNION SELECT 'Zoukei-Mura'" +
                     " UNION SELECT 'Zvezda';";
 
+    private static final String INIT_TABLE_CURRENCIES =
+            "INSERT INTO " + TABLE_CURRENCIES + "(" + CURRENCIES_COLUMN_CURRENCY + ")" +
+                    " SELECT 'BYN' AS " + CURRENCIES_COLUMN_CURRENCY +
+                    " UNION SELECT 'EUR'" +
+                    " UNION SELECT 'RUR'" +
+                    " UNION SELECT 'USD'" +
+                    " UNION SELECT 'UAH';";
 
     private static final String INIT_TABLE_CATEGORY =
             "INSERT INTO " + TABLE_TAGS + "(" + TAGS_COLUMN_TAG + ")" +
@@ -491,15 +501,11 @@ public class DbConnector {
                     " ;";
 
 
-    final String LOG_TAG = "myLogs";
-    private final Context mCtx;
-    private static DBHelper mDBHelper;
-    private static SQLiteDatabase mDB;
+
 
 
     public DbConnector(Context context) {
-        // конструктор суперкласса
-        //   super(context, "myDB", null, 1);
+//           super(); //todo?
         mCtx = context;
     }
 
@@ -513,7 +519,7 @@ public class DbConnector {
 
     // закрыть подключение
     public void close() {
-        if (mDBHelper!=null) mDBHelper.close();
+        if (mDBHelper != null) mDBHelper.close();
     }
 
     //вакуум - удаление и перестройка базы
@@ -532,10 +538,18 @@ public class DbConnector {
         return mDB.query(tableName, null, null, null, null, null, sortBy);
     }
 
-    public void addRec(Item item) {
+    public void addRec(Object item) {
+        String tableName = TABLE_KITS;
+        if (item.getClass().equals(Kit.class)) {
+            tableName = TABLE_KITS;
+//            item = (Kit)item;
+        } else if (item.getClass().equals(Aftermarket.class)) {
+            tableName = TABLE_AFTERMARKET;
+        }
+
         ContentValues cv = new ContentValues();
 
-//        if (item.getClass() == Kit.class){
+////        if (item.getClass() == Kit.class){
 //            cv.put(COLUMN_BARCODE, item.getBarcode());
 ////        String string = kit.getBarcode();
 //            cv.put(COLUMN_BRAND, item.getBrand());
@@ -543,7 +557,7 @@ public class DbConnector {
 //            cv.put(COLUMN_SCALE, item.getScale());
 //            cv.put(COLUMN_KIT_NAME, item.getKit_name());
 //            cv.put(COLUMN_DESCRIPTION, item.getDescription());
-//            cv.put(COLUMN_ORIGINAL_KIT_NAME, item.getKit_noeng_name());
+//            cv.put(COLUMN_ORIGINAL_NAME, item.getKit_noeng_name());
 //
 //            cv.put(COLUMN_CATEGORY, item.getCategory());
 ////        cv.put(COLUMN_COLLECTION, kit.get  + " text," + //коллекция - для группировки и других функций - 9
@@ -563,20 +577,64 @@ public class DbConnector {
 //            cv.put(COLUMN_CURRENCY, item.getCurrency());
 //            cv.put(COLUMN_SEND_STATUS, item.getSendStatus());
 //            cv.put(COLUMN_PURCHASE_PLACE, item.getPlacePurchased());
-
+//
 
 //                MYLISTSITEMS_LISTNAME +
 
-        mDB.insert(TABLE_KITS, null, cv);
-
-//        }
-//
+        mDB.insert(tableName, null, cv);
 
 
     }
 
     public void editRec() {
 
+    }
+
+    //////////////////////////UNIVERSAL/////////////////////////////////////////////////
+
+    public Cursor getAllItems(String tableName, String sortBy) {
+        //return mDB.query(TABLE_KITS, null, "is_deleted = ?", new String[] {"0"}, null, null, sortBy);
+        return mDB.query(tableName, null, null, null, null, null, sortBy);
+    }
+
+    //Получить запись по идентификатору
+    public Cursor getItemById(String tableName, long id) {
+        return mDB.query(tableName, null, "_id = " + id, null, null, null, null);
+        //todo написать перевод в редактор и перенос значений
+    }
+
+//    public Cursor getFieldById(String tableName, long id, String fieldName){
+//        return mDB.query(tableName, new String[]{fieldName}, "_id = " + id, null, null, null, null);
+//    }
+
+    //Редактирование записи
+    public void editItemById(String tableName, long id, ContentValues cv) {
+        //String clause = String.valueOf(id);
+        mDB.update(tableName, cv, "_id = ?", new String[]{String.valueOf(id)});
+    }
+
+    // удалить запись из TABLE
+    public void delItemById(String tableName, long id) {
+        mDB.delete(tableName, COLUMN_ID + " = " + id, null);
+    }
+
+    public boolean searchForDoubles(char editMode, String brand, String cat_no) {
+        boolean found = false;
+        String tableName = TABLE_KITS;
+        if (editMode == Constants.MODE_KIT) {
+            tableName = TABLE_KITS;
+        } else if (editMode == Constants.MODE_AFTERMARKET) {
+            tableName = TABLE_AFTERMARKET;
+        } else if (editMode == Constants.MODE_LIST) {
+            tableName = TABLE_MYLISTSITEMS;
+        }
+
+        if (mDB.query(tableName, new String[]{"brand", "brand_catno"}, "brand = ? " +
+                "AND brand_catno = ?", new String[]{brand, cat_no}, null, null, null)
+                .getCount() != 0) {
+            found = true;
+        }
+        return found;
     }
 
     //////////////KITS//////////////
@@ -586,7 +644,7 @@ public class DbConnector {
         return mDB.query(TABLE_KITS, null, null, null, null, null, null);
     }
 
-    //Все с сортировкой
+    //Все с сортировкой!!!!!!!!!!!!!!!!!!!!!
     public Cursor getAllData(String sortBy) {
         return mDB.query(TABLE_KITS, null, null, null, null, null, sortBy);
     }
@@ -649,13 +707,13 @@ public class DbConnector {
                 new String[] {date, ""}, null, null, null);
     }
 
-    //Получить запись по идентификатору
+    //Получить запись по идентификатору!!!!!!!!!!!!!!!!!!!!!!!!!!!
     public Cursor getRecById(long id){
         return mDB.query(TABLE_KITS, null, "_id = " + id, null, null, null, null);
         //todo написать перевод в редактор и перенос значений
     }
 
-    //Редактирование записи
+    //Редактирование записи!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     public void editRecById(long id, ContentValues cv){
         //String clause = String.valueOf(id);
         mDB.update(TABLE_KITS, cv, "_id = ?", new String[] { String.valueOf(id) });
@@ -667,13 +725,12 @@ public class DbConnector {
         ContentValues cv = new ContentValues();
 
         cv.put(COLUMN_BARCODE, kit.getBarcode());
-//        String string = kit.getBarcode();
         cv.put(COLUMN_BRAND, kit.getBrand());
         cv.put(COLUMN_BRAND_CATNO, kit.getBrandCatno());
         cv.put(COLUMN_SCALE, kit.getScale());
         cv.put(COLUMN_KIT_NAME, kit.getKit_name());
         cv.put(COLUMN_DESCRIPTION, kit.getDescription());
-        cv.put(COLUMN_ORIGINAL_KIT_NAME, kit.getKit_noeng_name());
+        cv.put(COLUMN_ORIGINAL_NAME, kit.getKit_noeng_name());
 
         cv.put(COLUMN_CATEGORY, kit.getCategory());
 //        cv.put(COLUMN_COLLECTION, kit.get  + " text," + //коллекция - для группировки и других функций - 9
@@ -685,6 +742,7 @@ public class DbConnector {
 //        cv.put(COLUMN_IS_DELETED, kit.get + " int," + // - 14
         cv.put(COLUMN_DATE, kit.getDate_added());
         cv.put(COLUMN_YEAR, kit.getYear());
+        cv.put(COLUMN_SCALEMATES_URL, kit.getScalemates_url());
 
         cv.put(COLUMN_PURCHASE_DATE, kit.getDatePurchased());
         cv.put(COLUMN_PRICE, kit.getPrice());
@@ -693,10 +751,7 @@ public class DbConnector {
         cv.put(COLUMN_CURRENCY, kit.getCurrency());
         cv.put(COLUMN_SEND_STATUS, kit.getSendStatus());
         cv.put(COLUMN_PURCHASE_PLACE, kit.getPlacePurchased());
-
-
-//                MYLISTSITEMS_LISTNAME +
-
+        cv.put(COLUMN_STATUS, kit.getStatus());
         mDB.insert(TABLE_KITS, null, cv);
     }
 
@@ -705,7 +760,7 @@ public class DbConnector {
         mDB.insert(TABLE_KITS, null, cv);
     }
 
-    // удалить запись из TABLE_KITS
+    // удалить запись из TABLE_KITS!!!!!!!!!!!!!!!
     public void delRec(long id) {
         mDB.delete(TABLE_KITS, COLUMN_ID + " = " + id, null);
     }
@@ -809,43 +864,47 @@ public class DbConnector {
     }
 
 // Список с фильтрацией и сортировкой
-    public Cursor filteredKits(String tableName, String[] filters, String sortBy, int categoryTab){
+public Cursor filteredKits(String tableName, String[] filters, String sortBy,
+                           int categoryTab, String listname) {
         String groupBy = "_id";
         String having;
-        switch (categoryTab){
+    if (listname.equals(Constants.EMPTY)) {
+        switch (categoryTab) {
             case 1:
-                having = DbConnector.COLUMN_CATEGORY + " = '" + Constants.CAT_AIR + "'"; //"category = 'air'"
+                having = DbConnector.COLUMN_CATEGORY + " = '" + Constants.CODE_AIR + "'"; //"category = 'air'"
                 break;
             case 2:
-                having = DbConnector.COLUMN_CATEGORY + " = '" + Constants.CAT_GROUND + "'";
+                having = DbConnector.COLUMN_CATEGORY + " = '" + Constants.CODE_GROUND + "'";
                 break;
             case 3:
-                having = DbConnector.COLUMN_CATEGORY + " = '" + Constants.CAT_SEA + "'";
+                having = DbConnector.COLUMN_CATEGORY + " = '" + Constants.CODE_SEA + "'";
                 break;
             case 4:
-                having = DbConnector.COLUMN_CATEGORY + " = '" + Constants.CAT_SPACE + "'";
+                having = DbConnector.COLUMN_CATEGORY + " = '" + Constants.CODE_SPACE + "'";
                 break;
             case 5:
-                having = DbConnector.COLUMN_CATEGORY + " = '" + Constants.CAT_AUTOMOTO + "'";
+                having = DbConnector.COLUMN_CATEGORY + " = '" + Constants.CODE_AUTOMOTO + "'";
                 break;
             case 6:
-                having = DbConnector.COLUMN_CATEGORY + " = '" + Constants.CAT_FIGURES + "'";
+                having = DbConnector.COLUMN_CATEGORY + " = '" + Constants.CODE_FIGURES + "'";
                 break;
             case 7:
-                having = DbConnector.COLUMN_CATEGORY + " = '" + Constants.CAT_FANTASY + "'";
+                having = DbConnector.COLUMN_CATEGORY + " = '" + Constants.CODE_FANTASY + "'";
                 break;
             case 8:
-                having = DbConnector.COLUMN_CATEGORY + " = '" + Constants.CAT_OTHER + "'";
+                having = DbConnector.COLUMN_CATEGORY + " = '" + Constants.CODE_OTHER + "'";
                 break;
             default:
                 having = null;
                 break;
         }
+    } else {
+        having = DbConnector.MYLISTSITEMS_LISTNAME + " = '" + listname + "'";
+        }
+
 
         if (filters.length == 0){
             return mDB.query(tableName, null, null, null, groupBy, having, sortBy);
-//            return mDB.query(TABLE_KITS, null, null, null, groupBy, having, sortBy);
-
         }else {
 
             ArrayList<String> clausesList = new ArrayList<>();
@@ -910,13 +969,12 @@ public class DbConnector {
             String query = builder.toString();
 
             return mDB.query(tableName, null, query, argsStringArray, groupBy, having, sortBy);
-//            return mDB.query(TABLE_KITS, null, query, argsStringArray, groupBy, having, sortBy);
 
         }
     }
     ////////////////BRANDS/////////////////
 
-    //ТАБЛИЦА BRANDS Все с сортировкой
+    //ТАБЛИЦА BRANDS Все с сортировкой!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     public Cursor getBrands(String sortBy) {
         //return mDB.query(TABLE_KITS, null, "is_deleted = ?", new String[] {"0"}, null, null, sortBy);
         return mDB.query(TABLE_BRANDS, null, null, null, null, null, sortBy);
@@ -1039,7 +1097,7 @@ public class DbConnector {
         cv.put(COLUMN_SCALE, kit.getScale());
         cv.put(COLUMN_KIT_NAME, kit.getKit_name());
         cv.put(COLUMN_DESCRIPTION, kit.getDescription());
-        cv.put(COLUMN_ORIGINAL_KIT_NAME, kit.getKit_noeng_name());
+        cv.put(COLUMN_ORIGINAL_NAME, kit.getKit_noeng_name());
 
         cv.put(COLUMN_CATEGORY, kit.getCategory());
 //        cv.put(COLUMN_COLLECTION, kit.get  + " text," + //коллекция - для группировки и других функций - 9
@@ -1266,7 +1324,7 @@ public class DbConnector {
         cv.put(COLUMN_SCALE, aftermarket.getScale());
         cv.put(COLUMN_AFTERMARKET_NAME, aftermarket.getAftermarketName());
         cv.put(COLUMN_DESCRIPTION, aftermarket.getDescription());
-        cv.put(COLUMN_AFTERMARKET_ORIGINAL_NAME, aftermarket.getAftemarketOriginalName());
+        cv.put(COLUMN_ORIGINAL_NAME, aftermarket.getAftemarketOriginalName());
 
         cv.put(COLUMN_CATEGORY, aftermarket.getCategory());
 //        cv.put(COLUMN_COLLECTION, kit.get  + " text," + //коллекция - для группировки и других функций - 9
@@ -1318,6 +1376,27 @@ public class DbConnector {
         return mDB.query(TABLE_AFTERMARKET, null, null, null, null, null, sortBy);
 
     }
+
+    /////////////CURRENCY//////////////////
+
+    public void addCurrency(String cur) {
+        ContentValues cv = new ContentValues();
+        cv.put(CURRENCIES_COLUMN_CURRENCY, cur);
+        mDB.insert(TABLE_CURRENCIES, null, cv);
+    }
+
+//    public Cursor getAllCurrencies(){
+//        return
+//    }
+
+    //////////// VIEW STASH PAGER //////////////
+    public Cursor getActiveCategories(String tableName) {
+        return mDB.rawQuery("SELECT category, COUNT(*) FROM "
+                + tableName
+                + " ORDER BY COUNT(*) DESC", null);
+//        return mDB.query(tableName, null, null, null, null, null, sortBy);
+    }
+
     ////////////////ПРОВЕРКИ ПРИ ДОБАВЛЕНИИ////////////////////
 
     //Для проверки из сканирования ScanActivity
@@ -1330,7 +1409,7 @@ public class DbConnector {
             return found;
     }
 
-    //Для проверки из ручного добавления AddActivity
+    //Для проверки из ручного добавления AddActivity //////!!!!!!!!!!!!!!!!!!!!!Univ
     public boolean searchForDoubles(String brand, String cat_no){
         boolean found = false;
         if (mDB.query(TABLE_KITS, new String[] {"brand", "brand_catno"},"brand = ? " +
@@ -1378,6 +1457,7 @@ public class DbConnector {
             db.execSQL(CREATE_TABLE_MYLISTSITEMS);
 
             db.execSQL(CREATE_TABLE_CURRENCIES);
+            db.execSQL(INIT_TABLE_CURRENCIES);
             db.execSQL(CREATE_TABLE_MYSHOPS);
 
             db.execSQL(CREATE_TABLE_AFTERMARKET);

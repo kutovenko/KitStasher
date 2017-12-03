@@ -9,7 +9,6 @@ import com.example.kitstasher.R;
 import com.example.kitstasher.fragment.SettingsBrandsFragment;
 import com.example.kitstasher.fragment.SettingsMyShopsFragment;
 import com.example.kitstasher.fragment.SettingsOptionsFragment;
-import com.example.kitstasher.fragment.SettingsTrashFragment;
 
 /**
  * Created by Алексей on 03.05.2017.
@@ -49,7 +48,7 @@ public class AdapterSettings extends FragmentPagerAdapter {
             case 1:
                 return mContext.getResources().getString(R.string.Brands);
             case 2:
-                return mContext.getResources().getString(R.string.myshops);
+                return mContext.getResources().getString(R.string.shops);
 
         }
         return null;

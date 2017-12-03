@@ -18,16 +18,16 @@ import com.example.kitstasher.other.Helper;
 import java.util.List;
 
 /**
- * Created by Алексей on 06.07.2017.
+ * Created by Алексей on 06.07.2017. Adapter for AlertDialog in Manual Add
  */
 
 public class AdapterAlertDialog extends ArrayAdapter<Item> {
     private final List<Item> list;
     private final Activity context;
 
-    static class ViewHolder {
-        protected TextView name;
-        protected ImageView ivItemBoxart;
+    private static class ViewHolder {
+        private TextView name;
+        private ImageView ivItemBoxart;
     }
     public AdapterAlertDialog(Activity context, List<Item> list) {
         super(context, R.layout.item_alertdialog, list);
@@ -36,14 +36,14 @@ public class AdapterAlertDialog extends ArrayAdapter<Item> {
     }
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        View view = null;
+        View view;
 
         if (convertView == null) {
             LayoutInflater inflater = context.getLayoutInflater();
             view = inflater.inflate(R.layout.item_alertdialog, null);
             final ViewHolder viewHolder = new ViewHolder();
-            viewHolder.name = (TextView) view.findViewById(R.id.tvItemTitle);
-            viewHolder.ivItemBoxart = (ImageView) view.findViewById(R.id.ivItemBoxart);
+            viewHolder.name = view.findViewById(R.id.tvItemTitle);
+            viewHolder.ivItemBoxart = view.findViewById(R.id.ivItemBoxart);
             view.setTag(viewHolder);
         } else {
             view = convertView;
@@ -55,9 +55,7 @@ public class AdapterAlertDialog extends ArrayAdapter<Item> {
         Glide
                 .with(context)
                 .load(composeUrl(list.get(position).getItemBoxartUrl()))
-//                .placeholder(ic_menu_camera)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
-                //.crossFade()
                 .into(holder.ivItemBoxart);
         return view;
     }
@@ -71,6 +69,5 @@ public class AdapterAlertDialog extends ArrayAdapter<Item> {
         }else{
             return "";
         }
-
     }
 }

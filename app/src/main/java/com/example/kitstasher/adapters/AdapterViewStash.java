@@ -19,17 +19,33 @@ public class AdapterViewStash extends FragmentStatePagerAdapter {
     private Context mContext;
     private boolean aftermarketMode;
 
+    /////////
+//    private ArrayList<SortAllFragment> views = new ArrayList<>();
+//    private Cursor cursor;
+    ////////////
+
     public AdapterViewStash(FragmentManager fm, Context context, boolean aftermarketMode) {
         super(fm);
         mContext = context;
         this.aftermarketMode = aftermarketMode;
+//        DbConnector dbConnector = new DbConnector(mContext);
+//        dbConnector.open();
+//        String tableName;
+//        if (aftermarketMode){
+//            tableName = DbConnector.TABLE_AFTERMARKET;
+//        }else {
+//            tableName = DbConnector.TABLE_KITS;
+//        }
+//        this.cursor = dbConnector.getActiveCategories(tableName);
     }
 
     @Override
     public Fragment getItem(int position) {
+//        cursor.moveToFirst();
         Bundle bundle = new Bundle();
         SortAllFragment fragment = new SortAllFragment();
         switch (position){
+//            for (int i = 0; i< cursor.getCount(); i++)
             case 0:
                 bundle.putInt("categoryTab", 0);
                 bundle.putBoolean(Constants.AFTERMARKET_MODE, aftermarketMode);
@@ -82,6 +98,8 @@ public class AdapterViewStash extends FragmentStatePagerAdapter {
 
     @Override
     public int getCount() {
+
+//        return 1 + cursor.getCount();
         return FRAGMENT_COUNT;
     }
 
@@ -111,11 +129,13 @@ public class AdapterViewStash extends FragmentStatePagerAdapter {
     }
 
     public int getItemPosition(Object object) {
+        //////////
+//        int index = views.indexOf (object);
+//        if (index == -1)
+//            return POSITION_NONE;
+//        else
+//            return index;
+        //////////
         return POSITION_NONE;
     }
-
-//    public static Fragment openViewStash(){
-//        return new ViewStashFragment();
-//    }
-
 }

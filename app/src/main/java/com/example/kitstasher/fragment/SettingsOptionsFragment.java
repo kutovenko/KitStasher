@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -41,7 +42,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import static com.example.kitstasher.other.DbConnector.COLUMN_AFTERMARKET_NAME;
-import static com.example.kitstasher.other.DbConnector.COLUMN_AFTERMARKET_ORIGINAL_NAME;
 import static com.example.kitstasher.other.DbConnector.COLUMN_BARCODE;
 import static com.example.kitstasher.other.DbConnector.COLUMN_BOXART_URI;
 import static com.example.kitstasher.other.DbConnector.COLUMN_BOXART_URL;
@@ -56,14 +56,17 @@ import static com.example.kitstasher.other.DbConnector.COLUMN_ID;
 import static com.example.kitstasher.other.DbConnector.COLUMN_ID_ONLINE;
 import static com.example.kitstasher.other.DbConnector.COLUMN_IS_DELETED;
 import static com.example.kitstasher.other.DbConnector.COLUMN_KIT_NAME;
+import static com.example.kitstasher.other.DbConnector.COLUMN_MEDIA;
 import static com.example.kitstasher.other.DbConnector.COLUMN_NOTES;
-import static com.example.kitstasher.other.DbConnector.COLUMN_ORIGINAL_KIT_NAME;
+import static com.example.kitstasher.other.DbConnector.COLUMN_ORIGINAL_NAME;
 import static com.example.kitstasher.other.DbConnector.COLUMN_PRICE;
 import static com.example.kitstasher.other.DbConnector.COLUMN_PURCHASE_DATE;
 import static com.example.kitstasher.other.DbConnector.COLUMN_PURCHASE_PLACE;
 import static com.example.kitstasher.other.DbConnector.COLUMN_QUANTITY;
 import static com.example.kitstasher.other.DbConnector.COLUMN_SCALE;
+import static com.example.kitstasher.other.DbConnector.COLUMN_SCALEMATES_URL;
 import static com.example.kitstasher.other.DbConnector.COLUMN_SEND_STATUS;
+import static com.example.kitstasher.other.DbConnector.COLUMN_STATUS;
 import static com.example.kitstasher.other.DbConnector.COLUMN_YEAR;
 import static com.example.kitstasher.other.DbConnector.KIT_AFTER_AFTERBARCODE;
 import static com.example.kitstasher.other.DbConnector.KIT_AFTER_AFTERBRAND;
@@ -78,7 +81,7 @@ import static com.example.kitstasher.other.DbConnector.KIT_AFTER_KITID;
 import static com.example.kitstasher.other.DbConnector.KIT_AFTER_KITNAME;
 import static com.example.kitstasher.other.DbConnector.KIT_AFTER_KITPROTOTYPE;
 import static com.example.kitstasher.other.DbConnector.KIT_AFTER_LISTNAME;
-import static com.example.kitstasher.other.DbConnector.MYLISTS_COLUMN_LIST_NAME;
+import static com.example.kitstasher.other.DbConnector.MYLISTSITEMS_LISTNAME;
 
 /**
  * Created by Алексей on 03.05.2017.
@@ -86,13 +89,15 @@ import static com.example.kitstasher.other.DbConnector.MYLISTS_COLUMN_LIST_NAME;
  */
 
 public class SettingsOptionsFragment extends Fragment implements View.OnClickListener {
-    private Button btnBackup, btnRestore, btnRepairImages, btnSetDefault;
-    DbConnector dbConnector;
-    Cursor cursor;
-    View view;
+    //    private Button btnBackup, btnRestore, btnRepairImages, btnSetDefault;
+    private DbConnector dbConnector;
+    private Cursor cursor;
+    private View view;
+    private EditText etNewCurrency;
     private ProgressDialog progressDialog;
-    private String todayDate;
+    //    private String todayDate;
     private Spinner spDefaultCurrency;
+//    private static AsyncTask asyncTask;
 
     public SettingsOptionsFragment(){
 
@@ -105,34 +110,32 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
 
         Calendar c = Calendar.getInstance();
         SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
-        todayDate = df.format(c.getTime());
-
+        String todayDate = df.format(c.getTime());
+        dbConnector = new DbConnector(getActivity());
+        dbConnector.open();
         initUI();
         return view;
     }
 
     private void initUI() {
-        btnBackup = (Button)view.findViewById(R.id.btnBackup);
+        Button btnBackup = view.findViewById(R.id.btnBackup);
         btnBackup.setOnClickListener(this);
-        btnRestore = (Button)view.findViewById(R.id.btnRestore);
+        Button btnRestore = view.findViewById(R.id.btnRestore);
         btnRestore.setOnClickListener(this);
-        btnRepairImages = (Button)view.findViewById(R.id.btnRepairImages);
+        Button btnRepairImages = view.findViewById(R.id.btnRepairImages);
         btnRepairImages.setOnClickListener(this);
-        btnSetDefault = (Button)view.findViewById(R.id.btnSetDefault);
+        Button btnSetDefault = view.findViewById(R.id.btnSetDefault);
         btnSetDefault.setOnClickListener(this);
+        Button btnAddNewCurrency = view.findViewById(R.id.btnAddCurrency);
+        btnAddNewCurrency.setOnClickListener(this);
+        etNewCurrency = view.findViewById(R.id.etNewCurrency);
+
         progressDialog = new ProgressDialog(getActivity());
 
-        spDefaultCurrency = (Spinner)view.findViewById(R.id.spDefaultCurrency);
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        String defCurrency = sharedPreferences.getString(Constants.DEFAULT_CURRENCY, "BYN");
-        String[] currencies = new String[]{"BYN", "EUR", "RUR", "UAH", "USD"};
-        ArrayAdapter currencyAdapter = new ArrayAdapter<String>(getActivity(),
-                android.R.layout.simple_spinner_item, currencies);
-        spDefaultCurrency.setAdapter(currencyAdapter);
-        int spCurrencyPosition = currencyAdapter.getPosition(defCurrency);
-        spDefaultCurrency.setSelection(spCurrencyPosition);
+        spDefaultCurrency = view.findViewById(R.id.spDefaultCurrency);
+        loadCurrencySpinner();
 
-        Button imp = (Button)view.findViewById(R.id.button2);
+        Button imp = view.findViewById(R.id.button2);
         imp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -145,10 +148,17 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
 
     @Override
     public void onClick(View view) {
-        dbConnector = new DbConnector(getActivity());
-        dbConnector.open();
+
 
         switch (view.getId()){
+            case R.id.btnAddCurrency:
+                String cur = etNewCurrency.getText().toString();
+                if (!Helper.isBlank(cur)) {
+                    dbConnector.addCurrency(cur);
+                    loadCurrencySpinner();
+                    etNewCurrency.setText("");
+                }
+                break;
             case R.id.btnSetDefault:
                 setDefaultCurrency(spDefaultCurrency.getSelectedItem().toString());
                 break;
@@ -191,6 +201,26 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
         progressDialog.dismiss();
     }
 
+    private void loadCurrencySpinner() {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String defCurrency = sharedPreferences.getString(Constants.DEFAULT_CURRENCY, "BYN");
+        Cursor currCursor = dbConnector.getAllFromTable(DbConnector.TABLE_CURRENCIES,
+                DbConnector.CURRENCIES_COLUMN_CURRENCY);
+        currCursor.moveToFirst();
+        String[] currencies = new String[currCursor.getCount()];
+        for (int i = 0; i < currCursor.getCount(); i++) {
+            currencies[i] = currCursor.getString(1);
+            currCursor.moveToNext();
+        }
+        ArrayAdapter currencyAdapter = new ArrayAdapter<String>(getActivity(),
+                android.R.layout.simple_spinner_item, currencies);
+        spDefaultCurrency.setAdapter(currencyAdapter);
+        int spCurrencyPosition = currencyAdapter.getPosition(defCurrency);
+        spDefaultCurrency.setSelection(spCurrencyPosition);
+    }
+
+
+
     private void exportStashTo(String mode){
         progressDialog = ProgressDialog.show(getActivity(), "Export to File", getString(R.string.Saving));
         progressDialog.setCancelable(true);
@@ -200,7 +230,8 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
             protected Object doInBackground(Object[] objects) {
 
 
-                File exportDir = new File(Environment.getExternalStorageDirectory(),"Kitstasher");
+//                File exportDir = new File(Environment.getExternalStorageDirectory(),"Kitstasher");
+                File exportDir = getActivity().getExternalFilesDir("export");
                 if (!exportDir.exists())
                 {
                     exportDir.mkdirs();
@@ -209,7 +240,7 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
                     case "TXT":
                         try
                         {
-                            File fileStash = new File(exportDir, "MyStash.txt");
+                            File fileStash = new File(exportDir, "collection.txt");
                             fileStash.delete();
                             fileStash.createNewFile();
                             FileOutputStream fOut = null;
@@ -219,7 +250,7 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
                                 e.printStackTrace();
                             }
                             OutputStreamWriter osw = new OutputStreamWriter(fOut);
-                            osw.write("-- MY STASH --" + "\n");
+                            osw.write(getString(R.string.mystash_header) + "\n");
                             Cursor curTXT = dbConnector.getAllData("kit_name");
                             osw.write("Total: " + curTXT.getCount() + "\n\n");
                             while(curTXT.moveToNext()) {
@@ -317,7 +348,8 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
 
     private void backupDb() {
 
-        File exportDir = new File(Environment.getExternalStorageDirectory(),"Kitstasher");
+//        File exportDir = new File(Environment.getExternalStorageDirectory(),"Kitstasher");
+        File exportDir = getActivity().getExternalFilesDir("backup");
         if (!exportDir.exists())
         {
             exportDir.mkdirs();
@@ -338,9 +370,10 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
             Toast.makeText(getActivity(), R.string.sdcard_failed, Toast.LENGTH_SHORT).show();
         }
         // получаем путь к SD
-        File sdPath = Environment.getExternalStorageDirectory();
+//        File sdPath = Environment.getExternalStorageDirectory();
         // добавляем свой каталог к пути
-        sdPath = new File(sdPath.getAbsolutePath() + "/" + "Kitstasher");
+//        sdPath = new File(sdPath.getAbsolutePath() + "/" + "Kitstasher");
+        File sdPath = getActivity().getExternalFilesDir("backup");
 
         restoreKits(sdPath);
         restoreListsItems(sdPath);
@@ -391,7 +424,11 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
                         curCSV.getString(20), //date !!
                         curCSV.getString(21), //date !!
                         curCSV.getString(22),
-                        curCSV.getString(23) //listname
+                        curCSV.getString(23), //listname
+                        curCSV.getString(24),
+                        curCSV.getString(25),
+                        curCSV.getString(26),
+                        curCSV.getString(27)
                 };
                 csvWrite.writeNext(arrStr);
                 curCSV.moveToNext();
@@ -421,32 +458,70 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
             String[] colums;
             ContentValues cv = new ContentValues();
             while ((colums = reader.readNext()) != null) {
-                cv.put(COLUMN_ID, colums[0]);
-                cv.put(COLUMN_BARCODE, colums[1]);
-                cv.put(COLUMN_BRAND, colums[2]);
-                cv.put(COLUMN_BRAND_CATNO, colums[3]);
-                cv.put(COLUMN_SCALE, colums[4]);
-                cv.put(COLUMN_AFTERMARKET_NAME, colums[5]);
-                cv.put(COLUMN_DESCRIPTION, colums[6]);
-                cv.put(COLUMN_AFTERMARKET_ORIGINAL_NAME, colums[7]);//!
-                // если отличается
-                cv.put(COLUMN_CATEGORY, colums[8]);
-                cv.put(COLUMN_COLLECTION, colums[9]);
-                cv.put(COLUMN_SEND_STATUS, colums[10]);
-                cv.put(COLUMN_ID_ONLINE, colums[11]);
-                //заметки? LOCAL?
-                cv.put(COLUMN_BOXART_URI, colums[12]);
-                cv.put(COLUMN_BOXART_URL, colums[13]);
-                cv.put(COLUMN_IS_DELETED, colums[14]);
-                cv.put(COLUMN_DATE, colums[15]);
-                cv.put(COLUMN_YEAR, colums[16]);
-                cv.put(COLUMN_PURCHASE_DATE, colums[17]);
-                cv.put(COLUMN_PRICE, colums[18]);
-                cv.put(COLUMN_QUANTITY, colums[19]);
-                cv.put(COLUMN_NOTES, colums[20]);
-                cv.put(COLUMN_CURRENCY, colums[21]);
-                cv.put(COLUMN_PURCHASE_PLACE, colums[22]);
-                cv.put(MYLISTS_COLUMN_LIST_NAME, colums[23]);
+//                cv.put(COLUMN_ID, colums[0]);
+//                cv.put(COLUMN_BARCODE, colums[1]);
+//                cv.put(COLUMN_BRAND, colums[2]);
+//                cv.put(COLUMN_BRAND_CATNO, colums[3]);
+//                cv.put(COLUMN_SCALE, colums[4]);
+//                cv.put(COLUMN_AFTERMARKET_NAME, colums[5]);
+//                cv.put(COLUMN_DESCRIPTION, colums[6]);
+//                cv.put(COLUMN_ORIGINAL_NAME, colums[7]);//!
+//                // если отличается
+//                cv.put(COLUMN_CATEGORY, colums[8]);
+//                cv.put(COLUMN_COLLECTION, colums[9]);
+//                cv.put(COLUMN_SEND_STATUS, colums[10]);
+//                cv.put(COLUMN_ID_ONLINE, colums[11]);
+//                //заметки? LOCAL?
+//                cv.put(COLUMN_BOXART_URI, colums[12]);
+//                cv.put(COLUMN_BOXART_URL, colums[13]);
+//                cv.put(COLUMN_IS_DELETED, colums[14]);
+//                cv.put(COLUMN_DATE, colums[15]);
+//                cv.put(COLUMN_YEAR, colums[16]);
+//                cv.put(COLUMN_PURCHASE_DATE, colums[17]);
+//                cv.put(COLUMN_PRICE, colums[18]);
+//                cv.put(COLUMN_QUANTITY, colums[19]);
+//                cv.put(COLUMN_NOTES, colums[20]);
+//                cv.put(COLUMN_CURRENCY, colums[21]);
+//                cv.put(COLUMN_PURCHASE_PLACE, colums[22]);
+//                cv.put(MYLISTS_COLUMN_LIST_NAME, colums[23]);
+//
+//
+//
+//
+//                //////////////
+//
+//
+//
+
+
+                cv.put(COLUMN_ID, colums[0]); // Локальный ключ -0
+                cv.put(COLUMN_BARCODE, colums[1]); // штрихкод NOBARCODE по умолчанию для garage kit? - 1
+                cv.put(COLUMN_BRAND, colums[2]); // производитель - 2
+                cv.put(COLUMN_BRAND_CATNO, colums[3]); //каталожный номер набора - 3
+                cv.put(COLUMN_SCALE, colums[4]); //масштаб - 4
+                cv.put(COLUMN_AFTERMARKET_NAME, colums[5]); //название набора - 5
+                cv.put(COLUMN_DESCRIPTION, colums[6]); //описание, продолжение названия - 6
+                cv.put(COLUMN_ORIGINAL_NAME, colums[7]); //название на оригинальном языке, - 7
+                cv.put(COLUMN_CATEGORY, colums[8]); //тег (самолет, корабль, и тд - 8
+                cv.put(COLUMN_COLLECTION, colums[9]); //коллекция - для группировки и других функций - 9
+                cv.put(COLUMN_SEND_STATUS, colums[10]); //для отслеживания офлайн отправок LOCAL - 10
+                cv.put(COLUMN_ID_ONLINE, colums[11]); //номер в онлайновой базе, может пригодится - 11
+                cv.put(COLUMN_BOXART_URI, colums[12]); //локальная ссылка на файл боксарта LOCAL - 12
+                cv.put(COLUMN_BOXART_URL, colums[13]); //интернет-ссылка на боксарт для Glide LOCAL - 13
+                cv.put(COLUMN_IS_DELETED, colums[14]); // - 14
+                cv.put(COLUMN_DATE, colums[15]);// дата добавления? LOCAL? - 15
+                cv.put(COLUMN_YEAR, colums[16]); // год выпуска набора - 16
+                cv.put(COLUMN_PURCHASE_DATE, colums[17]); //дата покупки -17
+                cv.put(COLUMN_PRICE, colums[18]); //цена -18
+                cv.put(COLUMN_QUANTITY, colums[19]); //количество - 19
+                cv.put(COLUMN_NOTES, colums[20]); //заметки - 20
+                cv.put(COLUMN_CURRENCY, colums[21]); //валюта - 21
+                cv.put(MYLISTSITEMS_LISTNAME, colums[22]); //22
+                cv.put(COLUMN_STATUS, colums[23]); //начат/использован //23
+                cv.put(COLUMN_MEDIA, colums[24]); //материал - 24
+                cv.put(COLUMN_SCALEMATES_URL, colums[25]); // - 25
+                cv.put(KIT_AFTER_AFTERDESIGNEDFOR, colums[26]); //26
+                cv.put(COLUMN_PURCHASE_PLACE, colums[27]); //место покупки - 27
                 dbConnector.addAftermarket(cv);
             }
             Helper.encrypt(aftermarketFile);
@@ -553,9 +628,10 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
             Toast.makeText(getActivity(), R.string.sdcard_failed, Toast.LENGTH_SHORT).show();
         }
         // получаем путь к SD
-        File sdPath = Environment.getExternalStorageDirectory();
+        File sdPath = getActivity().getExternalFilesDir("backup");
         // добавляем свой каталог к пути
-        sdPath = new File(sdPath.getAbsolutePath() + "/" + "Kitstasher");
+//        sdPath = new File(sdPath.getAbsolutePath() + "/" + "Kitstasher");
+
 
         restoreOldKitsDb(sdPath);
         restoreOldBrandsDb(sdPath);
@@ -591,7 +667,7 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
                 cv.put(COLUMN_SCALE, colums[3].trim());//scale INT
                 cv.put(COLUMN_KIT_NAME, colums[4].trim());//kitname
                 cv.put(COLUMN_DESCRIPTION, colums[5].trim());//desc
-                cv.put(COLUMN_ORIGINAL_KIT_NAME, colums[6].trim());//original name
+                cv.put(COLUMN_ORIGINAL_NAME, colums[6].trim());//original name
                 cv.put(COLUMN_CATEGORY, colums[7].trim());//category - tag
                 cv.put(COLUMN_COLLECTION, colums[8].trim());//collection
                 cv.put(COLUMN_SEND_STATUS, colums[9].trim());//send status
@@ -758,7 +834,10 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
                         curCSV.getString(19), //date !!
                         curCSV.getString(20), //date !!
                         curCSV.getString(21), //date !!
-                        curCSV.getString(22)
+                        curCSV.getString(22),
+                        curCSV.getString(23),
+                        curCSV.getString(24),
+                        curCSV.getString(25)
                 };
                 csvWrite.writeNext(arrStr);
                 curCSV.moveToNext();
@@ -787,29 +866,60 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
             String[] colums;
             ContentValues cv = new ContentValues();
             while ((colums = reader.readNext()) != null) {
-                cv.put(COLUMN_ID, colums[0]);
-                cv.put(COLUMN_BARCODE, colums[1]);
+//                cv.put(COLUMN_ID, colums[0]);
+//                cv.put(COLUMN_BARCODE, colums[1]);
+//                cv.put(COLUMN_BRAND, colums[2]);
+//                cv.put(COLUMN_BRAND_CATNO, colums[3]);
+//                cv.put(COLUMN_SCALE, colums[4]);
+//                cv.put(COLUMN_KIT_NAME, colums[5]);
+//                cv.put(COLUMN_DESCRIPTION, colums[6]);
+//                cv.put(COLUMN_ORIGINAL_NAME, colums[7]);
+//                cv.put(COLUMN_CATEGORY, colums[8]);
+//                cv.put(COLUMN_COLLECTION, colums[9]);
+//                cv.put(COLUMN_SEND_STATUS, colums[10]);
+//                cv.put(COLUMN_ID_ONLINE, colums[11]);
+//                cv.put(COLUMN_BOXART_URI, colums[12]);
+//                cv.put(COLUMN_BOXART_URL, colums[13]);
+//                cv.put(COLUMN_IS_DELETED, colums[14]);
+//                cv.put(COLUMN_DATE, colums[15]);
+//                cv.put(COLUMN_YEAR, colums[16]);
+//                cv.put(COLUMN_PURCHASE_DATE, colums[17]);
+//                cv.put(COLUMN_PRICE, colums[18]);
+//                cv.put(COLUMN_QUANTITY, colums[19]);
+//                cv.put(COLUMN_NOTES, colums[20]);
+//                cv.put(COLUMN_CURRENCY, colums[21]);
+//                cv.put(COLUMN_PURCHASE_PLACE, colums[22]);
+//
+//
+//                ///////////////
+//
+                cv.put(COLUMN_ID, colums[0]); // Локальный ключ -0
+                cv.put(COLUMN_BARCODE, colums[1]); // штрихкод NOBARCODE по умолчанию для garage kit? - 1
                 cv.put(COLUMN_BRAND, colums[2]);
-                cv.put(COLUMN_BRAND_CATNO, colums[3]);
-                cv.put(COLUMN_SCALE, colums[4]);
-                cv.put(COLUMN_KIT_NAME, colums[5]);
-                cv.put(COLUMN_DESCRIPTION, colums[6]);
-                cv.put(COLUMN_ORIGINAL_KIT_NAME, colums[7]);
-                cv.put(COLUMN_CATEGORY, colums[8]);
-                cv.put(COLUMN_COLLECTION, colums[9]);
-                cv.put(COLUMN_SEND_STATUS, colums[10]);
-                cv.put(COLUMN_ID_ONLINE, colums[11]);
-                cv.put(COLUMN_BOXART_URI, colums[12]);
-                cv.put(COLUMN_BOXART_URL, colums[13]);
-                cv.put(COLUMN_IS_DELETED, colums[14]);
-                cv.put(COLUMN_DATE, colums[15]);
-                cv.put(COLUMN_YEAR, colums[16]);
-                cv.put(COLUMN_PURCHASE_DATE, colums[17]);
-                cv.put(COLUMN_PRICE, colums[18]);
-                cv.put(COLUMN_QUANTITY, colums[19]);
-                cv.put(COLUMN_NOTES, colums[20]);
-                cv.put(COLUMN_CURRENCY, colums[21]);
-                cv.put(COLUMN_PURCHASE_PLACE, colums[22]);
+                ; // производитель - 2
+                cv.put(COLUMN_BRAND_CATNO, colums[3]); //каталожный номер набора - 3
+                cv.put(COLUMN_SCALE, colums[4]); //масштаб - 4
+                cv.put(COLUMN_KIT_NAME, colums[5]); //название набора - 5
+                cv.put(COLUMN_DESCRIPTION, colums[6]); //описание, продолжение названия - 6
+                cv.put(COLUMN_ORIGINAL_NAME, colums[7]); //название на оригинальном языке, - 7
+                cv.put(COLUMN_CATEGORY, colums[8]); //тег (самолет, корабль, и тд - 8
+                cv.put(COLUMN_COLLECTION, colums[9]); //коллекция - для группировки и других функций - 9
+                cv.put(COLUMN_SEND_STATUS, colums[10]); //для отслеживания офлайн отправок LOCAL - 10
+                cv.put(COLUMN_ID_ONLINE, colums[11]); //номер в онлайновой базе, может пригодится - 11
+                cv.put(COLUMN_BOXART_URI, colums[12]); //локальная ссылка на файл боксарта LOCAL - 12
+                cv.put(COLUMN_BOXART_URL, colums[13]); //интернет-ссылка на боксарт для Glide LOCAL - 13
+                cv.put(COLUMN_IS_DELETED, colums[14]); // - 14
+                cv.put(COLUMN_DATE, colums[15]); // дата добавления? LOCAL? - 15
+                cv.put(COLUMN_YEAR, colums[16]); // год выпуска набора - 16
+                cv.put(COLUMN_SCALEMATES_URL, colums[17]); //материал - 17
+                cv.put(COLUMN_PURCHASE_DATE, colums[18]); //дата покупки -18
+                cv.put(COLUMN_PRICE, colums[19]); //цена -19
+                cv.put(COLUMN_QUANTITY, colums[20]); //количество - 20
+                cv.put(COLUMN_NOTES, colums[21]); //заметки - 21
+                cv.put(COLUMN_CURRENCY, colums[22]); //валюта - 22
+                cv.put(COLUMN_PURCHASE_PLACE, colums[23]); //место покупки - 23
+                cv.put(COLUMN_STATUS, colums[24]); //начат/использован - 24
+                cv.put(COLUMN_MEDIA, colums[25]); //материал - 25
                 dbConnector.addKitRec(cv);
             }
             Helper.encrypt(sdFile);
@@ -890,7 +1000,6 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
             listCur.moveToFirst();
             while(!listCur.isAfterLast())
             {
-                //Which column you want to exprort
                 String arrStr[] ={
                         listCur.getString(0), //id
                         listCur.getString(1), //listname
@@ -974,7 +1083,10 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
                         curCSV.getString(20), //date !!
                         curCSV.getString(21), //date !!
                         curCSV.getString(22),
-                        curCSV.getString(23)
+                        curCSV.getString(23),
+                        curCSV.getString(24),
+                        curCSV.getString(25),
+                        curCSV.getString(26)
                 };
                 csvWrite.writeNext(arrStr);
                 curCSV.moveToNext();
@@ -1003,30 +1115,68 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
             String[] colums;
             ContentValues cv = new ContentValues();
             while ((colums = reader.readNext()) != null) {
+//                cv.put(COLUMN_ID, colums[0]);
+//                cv.put(COLUMN_BARCODE, colums[1]);
+//                cv.put(COLUMN_BRAND, colums[2]);
+//                cv.put(COLUMN_BRAND_CATNO, colums[3]);
+//                cv.put(COLUMN_SCALE, colums[4]);
+//                cv.put(COLUMN_KIT_NAME, colums[5]);
+//                cv.put(COLUMN_DESCRIPTION, colums[6]);
+//                cv.put(COLUMN_ORIGINAL_NAME, colums[7]);
+//                cv.put(COLUMN_CATEGORY, colums[8]);
+//                cv.put(COLUMN_COLLECTION, colums[9]);
+//                cv.put(COLUMN_SEND_STATUS, colums[10]);
+//                cv.put(COLUMN_ID_ONLINE, colums[11]);
+//                cv.put(COLUMN_BOXART_URI, colums[12]);
+//                cv.put(COLUMN_BOXART_URL, colums[13]);
+//                cv.put(COLUMN_IS_DELETED, colums[14]);
+//                cv.put(COLUMN_DATE, colums[15]);
+//                cv.put(COLUMN_YEAR, colums[16]);
+//                cv.put(COLUMN_PURCHASE_DATE, colums[17]);
+//                cv.put(COLUMN_PRICE, colums[18]);
+//                cv.put(COLUMN_QUANTITY, colums[19]);
+//                cv.put(COLUMN_NOTES, colums[20]);
+//                cv.put(COLUMN_CURRENCY, colums[21]);
+//                cv.put(COLUMN_PURCHASE_PLACE, colums[22]);
+//                cv.put(MYLISTS_COLUMN_LIST_NAME, colums[23]);
+//                cv.put(COLUMN_STATUS, colums[24]);
+//                cv.put(COLUMN_MEDIA, colums[25]);
+//                cv.put(COLUMN_SCALEMATES_URL, colums[26]);
+//
+//                cv.put(MYLISTSITEMS_LISTNAME, colums[27]);
+//
+//
+///////////////////////////////////
+//
+//
+
                 cv.put(COLUMN_ID, colums[0]);
                 cv.put(COLUMN_BARCODE, colums[1]);
                 cv.put(COLUMN_BRAND, colums[2]);
-                cv.put(COLUMN_BRAND_CATNO, colums[3]);
-                cv.put(COLUMN_SCALE, colums[4]);
-                cv.put(COLUMN_KIT_NAME, colums[5]);
-                cv.put(COLUMN_DESCRIPTION, colums[6]);
-                cv.put(COLUMN_ORIGINAL_KIT_NAME, colums[7]);
-                cv.put(COLUMN_CATEGORY, colums[8]);
-                cv.put(COLUMN_COLLECTION, colums[9]);
-                cv.put(COLUMN_SEND_STATUS, colums[10]);
-                cv.put(COLUMN_ID_ONLINE, colums[11]);
-                cv.put(COLUMN_BOXART_URI, colums[12]);
-                cv.put(COLUMN_BOXART_URL, colums[13]);
-                cv.put(COLUMN_IS_DELETED, colums[14]);
-                cv.put(COLUMN_DATE, colums[15]);
-                cv.put(COLUMN_YEAR, colums[16]);
-                cv.put(COLUMN_PURCHASE_DATE, colums[17]);
-                cv.put(COLUMN_PRICE, colums[18]);
-                cv.put(COLUMN_QUANTITY, colums[19]);
-                cv.put(COLUMN_NOTES, colums[20]);
-                cv.put(COLUMN_CURRENCY, colums[21]);
-                cv.put(COLUMN_PURCHASE_PLACE, colums[22]);
-                cv.put(MYLISTS_COLUMN_LIST_NAME, colums[23]);
+                cv.put(COLUMN_BRAND_CATNO, colums[3]);//каталожный номер набора - 3
+                cv.put(COLUMN_SCALE, colums[4]);//масштаб - 4
+                cv.put(COLUMN_KIT_NAME, colums[5]);//название набора - 5
+                cv.put(COLUMN_DESCRIPTION, colums[6]);//описание, продолжение названия - 6
+                cv.put(COLUMN_ORIGINAL_NAME, colums[7]);//название на оригинальном языке, - 7
+                cv.put(COLUMN_CATEGORY, colums[8]);//тег (самолет, корабль, и тд - 8
+                cv.put(COLUMN_COLLECTION, colums[9]);//коллекция - для группировки и других функций - 9
+                cv.put(COLUMN_SEND_STATUS, colums[10]);//для отслеживания офлайн отправок LOCAL - 10
+                cv.put(COLUMN_ID_ONLINE, colums[11]);//номер в онлайновой базе, может пригодится - 11
+                cv.put(COLUMN_BOXART_URI, colums[12]);//локальная ссылка на файл боксарта LOCAL - 12
+                cv.put(COLUMN_BOXART_URL, colums[13]);//интернет-ссылка на боксарт для Glide LOCAL - 13
+                cv.put(COLUMN_IS_DELETED, colums[14]);// - 14
+                cv.put(COLUMN_DATE, colums[15]);// дата добавления в базу LOCAL? - 15
+                cv.put(COLUMN_YEAR, colums[16]); // год выпуска набора - 16
+                cv.put(COLUMN_PURCHASE_DATE, colums[17]); //дата покупки -17
+                cv.put(COLUMN_PRICE, colums[18]); //цена в копейках-18
+                cv.put(COLUMN_QUANTITY, colums[19]); //количество - 19
+                cv.put(COLUMN_NOTES, colums[20]); //заметки - 20
+                cv.put(COLUMN_CURRENCY, colums[21]); //валюта - 21
+                cv.put(COLUMN_PURCHASE_PLACE, colums[22]); //место покупки - 22
+                cv.put(COLUMN_STATUS, colums[23]); //начат/использован - 23
+                cv.put(COLUMN_MEDIA, colums[24]); //материал - 24
+                cv.put(COLUMN_SCALEMATES_URL, colums[25]); //скейлмейтс -25
+                cv.put(MYLISTSITEMS_LISTNAME, colums[26]); // Локальный ключ -26
                 dbConnector.addListItem(cv);
             }
             Helper.encrypt(sdListItemsFile);

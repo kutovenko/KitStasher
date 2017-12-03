@@ -1,6 +1,7 @@
 package com.example.kitstasher.fragment;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -15,6 +16,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.example.kitstasher.R;
 import com.example.kitstasher.activity.ChooserActivity;
@@ -27,10 +29,10 @@ import com.example.kitstasher.other.SortKits;
 
 import java.util.ArrayList;
 
-import static com.example.kitstasher.activity.MainActivity.REQUEST_CODE_POSITION;
+import static com.example.kitstasher.activity.MainActivity.REQUEST_CODE_VIEW;
 
 /**
- * Created by Алексей on 14.08.2017.
+ * Created by Алексей on 14.08.2017. Просмотр списка
  */
 
 public class ListViewFragment extends Fragment implements View.OnClickListener, SortKits {
@@ -40,7 +42,7 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
     private DbConnector dbConnector;
     private boolean sortDate, sortName, sortScale, sortBrand;
     private LinearLayout linLayoutListBrand, linLayoutListScale, linLayoutListDate,
-            linLayoutListKitname, llListsContainer;
+            linLayoutListKitname;
     private ImageView ivListSortDate, ivListSortBrand, ivListSortScale, ivListSortKitname;
     private Context context;
     private String listname;
@@ -59,7 +61,7 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
         dbConnector = new DbConnector(context);
         dbConnector.open();
         initPortraitUi();
-        Button btnAddListItem = (Button)view.findViewById(R.id.btnAddListItem);
+        Button btnAddListItem = view.findViewById(R.id.btnAddListItem);
         btnAddListItem.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -67,10 +69,17 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
             }
         });
 
-        lvListAllItems = (ListView)view.findViewById(R.id.lvListAllItems);
-        llListsContainer = (LinearLayout)view.findViewById(R.id.llListsContainer);
+        lvListAllItems = view.findViewById(R.id.lvListAllItems);
+        lvListAllItems.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                showDeleteDialog(l);
+                return false;
+            }
+        });
+//        LinearLayout llListsContainer = view.findViewById(R.id.llListsContainer);
         Bundle bundle = getArguments();
-        listname = bundle.getString("listname");
+        listname = bundle.getString(Constants.LISTNAME);
 
 
         cursor = dbConnector.getListItems(listname, "_id DESC");
@@ -87,11 +96,32 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
         return view;
     }
 
+
+    private void showDeleteDialog(final long l) {
+        final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
+        dialogBuilder.setTitle(R.string.Do_you_wish_to_delete_from_list);
+        dialogBuilder.setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+//                File file = new File(getImagePath(l));
+//                file.delete();
+                dbConnector.delItemById(DbConnector.TABLE_MYLISTSITEMS, l);
+                cursor = dbConnector.getListItems(listname, "_id DESC");
+                prepareListAndAdapter(cursor);
+            }
+        });
+        dialogBuilder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+            }
+        });
+        AlertDialog d = dialogBuilder.create();
+        d.show();
+    }
+
     public void returnToList(){
         Bundle bundle = getArguments();
         if (bundle != null) {
             String listname = bundle.getString("listname");
-            long returnItemId = bundle.getLong("id");
+//            long returnItemId = bundle.getLong("id");
             int returnItem = bundle.getInt("position");
             cursor = dbConnector.getListItems(listname, "_id DESC"); //влияет на сортировку списка после возврата
             prepareListAndAdapter(cursor);
@@ -108,7 +138,7 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
         final AlertDialog alertDialog = dialogBuilder.create();
         alertDialog.show();
 
-        final Button getFromScan = (Button)dialogView.findViewById(R.id.btnListModeScan);
+        final Button getFromScan = dialogView.findViewById(R.id.btnListModeScan);
         getFromScan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -126,7 +156,7 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
 
             }
         });
-        final Button getFromManualAdd = (Button)dialogView.findViewById(R.id.btnListModeManual);
+        final Button getFromManualAdd = dialogView.findViewById(R.id.btnListModeManual);
         getFromManualAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -143,7 +173,7 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
             }
         });
 
-        final Button getFromMyStash = (Button)dialogView.findViewById(R.id.btnListModeMyStash);
+        final Button getFromMyStash = dialogView.findViewById(R.id.btnListModeMyStash);
         getFromMyStash.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -154,16 +184,17 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
                 alertDialog.dismiss();
             }
         });
-//        final Button getFromImport = (Button)dialogView.findViewById(R.id.btnListModeImport);
+//        final Button getFromImport = dialogView.findViewById(R.id.btnListModeImport);
     }
 
     public void prepareListAndAdapter(Cursor cursor){
 
         AdapterListGlide adapterListGlide = new AdapterListGlide(context, cursor);
-        ids = new ArrayList<Long>();
-
+        ids = new ArrayList<>();
+        final ArrayList<Integer> positions = new ArrayList<>();
         for (int i = 0; i < adapterListGlide.getCount(); i++) {
             ids.add(adapterListGlide.getItemId(i)); //заполняем список идентификаторов
+            positions.add(i);
         }
         lvListAllItems.setAdapter(adapterListGlide);
 
@@ -172,36 +203,34 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(context, ViewActivity.class);
                 intent.putExtra(Constants.POSITION, position);
+                intent.putExtra(Constants.POSITIONS, positions);
                 intent.putExtra(Constants.ID, id);
-                intent.putExtra(Constants.EDIT_MODE, 'l');
+                intent.putExtra(Constants.EDIT_MODE, Constants.MODE_LIST);
                 intent.putExtra(Constants.IDS, ids);
                 intent.putExtra(Constants.SCALE_FILTER, "");
                 intent.putExtra(Constants.BRAND_FILTER, "");
                 intent.putExtra(Constants.KITNAME_FILTER, "");
                 intent.putExtra(Constants.MEDIA_FILTER, "");
                 intent.putExtra(Constants.STATUS_FILTER, "");
-                startActivityForResult(intent, REQUEST_CODE_POSITION);
+                intent.putExtra(Constants.LISTNAME, listname);
+                startActivityForResult(intent, REQUEST_CODE_VIEW);
             }
         });
     }
 
 
-    //Подготовка списка брэндов и адаптера
-//    public void prepareListAndAdapter(Cursor cursor){
-//        lgAdapter = new AdapterListGlide(mContext, cursor);
-//
-//        lvKits.setAdapter(lgAdapter);
-//
-//    }
-
-
     private void setActive(int  linLayout, ImageView arrow){
         linLayoutListScale.setBackgroundColor(Color.TRANSPARENT);
+        setTextColor(linLayoutListScale, 0);
         linLayoutListBrand.setBackgroundColor(Color.TRANSPARENT);
+        setTextColor(linLayoutListBrand, 0);
         linLayoutListDate.setBackgroundColor(Color.TRANSPARENT);
+        setTextColor(linLayoutListDate, 0);
         linLayoutListKitname.setBackgroundColor(Color.TRANSPARENT);
-        LinearLayout activeLayout = (LinearLayout)view.findViewById(linLayout);
-        activeLayout.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
+        setTextColor(linLayoutListKitname, 0);
+        LinearLayout activeLayout = view.findViewById(linLayout);
+        activeLayout.setBackgroundColor(Helper.getColor(getActivity(), R.color.colorAccent));
+        setTextColor(activeLayout, 1);
 
         ivListSortBrand.setVisibility(View.INVISIBLE);
         ivListSortKitname.setVisibility(View.INVISIBLE);
@@ -209,6 +238,20 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
         ivListSortDate.setVisibility(View.INVISIBLE);
         arrow.setVisibility(View.VISIBLE);
 
+    }
+
+    private void setTextColor(LinearLayout linearLayout, int mode) { //todo helper
+        View view = linearLayout.getChildAt(0);
+        int color;
+        if (mode == 0) {
+            color = Helper.getColor(getActivity(), R.color.colorPassive);
+        } else {
+            color = Helper.getColor(getActivity(), R.color.colorItem);
+        }
+        if (view instanceof TextView) {
+            TextView textView = (TextView) view;
+            textView.setTextColor(color);
+        }
     }
 
     @Override
@@ -278,22 +321,22 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
     }
 
     private void initPortraitUi(){
-        linLayoutListBrand = (LinearLayout)view.findViewById(R.id.linLayoutListSortBrand);
+        linLayoutListBrand = view.findViewById(R.id.linLayoutListSortBrand);
         linLayoutListBrand.setOnClickListener(this);
-        linLayoutListScale = (LinearLayout)view.findViewById(R.id.linLayoutListSortScale);
+        linLayoutListScale = view.findViewById(R.id.linLayoutListSortScale);
         linLayoutListScale.setOnClickListener(this);
-        linLayoutListDate = (LinearLayout)view.findViewById(R.id.linLayoutListSortDate);
+        linLayoutListDate = view.findViewById(R.id.linLayoutListSortDate);
         linLayoutListDate.setOnClickListener(this);
-        linLayoutListKitname = (LinearLayout)view.findViewById(R.id.linLayoutListSortKitname);
+        linLayoutListKitname = view.findViewById(R.id.linLayoutListSortKitname);
         linLayoutListKitname.setOnClickListener(this);
 
-        ivListSortBrand = (ImageView)view.findViewById(R.id.ivListSortBrand);
+        ivListSortBrand = view.findViewById(R.id.ivListSortBrand);
         ivListSortBrand.setVisibility(View.INVISIBLE);
-        ivListSortDate = (ImageView)view.findViewById(R.id.ivListSortDate);
+        ivListSortDate = view.findViewById(R.id.ivListSortDate);
         ivListSortDate.setVisibility(View.INVISIBLE);
-        ivListSortScale = (ImageView)view.findViewById(R.id.ivListSortScale);
+        ivListSortScale = view.findViewById(R.id.ivListSortScale);
         ivListSortScale.setVisibility(View.INVISIBLE);
-        ivListSortKitname = (ImageView)view.findViewById(R.id.ivListSortKitname);
+        ivListSortKitname = view.findViewById(R.id.ivListSortKitname);
         ivListSortKitname.setVisibility(View.INVISIBLE);
     }
 
@@ -301,7 +344,7 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
     public void SortByBrandAsc() {
         cursor = dbConnector.getListItems(listname, "brand");
         prepareListAndAdapter(cursor);
-        ivListSortBrand.setImageResource(R.drawable.ic_keyboard_arrow_up_black_24dp);
+        ivListSortBrand.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
         sortBrand = true;
     }
 
@@ -309,7 +352,7 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
     public void SortByBrandDesc() {
         cursor = dbConnector.getListItems(listname, "brand DESC");
         prepareListAndAdapter(cursor);
-        ivListSortBrand.setImageResource(R.drawable.ic_keyboard_arrow_down_black_24dp);
+        ivListSortBrand.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
         sortBrand = false;
 
     }
@@ -318,7 +361,7 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
     public void SortByScaleAsc() {
         cursor = dbConnector.getListItems(listname, "scale");
         prepareListAndAdapter(cursor);
-        ivListSortScale.setImageResource(R.drawable.ic_keyboard_arrow_up_black_24dp);
+        ivListSortScale.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
         sortScale = true;
     }
 
@@ -326,7 +369,7 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
     public void SortByScaleDesc() {
         cursor = dbConnector.getListItems(listname, "scale DESC");
         prepareListAndAdapter(cursor);
-        ivListSortScale.setImageResource(R.drawable.ic_keyboard_arrow_down_black_24dp);
+        ivListSortScale.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
         sortScale = false;
     }
 
@@ -334,7 +377,7 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
     public void SortByDateAcs() {
         cursor = dbConnector.getListItems(listname, "_id");
         prepareListAndAdapter(cursor);
-        ivListSortDate.setImageResource(R.drawable.ic_keyboard_arrow_up_black_24dp);
+        ivListSortDate.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
         sortDate = true;
     }
 
@@ -342,7 +385,7 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
     public void SortByDateDesc() {
         cursor = dbConnector.getListItems(listname, "_id DESC");
         prepareListAndAdapter(cursor);
-        ivListSortDate.setImageResource(R.drawable.ic_keyboard_arrow_down_black_24dp);
+        ivListSortDate.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
         sortDate = false;
     }
 
@@ -350,7 +393,7 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
     public void SortByNameAsc() {
         cursor = dbConnector.getListItems(listname, "kit_name");
         prepareListAndAdapter(cursor);
-        ivListSortKitname.setImageResource(R.drawable.ic_keyboard_arrow_up_black_24dp);
+        ivListSortKitname.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
         sortName = true;
     }
 
@@ -358,7 +401,7 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
     public void SortByNameDesc() {
         cursor = dbConnector.getListItems(listname, "kit_name DESC");
         prepareListAndAdapter(cursor);
-        ivListSortKitname.setImageResource(R.drawable.ic_keyboard_arrow_down_black_24dp);
+        ivListSortKitname.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
         sortName = false;
     }
 

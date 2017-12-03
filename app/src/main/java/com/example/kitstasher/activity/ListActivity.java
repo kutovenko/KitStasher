@@ -11,7 +11,7 @@ import com.example.kitstasher.R;
 import com.example.kitstasher.fragment.ListViewFragment;
 import com.example.kitstasher.other.DbConnector;
 
-import static com.example.kitstasher.activity.MainActivity.REQUEST_CODE_POSITION;
+import static com.example.kitstasher.activity.MainActivity.REQUEST_CODE_VIEW;
 
 public class ListActivity extends AppCompatActivity{
     private LinearLayout llListsContainer;
@@ -49,7 +49,7 @@ public class ListActivity extends AppCompatActivity{
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // Check which request we're responding to
-        if (requestCode == REQUEST_CODE_POSITION) {
+        if (requestCode == REQUEST_CODE_VIEW) {
             if (resultCode == RESULT_OK) {
                     ListViewFragment listViewFragment = new ListViewFragment();
                     Bundle bundle = getIntent().getExtras();

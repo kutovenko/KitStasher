@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.kitstasher.R;
+import com.example.kitstasher.activity.MainActivity;
 import com.example.kitstasher.adapters.AdapterAddFragment;
 import com.example.kitstasher.other.OnFragmentInteractionListener;
 
@@ -41,6 +42,9 @@ public class AddFragment extends Fragment implements OnFragmentInteractionListen
         viewPager = (ViewPager)view.findViewById(R.id.viewpagerAdd);
         viewPager.setAdapter(new AdapterAddFragment(getChildFragmentManager(), getActivity()));
         tabLayout.setupWithViewPager(viewPager);
+
+        ((MainActivity) getActivity())
+                .setActionBarTitle(getActivity().getResources().getString(R.string.nav_manual));
 
         return view;
     }

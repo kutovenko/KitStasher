@@ -9,6 +9,7 @@
 
         <EditText
             android:id="@+id/etNewListName"
+            style="@style/MyTextEdit"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ems="10"

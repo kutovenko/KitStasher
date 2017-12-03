@@ -47,7 +47,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_weight="1"
-            android:text="@string/Or_enter" />
+            android:text="@string/Or_enter"
+            android:textAppearance="@style/TextTheme" />
 
         <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
@@ -56,6 +57,7 @@
 
             <AutoCompleteTextView
                 android:id="@+id/acBrand"
+                style="@style/MyAutoComplete"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
@@ -72,6 +74,7 @@
 
             <EditText
                 android:id="@+id/etCatno"
+                style="@style/MyTextEdit"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:ems="10"

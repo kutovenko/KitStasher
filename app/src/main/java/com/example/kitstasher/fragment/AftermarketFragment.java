@@ -26,9 +26,9 @@ public class AftermarketFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_viewstash, container, false);
-        TabLayout tabLayout = (TabLayout) view.findViewById(R.id.tabsViewStash);
+        TabLayout tabLayout = view.findViewById(R.id.tabsViewStash);
         tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
-        ViewPager viewPager = (ViewPager) view.findViewById(R.id.viewpagerViewStash);
+        ViewPager viewPager = view.findViewById(R.id.viewpagerViewStash);
         viewPager.setAdapter(new AdapterViewStash(getChildFragmentManager(), getActivity(),
                 true));
 

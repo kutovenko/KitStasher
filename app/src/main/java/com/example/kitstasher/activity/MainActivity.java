@@ -28,10 +28,11 @@ import com.example.kitstasher.R;
 import com.example.kitstasher.fragment.AddFragment;
 import com.example.kitstasher.fragment.AftermarketFragment;
 import com.example.kitstasher.fragment.HomeFragment;
+import com.example.kitstasher.fragment.KitsFragment;
 import com.example.kitstasher.fragment.MyListsFragment;
+import com.example.kitstasher.fragment.SearchFragment;
 import com.example.kitstasher.fragment.SettingsFragment;
 import com.example.kitstasher.fragment.StatisticsFragment;
-import com.example.kitstasher.fragment.ViewStashFragment;
 import com.example.kitstasher.other.AsyncApp42ServiceApi;
 import com.example.kitstasher.other.CircleTransform;
 import com.example.kitstasher.other.Constants;
@@ -66,6 +67,7 @@ public class MainActivity extends AppCompatActivity
     public static final String TAG_SETTINGS = "settings";
     public static final String TAG_AFTERMARKET = "aftermarket";
     public static final String TAG_MYLISTS = "mylists";
+    public static final String TAG_SEARCH = "search";
     public static final String TAG_STATISTICS = "statistics";
 
 
@@ -75,7 +77,7 @@ public class MainActivity extends AppCompatActivity
     private String[] activityTitles;
 
     //Tag for replacing inner fragments in Pager
-    public static final int REQUEST_CODE_POSITION = 1;
+    public static final int REQUEST_CODE_VIEW = 1;
     public static final int REQUEST_CODE_CAMERA = 2;
     public static final int REQUEST_CODE_CROP = 3;
 
@@ -130,13 +132,13 @@ public class MainActivity extends AppCompatActivity
 
         setSupportActionBar(toolbar);
         // Navigation view header
-        navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView = findViewById(R.id.nav_view);
 
         navHeader = navigationView.getHeaderView(0);
-        txtName = (TextView) navHeader.findViewById(R.id.name);
-//        txtWebsite = (TextView) navHeader.findViewById(R.id.website);
-//        imgNavHeaderBg = (ImageView) navHeader.findViewById(R.id.img_header_bg);
-        imgProfile = (ImageView) navHeader.findViewById(R.id.img_profile);
+        txtName = navHeader.findViewById(R.id.name);
+//        txtWebsite = navHeader.findViewById(R.id.website);
+//        imgNavHeaderBg = navHeader.findViewById(R.id.img_header_bg);
+        imgProfile = navHeader.findViewById(R.id.img_profile);
 //        header = (RelativeLayout)navHeader.findViewById(R.id.rlAppBarHeader);
         imgProfile.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -154,7 +156,7 @@ public class MainActivity extends AppCompatActivity
 
         mHandler = new Handler();
 
-        navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
         setUpNavigationView();
@@ -167,8 +169,9 @@ public class MainActivity extends AppCompatActivity
             loadHomeFragment(false);
         }
 
-        checkPermissions();
-        checkDeleted();
+        checkCameraPermissions();
+        checkWritePermissions();
+//        checkDeleted();
     }
 
     @Override
@@ -295,12 +298,16 @@ public class MainActivity extends AppCompatActivity
                         navItemIndex = 4;
                         CURRENT_TAG = TAG_MYLISTS;
                         break;
-                    case R.id.nav_statistics:
+                    case R.id.nav_search:
                         navItemIndex = 5;
+                        CURRENT_TAG = TAG_SEARCH;
+                        break;
+                    case R.id.nav_statistics:
+                        navItemIndex = 6;
                         CURRENT_TAG = TAG_STATISTICS;
                         break;
                     case R.id.nav_settings:
-                        navItemIndex = 6;
+                        navItemIndex = 7;
                         CURRENT_TAG = TAG_SETTINGS;
                         break;
                     default:
@@ -308,6 +315,7 @@ public class MainActivity extends AppCompatActivity
                         CURRENT_TAG = TAG_HOME;
                 }
                 //Checking if the item is in checked state or not, if not make it in checked state
+                // TODO: 01.12.2017 убрать, из-за этого идет неправильная подсветка
                 if (menuItem.isChecked()) {
                     menuItem.setChecked(false);
                 } else {
@@ -350,7 +358,7 @@ public class MainActivity extends AppCompatActivity
     public void onBackPressed() {
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawers();
-//            return;
+            return;
         }
         // This code loads home fragment when back key is pressed
         // when user is in other fragment than home
@@ -434,14 +442,16 @@ public class MainActivity extends AppCompatActivity
             case 1:
                 return new AddFragment();
             case 2:
-                return new ViewStashFragment();
+                return new KitsFragment();
             case 3:
                 return new AftermarketFragment();
             case 4:
                 return new MyListsFragment();
             case 5:
-                return new StatisticsFragment();
+                return new SearchFragment();
             case 6:
+                return new StatisticsFragment();
+            case 7:
                 return new SettingsFragment();
             default:
                 return new HomeFragment();
@@ -469,15 +479,18 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_mylists) {
             navItemIndex = 4;
             loadHomeFragment(false);
-        } else if (id == R.id.nav_statistics) {
+        } else if (id == R.id.nav_search) {
             navItemIndex = 5;
             loadHomeFragment(false);
-        } else if (id == R.id.nav_settings) {
+        } else if (id == R.id.nav_statistics) {
             navItemIndex = 6;
+            loadHomeFragment(false);
+        } else if (id == R.id.nav_settings) {
+            navItemIndex = 7;
             loadHomeFragment(false);
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
@@ -492,10 +505,18 @@ public class MainActivity extends AppCompatActivity
         //super call required for work with onActivityResult from nested fragments
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_POSITION){
+        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_VIEW) {
             super.onActivityResult(requestCode, resultCode, data);
+            char editMode = data.getExtras().getChar(Constants.EDIT_MODE);
+            //Если вернулись напрямую из афтермаркетЭдит, будет MODE_AFTERMARKET
+            //Если из карточки KitCard - MODE_KIT
+            //Если из KitEdit - MODE_KIT AFTER
+            ///
+            boolean was_deleted = data.getExtras().getBoolean("was_deleted");
+            ///
             int position = data.getExtras().getInt(Constants.LIST_POSITION);
             int categoryTab = data.getExtras().getInt(Constants.LIST_CATEGORY);
+
 
             String scaleFilter = data.getExtras().getString(Constants.SCALE_FILTER);
             String brandFilter = data.getExtras().getString(Constants.BRAND_FILTER);
@@ -516,55 +537,46 @@ public class MainActivity extends AppCompatActivity
             bundle.putString(Constants.STATUS_FILTER, statusFilter);
             bundle.putString(Constants.MEDIA_FILTER, mediaFilter);
 
-            ViewStashFragment fragment = new ViewStashFragment();
-            fragment.setArguments(bundle);
-            android.support.v4.app.FragmentTransaction fragmentTransaction =
-                    getSupportFragmentManager().beginTransaction();
-            fragmentTransaction.replace(R.id.mainactivityContainer, fragment);
-            fragmentTransaction.commit();
-            ViewPager viewPager = (ViewPager) findViewById(R.id.viewpagerViewStash);
-            viewPager.setCurrentItem(categoryTab);
+            if (editMode == Constants.MODE_KIT) {
+                //Возвращаемся в таблицу китов
+                KitsFragment fragment = new KitsFragment();
+                fragment.setArguments(bundle);
+                android.support.v4.app.FragmentTransaction fragmentTransaction =
+                        getSupportFragmentManager().beginTransaction();
+                fragmentTransaction.replace(R.id.mainactivityContainer, fragment);
+                fragmentTransaction.commit();
+                ViewPager viewPager = findViewById(R.id.viewpagerViewStash);
+                viewPager.setCurrentItem(categoryTab);
+            } else if (editMode == Constants.MODE_AFTERMARKET) {
+                //Возвоащаемся в пейджер SortAll
+                AftermarketFragment fragment = new AftermarketFragment();
+                fragment.setArguments(bundle);
+                android.support.v4.app.FragmentTransaction fragmentTransaction =
+                        getSupportFragmentManager().beginTransaction();
+                fragmentTransaction.replace(R.id.mainactivityContainer, fragment);
+                fragmentTransaction.commit();
+                ViewPager viewPager = findViewById(R.id.viewpagerViewStash);
+                viewPager.setCurrentItem(categoryTab);
+//            }else if (editMode == Constants.MODE_AFTER_KIT){
+//
+
+            } else if (editMode == Constants.MODE_VIEW_FROM_KIT) {
+                //Возвращаемся в просмотр кита
+
+            } else if (editMode == Constants.MODE_EDIT_FROM_KIT) {
+                //Возвращаемся в КитЕдит
+            }
         }
+
+        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_CAMERA) {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+
+        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_CROP) {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+
         if (resultCode != RESULT_OK){
-        }
-    }
-
-    /////////////////////////
-
-    private void checkPermissions() {
-        //checking for permissions on Marshmallow+
-        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED) {
-            // Should we show an explanation?
-            if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
-                    Manifest.permission.CAMERA)) {
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-
-            } else {
-                // No explanation needed, we can request the permission.
-                ActivityCompat.requestPermissions(MainActivity.this,
-                        new String[]{Manifest.permission.CAMERA},
-                        MY_PERMISSIONS_REQUEST_CAMERA);
-            }
-        }
-        //Permissions for write
-        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            // Should we show an explanation?
-            if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-
-            } else {
-                // No explanation needed, we can request the permission.
-                ActivityCompat.requestPermissions(MainActivity.this,
-                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        MY_PERMISSIONS_REQUEST_WRITE);
-            }
         }
     }
 
@@ -592,16 +604,63 @@ public class MainActivity extends AppCompatActivity
             bundle.putString(Constants.STATUS_FILTER, statusFilter);
             bundle.putString(Constants.MEDIA_FILTER, mediaFilter);
 
-            ViewStashFragment fragment = new ViewStashFragment();
+            KitsFragment fragment = new KitsFragment();
             fragment.setArguments(bundle);
             android.support.v4.app.FragmentTransaction fragmentTransaction =
                     getSupportFragmentManager().beginTransaction();
             fragmentTransaction.replace(R.id.mainactivityContainer, fragment);
             fragmentTransaction.commit();
-            ViewPager viewPager = (ViewPager) findViewById(R.id.viewpagerViewStash);
+            ViewPager viewPager = (ViewPager) findViewById(R.id.viewpagerViewStash);//!null
             viewPager.setCurrentItem(categoryTab);
         }
     }
+
+    /////////////////////////
+
+    private void checkCameraPermissions() {
+        //checking for permissions on Marshmallow+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.CAMERA)) {
+                Toast.makeText(this, "Without permission to use camera we can't read barcodes",
+                        Toast.LENGTH_LONG).show();
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+
+            } else {
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.CAMERA},
+                        MY_PERMISSIONS_REQUEST_CAMERA);
+            }
+        }
+    }
+
+    private void checkWritePermissions() {
+        //Permissions for write
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                Toast.makeText(this, "Without permission to write file we can't save boxart",
+                        Toast.LENGTH_LONG).show();
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+
+            } else {
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        MY_PERMISSIONS_REQUEST_WRITE);
+            }
+        }
+    }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
@@ -626,5 +685,4 @@ public class MainActivity extends AppCompatActivity
 //                return;
         }
     }
-
 }

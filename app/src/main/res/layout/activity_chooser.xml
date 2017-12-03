@@ -6,16 +6,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_weight="1"
+    android:background="@color/colorBackground"
     android:orientation="vertical"
     tools:context="com.example.kitstasher.activity.ListActivity">
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/menu_background"
+        android:background="@color/colorHighlight"
         android:gravity="right|center"
         android:orientation="horizontal">
 
@@ -23,7 +22,7 @@
         <LinearLayout
             android:id="@+id/linLayoutChooseSortDate"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="0.25"
             android:gravity="center_horizontal"
             android:orientation="vertical">
@@ -42,13 +41,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                app:srcCompat="@drawable/ic_keyboard_arrow_down_black_24dp" />
+                app:srcCompat="@drawable/ic_keyboard_arrow_down_white_24dp" />
         </LinearLayout>
 
         <LinearLayout
             android:id="@+id/linLayoutChooseSortBrand"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="0.25"
             android:gravity="center_horizontal"
             android:orientation="vertical">
@@ -71,7 +70,7 @@
         <LinearLayout
             android:id="@+id/linLayoutChooseSortKitname"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="0.25"
             android:gravity="center_horizontal"
             android:orientation="vertical">
@@ -82,7 +81,7 @@
                 android:layout_margin="4dp"
                 android:layout_weight="1"
                 android:gravity="right|center"
-                android:text="@string/Name" />
+                android:text="@string/Kit_name" />
 
             <ImageView
                 android:id="@+id/ivChooseSortKitname"
@@ -95,7 +94,7 @@
         <LinearLayout
             android:id="@+id/linLayoutChooseSortScale"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="0.25"
             android:gravity="center_horizontal"
             android:orientation="vertical">
@@ -121,7 +120,10 @@
         <ImageButton
             android:id="@+id/ibtnChooseFilter"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@drawable/button"
+            android:paddingEnd="12dp"
+            android:paddingStart="12dp"
             app:srcCompat="@drawable/ic_filter_list_black_24dp" />
     </LinearLayout>
 
@@ -129,20 +131,20 @@
         android:id="@+id/lvChooser"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
         android:layout_marginTop="8dp"
         android:layout_weight="1"
         android:choiceMode="multipleChoice"
         tools:layout_editor_absoluteX="8dp"
-        tools:layout_editor_absoluteY="8dp"/>
+        tools:layout_editor_absoluteY="8dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
         android:layout_marginTop="16dp"
         android:orientation="horizontal">
 
@@ -152,7 +154,7 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="8dp"
             android:layout_weight="1"
-            android:background="@drawable/button_light"
+            android:background="@drawable/button"
             android:text="@string/Cancel" />
 
         <Button
@@ -161,7 +163,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="8dp"
             android:layout_weight="1"
-            android:background="@drawable/button_light"
+            android:background="@drawable/button"
             android:text="@string/Done" />
     </LinearLayout>
 
