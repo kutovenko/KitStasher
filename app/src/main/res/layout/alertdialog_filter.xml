@@ -2,8 +2,6 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginEnd="20dp"
-    android:layout_marginStart="20dp"
     android:orientation="vertical">
 
     <TextView
@@ -11,92 +9,106 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
+        android:layout_marginLeft="26dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="16dp"
         android:text="@string/please_choose"
         android:textAppearance="@style/AppTheme.LittleHeader" />
 
-    <LinearLayout
+    <TableLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_marginEnd="20dp"
+        android:layout_marginStart="20dp">
 
-        <CheckBox
-            android:id="@+id/cbStatus"
-            style="@style/CheckboxTheme"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/Status" />
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-        <Spinner
-            android:id="@+id/spStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-    </LinearLayout>
+            <CheckBox
+                android:id="@+id/cbStatus"
+                style="@style/CheckboxTheme"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/Status" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+            <Spinner
+                android:id="@+id/spStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+        </TableRow>
 
-        <CheckBox
-            android:id="@+id/cbMedia"
-            style="@style/CheckboxTheme"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/Media" />
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-        <Spinner
-            android:id="@+id/spMedia"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-    </LinearLayout>
+            <CheckBox
+                android:id="@+id/cbMedia"
+                style="@style/CheckboxTheme"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/Media" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+            <Spinner
+                android:id="@+id/spMedia"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+        </TableRow>
 
-        <CheckBox
-            android:id="@+id/cbScale"
-            style="@style/CheckboxTheme"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/Scale_1" />
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-        <Spinner
-            android:id="@+id/spFilterScale"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="left|center_vertical"
-            android:layout_weight="1" />
+            <CheckBox
+                android:id="@+id/cbBrand"
+                style="@style/CheckboxTheme"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="8dp"
+                android:layout_weight="1"
+                android:text="@string/Brand" />
 
-    </LinearLayout>
+            <Spinner
+                android:id="@+id/spFilterBrands"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:gravity="center_horizontal" />
+        </TableRow>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-        <CheckBox
-            android:id="@+id/cbBrand"
-            style="@style/CheckboxTheme"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="8dp"
-            android:text="@string/Brand" />
+            <CheckBox
+                android:id="@+id/cbScale"
+                style="@style/CheckboxTheme"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/Scale" />
 
-        <Spinner
-            android:id="@+id/spFilterBrands"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="1"
-            android:gravity="center_horizontal" />
+            <TextView
+                android:id="@+id/textView16"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:text="1 /"
+                android:textAppearance="@style/TextTheme" />
 
-    </LinearLayout>
+            <Spinner
+                android:id="@+id/spFilterScale"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left|center_vertical"
+                android:layout_weight="1" />
+        </TableRow>
+
+    </TableLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -108,6 +120,7 @@
             style="@style/CheckboxTheme"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
             android:layout_weight="1"
             android:text="@string/Kit_name" />
 
@@ -116,6 +129,9 @@
             style="@style/MyAutoComplete"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginStart="20dp"
             android:layout_weight="1"
             android:singleLine="true" />
 

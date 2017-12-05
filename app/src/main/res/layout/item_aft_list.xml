@@ -45,14 +45,14 @@
                 android:text="Brand"
                 android:textAppearance="@style/TextTheme" />
 
-            <TextView
-                android:id="@+id/tvItemAfterCatno"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_weight="1"
-                android:text="Cat. No"
-                android:textAppearance="@style/TextTheme" />
+            <!--<TextView-->
+            <!--android:id="@+id/tvItemAfterCatno"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_gravity="center_vertical"-->
+            <!--android:layout_weight="1"-->
+            <!--android:text="Cat. No"-->
+            <!--android:textAppearance="@style/TextTheme" />-->
 
         </LinearLayout>
 

@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import com.example.kitstasher.R;
 import com.example.kitstasher.activity.MainActivity;
 import com.example.kitstasher.adapters.AdapterAddFragment;
+import com.example.kitstasher.other.Constants;
 import com.example.kitstasher.other.OnFragmentInteractionListener;
 
 /**
@@ -22,6 +23,8 @@ public class AddFragment extends Fragment implements OnFragmentInteractionListen
     private TabLayout tabLayout;
     private ViewPager viewPager;
     public String passBarcode;
+    public char passWorkMode;
+    private boolean aftermarketMode;
 //    private OnFragmentInteractionListener mListener;
     public AddFragment(){
 
@@ -38,9 +41,10 @@ public class AddFragment extends Fragment implements OnFragmentInteractionListen
         View view = inflater.inflate(R.layout.fragment_add, container, false);
 
 
-        tabLayout = (TabLayout)view.findViewById(R.id.tabsAdd);
-        viewPager = (ViewPager)view.findViewById(R.id.viewpagerAdd);
-        viewPager.setAdapter(new AdapterAddFragment(getChildFragmentManager(), getActivity()));
+        tabLayout = view.findViewById(R.id.tabsAdd);
+        viewPager = view.findViewById(R.id.viewpagerAdd);
+        boolean aftermarketMode = getArguments().getBoolean(Constants.AFTERMARKET_MODE);
+        viewPager.setAdapter(new AdapterAddFragment(getChildFragmentManager(), getActivity(), aftermarketMode));
         tabLayout.setupWithViewPager(viewPager);
 
         ((MainActivity) getActivity())
@@ -50,7 +54,7 @@ public class AddFragment extends Fragment implements OnFragmentInteractionListen
     }
 
     @Override
-    public void onFragmentInteraction(String barcode) {
+    public void onFragmentInteraction(String barcode, char mode) {
         FragmentManager fragmentManager = getChildFragmentManager();
         ScanFragment scanFragment = (ScanFragment) fragmentManager.findFragmentByTag(ScanFragment.scanTag);
         ManualAddFragment manualAddFragment = (ManualAddFragment)fragmentManager.findFragmentByTag(ManualAddFragment.manualTag);
@@ -60,7 +64,8 @@ public class AddFragment extends Fragment implements OnFragmentInteractionListen
         {
             // your some other frag need to provide some data back based on views.
             passBarcode = scanFragment.getBarcode();
-            manualAddFragment.onFragmentInteraction(passBarcode);
+            passWorkMode = scanFragment.getWorkMode();
+            manualAddFragment.onFragmentInteraction(passBarcode, passWorkMode);
         }
     }
 }

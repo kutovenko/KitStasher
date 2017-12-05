@@ -52,6 +52,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
         switch (view.getId()){
             case R.id.btnAddKitAction:
                 AddFragment addFragment = new AddFragment();
+                bundle.putBoolean(Constants.AFTERMARKET_MODE, false);
+                bundle.putChar(Constants.WORK_MODE, Constants.MODE_KIT);
+                addFragment.setArguments(bundle);
                 fragmentTransaction.replace(R.id.mainactivityContainer, addFragment);
                 fragmentTransaction.commit();
                 break;
@@ -62,19 +65,18 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
                 break;
             case R.id.btnViewStashAction:
                 KitsFragment kitsFragment = new KitsFragment();
-//                Bundle bundle = new Bundle(2);
                 bundle.putInt(Constants.LIST_CATEGORY, 0);
                 bundle.putBoolean(Constants.AFTERMARKET_MODE, false);
+                bundle.putChar(Constants.WORK_MODE, Constants.MODE_KIT);
                 kitsFragment.setArguments(bundle);
                 fragmentTransaction.replace(R.id.mainactivityContainer, kitsFragment);
                 fragmentTransaction.commit();
                 break;
             case R.id.btnAftermarketAction:
                 AftermarketFragment aftermarketFragment = new AftermarketFragment();
-//                Bundle afterBundle = new Bundle(2);
-//                afterBundle.
                 bundle.putInt(Constants.LIST_CATEGORY, 0);
                 bundle.putBoolean(Constants.AFTERMARKET_MODE, true);
+                bundle.putChar(Constants.WORK_MODE, Constants.MODE_AFTERMARKET);
                 aftermarketFragment.setArguments(bundle);
                 fragmentTransaction.replace(R.id.mainactivityContainer, aftermarketFragment);
                 fragmentTransaction.commit();
@@ -89,7 +91,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
                 fragmentTransaction.replace(R.id.mainactivityContainer, statisticsFragment);
                 fragmentTransaction.commit();
                 break;
-
         }
     }
 }

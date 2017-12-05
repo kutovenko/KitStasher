@@ -22,6 +22,7 @@ import java.util.List;
 
 public class ViewActivity extends AppCompatActivity {
     private Cursor cursor;
+    private long kitId;
     private Long[] ids;
     private Integer[] positions;
     private ArrayList<Long> listIds;
@@ -41,7 +42,7 @@ public class ViewActivity extends AppCompatActivity {
     private String statusFilter;
     private String mediaFilter;
     private int position;
-    private char mode;
+    private char workMode;
     public ViewPager viewPager;
     private int newPosition;
 
@@ -56,12 +57,13 @@ public class ViewActivity extends AppCompatActivity {
         listIds = (ArrayList<Long>) getIntent().getSerializableExtra(Constants.IDS);
         listPositions = (ArrayList<Integer>) getIntent().getSerializableExtra("positions");
 
-        mode = getIntent().getExtras().getChar(Constants.EDIT_MODE);
+        workMode = getIntent().getExtras().getChar(Constants.WORK_MODE);
         sortBy = getIntent().getExtras().getString(Constants.SORT_BY);
 
         position = getIntent().getExtras().getInt(Constants.POSITION);
         categoryToReturn = getIntent().getExtras().getInt(Constants.LIST_CATEGORY);
-
+        listname = getIntent().getStringExtra(Constants.LISTNAME);
+        kitId = getIntent().getExtras().getLong(Constants.ID);
         scaleFilter = getIntent().getExtras().getString(Constants.SCALE_FILTER);
         brandFilter = getIntent().getExtras().getString(Constants.BRAND_FILTER);
         kitnameFilter = getIntent().getExtras().getString(Constants.KITNAME_FILTER);
@@ -75,7 +77,7 @@ public class ViewActivity extends AppCompatActivity {
         filters[3] = statusFilter;
         filters[4] = mediaFilter;
 
-        chooseCursor();
+//        chooseCursor();
 
         ids = new Long[listIds.size()];
         listIds.toArray(ids);
@@ -101,9 +103,9 @@ public class ViewActivity extends AppCompatActivity {
             Bundle bundle = new Bundle();
             bundle.putLong(Constants.ID, id); //id записи, по которой кликнули в списке
             bundle.putSerializable(Constants.IDS, listIds);
-            bundle.putSerializable("positions", positions);
-            bundle.putString("table", tableName); //?
-            bundle.putChar(Constants.EDIT_MODE, mode);
+            bundle.putSerializable(Constants.POSITIONS, positions);
+            bundle.putString(Constants.TABLE, tableName);
+            bundle.putChar(Constants.WORK_MODE, workMode);
             bundle.putString(Constants.SORT_BY, sortBy);
             bundle.putInt(Constants.LIST_CATEGORY, categoryToReturn);
             bundle.putInt(Constants.POSITION, newPosition);
@@ -120,15 +122,21 @@ public class ViewActivity extends AppCompatActivity {
     }
 
     private void chooseCursor() {
-        listname = getIntent().getExtras().getString(Constants.LISTNAME);
-        if (mode == Constants.MODE_KIT) {
+        if (workMode == Constants.MODE_KIT) {
             tableName = DbConnector.TABLE_KITS;
-        } else if (mode == Constants.MODE_LIST) {
+            cursor = dbConnector.filteredKits(tableName, filters, sortBy, categoryToReturn, listname); //todo нужно по категориям
+
+        } else if (workMode == Constants.MODE_LIST) {
             tableName = DbConnector.TABLE_MYLISTSITEMS;
-        } else if (mode == Constants.MODE_AFTERMARKET) {
+            cursor = dbConnector.filteredKits(tableName, filters, sortBy, categoryToReturn, listname); //todo нужно по категориям
+
+        } else if (workMode == Constants.MODE_AFTERMARKET) {
             tableName = DbConnector.TABLE_AFTERMARKET;
+            cursor = dbConnector.filteredKits(tableName, filters, sortBy, categoryToReturn, listname); //todo нужно по категориям
+
+        } else if (workMode == Constants.MODE_AFTER_KIT) {
+            cursor = dbConnector.getAftermarketForKit(kitId, Constants.EMPTY);
         }
-        cursor = dbConnector.filteredKits(tableName, filters, sortBy, categoryToReturn, listname); //todo нужно по категориям
     }
 
     @Override
@@ -148,18 +156,23 @@ public class ViewActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        Intent intent = new Intent(ViewActivity.this, MainActivity.class);
-        intent.putExtra(Constants.SORT_BY, sortBy);
-        intent.putExtra(Constants.EDIT_MODE, mode);
-        intent.putExtra(Constants.LIST_CATEGORY, categoryToReturn);
-        intent.putExtra(Constants.LIST_POSITION, position);
-        intent.putExtra(Constants.SCALE_FILTER, scaleFilter);
-        intent.putExtra(Constants.BRAND_FILTER, brandFilter);
-        intent.putExtra(Constants.KITNAME_FILTER, kitnameFilter);
-        intent.putExtra(Constants.STATUS_FILTER, statusFilter);
-        intent.putExtra(Constants.MEDIA_FILTER, mediaFilter);
-        intent.putExtra("was_deleted", true);
-        setResult(RESULT_OK, intent);
-        finish();
+        //1. Возврат в майн активити во всех случаях, кроме MODE_LIST
+        if (workMode != Constants.MODE_LIST) {
+            Intent intent = new Intent(ViewActivity.this, MainActivity.class);
+            intent.putExtra(Constants.SORT_BY, sortBy);
+            intent.putExtra(Constants.WORK_MODE, workMode);
+            intent.putExtra(Constants.LIST_CATEGORY, categoryToReturn);
+            intent.putExtra(Constants.LIST_POSITION, position);
+            intent.putExtra(Constants.SCALE_FILTER, scaleFilter);
+            intent.putExtra(Constants.BRAND_FILTER, brandFilter);
+            intent.putExtra(Constants.KITNAME_FILTER, kitnameFilter);
+            intent.putExtra(Constants.STATUS_FILTER, statusFilter);
+            intent.putExtra(Constants.MEDIA_FILTER, mediaFilter);
+            intent.putExtra("was_deleted", true);
+            setResult(RESULT_OK, intent);
+            finish();
+        } else {
+            super.onBackPressed(); //todo обработать LIST
+        }
     }
 }

@@ -1,6 +1,7 @@
 package com.example.kitstasher.adapters;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -8,6 +9,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import com.example.kitstasher.R;
 import com.example.kitstasher.fragment.ManualAddFragment;
 import com.example.kitstasher.fragment.ScanFragment;
+import com.example.kitstasher.other.Constants;
 
 /**
  * Created by Алексей on 21.04.2017.
@@ -17,19 +19,31 @@ public class AdapterAddFragment extends FragmentPagerAdapter {
 //    private static final String TAG = AdapterAddFragment.class.getSimpleName();
     private static final int FRAGMENT_COUNT = 2;
     private Context mContext;
+    private boolean aftermarketMode;
 
 
-    public AdapterAddFragment(FragmentManager fm, Context context) {
+    public AdapterAddFragment(FragmentManager fm, Context context, boolean aftermarketMode) {
         super(fm);
         mContext = context;
+        this.aftermarketMode = aftermarketMode;
     }
     @Override
     public Fragment getItem(int position) {
+        Bundle bundle = new Bundle();
+        bundle.putBoolean(Constants.AFTERMARKET_MODE, aftermarketMode);
+
         switch (position){
             case 0:
-                return new ScanFragment();
+                ScanFragment scanFragment = new ScanFragment();
+                scanFragment.setArguments(bundle);
+                return scanFragment;
+//                return new ScanFragment();
             case 1:
-                return new ManualAddFragment();
+                ManualAddFragment manualAddFragment = new ManualAddFragment();
+                bundle.putChar(Constants.WORK_MODE, Constants.MODE_KIT);
+                manualAddFragment.setArguments(bundle);
+                return manualAddFragment;
+//                return new ManualAddFragment();
         }
         return null;
     }

@@ -620,6 +620,7 @@ public class DbConnector {
 
     public boolean searchForDoubles(char editMode, String brand, String cat_no) {
         boolean found = false;
+        String having = "";
         String tableName = TABLE_KITS;
         if (editMode == Constants.MODE_KIT) {
             tableName = TABLE_KITS;
@@ -627,10 +628,13 @@ public class DbConnector {
             tableName = TABLE_AFTERMARKET;
         } else if (editMode == Constants.MODE_LIST) {
             tableName = TABLE_MYLISTSITEMS;
+//        } else if (editMode == Constants.MODE_AFTER_KIT){
+//            tableName = TABLE_KIT_AFTER_CONNECTIONS;
+//            having = KIT_AFTER_KITID + " = '" + String.valueOf(kitId) + "'";
         }
 
         if (mDB.query(tableName, new String[]{"brand", "brand_catno"}, "brand = ? " +
-                "AND brand_catno = ?", new String[]{brand, cat_no}, null, null, null)
+                "AND brand_catno = ?", new String[]{brand, cat_no}, null, having, null)
                 .getCount() != 0) {
             found = true;
         }
@@ -708,7 +712,7 @@ public class DbConnector {
     }
 
     //Получить запись по идентификатору!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    public Cursor getRecById(long id){
+    public Cursor getKitById(long id) {
         return mDB.query(TABLE_KITS, null, "_id = " + id, null, null, null, null);
         //todo написать перевод в редактор и перенос значений
     }
@@ -761,8 +765,8 @@ public class DbConnector {
     }
 
     // удалить запись из TABLE_KITS!!!!!!!!!!!!!!!
-    public void delRec(long id) {
-        mDB.delete(TABLE_KITS, COLUMN_ID + " = " + id, null);
+    public void delRec(String tableName, long id) {
+        mDB.delete(tableName, COLUMN_ID + " = " + id, null);
     }
 
 
@@ -1301,10 +1305,14 @@ public Cursor filteredKits(String tableName, String[] filters, String sortBy,
             String[] aftid = new String[listAft.size()];
         if (listAft.size() > 0) {
             aftid = listAft.toArray(aftid);
-            String query = "SELECT * FROM " + TABLE_AFTERMARKET + " WHERE listname = '"+listname+"' AND _id IN (" + makePlaceholders(aftid.length) + ")";
+            String query = "SELECT * FROM " + TABLE_AFTERMARKET + " WHERE listname = '"
+                    + listname
+                    + "' AND _id IN (" + makePlaceholders(aftid.length) + ")";
             return mDB.rawQuery(query, aftid);
         }else{
-            String query = "SELECT * FROM " + TABLE_AFTERMARKET + " WHERE listname = '"+listname+"' AND _id IN (-1)";
+            String query = "SELECT * FROM " + TABLE_AFTERMARKET + " WHERE listname = '"
+                    + listname
+                    + "' AND _id IN (-1)";
             return mDB.rawQuery(query, aftid);
         }
     }

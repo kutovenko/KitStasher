@@ -6,7 +6,7 @@
             android:defaultValue="true"
             android:title="Contributor Mode"
             android:key="switch_contributor"
-            android:summary="Switch from local to contributor mode"/>
+            android:summary="Switch from local to contributor workMode" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Manteinance">
 

@@ -19,75 +19,59 @@ public class AdapterViewStash extends FragmentStatePagerAdapter {
     private Context mContext;
     private boolean aftermarketMode;
 
-    /////////
-//    private ArrayList<SortAllFragment> views = new ArrayList<>();
-//    private Cursor cursor;
-    ////////////
-
     public AdapterViewStash(FragmentManager fm, Context context, boolean aftermarketMode) {
         super(fm);
         mContext = context;
         this.aftermarketMode = aftermarketMode;
-//        DbConnector dbConnector = new DbConnector(mContext);
-//        dbConnector.open();
-//        String tableName;
-//        if (aftermarketMode){
-//            tableName = DbConnector.TABLE_AFTERMARKET;
-//        }else {
-//            tableName = DbConnector.TABLE_KITS;
-//        }
-//        this.cursor = dbConnector.getActiveCategories(tableName);
     }
 
     @Override
     public Fragment getItem(int position) {
-//        cursor.moveToFirst();
         Bundle bundle = new Bundle();
         SortAllFragment fragment = new SortAllFragment();
         switch (position){
-//            for (int i = 0; i< cursor.getCount(); i++)
             case 0:
-                bundle.putInt("categoryTab", 0);
+                bundle.putInt(Constants.CATEGORY, 0);
                 bundle.putBoolean(Constants.AFTERMARKET_MODE, aftermarketMode);
                 fragment.setArguments(bundle);
                 return fragment;
             case 1:
-                bundle.putInt("categoryTab", 1);
+                bundle.putInt(Constants.CATEGORY, 1);
                 bundle.putBoolean(Constants.AFTERMARKET_MODE, aftermarketMode);
                 fragment.setArguments(bundle);
                 return fragment;
             case 2:
-                bundle.putInt("categoryTab", 2);
+                bundle.putInt(Constants.CATEGORY, 2);
                 bundle.putBoolean(Constants.AFTERMARKET_MODE, aftermarketMode);
                 fragment.setArguments(bundle);
                 return fragment;
             case 3:
-                bundle.putInt("categoryTab", 3);
+                bundle.putInt(Constants.CATEGORY, 3);
                 bundle.putBoolean(Constants.AFTERMARKET_MODE, aftermarketMode);
                 fragment.setArguments(bundle);
                 return fragment;
             case 4:
-                bundle.putInt("categoryTab", 4);
+                bundle.putInt(Constants.CATEGORY, 4);
                 bundle.putBoolean(Constants.AFTERMARKET_MODE, aftermarketMode);
                 fragment.setArguments(bundle);
                 return fragment;
             case 5:
-                bundle.putInt("categoryTab", 5);
+                bundle.putInt(Constants.CATEGORY, 5);
                 bundle.putBoolean(Constants.AFTERMARKET_MODE, aftermarketMode);
                 fragment.setArguments(bundle);
                 return fragment;
             case 6:
-                bundle.putInt("categoryTab", 6);
+                bundle.putInt(Constants.CATEGORY, 6);
                 bundle.putBoolean(Constants.AFTERMARKET_MODE, aftermarketMode);
                 fragment.setArguments(bundle);
                 return fragment;
             case 7:
-                bundle.putInt("categoryTab", 7);
+                bundle.putInt(Constants.CATEGORY, 7);
                 bundle.putBoolean(Constants.AFTERMARKET_MODE, aftermarketMode);
                 fragment.setArguments(bundle);
                 return fragment;
             case 8:
-                bundle.putInt("categoryTab", 8);
+                bundle.putInt(Constants.CATEGORY, 8);
                 bundle.putBoolean(Constants.AFTERMARKET_MODE, aftermarketMode);
                 fragment.setArguments(bundle);
                 return fragment;
@@ -98,8 +82,6 @@ public class AdapterViewStash extends FragmentStatePagerAdapter {
 
     @Override
     public int getCount() {
-
-//        return 1 + cursor.getCount();
         return FRAGMENT_COUNT;
     }
 

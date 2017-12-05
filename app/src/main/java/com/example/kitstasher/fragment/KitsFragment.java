@@ -29,7 +29,8 @@ public class KitsFragment extends Fragment {
         TabLayout tabLayout = view.findViewById(R.id.tabsViewStash);
         tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
 
-        boolean aftermarketMode = getArguments().getBoolean("afterMode");
+        boolean aftermarketMode = getArguments().getBoolean(Constants.AFTERMARKET_MODE);
+//        char workMode = getArguments().getChar(Constants.WORK_MODE);
 
         ViewPager viewPager = view.findViewById(R.id.viewpagerViewStash);
         adapterViewStash = new AdapterViewStash(getChildFragmentManager(), getActivity(), aftermarketMode);

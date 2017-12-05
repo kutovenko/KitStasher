@@ -61,7 +61,7 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
     DbConnector dbConnector;
     private OnFragmentInteractionListener mListener;
     public static String scanTag;
-    private char mode;
+    private char workMode;
     private Context mContext;
 
     private String notes, purchaseDate, currency;
@@ -129,66 +129,23 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
         return view;
     }
 
-//    private void checkPermissions() {
-//        //checking for permissions on Marshmallow+
-//        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA)
-//                != PackageManager.PERMISSION_GRANTED) {
-//            // Should we show an explanation?
-//            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
-//                    Manifest.permission.CAMERA)) {
-//                // Show an explanation to the user *asynchronously* -- don't block
-//                // this thread waiting for the user's response! After the user
-//                // sees the explanation, try again to request the permission.
-//
-//            } else {
-//                // No explanation needed, we can request the permission.
-//                ActivityCompat.requestPermissions(getActivity(),
-//                        new String[]{Manifest.permission.CAMERA},
-//                        MY_PERMISSIONS_REQUEST_CAMERA);
-//            }
-//        }
-//    }
-//
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode,
-//                                           String permissions[], int[] grantResults) {
-//        switch (requestCode) {
-//            case MY_PERMISSIONS_REQUEST_CAMERA: {
-//                // If request is cancelled, the result arrays are empty.
-//                if (grantResults.length > 0
-//                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//
-//                    initiateScanner(getCallback());
-//                    // permission was granted, yay! Do the
-//                    // contacts-related task you need to do.
-//                } else {
-//
-//                    // permission denied, boo! Disable the
-//                    // functionality that depends on this permission.
-//                    Toast.makeText(getActivity(),
-//                            R.string.permission_denied_to_use_camera, Toast.LENGTH_SHORT).show();
-//                    barcodeView.setVisibility(View.GONE);
-//                }
-//                return;
-//            }
-//
-//            // other 'case' lines to check for other
-//            // permissions this app might request
-//        }
-//    }
-
 
     // Проверяем, откуда обратились к редактору
     private void checkMode() {
         if (getArguments() != null){
-            listname = getArguments().getString("listname");
-            if (getArguments().getChar("mode") == 'l'){
-                mode = 'l';
-            }else{
-                mode = 'm';
-            }
+            workMode = getArguments().getChar(Constants.WORK_MODE);
+            listname = getArguments().getString(Constants.LISTNAME);
+
+//            if (getArguments().getChar(Constants.WORK_MODE) == 'l'){
+//                workMode = 'l';
+//            }else{
+//                workMode = 'm';
+//            }
+//        }else{
+//            workMode = 'm';
         }else{
-            mode = 'm';
+            workMode = Constants.MODE_KIT;
+            listname = Constants.EMPTY;
         }
     }
 
@@ -229,7 +186,7 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
     /*Checks if local database already includes this kit*/
     private boolean isInLocalBase(String barcode) {
         //Проверяем локально
-        if (mode == 'l') {
+        if (workMode == 'l') {
             if (dbConnector.searchListForDoubles(listname, barcode)) {
                 return true;
             }
@@ -307,10 +264,10 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
     }
 
     private void openManualAdd() {
-        if (mode == 'l'){
+        if (workMode == 'l') {
             ManualAddFragment fragment = new ManualAddFragment();
             Bundle bundle = new Bundle(3);
-            bundle.putChar("mode", 'l');
+            bundle.putChar("workMode", 'l');
             bundle.putString("listname", listname);
             bundle.putString("barcode", barcode);
             fragment.setArguments(bundle);
@@ -320,10 +277,10 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
             fragmentTransaction.commit();
         }else {
             if (mListener != null) {
-                mListener.onFragmentInteraction(barcode);
+                mListener.onFragmentInteraction(barcode, workMode);
             }
 
-            ViewPager viewPager = (ViewPager) getActivity().findViewById(R.id.viewpagerAdd);
+            ViewPager viewPager = getActivity().findViewById(R.id.viewpagerAdd);
             viewPager.setCurrentItem(1);
         }
 
@@ -334,8 +291,8 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
     public void onFindDocSuccess(Storage response) {
 
         showKit = "";
-        final List<Kit> itemsForDb = new ArrayList<Kit>();
-        final List<Item> itemList = new ArrayList<Item>();
+        final List<Kit> itemsForDb = new ArrayList<>();
+        final List<Item> itemList = new ArrayList<>();
 
         //НАйденный документ
         // TODO Auto-generated method stub
@@ -430,7 +387,7 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
                     kitToAdd.setStatus(status);
                     kitToAdd.setMedia(media);
 
-                    if (mode == 'l'){
+                    if (workMode == 'l') {
 
                         dbConnector.addListItem(kitToAdd, listname);
 
@@ -518,6 +475,10 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
 
     public String getBarcode(){ //?
         return barcode;
+    }
+
+    public char getWorkMode() {
+        return workMode;
     }
 
 //    private void writeToLocalDatabase() {

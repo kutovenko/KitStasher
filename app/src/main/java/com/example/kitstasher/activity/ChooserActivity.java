@@ -22,6 +22,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.kitstasher.R;
@@ -41,7 +42,7 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
     private DbConnector dbConnector;
     private Cursor cursor;
     private String listname;
-    private char editMode;
+    private char workMode;
     private String tableMode;
     private long kitId;
     
@@ -58,21 +59,13 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chooser);
-        listname = getIntent().getExtras().getString("listname");
-
+        listname = getIntent().getExtras().getString(Constants.LISTNAME);
+        workMode = getIntent().getExtras().getChar(Constants.WORK_MODE);
         initVariables();
         initUI();
 
-        if (editMode == Constants.MODE_AFTERMARKET) {
-            cursor = dbConnector.getAllAftermarket("_id DESC");
-        } else if (editMode == Constants.MODE_KIT || editMode == Constants.MODE_LIST) {
-            cursor = dbConnector.getAllData("_id DESC");
-        }
 
         stashList = findViewById(R.id.lvChooser);
-//        AdapterChooserList stashListAdapter =
-//                new AdapterChooserList(this, cursor, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER, editMode);
-//        stashList.setAdapter(stashListAdapter);
         prepareListAndAdapter(cursor);
 
         setActive(R.id.linLayoutChooseSortDate, ivSortDate);
@@ -105,11 +98,11 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
         doneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (editMode == Constants.MODE_KIT) {
+                if (workMode == Constants.MODE_LIST) {
                     if (choosedIds != null && !choosedIds.isEmpty()) {
                         for (int i = 0; i < choosedIds.size(); i++) {
                             long l = Long.valueOf(choosedIds.get(i));
-                            Cursor c = dbConnector.getRecById(l);
+                            Cursor c = dbConnector.getKitById(l);
                             copyKit(c);
                         }
                     } else {
@@ -126,7 +119,7 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
                         choosedIds.clear();
                     }
                     finish();
-                } else if (editMode == Constants.MODE_AFTER_KIT) {
+                } else if (workMode == Constants.MODE_AFTER_KIT) {
                     if (choosedIds != null && !choosedIds.isEmpty()) {
                         for (int i = 0; i < choosedIds.size(); i++) {
                             long afterId = Long.valueOf(choosedIds.get(i));
@@ -164,45 +157,61 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
         });
     }
 
-
-
     private void initUI() {
-        ibtnChooseFilter = (ImageButton)findViewById(R.id.ibtnChooseFilter);
-
-        linLayoutBrand = (LinearLayout)findViewById(R.id.linLayoutChooseSortBrand);
+        ibtnChooseFilter = findViewById(R.id.ibtnChooseFilter);
+        linLayoutBrand = findViewById(R.id.linLayoutChooseSortBrand);
         linLayoutBrand.setOnClickListener(this);
-        linLayoutScale = (LinearLayout)findViewById(R.id.linLayoutChooseSortScale);
+        linLayoutScale = findViewById(R.id.linLayoutChooseSortScale);
         linLayoutScale.setOnClickListener(this);
-        linLayoutDate = (LinearLayout)findViewById(R.id.linLayoutChooseSortDate);
+        linLayoutDate = findViewById(R.id.linLayoutChooseSortDate);
         linLayoutDate.setOnClickListener(this);
-        linLayoutKitname = (LinearLayout)findViewById(R.id.linLayoutChooseSortKitname);
+        linLayoutKitname = findViewById(R.id.linLayoutChooseSortKitname);
         linLayoutKitname.setOnClickListener(this);
-        ivSortBrand = (ImageView)findViewById(R.id.ivChooseSortBrand);
-        ivSortScale = (ImageView)findViewById(R.id.ivChooseSortScale);
-        ivSortDate = (ImageView)findViewById(R.id.ivChooseSortDate);
-        ivSortKitname = (ImageView)findViewById(R.id.ivChooseSortKitname);
+        ivSortBrand = findViewById(R.id.ivChooseSortBrand);
+        ivSortScale = findViewById(R.id.ivChooseSortScale);
+        ivSortDate = findViewById(R.id.ivChooseSortDate);
+        ivSortKitname = findViewById(R.id.ivChooseSortKitname);
     }
 
     private void initVariables() {
         dbConnector = new DbConnector(this);
         dbConnector.open();
-        editMode = getIntent().getExtras().getChar(Constants.EDIT_MODE);
-        if (editMode == Constants.MODE_KIT) {
+        if (workMode == Constants.MODE_LIST || workMode == Constants.MODE_KIT) {
             tableMode = DbConnector.TABLE_KITS;
-        } else if (editMode == Constants.MODE_AFTERMARKET) {
+            cursor = dbConnector.getAllData("_id DESC");
+        } else if (workMode == Constants.MODE_AFTER_KIT || workMode == Constants.MODE_AFTERMARKET) {
             tableMode = DbConnector.TABLE_AFTERMARKET;
-            kitId = getIntent().getExtras().getLong("kitId");
+            kitId = getIntent().getExtras().getLong(Constants.KIT_ID);
+            cursor = dbConnector.getAllAftermarket("_id DESC");
         }
         filters = new String[]{"","","","",""}; //todo уточнить количество
+
     }
 
     private void setActive(int  linLayout, ImageView arrow){
+//        linLayoutScale.setBackgroundColor(Color.TRANSPARENT);
+//        linLayoutBrand.setBackgroundColor(Color.TRANSPARENT);
+//        linLayoutDate.setBackgroundColor(Color.TRANSPARENT);
+//        linLayoutKitname.setBackgroundColor(Color.TRANSPARENT);
+//        LinearLayout activeLayout = findViewById(linLayout);
+//        activeLayout.setBackgroundColor(Helper.getColor(ChooserActivity.this, R.color.colorAccent));
+//
+//        ivSortBrand.setVisibility(View.INVISIBLE);
+//        ivSortKitname.setVisibility(View.INVISIBLE);
+//        ivSortScale.setVisibility(View.INVISIBLE);
+//        ivSortDate.setVisibility(View.INVISIBLE);
+//        arrow.setVisibility(View.VISIBLE);
         linLayoutScale.setBackgroundColor(Color.TRANSPARENT);
+        setTextColor(linLayoutScale, 0);
         linLayoutBrand.setBackgroundColor(Color.TRANSPARENT);
+        setTextColor(linLayoutBrand, 0);
         linLayoutDate.setBackgroundColor(Color.TRANSPARENT);
+        setTextColor(linLayoutDate, 0);
         linLayoutKitname.setBackgroundColor(Color.TRANSPARENT);
-        LinearLayout activeLayout = (LinearLayout)findViewById(linLayout);
+        setTextColor(linLayoutKitname, 0);
+        LinearLayout activeLayout = findViewById(linLayout);
         activeLayout.setBackgroundColor(Helper.getColor(ChooserActivity.this, R.color.colorAccent));
+        setTextColor(activeLayout, 1);
 
         ivSortBrand.setVisibility(View.INVISIBLE);
         ivSortKitname.setVisibility(View.INVISIBLE);
@@ -211,13 +220,24 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
         arrow.setVisibility(View.VISIBLE);
     }
 
+    private void setTextColor(LinearLayout linearLayout, int mode) { //todo helper
+        View view = linearLayout.getChildAt(0);
+        int color;
+        if (mode == 0) {
+            color = Helper.getColor(ChooserActivity.this, R.color.colorPassive);
+        } else {
+            color = Helper.getColor(ChooserActivity.this, R.color.colorItem);
+        }
+        if (view instanceof TextView) {
+            TextView textView = (TextView) view;
+            textView.setTextColor(color);
+        }
+    }
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            //Кнопки сортировки списка
             case R.id.linLayoutChooseSortBrand:
                 setActive(R.id.linLayoutChooseSortBrand, ivSortBrand);
-
                 if (sortBrand){
                     SortByBrandAsc();
                     sortBrand = false;
@@ -257,7 +277,6 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
                 sortBrand = true;
                 sortScale = true;
                 sortName = true;
-
                 break;
 
             case R.id.linLayoutChooseSortKitname:
@@ -278,11 +297,10 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
 
     public void prepareListAndAdapter(Cursor cursor){
         AdapterChooserList stashListAdapter =
-                new AdapterChooserList(this, cursor, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER, editMode);
+                new AdapterChooserList(this, cursor,
+                        CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER, workMode);
         stashList.setAdapter(stashListAdapter);
-
     }
-
 
     private void copyKit(Cursor c) {
         c.moveToFirst();
@@ -308,7 +326,6 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
         int quantity = c.getInt(c.getColumnIndexOrThrow(DbConnector.COLUMN_QUANTITY));
         int price = c.getInt(c.getColumnIndexOrThrow(DbConnector.COLUMN_PRICE));
 
-
         Kit kitToAdd = new Kit.KitBuilder()
                 .hasBrand(brand)
                 .hasBrand_catno(cat_no)
@@ -318,9 +335,7 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
                 .hasBarcode(barcode)
                 .hasKit_noeng_name(kit_noengname)
                 .hasDescription(description)
-
                 .hasPrototype("")//not in use
-
                 .hasBoxart_url(boxart_url)
                 .hasBoxart_uri(boxart_uri)
                 .hasScalemates_url("")
@@ -333,7 +348,6 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
                 .hasPrice(price)
                 .hasCurrency(currency)
                 .build();
-
         if (!dbConnector.searchListForDoubles(listname, brand, cat_no)) {
             dbConnector.addListItem(kitToAdd, listname);
         }
@@ -351,7 +365,6 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
         prepareListAndAdapter(cursor);
         ivSortBrand.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
         sortBrand = false;
-
     }
 
     public void SortByScaleAsc() {
@@ -402,7 +415,7 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
         final View dialogView = inflater.inflate(R.layout.alertdialog_filter, null);
         dialogBuilder.setView(dialogView);
 
-        final CheckBox cbFilterStatus = (CheckBox)dialogView.findViewById(R.id.cbStatus);
+        final CheckBox cbFilterStatus = dialogView.findViewById(R.id.cbStatus);
         cbFilterStatus.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -410,7 +423,7 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
             }
         });
 
-        final CheckBox cbFilterMedia = (CheckBox)dialogView.findViewById(R.id.cbMedia);
+        final CheckBox cbFilterMedia = dialogView.findViewById(R.id.cbMedia);
         cbFilterMedia.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -418,7 +431,7 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
             }
         });
 
-        final CheckBox cbFilterScale = (CheckBox)dialogView.findViewById(R.id.cbScale);
+        final CheckBox cbFilterScale = dialogView.findViewById(R.id.cbScale);
         cbFilterScale.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -426,7 +439,7 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
             }
         });
 
-        final CheckBox cbFilterBrand = (CheckBox)dialogView.findViewById(R.id.cbBrand);
+        final CheckBox cbFilterBrand = dialogView.findViewById(R.id.cbBrand);
         cbFilterBrand.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -434,7 +447,7 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
             }
         });
 
-        final CheckBox cbFilterKitname = (CheckBox)dialogView.findViewById(R.id.cbKitname);
+        final CheckBox cbFilterKitname = dialogView.findViewById(R.id.cbKitname);
         cbFilterKitname.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -443,25 +456,25 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
         });
 
 
-        final Spinner spFilterStatus = (Spinner)dialogView.findViewById(R.id.spStatus);
+        final Spinner spFilterStatus = dialogView.findViewById(R.id.spStatus);
         ArrayList<String> statusArray = dbConnector.getFilterFromIntData(tableMode, DbConnector.COLUMN_STATUS);
         ArrayAdapter statusAdapter = new ArrayAdapter<>(ChooserActivity.this,
                 android.R.layout.simple_spinner_item, statusArray);
         spFilterStatus.setAdapter(statusAdapter);
 
-        final Spinner spFilterMedia = (Spinner) dialogView.findViewById(R.id.spMedia);
+        final Spinner spFilterMedia = dialogView.findViewById(R.id.spMedia);
         ArrayList<String> mediaArray = dbConnector.getFilterFromIntData(tableMode, DbConnector.COLUMN_MEDIA);
         ArrayAdapter mediaAdapter = new ArrayAdapter<>(ChooserActivity.this,
                 android.R.layout.simple_spinner_item, mediaArray);
         spFilterMedia.setAdapter(mediaAdapter);
 
-        final Spinner spFilterScale = (Spinner)dialogView.findViewById(R.id.spFilterScale);
+        final Spinner spFilterScale = dialogView.findViewById(R.id.spFilterScale);
         ArrayList<String> scalesArray = dbConnector.getFilterData(tableMode, DbConnector.COLUMN_SCALE);
         ArrayAdapter scalesAdapter = new ArrayAdapter<>(ChooserActivity.this,
                 android.R.layout.simple_spinner_item, scalesArray);
         spFilterScale.setAdapter(scalesAdapter);
 
-        final Spinner spFilterBrand = (Spinner)dialogView.findViewById(R.id.spFilterBrands);
+        final Spinner spFilterBrand = dialogView.findViewById(R.id.spFilterBrands);
         ArrayList<String> brandsArray = dbConnector.getFilterData(tableMode, DbConnector.COLUMN_BRAND);
         ArrayAdapter brandsAdapter = new ArrayAdapter<>(ChooserActivity.this,
                 android.R.layout.simple_spinner_item, brandsArray);
@@ -470,7 +483,7 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
 
         ArrayList<String> afternamesArray = dbConnector.getFilterData(tableMode, DbConnector.COLUMN_KIT_NAME);
 
-        final AutoCompleteTextView acFilterKitname = (AutoCompleteTextView)dialogView
+        final AutoCompleteTextView acFilterKitname = dialogView
                 .findViewById(R.id.acFilterKitname);
         ArrayAdapter acFilterKitnameAdapter = new ArrayAdapter<>(ChooserActivity.this,
                 android.R.layout.simple_dropdown_item_1line, afternamesArray);

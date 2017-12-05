@@ -71,7 +71,7 @@ public class MyListsFragment extends Fragment implements View.OnClickListener {
         mContext = getActivity();
         view = inflater.inflate(R.layout.fragment_mylists, container, false);
         ((MainActivity) getActivity())
-                .setActionBarTitle(getActivity().getResources().getString(R.string.Mylists));
+                .setActionBarTitle(getActivity().getResources().getString(R.string.Wishlists));
 
         lvMyLists = view.findViewById(R.id.lvMyLists);
         cursor = dbConnector.getAllLists("_id DESC");

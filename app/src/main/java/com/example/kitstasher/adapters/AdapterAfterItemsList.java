@@ -51,7 +51,7 @@ public class AdapterAfterItemsList extends CursorAdapter {
         ViewHolder holder = new ViewHolder();
         holder.tvItemAfterName = view.findViewById(R.id.tvItemAfterName);
         holder.tvItemAfterBrand = view.findViewById(R.id.tvItemAfterBrand);
-        holder.tvItemAfterCatno = view.findViewById(R.id.tvItemAfterCatno);
+//        holder.tvItemAfterCatno = view.findViewById(R.id.tvItemAfterCatno);
 //        holder.ivItemAfterBoxart = (ImageView)view.findViewById(R.id.ivItemAfterBoxart);
         holder.ibRemoveAftermarket = view.findViewById(R.id.ibRemoveAftermarket);
         if (demoMode) {
@@ -81,8 +81,8 @@ public class AdapterAfterItemsList extends CursorAdapter {
 //        String uri =  cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BOXART_URI));
 
         holder.tvItemAfterName.setText(name);
-        holder.tvItemAfterBrand.setText(brand);
-        holder.tvItemAfterCatno.setText(catno);
+        holder.tvItemAfterBrand.setText(brand + " " + catno);
+//        holder.tvItemAfterCatno.setText(catno);
 
 //        Glide
 //                .with(context)

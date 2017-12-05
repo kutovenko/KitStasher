@@ -148,7 +148,7 @@ Prefixes and postfixes for links
 
     //Modes for editor
     public static final String LISTNAME = "listname";
-    public static final String EDIT_MODE = "mode";
+    public static final String WORK_MODE = "mode";
     public static final Character MODE_KIT = 'm';
     public static final Character MODE_LIST = 'l';
     public static final Character MODE_AFTERMARKET = 'a';
@@ -169,6 +169,8 @@ Prefixes and postfixes for links
     public static final int M_CODE_METAL = 7;
     public static final int M_CODE_3DPRINT = 8;
     public static final int M_CODE_MULTIMEDIA = 9;
+    public static final int M_CODE_DECAL = 10;
+    public static final int M_CODE_MASK = 11;
 
     //Status codes
     public static final int STATUS_NEW = 0;
@@ -192,6 +194,8 @@ Prefixes and postfixes for links
     public static final String KITNAME_FILTER = "kitnameFilter";
     public static final String STATUS_FILTER = "statusFilter";
     public static final String MEDIA_FILTER = "mediaFilter";
+    public static final String FILTERS = "filters";
+    public static final String TABLE = "table";
 
     public static final String SORT_BY = "sortBy";
     public static final String KITNAME = "kitname";
@@ -223,7 +227,7 @@ Prefixes and postfixes for links
     public static final String REBOX = "2";
     //Sorting
     public static final String _ID = "_id";
-    public static final String AFTERMARKET_MODE = "aftermarketMode";
+    public static final String AFTERMARKET_MODE = "afterMode";
 
     //Cropping
     public static final String FILE_URI = "fileUri";

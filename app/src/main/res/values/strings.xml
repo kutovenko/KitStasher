@@ -58,7 +58,7 @@
     <string name="scan_cancelled">Scan cancelled</string>
     <!--ManualAddFragment-->
     <string name="scale">Scale</string>
-    <string name="name">Name</string>
+    <string name="name">Title</string>
     <string name="manufacturer">* Manufacturer</string>
     <string name="cancelled">Canсelled</string>
     <string name="nothing_found_online">Sorry, nothing in online database. Let\'s add manually!</string>
@@ -105,13 +105,13 @@
     <string name="camera">Camera</string>
     <!--ManualAdd Form-->
     <string name="Search_by_code">Search by Code</string>
-    <string name="Non_english_name">Non-English Name (if any)</string>
+    <string name="Non_english_name">Non-English Title (if any)</string>
     <string name="Catalog_code">* Catalog Code</string>
     <string name="Scale_1">Scale 1/</string>
     <string name="Description">Description</string>
-    <string name="Kit_name">Kit Name</string>
+    <string name="Kit_name">Kit Title</string>
     <string name="Brand">Brand</string>
-    <string name="Name_required">* Kit Name</string>
+    <string name="Name_required">* Kit Title</string>
     <string name="Scale">Scale</string>
     <string name="Scale_required">* Scale</string>
     <!--Categories-->
@@ -184,7 +184,7 @@
     <string name="enter_brand">Please enter Brand name</string>
     <string name="enter_cat_no">Please enter catalog code</string>
     <string name="enter_scale">Please enter Scale</string>
-    <string name="enter_kit_name">Please enter Kit name</string>
+    <string name="enter_kit_name">Please enter Kit title</string>
     <string name="please_fill_fields" translatable="false">Please fill in fields</string>
     <!--Back4App-->
     <!--<string name="parse_application_id" translatable="false">btaakgy7Ch1juOYWd34B09ir2Nyt1MUiFqfA9BRU</string>-->
@@ -323,7 +323,7 @@
     <string name="What_in_the_box">What is in the box?</string>
     <string name="View_Statistics">View Statistics</string>
     <string name="add_aftermarket">Add Aftermarket</string>
-    <string name="After_with_this_name_already_exists">Aftermarket with this name already exists</string>
+    <string name="After_with_this_name_already_exists">Aftermarket with this title already exists</string>
     <string name="media_other">Other</string>
     <string name="media_injected">Injected</string>
     <string name="media_shortrun">Short-run</string>
@@ -344,7 +344,7 @@
     <string name="Media">Media</string>
     <string name="aftermarket">Aftermarket</string>
     <string name="Shop">Shop</string>
-    <string name="Aftermarket_name">Aftermarket Name</string>
+    <string name="Aftermarket_name">Aftermarket title</string>
     <string name="Options">Settings</string>
     <string name="Or_enter">Or Enter</string>
     <string name="permission_denied_to_write">Permissions denied to write file</string>
@@ -369,7 +369,7 @@
     <string name="crop_error">Crop Error</string>
     <string name="Your_device_cannot_take_pictures">"Your device can not take pictures "</string>
     <string name="search_online">Let\'search online database!</string>
-    <string name="brand_and_name">Manufacturer and kit name</string>
+    <string name="brand_and_name">Manufacturer and kit title</string>
     <string name="nav_kits">Kits</string>
     <string name="search_by_code">Let\'s search by code</string>
     <string name="unknown">Unknown</string>
@@ -382,6 +382,11 @@
     <string name="change_boxart">Change boxart</string>
     <string name="on_the_net">On the Net</string>
     <string name="add_new_currency">Add new currency</string>
+    <string name="Wishlists">Wishlists</string>
+    <string name="aftermarket_added">Aftermarket added</string>
+    <string name="aftermarket_already_exist">Aftermarket is already in stash</string>
+    <string name="media_decal">Decal</string>
+    <string name="media_mask">Mask</string>
 
 
 </resources>

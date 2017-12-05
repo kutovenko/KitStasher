@@ -28,31 +28,29 @@ import java.util.List;
 
 public class AdapterChooserList extends CursorAdapter {
     private final Context context;
-    List<Integer> selectedItemsPositions;//to store all selected items position
-    List<String> selectedIds;
-    char mode;
+    private List<Integer> selectedItemsPositions;//to store all selected items position
+    private List<String> selectedIds;
+    private char workMode;
 
-
-
-    public AdapterChooserList(Context context, Cursor c, int flags, char mode) {
+    public AdapterChooserList(Context context, Cursor c, int flags, char workMode) {
         super(context, c, flags);
         this.context = context;
-        selectedItemsPositions = new ArrayList<Integer>();
-        selectedIds = new ArrayList<String>();
-        this.mode = mode;
+        selectedItemsPositions = new ArrayList<>();
+        selectedIds = new ArrayList<>();
+        this.workMode = workMode;
     }
 
     static class ViewHolder {
-        protected TextView tvChooseKitName, tvChooseKitBrand, tvScale;
-        protected ImageView ivChooseKitBoxart, ivChooseKitCategory;
-        protected CheckBox cbChoose;
-        protected CheckableLinearLayout cllContainer;
+        private TextView tvChooseKitName, tvChooseKitBrand, tvScale;
+        private ImageView ivChooseKitBoxart, ivChooseKitCategory;
+        private CheckBox cbChoose;
+        private CheckableLinearLayout cllContainer;
     }
 
     @Override
     public View newView(Context context, final Cursor cursor, ViewGroup parent) {
         final View view = LayoutInflater.from(context).inflate(R.layout.item_list_choose_item, parent, false);
-        CheckBox box = (CheckBox)view.findViewById(R.id.cbChoose);
+        CheckBox box = view.findViewById(R.id.cbChoose);
         Object obj = cursor.getString(cursor.getColumnIndex(DbConnector.MYLISTS_COLUMN_ID));
         view.setTag(obj);
         box.setTag(cursor.getPosition());
@@ -83,22 +81,19 @@ public class AdapterChooserList extends CursorAdapter {
         return view;
     }
 
-    // The bindView method is used to bind all data to a given view
-    // such as setting the text on a TextView.
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
         ViewHolder holder = new ViewHolder();
-        holder.ivChooseKitCategory = (ImageView)view.findViewById(R.id.ivChooseKitCategory);
-        holder.tvChooseKitBrand = (TextView)view.findViewById(R.id.tvChooseKitBrand);
-        holder.tvChooseKitName = (TextView)view.findViewById(R.id.tvChooseKitName);
-        holder.tvScale = (TextView)view.findViewById(R.id.tvScale);
-        holder.cllContainer = (CheckableLinearLayout)view.findViewById(R.id.llChooseItemContainer);
+        holder.ivChooseKitCategory = view.findViewById(R.id.ivChooseKitCategory);
+        holder.tvChooseKitBrand = view.findViewById(R.id.tvChooseKitBrand);
+        holder.tvChooseKitName = view.findViewById(R.id.tvChooseKitName);
+        holder.tvScale = view.findViewById(R.id.tvScale);
+        holder.cllContainer = view.findViewById(R.id.llChooseItemContainer);
 
-/////////////// TODO: 15.09.2017 разделить на кит и афтер
         String kitname = "";
-        if (mode == Constants.MODE_KIT){
+        if (workMode == Constants.MODE_LIST || workMode == Constants.MODE_KIT) {
             kitname = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_KIT_NAME));
-        }else if (mode == Constants.MODE_AFTERMARKET){
+        } else if (workMode == Constants.MODE_AFTER_KIT || workMode == Constants.MODE_AFTERMARKET) {
             kitname = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_AFTERMARKET_NAME));
         }
         String brand = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BRAND));
@@ -143,41 +138,7 @@ public class AdapterChooserList extends CursorAdapter {
                     .into(holder.ivChooseKitCategory);
         }
 
-//        if (Constants.CAT_SEA.equals(category)) {
-//            holder.ivChooseKitCategory.setImageResource(R.drawable.ic_tag_ship_black_24dp);
-//        }
-//        if (Constants.CAT_AIR.equals(category)) {
-//            holder.ivChooseKitCategory.setImageResource(R.drawable.ic_tag_air_black_24dp);
-//        }
-//        if (Constants.CAT_GROUND.equals(category)) {
-//            holder.ivChooseKitCategory.setImageResource(R.drawable.ic_tag_afv_black_24dp);
-//        }
-//        if (Constants.CAT_SPACE.equals(category)) {
-//            holder.ivChooseKitCategory.setImageResource(R.drawable.ic_tag_space_black_24dp);
-//        }
-//        if (Constants.CAT_OTHER.equals(category)) {
-//            holder.ivChooseKitCategory.setImageResource(R.drawable.ic_check_box_outline_blank_black_24dp);
-//        }
-//        if (Constants.CAT_AUTOMOTO.equals(category)){
-//            holder.ivChooseKitCategory.setImageResource(R.drawable.ic_directions_car_black_24dp);
-//        }
-//        if (Constants.CAT_FANTASY.equals(category)){
-//            Glide
-//                    .with(context)
-//                    .load(R.drawable.ic_android_black_24dp)
-//                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-//                    .into(holder.ivChooseKitCategory);
-//        }
-//        if (Constants.CAT_FIGURES.equals(category)){
-//            Glide
-//                    .with(context)
-//                    .load(R.drawable.ic_wc_black_24dp)
-//                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-//                    .into(holder.ivChooseKitCategory);
-//        }
-
-
-        holder.cbChoose = (CheckBox)view.findViewById(R.id.cbChoose);
+        holder.cbChoose = view.findViewById(R.id.cbChoose);
         holder.cbChoose.setTag(cursor.getPosition());
 
         if (selectedItemsPositions.contains(cursor.getPosition())) {

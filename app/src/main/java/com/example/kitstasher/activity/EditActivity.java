@@ -1,6 +1,5 @@
 package com.example.kitstasher.activity;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
@@ -28,9 +27,9 @@ public class EditActivity extends AppCompatActivity {
 
         int position = getIntent().getExtras().getInt(Constants.POSITION);
         long id = getIntent().getExtras().getLong(Constants.ID);
-        char editMode = getIntent().getExtras().getChar(Constants.EDIT_MODE);
+        char workMode = getIntent().getExtras().getChar(Constants.WORK_MODE);
         Long afterId = 0L;
-        if (editMode == Constants.MODE_AFTERMARKET) {
+        if (workMode == Constants.MODE_AFTERMARKET) {
             afterId = getIntent().getExtras().getLong(Constants.AFTER_ID);
         }
         String category = getIntent().getExtras().getString(Constants.LIST_CATEGORY);
@@ -62,100 +61,122 @@ public class EditActivity extends AppCompatActivity {
         filters[3] = statusFilter;
         filters[4] = mediaFilter;
 
-        switch (editMode) {
-            case 'm':
-                ItemEditFragment editFragment = new ItemEditFragment();
-                Bundle bundleKit = new Bundle();
-                bundleKit.putInt(Constants.POSITION, position);
-                bundleKit.putChar(Constants.EDIT_MODE, editMode);
-//                bundle.putInt(Constants.LIST_POSITION, position);
-                bundleKit.putLong(Constants.ID, id); //id записи, по которой кликнули в списке
-                bundleKit.putString(Constants.KITNAME, kitname);
-                bundleKit.putString(Constants.BRAND, brand);
-                bundleKit.putString(Constants.CATNO, catno);
-                bundleKit.putString(Constants.URL, url);
-                bundleKit.putString(Constants.URI, uri);
-                bundleKit.putInt(Constants.SCALE, scale);
-                bundleKit.putString(Constants.CATEGORY, category);
-                bundleKit.putString(Constants.YEAR, year);
-                bundleKit.putString(Constants.DESCRIPTION, description);
-                bundleKit.putString(Constants.ORIGINAL_NAME, origName);
-                bundleKit.putString(Constants.NOTES, notes);
-                bundleKit.putString(Constants.MEDIA, media);
-                bundleKit.putInt(Constants.QUANTITY, quantity);
-                bundleKit.putString(Constants.STATUS, status);
-                editFragment.setArguments(bundleKit);
-                android.support.v4.app.FragmentTransaction fragmentTransaction =
-                        getSupportFragmentManager().beginTransaction();
-                fragmentTransaction.replace(R.id.frameLayoutEditContainer, editFragment);
-//                fragmentTransaction.addToBackStack("card_fragment");
-                fragmentTransaction.commit();
-                break;
+        ItemEditFragment editFragment = new ItemEditFragment();
+        Bundle bundleKit = new Bundle();
+        bundleKit.putInt(Constants.POSITION, position);
+        bundleKit.putChar(Constants.WORK_MODE, workMode);
+        bundleKit.putLong(Constants.ID, id); //id записи, по которой кликнули в списке
+        bundleKit.putString(Constants.KITNAME, kitname);
+        bundleKit.putString(Constants.BRAND, brand);
+        bundleKit.putString(Constants.CATNO, catno);
+        bundleKit.putString(Constants.URL, url);
+        bundleKit.putString(Constants.URI, uri);
+        bundleKit.putInt(Constants.SCALE, scale);
+        bundleKit.putString(Constants.CATEGORY, category);
+        bundleKit.putString(Constants.YEAR, year);
+        bundleKit.putString(Constants.DESCRIPTION, description);
+        bundleKit.putString(Constants.ORIGINAL_NAME, origName);
+        bundleKit.putString(Constants.NOTES, notes);
+        bundleKit.putString(Constants.MEDIA, media);
+        bundleKit.putInt(Constants.QUANTITY, quantity);
+        bundleKit.putString(Constants.STATUS, status);
+        editFragment.setArguments(bundleKit);
+        android.support.v4.app.FragmentTransaction fragmentTransaction =
+                getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.frameLayoutEditContainer, editFragment);
+        fragmentTransaction.commit();
 
-            case 'l':
-                ItemEditFragment listFragment = new ItemEditFragment();
-                Bundle bundleList = new Bundle();
-                bundleList.putInt(Constants.POSITION, position);
-                bundleList.putChar(Constants.EDIT_MODE, editMode);
-//                bundle.putInt(Constants.LIST_POSITION, position);
-                bundleList.putLong(Constants.ID, id); //id записи, по которой кликнули в списке
-                bundleList.putString(Constants.KITNAME, kitname);
-                bundleList.putString(Constants.BRAND, brand);
-                bundleList.putString(Constants.CATNO, catno);
-                bundleList.putString(Constants.URL, url);
-                bundleList.putString(Constants.URI, uri);
-                bundleList.putInt(Constants.SCALE, scale);
-                bundleList.putString(Constants.CATEGORY, category);
-                bundleList.putString(Constants.YEAR, year);
-                bundleList.putString(Constants.DESCRIPTION, description);
-                bundleList.putString(Constants.ORIGINAL_NAME, origName);
-                bundleList.putString(Constants.NOTES, notes);
-                bundleList.putString(Constants.MEDIA, media);
-                bundleList.putInt(Constants.QUANTITY, quantity);
-                bundleList.putString(Constants.STATUS, status);
-//                bundleList.putString(Constants.LISTNAME, listname);
-                listFragment.setArguments(bundleList);
-                android.support.v4.app.FragmentTransaction fragmentTransactionList =
-                        getSupportFragmentManager().beginTransaction();
-                fragmentTransactionList.replace(R.id.frameLayoutEditContainer, listFragment);
-//                fragmentTransaction.addToBackStack("card_fragment");
-                fragmentTransactionList.commit();
-                break;
-
-            case 'a':
-                ItemEditFragment itemEditFragment = new ItemEditFragment();
-                //Loading fragment with kit list
-                Bundle bundle = new Bundle();
-                bundle.putChar(Constants.EDIT_MODE, editMode);
-                bundle.putInt(Constants.POSITION, position);
-                bundle.putLong(Constants.KIT_ID, id);
-                bundle.putLong(Constants.ID, id);
-                bundle.putLong(Constants.AFTER_ID, afterId);
-                bundle.putString(Constants.LIST_CATEGORY, category);
-
-                bundle.putString(Constants.SCALE_FILTER, scaleFilter);
-                bundle.putString(Constants.BRAND_FILTER, brandFilter);
-                bundle.putString(Constants.KITNAME_FILTER, kitnameFilter);
-
-                bundle.putString(Constants.STATUS_FILTER, statusFilter);
-                bundle.putString(Constants.MEDIA_FILTER, mediaFilter);
-
-                itemEditFragment.setArguments(bundle);
-                android.support.v4.app.FragmentTransaction fragmentTransactionAfter =
-                        getSupportFragmentManager().beginTransaction();
-                fragmentTransactionAfter.replace(R.id.frameLayoutEditContainer, itemEditFragment);
-
-                fragmentTransactionAfter.commit();
-                break;
-        }
+//
+//        switch (workMode) {
+//            case 'm': //MODE_KIT
+//                ItemEditFragment editFragment = new ItemEditFragment();
+//                Bundle bundleKit = new Bundle();
+//                bundleKit.putInt(Constants.POSITION, position);
+//                bundleKit.putChar(Constants.WORK_MODE, workMode);
+//                bundleKit.putLong(Constants.ID, id); //id записи, по которой кликнули в списке
+//                bundleKit.putString(Constants.KITNAME, kitname);
+//                bundleKit.putString(Constants.BRAND, brand);
+//                bundleKit.putString(Constants.CATNO, catno);
+//                bundleKit.putString(Constants.URL, url);
+//                bundleKit.putString(Constants.URI, uri);
+//                bundleKit.putInt(Constants.SCALE, scale);
+//                bundleKit.putString(Constants.CATEGORY, category);
+//                bundleKit.putString(Constants.YEAR, year);
+//                bundleKit.putString(Constants.DESCRIPTION, description);
+//                bundleKit.putString(Constants.ORIGINAL_NAME, origName);
+//                bundleKit.putString(Constants.NOTES, notes);
+//                bundleKit.putString(Constants.MEDIA, media);
+//                bundleKit.putInt(Constants.QUANTITY, quantity);
+//                bundleKit.putString(Constants.STATUS, status);
+//                editFragment.setArguments(bundleKit);
+//                android.support.v4.app.FragmentTransaction fragmentTransaction =
+//                        getSupportFragmentManager().beginTransaction();
+//                fragmentTransaction.replace(R.id.frameLayoutEditContainer, editFragment);
+//                fragmentTransaction.commit();
+//                break;
+//
+//            case 'l': //MODE_LIST
+//                ItemEditFragment listFragment = new ItemEditFragment();
+//                Bundle bundleList = new Bundle();
+//                bundleList.putInt(Constants.POSITION, position);
+//                bundleList.putChar(Constants.WORK_MODE, workMode);
+//                bundleList.putLong(Constants.ID, id); //id записи, по которой кликнули в списке
+//                bundleList.putString(Constants.KITNAME, kitname);
+//                bundleList.putString(Constants.BRAND, brand);
+//                bundleList.putString(Constants.CATNO, catno);
+//                bundleList.putString(Constants.URL, url);
+//                bundleList.putString(Constants.URI, uri);
+//                bundleList.putInt(Constants.SCALE, scale);
+//                bundleList.putString(Constants.CATEGORY, category);
+//                bundleList.putString(Constants.YEAR, year);
+//                bundleList.putString(Constants.DESCRIPTION, description);
+//                bundleList.putString(Constants.ORIGINAL_NAME, origName);
+//                bundleList.putString(Constants.NOTES, notes);
+//                bundleList.putString(Constants.MEDIA, media);
+//                bundleList.putInt(Constants.QUANTITY, quantity);
+//                bundleList.putString(Constants.STATUS, status);
+////                bundleList.putString(Constants.LISTNAME, listname);
+//                listFragment.setArguments(bundleList);
+//                android.support.v4.app.FragmentTransaction fragmentTransactionList =
+//                        getSupportFragmentManager().beginTransaction();
+//                fragmentTransactionList.replace(R.id.frameLayoutEditContainer, listFragment);
+//                fragmentTransactionList.commit();
+//                break;
+//
+//            case 'a': //MODE_AFTERMARKET
+//                ItemEditFragment itemEditFragment = new ItemEditFragment();
+//                //Loading fragment with kit list
+//                Bundle bundle = new Bundle();
+//                bundle.putChar(Constants.WORK_MODE, workMode);
+//                bundle.putInt(Constants.POSITION, position);
+//                bundle.putLong(Constants.KIT_ID, id);
+//                bundle.putLong(Constants.ID, id);
+//                bundle.putLong(Constants.AFTER_ID, afterId);
+//                bundle.putString(Constants.LIST_CATEGORY, category);
+//                bundle.putString(Constants.SCALE_FILTER, scaleFilter);
+//                bundle.putString(Constants.BRAND_FILTER, brandFilter);
+//                bundle.putString(Constants.KITNAME_FILTER, kitnameFilter);
+//                bundle.putString(Constants.STATUS_FILTER, statusFilter);
+//                bundle.putString(Constants.MEDIA_FILTER, mediaFilter);
+//
+//                itemEditFragment.setArguments(bundle);
+//                android.support.v4.app.FragmentTransaction fragmentTransactionAfter =
+//                        getSupportFragmentManager().beginTransaction();
+//                fragmentTransactionAfter.replace(R.id.frameLayoutEditContainer, itemEditFragment);
+//                fragmentTransactionAfter.commit();
+//                break;
+//
+//            case 'k': //MODE_AFTER_KIT
+//                break;
+//        }
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK && requestCode == REQUEST_AFTER_KIT) {
-
-        }
-    }
+//    @Override
+//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        super.onActivityResult(requestCode, resultCode, data);
+//        if (resultCode == RESULT_OK && requestCode == REQUEST_AFTER_KIT) {
+//
+//        }
+//    }
 
 }

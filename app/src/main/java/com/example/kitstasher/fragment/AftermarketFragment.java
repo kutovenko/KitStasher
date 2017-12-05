@@ -17,6 +17,7 @@ import com.example.kitstasher.other.Constants;
  */
 
 public class AftermarketFragment extends Fragment {
+    AdapterViewStash adapter;
     public AftermarketFragment() {
 
     }
@@ -29,8 +30,10 @@ public class AftermarketFragment extends Fragment {
         TabLayout tabLayout = view.findViewById(R.id.tabsViewStash);
         tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
         ViewPager viewPager = view.findViewById(R.id.viewpagerViewStash);
-        viewPager.setAdapter(new AdapterViewStash(getChildFragmentManager(), getActivity(),
-                true));
+        char workMode = getArguments().getChar(Constants.WORK_MODE);
+        boolean aftermarketMode = getArguments().getBoolean(Constants.AFTERMARKET_MODE);
+        adapter = new AdapterViewStash(getChildFragmentManager(), getActivity(), true);
+        viewPager.setAdapter(adapter);
 
         Bundle bundle = getArguments();
         if (!bundle.isEmpty()) {
@@ -45,5 +48,9 @@ public class AftermarketFragment extends Fragment {
         }
         tabLayout.setupWithViewPager(viewPager);
         return view;
+    }
+
+    public void refreshPages() {
+        adapter.notifyDataSetChanged();
     }
 }

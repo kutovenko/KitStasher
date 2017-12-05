@@ -133,7 +133,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:gravity="right"
+                    android:gravity="left"
                     android:textAppearance="@style/TextTheme" />
             </TableRow>
 
@@ -154,7 +154,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:gravity="right"
+                    android:gravity="left"
                     android:textAppearance="@style/TextTheme" />
             </TableRow>
 
@@ -175,7 +175,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:gravity="right"
+                    android:gravity="left"
                     android:textAppearance="@style/TextTheme" />
             </TableRow>
 
@@ -196,7 +196,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:gravity="right"
+                    android:gravity="left"
                     android:textAppearance="@style/TextTheme" />
             </TableRow>
         </TableLayout>
@@ -217,7 +217,6 @@
             android:id="@+id/tvNotes"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
             android:layout_marginLeft="48dp"
             android:layout_marginRight="16dp"
             android:layout_weight="0.12"
@@ -228,23 +227,33 @@
             android:textAppearance="@style/TextTheme" />
 
         <TextView
-            android:id="@+id/tvAftermarketTitle"
+            android:id="@+id/textView42"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
+            android:layout_marginTop="16dp"
             android:layout_weight="0.12"
-            android:text="@string/aftermarket"
+            android:text="@string/on_the_net"
             android:textAppearance="@style/AppTheme.LittleHeader" />
 
-        <ListView
-            android:id="@+id/lvAftermarket"
+        <TextView
+            android:id="@+id/tvGoogle"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginBottom="16dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
             android:layout_marginLeft="48dp"
-            android:layout_marginRight="16dp" />
+            android:layout_marginRight="16dp"
+            android:text="Google" />
+
+        <TextView
+            android:id="@+id/tvScalemates"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="48dp"
+            android:layout_marginRight="16dp"
+            android:text="Scalemates" />
 
         <TextView
             android:id="@+id/tvPurchaseTitle"
@@ -253,6 +262,7 @@
             android:layout_marginBottom="8dp"
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
+            android:layout_marginTop="16dp"
             android:layout_weight="0.12"
             android:text="@string/Purchase_info"
             android:textAppearance="@style/AppTheme.LittleHeader" />
@@ -283,7 +293,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:gravity="right"
+                    android:gravity="left"
                     android:textAppearance="@style/TextTheme" />
             </TableRow>
 
@@ -304,7 +314,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:gravity="right"
+                    android:gravity="left"
                     android:textAppearance="@style/TextTheme" />
             </TableRow>
 
@@ -325,7 +335,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:gravity="right"
+                    android:gravity="left"
                     android:textAppearance="@style/TextTheme" />
             </TableRow>
 
@@ -345,6 +355,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:gravity="left"
                     android:orientation="horizontal">
 
                     <TextView
@@ -352,7 +363,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:gravity="right"
+                        android:gravity="left"
                         android:textAppearance="@style/TextTheme" />
 
                     <TextView
@@ -360,7 +371,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:gravity="right"
+                        android:gravity="left"
                         android:textAppearance="@style/TextTheme" />
                 </LinearLayout>
 
@@ -368,32 +379,23 @@
         </TableLayout>
 
         <TextView
-            android:id="@+id/textView42"
+            android:id="@+id/tvAftermarketTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
             android:layout_weight="0.12"
-            android:text="@string/on_the_net"
+            android:text="@string/aftermarket"
             android:textAppearance="@style/AppTheme.LittleHeader" />
 
-        <TextView
-            android:id="@+id/tvGoogle"
+        <ListView
+            android:id="@+id/lvAftermarket"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="16dp"
             android:layout_marginLeft="48dp"
-            android:layout_marginRight="16dp"
-            android:text="Google" />
-
-        <TextView
-            android:id="@+id/tvScalemates"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="48dp"
-            android:layout_marginRight="16dp"
-            android:text="Scalemates" />
+            android:layout_marginRight="16dp" />
 
         <LinearLayout
             android:layout_width="match_parent"

@@ -29,7 +29,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.kitstasher.R;
-import com.example.kitstasher.activity.AftermarketActivity;
 import com.example.kitstasher.activity.MainActivity;
 import com.example.kitstasher.activity.ViewActivity;
 import com.example.kitstasher.adapters.AdapterListGlide;
@@ -51,30 +50,26 @@ import static com.example.kitstasher.activity.MainActivity.REQUEST_CODE_VIEW;
 
 public class SortAllFragment extends Fragment implements View.OnClickListener,
         LoaderManager.LoaderCallbacks<Cursor>, TextWatcher {
+
     DbConnector dbConnector;
     Cursor cursor;
     private Context context;
-
     private View view;
     private ImageButton ibtnFilter;
     private LinearLayout linLayoutViewAllContainer, linLayoutBrand, linLayoutScale, linLayoutDate,
             linLayoutKitname;
     private ImageView ivSortBrand, ivSortScale, ivSortDate, ivSortKitname;
     private ListView lvKits;
-
+    private char workMode;
     public static String allTag;
+    private String sortBy, activeTable, listname;
+    public int categoryTab;
     private boolean sortBrand, sortDate, sortScale, sortName,
             aftermarketMode; //отвечает за просмотр таблицы афтемаркета, переключает курсор
-    public int categoryTab;
-    private String sortBy, activeTable;
-    private char editMode;
-
     private ArrayList<Long> ids;
     private ArrayList<Integer> positions;
     String[] filters;
-
     AdapterListGlide lgAdapter;
-
 
     public SortAllFragment() {
     }
@@ -106,53 +101,91 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
         view = inflater.inflate(R.layout.fragment_sort_all, container, false);
         allTag = this.getTag();
         sortBy = "_id DESC";
-        categoryTab = getArguments().getInt("categoryTab");
+        categoryTab = getArguments().getInt(Constants.CATEGORY);
         aftermarketMode = getArguments().getBoolean(Constants.AFTERMARKET_MODE);
         lgAdapter = new AdapterListGlide(context, cursor);
+
         initPortraitUi();
 
         if (aftermarketMode) {
-            editMode = Constants.MODE_AFTERMARKET;
+            workMode = Constants.MODE_AFTERMARKET;
             activeTable = DbConnector.TABLE_AFTERMARKET;
             ((MainActivity) getActivity())
                     .setActionBarTitle(getActivity().getResources().getString(R.string.aftermarket));
         } else {
-            editMode = Constants.MODE_KIT;
+            workMode = Constants.MODE_KIT;
             activeTable = DbConnector.TABLE_KITS;
             ((MainActivity) getActivity())
                     .setActionBarTitle(getActivity().getResources().getString(R.string.kits));
         }
+//        workMode = getArguments().getChar(Constants.WORK_MODE);
+//        if (workMode == Constants.MODE_AFTERMARKET){
+//            activeTable = DbConnector.TABLE_AFTERMARKET;
+//            ((MainActivity) getActivity())
+//                    .setActionBarTitle(getActivity().getResources().getString(R.string.aftermarket));
+//        } else if (workMode == Constants.MODE_KIT){
+//            activeTable = DbConnector.TABLE_KITS;
+//            ((MainActivity) getActivity())
+//                    .setActionBarTitle(getActivity().getResources().getString(R.string.kits));
+//        }else{
+//            activeTable = DbConnector.TABLE_KITS;
+//        }
+//Где КУРСОР?
+        cursor = dbConnector.filteredKits(activeTable, filters, "_id DESC", categoryTab,
+                Constants.EMPTY);
+        prepareListAndAdapter(cursor);
+        returnToList();
+
+//        if (aftermarketMode) {
+//
+//        } else if (workMode != Constants.MODE_LIST){
+//
+//        }
+
+//        if (aftermarketMode) {
+//            workMode = Constants.MODE_AFTERMARKET;
+//            activeTable = DbConnector.TABLE_AFTERMARKET;
+//            ((MainActivity) getActivity())
+//                    .setActionBarTitle(getActivity().getResources().getString(R.string.aftermarket));
+//        } else if (workMode != Constants.MODE_LIST){
+//            workMode = Constants.MODE_KIT;
+//            activeTable = DbConnector.TABLE_KITS;
+//            ((MainActivity) getActivity())
+//                    .setActionBarTitle(getActivity().getResources().getString(R.string.kits));
+//        }
 
         lvKits.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent;
-                if (aftermarketMode) {
-                    //переходим в активити афтера, там просмотр
-                    intent = new Intent(getParentFragment().getActivity(), AftermarketActivity.class);
+                intent = new Intent(getParentFragment().getActivity(), ViewActivity.class);
+                intent.putExtra(Constants.AFTER_ID, id);//ид афтемаркета, на котором должен открыться пейджер!
+                intent.putExtra(Constants.ID, id);//ид кита, на котором должен открыться пейджер
+                // отправляем режим редактирования - кит (таблица кита), афтер, если смотрим таблицу афтера - излишне, мы в афтермоде
+                intent.putExtra(Constants.WORK_MODE, workMode);
+
+//                if (aftermarketMode) {
+//                    //переходим в активити афтера, там просмотр
+////                    intent = new Intent(getParentFragment().getActivity(), AftermarketActivity.class);
+//                    //переход к универсальному просмотру
+//
+//
+//
+////                    intent = new Intent(getParentFragment().getActivity(), AftermarketActivity.class);
+////                    intent.putExtra(Constants.AFTER_ID, id);
+//                } else {
+//                    //переход в активити просмотра китов
 //                    intent = new Intent(getParentFragment().getActivity(), ViewActivity.class);
-                    intent.putExtra(Constants.AFTER_ID, id);//ид афтемаркета, на котором должен открыться пейджер!
-                    intent.putExtra(Constants.ID, id);//ид афтемаркета, на котором должен открыться пейджер
-                    // отправляем режим редактирования - кит (таблица кита), афтер, если смотрим таблицу афтера - излишне, мы в афтермоде
-                    intent.putExtra(Constants.EDIT_MODE, Constants.MODE_AFTERMARKET);
+//                    intent.putExtra(Constants.ID, id);//ид, на котором откротся пейджер
+//                    intent.putExtra(Constants.WORK_MODE, Constants.MODE_KIT); //надо ли????????????
+//
+//                }
 
-
-//                    intent = new Intent(getParentFragment().getActivity(), AftermarketActivity.class);
-//                    intent.putExtra(Constants.AFTER_ID, id);
-                } else {
-                    //переход в активити просмотра китов
-                    intent = new Intent(getParentFragment().getActivity(), ViewActivity.class);
-                    intent.putExtra(Constants.ID, id);//ид, на котором откротся пейджер
-                    intent.putExtra(Constants.EDIT_MODE, Constants.MODE_KIT); //надо ли????????????
-
-                }
-
-//                intent.putExtra(Constants.EDIT_MODE, editMode); //мы смотрим киты или афтер? -
+//                intent.putExtra(Constants.WORK_MODE, workMode); //мы смотрим киты или афтер? -
 
                 //общие параметры для передачи
                 intent.putExtra(Constants.POSITION, position);//ид открытия пейджера
                 intent.putExtra(Constants.SORT_BY, sortBy);
-
                 intent.putExtra(Constants.CATEGORY, categoryTab);
                 intent.putExtra(Constants.TAG, allTag);
                 if (filters.length < 1){
@@ -166,10 +199,13 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
                 intent.putExtra(Constants.IDS, ids);
                 intent.putExtra(Constants.POSITIONS, positions);
                 intent.putExtra(Constants.SORT_BY, sortBy);
-                intent.putExtra("filters", (Serializable) filters);
-
-                intent.putExtra(Constants.LISTNAME, Constants.EMPTY); //мы идем из карточки кита, не из списка
-
+                intent.putExtra(Constants.FILTERS, (Serializable) filters);
+                if (workMode == Constants.MODE_LIST) {
+                    listname = getArguments().getString(Constants.LISTNAME);
+                    intent.putExtra(Constants.LISTNAME, listname);
+                } else {
+                    intent.putExtra(Constants.LISTNAME, Constants.EMPTY); //мы идем из карточки кита, не из списка
+                }
                 getActivity().startActivityForResult(intent, REQUEST_CODE_VIEW); //интент на просмотр в пейджере
                 // пойдет или в китакт или в афтерактивити
             }
@@ -182,10 +218,6 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
             }
         });
 
-
-        prepareListAndAdapter(cursor);
-        returnToList();
-
         setActive(R.id.linLayoutSortDate, ivSortDate);
         sortDate = true;
         sortName = true;
@@ -196,7 +228,7 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
         ibtnFilter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                    showFilterDialog();
+                showFilterDialog();
             }
         });
         ibtnFilter.setOnLongClickListener(new View.OnLongClickListener() {
@@ -235,15 +267,8 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
                 ibtnFilter.setBackgroundColor(Helper.getColor(getActivity(), R.color.colorAccent));
             }
 
-            aftermarketMode = getArguments().getBoolean(Constants.AFTERMARKET_MODE);
-            if (aftermarketMode) {
-                cursor = dbConnector.filteredKits(activeTable, filters, "_id DESC", categoryTab,
-                        Constants.EMPTY);
-            } else {
-                cursor = dbConnector.filteredKits(activeTable, filters, "_id DESC", categoryTab,
-                        Constants.EMPTY);
-            }
-
+            cursor = dbConnector.filteredKits(activeTable, filters, "_id DESC", categoryTab,
+                    Constants.EMPTY);
             int returnItem = bundle.getInt(Constants.POSITION);
             prepareListAndAdapter(cursor);
             lvKits.setSelectionFromTop(returnItem, 0);
@@ -347,14 +372,14 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
                 if (sortName){
                     SortByNameAsc();
                     sortName = false;
-                    }else {
+                } else {
                     SortByNameDesc();
                     sortName = true;
-                    }
+                }
                 sortBrand = true;
                 sortDate = true;
                 sortScale = true;
-                    break;
+                break;
         }
     }
 
@@ -457,16 +482,13 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
             public void onClick(DialogInterface dialog, int whichButton) {
                 File file = new File(getImagePath(l));
                 file.delete();
-//               if(file.delete()) {
-                dbConnector.delRec(l);
-//               }else{
-//                   Toast.makeText(context, R.string.error_deleting_boxart_image, Toast.LENGTH_SHORT).show();
-//               }
-
-//                boolean deleted = file.delete();
-//                dbConnector.delRec(l);
+                dbConnector.delRec(activeTable, l);
                 cursor = dbConnector.filteredKits(activeTable, filters, "_id DESC", categoryTab, Constants.EMPTY);
-                ((KitsFragment) getParentFragment()).refreshPages();
+                if (workMode == Constants.MODE_KIT) {
+                    ((KitsFragment) getParentFragment()).refreshPages();
+                } else if (workMode == Constants.MODE_AFTERMARKET || workMode == Constants.MODE_AFTER_KIT) {
+                    ((AftermarketFragment) getParentFragment()).refreshPages();
+                }
                 prepareListAndAdapter(cursor);
             }
         });
@@ -563,7 +585,7 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
         ArrayAdapter acFilterKitnameAdapter = new ArrayAdapter<>(getActivity(),
                 android.R.layout.simple_dropdown_item_1line, kitnamesArray);
         acFilterKitname.addTextChangedListener(this);
-                acFilterKitname.setAdapter(acFilterKitnameAdapter);
+        acFilterKitname.setAdapter(acFilterKitnameAdapter);
 
         dialogBuilder.setTitle(R.string.Filter_by);
         dialogBuilder.setPositiveButton(R.string.Done, new DialogInterface.OnClickListener() {
@@ -615,7 +637,6 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
         b.show();
     }
 
-
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         return null;
@@ -630,7 +651,6 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
     public void onLoaderReset(Loader<Cursor> loader) {
 
     }
-
 
     @Override
     public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {

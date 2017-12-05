@@ -201,7 +201,7 @@
     <string name="No_matches_try_manual">Не найдено... Попробуйте поискать по комбинации производителя и каталожного номера!</string>
     <string name="Status">Статус</string>
     <string name="After_with_this_name_already_exists">Такое дополнение уже есть в базе</string>
-    <string name="add_aftermarket">Добавить дополнение</string>
+    <string name="add_aftermarket">Добавить афтермаркет</string>
     <string name="media_3dprint">3D-печать</string>
     <string name="media_injected">ЛВД</string>
     <string name="media_shortrun">ЛНД</string>
@@ -218,12 +218,12 @@
     <string name="status_new">Запакован</string>
     <string name="status_opened">Открыт</string>
     <string name="status_started">Снят с литников</string>
-    <string name="Aftermarket_name">Название дополнения</string>
+    <string name="Aftermarket_name">Название афтермаркета</string>
     <string name="Media">Материал</string>
     <string name="Shop">Магазин</string>
-    <string name="aftermarket">Дополнения</string>
+    <string name="aftermarket">Афтермаркет</string>
     <string name="Or_enter">Или укажите:</string>
-    <string name="nav_aftermarket">Дополнения</string>
+    <string name="nav_aftermarket">Афтермаркет</string>
     <string name="permission_denied_to_write">Нет разрешений на запись</string>
     <string name="Your_device_cannot_take_pictures">Ваше устройство не поддерживает съемку</string>
     <string name="edit_image">Редактор картинок</string>
@@ -237,7 +237,7 @@
     <string name="next">Далее</string>
     <string name="price">Цена</string>
     <string name="category">Категория</string>
-    <string name="aftermarketCaps">ДОПОЛНЕНИЕ</string>
+    <string name="aftermarketCaps">АФТЕРМАРКЕТ</string>
     <string name="kitCaps">НАБОР</string>
     <string name="Boxart">* Боксарт</string>
     <string name="crop_error">Ошибка обрезки</string>
@@ -258,4 +258,7 @@
     <string name="reset_to_default_boxart">Сбросить боксарт</string>
     <string name="take_picture">Сделать новое фото боксарта</string>
     <string name="Do_you_wish_to_delete_from_list">Удалить запись из списка?</string>
+    <string name="Wishlists">Списки желаний</string>
+    <string name="aftermarket_added">Афтермаркет добавлен</string>
+    <string name="aftermarket_already_exist">В базе уже есть такая запись</string>
 </resources>

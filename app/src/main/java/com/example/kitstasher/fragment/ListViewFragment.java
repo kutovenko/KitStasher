@@ -145,8 +145,8 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
 
                 ScanFragment fragment = new ScanFragment();
                 Bundle bundle = new Bundle(2);
-                bundle.putChar("mode", 'l');
-                bundle.putString("listname", listname);
+                bundle.putChar(Constants.WORK_MODE, Constants.MODE_LIST);
+                bundle.putString(Constants.LISTNAME, listname);
                 fragment.setArguments(bundle);
                 android.support.v4.app.FragmentTransaction fragmentTransaction =
                         getFragmentManager().beginTransaction();
@@ -162,8 +162,8 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
             public void onClick(View view) {
                 ManualAddFragment fragment = new ManualAddFragment();
                 Bundle bundle = new Bundle(2);
-                bundle.putChar("mode", 'l');
-                bundle.putString("listname", listname);
+                bundle.putChar(Constants.WORK_MODE, Constants.MODE_LIST);
+                bundle.putString(Constants.LISTNAME, listname);
                 fragment.setArguments(bundle);
                 android.support.v4.app.FragmentTransaction fragmentTransaction =
                         getFragmentManager().beginTransaction();
@@ -178,8 +178,8 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(context, ChooserActivity.class);
-                intent.putExtra("listname", listname);
-                intent.putExtra(Constants.EDIT_MODE, Constants.MODE_KIT);
+                intent.putExtra(Constants.LISTNAME, listname);
+                intent.putExtra(Constants.WORK_MODE, Constants.MODE_LIST);
                 startActivityForResult(intent, 10);
                 alertDialog.dismiss();
             }
@@ -205,7 +205,7 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
                 intent.putExtra(Constants.POSITION, position);
                 intent.putExtra(Constants.POSITIONS, positions);
                 intent.putExtra(Constants.ID, id);
-                intent.putExtra(Constants.EDIT_MODE, Constants.MODE_LIST);
+                intent.putExtra(Constants.WORK_MODE, Constants.MODE_LIST);
                 intent.putExtra(Constants.IDS, ids);
                 intent.putExtra(Constants.SCALE_FILTER, "");
                 intent.putExtra(Constants.BRAND_FILTER, "");

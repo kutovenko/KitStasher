@@ -9,6 +9,7 @@ import android.widget.LinearLayout;
 
 import com.example.kitstasher.R;
 import com.example.kitstasher.fragment.ListViewFragment;
+import com.example.kitstasher.other.Constants;
 import com.example.kitstasher.other.DbConnector;
 
 import static com.example.kitstasher.activity.MainActivity.REQUEST_CODE_VIEW;
@@ -35,8 +36,8 @@ public class ListActivity extends AppCompatActivity{
 
         //Loading fragment with kit list
         Bundle bundle = new Bundle(2);
-        bundle.putChar("mode", 'l');
-        bundle.putString("listname", title);
+        bundle.putChar(Constants.WORK_MODE, Constants.MODE_LIST); //??
+        bundle.putString(Constants.LISTNAME, title);
         ListViewFragment listViewFragment = new ListViewFragment();
         listViewFragment.setArguments(bundle);
         android.support.v4.app.FragmentTransaction fragmentTransaction =

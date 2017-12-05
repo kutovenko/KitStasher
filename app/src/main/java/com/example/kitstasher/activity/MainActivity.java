@@ -56,6 +56,7 @@ public class MainActivity extends AppCompatActivity
     private NavigationView navigationView;
     private Toolbar toolbar;
     private String title;
+    private char workMode;
 
     // Index to identify current nav menu item
     public static int navItemIndex = 0;
@@ -412,8 +413,13 @@ public class MainActivity extends AppCompatActivity
             public void run() {
                 Bundle bundle = new Bundle();
                 if (aftermarketMode) {
-                    bundle.putBoolean("afterMode", aftermarketMode);
+                    bundle.putBoolean(Constants.AFTERMARKET_MODE, aftermarketMode);
                 }
+//                if (workMode != '\u0000'){
+//                    bundle.putChar(Constants.WORK_MODE, workMode);
+//                }else {
+//                    bundle.putChar(Constants.WORK_MODE, Constants.MODE_KIT);
+//                }
                 // update the main content by replacing fragments
                 android.support.v4.app.Fragment fragment = getHomeFragment();
                 fragment.setArguments(bundle);//
@@ -507,7 +513,7 @@ public class MainActivity extends AppCompatActivity
 
         if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_VIEW) {
             super.onActivityResult(requestCode, resultCode, data);
-            char editMode = data.getExtras().getChar(Constants.EDIT_MODE);
+            workMode = data.getExtras().getChar(Constants.WORK_MODE);
             //Если вернулись напрямую из афтермаркетЭдит, будет MODE_AFTERMARKET
             //Если из карточки KitCard - MODE_KIT
             //Если из KitEdit - MODE_KIT AFTER
@@ -529,6 +535,7 @@ public class MainActivity extends AppCompatActivity
             Bundle bundle = new Bundle();
             bundle.putInt(Constants.LIST_POSITION, position);
             bundle.putInt(Constants.LIST_CATEGORY, categoryTab);
+            bundle.putChar(Constants.WORK_MODE, workMode);
 
             bundle.putString(Constants.SCALE_FILTER, scaleFilter);
             bundle.putString(Constants.BRAND_FILTER, brandFilter);
@@ -537,7 +544,7 @@ public class MainActivity extends AppCompatActivity
             bundle.putString(Constants.STATUS_FILTER, statusFilter);
             bundle.putString(Constants.MEDIA_FILTER, mediaFilter);
 
-            if (editMode == Constants.MODE_KIT) {
+            if (workMode == Constants.MODE_KIT) {
                 //Возвращаемся в таблицу китов
                 KitsFragment fragment = new KitsFragment();
                 fragment.setArguments(bundle);
@@ -547,7 +554,7 @@ public class MainActivity extends AppCompatActivity
                 fragmentTransaction.commit();
                 ViewPager viewPager = findViewById(R.id.viewpagerViewStash);
                 viewPager.setCurrentItem(categoryTab);
-            } else if (editMode == Constants.MODE_AFTERMARKET) {
+            } else if (workMode == Constants.MODE_AFTERMARKET) {
                 //Возвоащаемся в пейджер SortAll
                 AftermarketFragment fragment = new AftermarketFragment();
                 fragment.setArguments(bundle);
@@ -557,13 +564,13 @@ public class MainActivity extends AppCompatActivity
                 fragmentTransaction.commit();
                 ViewPager viewPager = findViewById(R.id.viewpagerViewStash);
                 viewPager.setCurrentItem(categoryTab);
-//            }else if (editMode == Constants.MODE_AFTER_KIT){
+//            }else if (workMode == Constants.MODE_AFTER_KIT){
 //
 
-            } else if (editMode == Constants.MODE_VIEW_FROM_KIT) {
+            } else if (workMode == Constants.MODE_VIEW_FROM_KIT) {
                 //Возвращаемся в просмотр кита
 
-            } else if (editMode == Constants.MODE_EDIT_FROM_KIT) {
+            } else if (workMode == Constants.MODE_EDIT_FROM_KIT) {
                 //Возвращаемся в КитЕдит
             }
         }

@@ -45,7 +45,7 @@ public class AftermarketActivity extends AppCompatActivity {
         mediaFilter = getIntent().getExtras().getString(Constants.MEDIA_FILTER);
 
 
-        mode = getIntent().getExtras().getChar(Constants.EDIT_MODE);
+        mode = getIntent().getExtras().getChar(Constants.WORK_MODE);
         //запрос может прийти от SortAll,
         // таблица афтермаркет тогда MODE_AFTERMARKET
         //от KitCardFragment MODE_VIEW_FROM_KIT
@@ -59,7 +59,7 @@ public class AftermarketActivity extends AppCompatActivity {
         // на просмотр афтера определенного кита, MODE_KIT
 
         bundle = new Bundle();
-        bundle.putChar(Constants.EDIT_MODE, mode);
+        bundle.putChar(Constants.WORK_MODE, mode);
         bundle.putInt(Constants.LIST_POSITION, position);
         bundle.putLong(Constants.KIT_ID, kitId);
         bundle.putLong(Constants.AFTER_ID, afterId);
@@ -89,7 +89,7 @@ public class AftermarketActivity extends AppCompatActivity {
         if (counter == 1 || counter > 2) {
             Intent intent = new Intent(AftermarketActivity.this, MainActivity.class);
             intent.putExtra(Constants.SORT_BY, sortBy);
-            intent.putExtra(Constants.EDIT_MODE, mode);
+            intent.putExtra(Constants.WORK_MODE, mode);
             intent.putExtra(Constants.LIST_CATEGORY, categoryToReturn);
             intent.putExtra(Constants.LIST_POSITION, position);
             intent.putExtra(Constants.SCALE_FILTER, scaleFilter);

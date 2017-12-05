@@ -60,7 +60,7 @@ public class AftermarketCardFragment extends Fragment {
         //Модет быть MODE_AFTERMARKET, если из таблицы
         // MODE_KIT, если из просмотра
         // или редактора MODE_AFTER_KIT
-        mode = getArguments().getChar(Constants.EDIT_MODE);
+        mode = getArguments().getChar(Constants.WORK_MODE);
 
         DbConnector dbConnector = new DbConnector(context);
         dbConnector.open();
@@ -86,7 +86,7 @@ public class AftermarketCardFragment extends Fragment {
                 Bundle bundle = new Bundle();
                 bundle.putLong(Constants.AFTER_ID, afterId);
                 bundle.putLong(Constants.ID, afterId);
-                bundle.putChar(Constants.EDIT_MODE, mode); //отправляем , еслди
+                bundle.putChar(Constants.WORK_MODE, mode); //отправляем , еслди
                 // пришли из таблицы посмотреть MODE_AFTARMARKET
                 //ЕСли из Кита - MODE_KIT
                 //Если из КптЕдит - MODE_AFTER_KIT

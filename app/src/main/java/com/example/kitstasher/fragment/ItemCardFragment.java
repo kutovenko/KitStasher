@@ -2,7 +2,6 @@ package com.example.kitstasher.fragment;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -21,14 +20,16 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.kitstasher.R;
-import com.example.kitstasher.activity.AftermarketActivity;
 import com.example.kitstasher.activity.EditActivity;
+import com.example.kitstasher.activity.ViewActivity;
 import com.example.kitstasher.adapters.AdapterAfterItemsList;
 import com.example.kitstasher.other.Constants;
 import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.Helper;
 
 import java.io.File;
+import java.io.Serializable;
+import java.util.ArrayList;
 
 
 /**
@@ -63,7 +64,7 @@ public class ItemCardFragment extends Fragment {
         DbConnector dbConnector = new DbConnector(context);
         dbConnector.open();
         final long id = getArguments().getLong(Constants.ID);
-        Cursor cursor = dbConnector.getRecById(id);
+        Cursor cursor = dbConnector.getKitById(id);
         cursor.moveToFirst();
 
     }
@@ -75,25 +76,26 @@ public class ItemCardFragment extends Fragment {
         final DbConnector dbConnector = new DbConnector(context);
         dbConnector.open();
 
-        final char mode = getArguments().getChar(Constants.EDIT_MODE);
-        switch (mode) {
-            case 'a':
-                tableName = DbConnector.TABLE_AFTERMARKET;
-                break;
-            case 'm':
-                tableName = DbConnector.TABLE_KITS;
-                break;
-            case 'l':
-                tableName = DbConnector.TABLE_MYLISTSITEMS;
-                break;
+        final char workMode = getArguments().getChar(Constants.WORK_MODE);
+        if (workMode == Constants.MODE_AFTERMARKET || workMode == Constants.MODE_AFTER_KIT) {
+            tableName = DbConnector.TABLE_AFTERMARKET;
+        } else if (workMode == Constants.MODE_KIT) {
+            tableName = DbConnector.TABLE_KITS;
+        } else if (workMode == Constants.MODE_LIST) {
+            tableName = DbConnector.TABLE_MYLISTSITEMS;
         }
 
         final int position = getArguments().getInt(Constants.POSITION);
         final long id = getArguments().getLong(Constants.ID);
+//        final String scaleFilter = getArguments().getString(Constants.SCALE_FILTER);
+//        final String brandFilter = getArguments().getString(Constants.BRAND_FILTER);
+//        final String kitnameFilter = getArguments().getString(Constants.KITNAME_FILTER);
+//        final String statusFilter = getArguments().getString(Constants.STATUS_FILTER);
+//        final String mediaFilter = getArguments().getString(Constants.MEDIA_FILTER);
+
         final Cursor cursor = dbConnector.getItemById(tableName, id);
         cursor.moveToFirst();
         final String kitname = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_KIT_NAME));
-
         final String brand = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BRAND));
         final String catno = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BRAND_CATNO));
         final int scale = cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_SCALE));
@@ -103,10 +105,7 @@ public class ItemCardFragment extends Fragment {
         category = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_CATEGORY));
         final String year = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_YEAR));
         final String description = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_DESCRIPTION));
-//        String origName = Constants.EMPTY;
-//        if (mode != Constants.MODE_AFTERMARKET){
         final String origName = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_ORIGINAL_NAME));
-//        }
         final String notes = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_NOTES));
         final int media = cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_MEDIA));
         final int quantity = cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_QUANTITY));
@@ -115,42 +114,9 @@ public class ItemCardFragment extends Fragment {
         final String purchaseDate = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_PURCHASE_DATE));
         final int price = cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_PRICE));
         final String currency = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_CURRENCY));
-        String listname = "";
+
+        final String listname = "";
         demoMode = true;
-
-        Button btnEdit = view.findViewById(R.id.btnEdit);
-//        final String finalOrigName = origName;
-        btnEdit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(getActivity(), EditActivity.class);
-                intent.putExtra(Constants.POSITION, position);
-                intent.putExtra(Constants.EDIT_MODE, mode);
-                intent.putExtra(Constants.ID, id);
-                intent.putExtra(Constants.LIST_CATEGORY, category);
-                intent.putExtra(Constants.KITNAME, kitname);
-                intent.putExtra(Constants.BRAND, brand);
-                intent.putExtra(Constants.CATNO, catno);
-                intent.putExtra(Constants.URL, url);
-                intent.putExtra(Constants.URI, uri);
-                intent.putExtra(Constants.SCALE, scale);
-                intent.putExtra(Constants.CATEGORY, category);
-                intent.putExtra(Constants.YEAR, year);
-                intent.putExtra(Constants.DESCRIPTION, description);
-                intent.putExtra(Constants.ORIGINAL_NAME, origName);
-                intent.putExtra(Constants.NOTES, notes);
-                intent.putExtra(Constants.MEDIA, media);
-                intent.putExtra(Constants.QUANTITY, quantity);
-                intent.putExtra(Constants.STATUS, status);
-                intent.putExtra(Constants.SHOP, shop);
-                intent.putExtra(Constants.PURCHASE_DATE, purchaseDate);
-                intent.putExtra(Constants.PRICE, price);
-                intent.putExtra(Constants.CURRENCY, currency);
-
-                getActivity().startActivityForResult(intent, EDIT_ACTIVITY_CODE);
-            }
-        });
-
 
         ImageView ivBoxart = view.findViewById(R.id.ivBoxart);
         TextView tvKitname = view.findViewById(R.id.tvKitname);
@@ -158,7 +124,7 @@ public class ItemCardFragment extends Fragment {
         TextView tvOriginalKitName = view.findViewById(R.id.tvOriginalKitName);
         tvOriginalKitName.setText(origName);
         TextView tvBrand = view.findViewById(R.id.tvBrand);
-        tvBrand.setText(brand); //todo ????
+        tvBrand.setText(brand);
         TextView tvBrandcatno = view.findViewById(R.id.tvCatno);
         tvBrandcatno.setText(catno);
         TextView tvScale = view.findViewById(R.id.tvScale);
@@ -210,7 +176,6 @@ public class ItemCardFragment extends Fragment {
                 + "'> " + getString(R.string.Search_with_Google) + "</a>";
         tvGoogleUrl.setText(Helper.fromHtml(googleText));
 
-
         if (!Helper.isBlank(uri)) {
             Glide
                     .with(context)
@@ -225,25 +190,102 @@ public class ItemCardFragment extends Fragment {
                     .into(ivBoxart);
         }
 
-        Cursor aCursor = dbConnector.getAftermarketForKit(id, listname);
-        AdapterAfterItemsList afterAdapter = new AdapterAfterItemsList(context, aCursor, 0, id,
-                listname, mode, demoMode);
+        setCategoryImage();
+
+
+        final Cursor aCursor = dbConnector.getAftermarketForKit(id, listname);
+        final AdapterAfterItemsList afterAdapter = new AdapterAfterItemsList(context, aCursor, 0, id,
+                listname, workMode, demoMode);
         lvAftermarket.setAdapter(afterAdapter);
-//        lvAftermarket.setClickable(true);
 
         setListViewHeightBasedOnChildren(lvAftermarket);
 
         lvAftermarket.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Intent intent = new Intent(context, AftermarketActivity.class);
-                intent.putExtra(Constants.AFTER_ID, l);
-                intent.putExtra(Constants.ID, id);
+                int size = aCursor.getCount();
+                final ArrayList<Long> ids = new ArrayList<>(size);
+                final ArrayList<Integer> positions = new ArrayList<>(size);
+                aCursor.moveToFirst();
+                for (int y = 0; y < aCursor.getCount(); y++) {
+                    ids.add(afterAdapter.getItemId(y));
+                    positions.add(y);
+                    aCursor.moveToNext();
+                }
+                Intent intent;
+                intent = new Intent(context, ViewActivity.class);
+                intent.putExtra(Constants.ID, id);//ид кита, на котором должен открыться пейджер
+                intent.putExtra(Constants.WORK_MODE, Constants.MODE_AFTER_KIT);
+                intent.putExtra(Constants.POSITION, i);//ид открытия пейджера
+                intent.putExtra(Constants.SORT_BY, Constants._ID);
+                intent.putExtra(Constants.CATEGORY, category);
+                String[] filters = new String[5];
+                filters[0] = Constants.EMPTY;
+                filters[1] = Constants.EMPTY;
+                filters[2] = Constants.EMPTY;
+                filters[3] = Constants.EMPTY;
+                filters[4] = Constants.EMPTY;
+                intent.putExtra(Constants.SCALE_FILTER, filters[0]);
+                intent.putExtra(Constants.BRAND_FILTER, filters[1]);
+                intent.putExtra(Constants.KITNAME_FILTER, filters[2]);
+                intent.putExtra(Constants.STATUS_FILTER, filters[3]);
+                intent.putExtra(Constants.MEDIA_FILTER, filters[4]);
+                intent.putExtra(Constants.IDS, ids);
+                intent.putExtra(Constants.POSITIONS, positions);
+                intent.putExtra(Constants.SORT_BY, Constants._ID);
+                intent.putExtra(Constants.FILTERS, (Serializable) filters);
+                intent.putExtra(Constants.WORK_MODE, Constants.MODE_AFTER_KIT);
+                intent.putExtra(Constants.LISTNAME, Constants.EMPTY); //мы идем из карточки кита, не из списка
+                intent.putExtra(Constants.CATEGORY, category);
                 startActivity(intent);
             }
         });
 
-        setCategoryImage();
+
+        TextView tvAftermarketTitle = view.findViewById(R.id.tvAftermarketTitle);
+        Button btnEdit = view.findViewById(R.id.btnEdit);
+        btnEdit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getActivity(), EditActivity.class);
+                intent.putExtra(Constants.POSITION, position);
+                intent.putExtra(Constants.WORK_MODE, workMode);
+                intent.putExtra(Constants.ID, id);
+                intent.putExtra(Constants.LIST_CATEGORY, category);
+                intent.putExtra(Constants.KITNAME, kitname);
+                intent.putExtra(Constants.BRAND, brand);
+                intent.putExtra(Constants.CATNO, catno);
+                intent.putExtra(Constants.URL, url);
+                intent.putExtra(Constants.URI, uri);
+                intent.putExtra(Constants.SCALE, scale);
+                intent.putExtra(Constants.CATEGORY, category);
+                intent.putExtra(Constants.YEAR, year);
+                intent.putExtra(Constants.DESCRIPTION, description);
+                intent.putExtra(Constants.ORIGINAL_NAME, origName);
+                intent.putExtra(Constants.NOTES, notes);
+                intent.putExtra(Constants.MEDIA, media);
+                intent.putExtra(Constants.QUANTITY, quantity);
+                intent.putExtra(Constants.STATUS, status);
+                intent.putExtra(Constants.SHOP, shop);
+                intent.putExtra(Constants.PURCHASE_DATE, purchaseDate);
+                intent.putExtra(Constants.PRICE, price);
+                intent.putExtra(Constants.CURRENCY, currency);
+                getActivity().startActivityForResult(intent, EDIT_ACTIVITY_CODE);
+            }
+        });
+
+        //Если пришли сюда из карточек кита, отключаем редактирование
+        if (workMode == Constants.MODE_AFTER_KIT) {
+            tvAftermarketTitle.setVisibility(View.GONE);
+            btnEdit.setVisibility(View.GONE);
+            lvAftermarket.setVisibility(View.GONE);
+        }
+        //Если из афтемаркета, вложенный афтер отключаем
+        if (workMode == Constants.MODE_AFTERMARKET) {
+            tvAftermarketTitle.setVisibility(View.GONE);
+            lvAftermarket.setVisibility(View.GONE);
+        }
+
         return view;
     }
 
@@ -321,6 +363,13 @@ public class ItemCardFragment extends Fragment {
             case Constants.M_CODE_MULTIMEDIA:
                 media = context.getResources().getString(R.string.media_multimedia);
                 break;
+            case Constants.M_CODE_DECAL:
+                media = getString(R.string.media_decal);
+                break;
+            case Constants.M_CODE_MASK:
+                media = getString(R.string.media_mask);
+                break;
+
             default:
                 media = context.getResources().getString(R.string.media_other);
                 break;
@@ -391,29 +440,29 @@ public class ItemCardFragment extends Fragment {
         }
     }
 
-    private String getSuffix(){
-        String suffix = Constants.BOXART_URL_SMALL;
-        SharedPreferences preferences = context.getSharedPreferences(Constants.BOXART_SIZE,
-                Context.MODE_PRIVATE);
-        if (preferences != null) {
-            String temp = preferences.getString(Constants.BOXART_SIZE, "");
-            switch (temp){
-                case Constants.BOXART_URL_COMPANY_SUFFIX:
-                    suffix = "";
-                    break;
-                case Constants.BOXART_URL_SMALL:
-                    suffix = Constants.BOXART_URL_SMALL;
-                    break;
-                case Constants.BOXART_URL_MEDIUM:
-                    suffix = Constants.BOXART_URL_MEDIUM;
-                    break;
-                case Constants.BOXART_URL_LARGE:
-                    suffix = Constants.BOXART_URL_LARGE;
-                    break;
-                default:
-                    break;
-            }
-        }
-        return suffix;
-    }
+//    private String getSuffix(){
+//        String suffix = Constants.BOXART_URL_SMALL;
+//        SharedPreferences preferences = context.getSharedPreferences(Constants.BOXART_SIZE,
+//                Context.MODE_PRIVATE);
+//        if (preferences != null) {
+//            String temp = preferences.getString(Constants.BOXART_SIZE, "");
+//            switch (temp){
+//                case Constants.BOXART_URL_COMPANY_SUFFIX:
+//                    suffix = "";
+//                    break;
+//                case Constants.BOXART_URL_SMALL:
+//                    suffix = Constants.BOXART_URL_SMALL;
+//                    break;
+//                case Constants.BOXART_URL_MEDIUM:
+//                    suffix = Constants.BOXART_URL_MEDIUM;
+//                    break;
+//                case Constants.BOXART_URL_LARGE:
+//                    suffix = Constants.BOXART_URL_LARGE;
+//                    break;
+//                default:
+//                    break;
+//            }
+//        }
+//        return suffix;
+//    }
 }

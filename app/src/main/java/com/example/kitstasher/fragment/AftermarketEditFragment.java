@@ -292,8 +292,8 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
         mediaFilter = getArguments().getString("mediaFilter");
 //
 //        mode = Constants.MODE_KIT;
-//        if (getArguments().getChar(Constants.EDIT_MODE) != '\u0000'){
-//            mode = getArguments().getChar(Constants.EDIT_MODE);
+//        if (getArguments().getChar(Constants.WORK_MODE) != '\u0000'){
+//            mode = getArguments().getChar(Constants.WORK_MODE);
 //        }
     }
 

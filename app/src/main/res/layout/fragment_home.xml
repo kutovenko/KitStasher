@@ -42,7 +42,7 @@
         android:layout_marginStart="16dp"
         android:layout_weight="1"
         android:background="@drawable/button"
-        android:text="@string/Mylists" />
+        android:text="@string/Wishlists" />
 
     <Button
         android:id="@+id/btnSearchAction"
