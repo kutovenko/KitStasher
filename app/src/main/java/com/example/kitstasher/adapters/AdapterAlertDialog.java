@@ -62,8 +62,7 @@ public class AdapterAlertDialog extends ArrayAdapter<Item> {
 
     private String composeUrl(String url){
         if (!Helper.isBlank(url)) {
-            return Constants.BOXART_URL_PREFIX
-                    + url
+            return url
                     + Constants.BOXART_URL_SMALL
                     + Constants.JPG;
         }else{

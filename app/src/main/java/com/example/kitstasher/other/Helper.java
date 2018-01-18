@@ -201,45 +201,45 @@ public class Helper {
         return code;
     }
 
-    public static String codeToMedia(int mediaCode){
-        String media;
-        switch (mediaCode){
-            case Constants.M_CODE_OTHER:
-                media = MyApplication.getContext().getResources().getString(R.string.media_other);
-                break;
-            case Constants.M_CODE_INJECTED:
-                media = MyApplication.getContext().getResources().getString(R.string.media_injected);
-                break;
-            case Constants.M_CODE_SHORTRUN:
-                media = MyApplication.getContext().getResources().getString(R.string.media_shortrun);
-                break;
-            case Constants.M_CODE_RESIN:
-                media = MyApplication.getContext().getResources().getString(R.string.media_resin);
-                break;
-            case Constants.M_CODE_VACU:
-                media = MyApplication.getContext().getResources().getString(R.string.media_vacu);
-                break;
-            case Constants.M_CODE_PAPER:
-                media = MyApplication.getContext().getResources().getString(R.string.media_paper);
-                break;
-            case Constants.M_CODE_WOOD:
-                media = MyApplication.getContext().getResources().getString(R.string.media_wood);
-                break;
-            case Constants.M_CODE_METAL:
-                media = MyApplication.getContext().getResources().getString(R.string.media_metal);
-                break;
-            case Constants.M_CODE_3DPRINT:
-                media = MyApplication.getContext().getResources().getString(R.string.media_3dprint);
-                break;
-            case Constants.M_CODE_MULTIMEDIA:
-                media = MyApplication.getContext().getResources().getString(R.string.media_multimedia);
-                break;
-            default:
-                media = MyApplication.getContext().getResources().getString(R.string.media_other);
-                break;
-        }
-        return media;
-    }
+//    public static String codeToMedia(int mediaCode){
+//        String media;
+//        switch (mediaCode){
+//            case Constants.M_CODE_OTHER:
+//                media = MyApplication.getContext().getResources().getString(R.string.media_other);
+//                break;
+//            case Constants.M_CODE_INJECTED:
+//                media = MyApplication.getContext().getResources().getString(R.string.media_injected);
+//                break;
+//            case Constants.M_CODE_SHORTRUN:
+//                media = MyApplication.getContext().getResources().getString(R.string.media_shortrun);
+//                break;
+//            case Constants.M_CODE_RESIN:
+//                media = MyApplication.getContext().getResources().getString(R.string.media_resin);
+//                break;
+//            case Constants.M_CODE_VACU:
+//                media = MyApplication.getContext().getResources().getString(R.string.media_vacu);
+//                break;
+//            case Constants.M_CODE_PAPER:
+//                media = MyApplication.getContext().getResources().getString(R.string.media_paper);
+//                break;
+//            case Constants.M_CODE_WOOD:
+//                media = MyApplication.getContext().getResources().getString(R.string.media_wood);
+//                break;
+//            case Constants.M_CODE_METAL:
+//                media = MyApplication.getContext().getResources().getString(R.string.media_metal);
+//                break;
+//            case Constants.M_CODE_3DPRINT:
+//                media = MyApplication.getContext().getResources().getString(R.string.media_3dprint);
+//                break;
+//            case Constants.M_CODE_MULTIMEDIA:
+//                media = MyApplication.getContext().getResources().getString(R.string.media_multimedia);
+//                break;
+//            default:
+//                media = MyApplication.getContext().getResources().getString(R.string.media_other);
+//                break;
+//        }
+//        return media;
+//    }
 
 
     public static String codeToStatus(int code){
@@ -268,6 +268,15 @@ public class Helper {
                 break;
         }
         return status;
+    }
+
+    public static String trimUrl(String str) {
+        if (str != null && str.length() > 0
+//                && str.charAt(str.length() - 1) == '-'
+                ) {
+            str = str.substring(0, str.length() - 12);
+        }
+        return str;
     }
 
 //    public static int mediaToCode(String media){

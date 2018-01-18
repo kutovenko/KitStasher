@@ -86,7 +86,7 @@ Prefixes and postfixes for links
     public static final String LIST_CATEGORY = "category";
     public static final String BOXART_PIC = "boxart_pic";
 
-    public static final String BOXART_URL_PREFIX = "https://www.scalemates.com";
+    public static final String BOXART_URL_PREFIX = "";
     public static final String BOXART_SIZE = "boxart_size";
 
     //    public static final String JPG = ".jpg";
@@ -96,7 +96,7 @@ Prefixes and postfixes for links
     public static final String BOXART_URL_MEDIUM = "t280";
     public static final String BOXART_URL_LARGE = "pristine";
     public static final String JPG = ".jpg";
-    public static final String SCALEMATES_PREFIX = "https://www.scalemates.com/kits/";
+//    public static final String SCALEMATES_PREFIX = "https://www.scalemates.com/kits/";
 
     public static final String APP_FOLDER = "/Kitstasher/";
     public static final String FOLDER_SDCARD_KITSTASHER = "/sdcard/Kitstasher/";
@@ -114,10 +114,10 @@ Prefixes and postfixes for links
     public static final String PARSE_REGISTERED = "registered";
 
     ///
-//    public static final String SIZE_FULL = "-pristine";
-    public static final String SIZE_FULL = "-720";
+    public static final String SIZE_FULL = "-pristine";
+    //    public static final String SIZE_FULL = "-720";
     public static final String SIZE_MEDIUM = "-t280";
-    public static final String SIZE_SMALL = "-t140";
+    public static final String SIZE_SMALL = "-t"; //140
 
     // Image Dimensions
     public static final int SIZE_FULL_HEIGHT = 450; //исправить!

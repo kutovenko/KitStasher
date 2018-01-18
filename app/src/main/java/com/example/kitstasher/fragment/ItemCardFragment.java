@@ -116,7 +116,7 @@ public class ItemCardFragment extends Fragment {
         final String currency = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_CURRENCY));
 
         final String listname = "";
-        demoMode = true;
+        demoMode = true; //для адаптера
 
         ImageView ivBoxart = view.findViewById(R.id.ivBoxart);
         TextView tvKitname = view.findViewById(R.id.tvKitname);
@@ -159,7 +159,7 @@ public class ItemCardFragment extends Fragment {
         tvScalematesUrl.setClickable(true);
         tvScalematesUrl.setMovementMethod(LinkMovementMethod.getInstance());
 
-        String scalematesText = "<a href='https://www.scalemates.com/"
+        String scalematesText = "<a href='"
                 + scalematesUrl
                 + "'> " + getString(R.string.Look_up_on_Scalemates) + "</a>";
         if (scalematesUrl != null) {

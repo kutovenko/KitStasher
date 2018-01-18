@@ -11,7 +11,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.v4.app.DialogFragment;
@@ -540,41 +539,44 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
 
             case R.id.btnEditSave:
                 if (checkAllFields()) {
-                    if (bmBoxartPic != null) {
-                        // TODO: 17.11.2017 убрать и переделать с новой камерой
-                        size = Constants.SIZE_FULL;
-
-                        File pictures = Environment
-                                .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-                        pictureName = etDetFullBrand.getText().toString()
-                                + etDetFullBrandCatNo.getText().toString()
-                                + size
-                                + Constants.JPG;
-                        photoFile = new File(pictures, pictureName);
-
-                        File exportDir = new File(Environment.getExternalStorageDirectory(), "Kitstasher");
-                        if (!exportDir.exists()) {
-                            exportDir.mkdirs();
-                        }
-                        writeBoxartFile(exportDir);
-//                        writeBoxartToCloud();
-
-                        bmBoxartPic = Bitmap.createScaledBitmap(bmBoxartPic, 280, 172, false);
-                        size = Constants.SIZE_MEDIUM;
-                        pictureName = etDetFullBrand.getText().toString()
-                                + etDetFullBrandCatNo.getText().toString()
-                                + size
-                                + Constants.JPG;
-                        writeBoxartFile(exportDir);
-
-                        bmBoxartPic = Bitmap.createScaledBitmap(bmBoxartPic, 140, 86, false);
-                        size = Constants.SIZE_SMALL;
-                        pictureName = etDetFullBrand.getText().toString()
-                                + etDetFullBrandCatNo.getText().toString()
-                                + size
-                                + Constants.JPG;
-                        writeBoxartFile(exportDir);
-                    }
+//                    if (bmBoxartPic != null) {
+//
+//                        // TODO: 17.11.2017 убрать и переделать с новой камерой
+//                        size = Constants.SIZE_FULL;
+//
+//                        File pictures = createImageFile();
+//
+////                        File pictures = Environment
+////                                .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+////                        pictureName = etDetFullBrand.getText().toString()
+////                                + etDetFullBrandCatNo.getText().toString()
+////                                + size
+////                                + Constants.JPG;
+////                        photoFile = new File(pictures, pictureName);
+////
+////                        File exportDir = new File(Environment.getExternalStorageDirectory(), "Kitstasher");
+////                        if (!exportDir.exists()) {
+////                            exportDir.mkdirs();
+////                        }
+//                        writeBoxartFile(exportDir);
+////                        writeBoxartToCloud();
+//
+//                        bmBoxartPic = Bitmap.createScaledBitmap(bmBoxartPic, 280, 172, false);
+//                        size = Constants.SIZE_MEDIUM;
+//                        pictureName = etDetFullBrand.getText().toString()
+//                                + etDetFullBrandCatNo.getText().toString()
+//                                + size
+//                                + Constants.JPG;
+//                        writeBoxartFile(exportDir);
+//
+//                        bmBoxartPic = Bitmap.createScaledBitmap(bmBoxartPic, 140, 86, false);
+//                        size = Constants.SIZE_SMALL;
+//                        pictureName = etDetFullBrand.getText().toString()
+//                                + etDetFullBrandCatNo.getText().toString()
+//                                + size
+//                                + Constants.JPG;
+//                        writeBoxartFile(exportDir);
+//                    }
 
                     getValues();
 
@@ -674,8 +676,14 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
 
         cv.put(DbConnector.COLUMN_NOTES, etFullNotes.getText().toString().trim());
 
+//        if (pictureName != null || pictureName.length() > 0) {
+//            cv.put(DbConnector.COLUMN_BOXART_URI, pictureName);
+//        } else {
+//            cv.put(DbConnector.COLUMN_BOXART_URI, "");
+//        }
+
         if (pictureName != null || pictureName.length() > 0) {
-            cv.put(DbConnector.COLUMN_BOXART_URI, pictureName);
+            cv.put(DbConnector.COLUMN_BOXART_URI, mCurrentPhotoPath);
         } else {
             cv.put(DbConnector.COLUMN_BOXART_URI, "");
         }

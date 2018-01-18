@@ -113,7 +113,7 @@
     <string name="Brand">Brand</string>
     <string name="Name_required">* Kit Title</string>
     <string name="Scale">Scale</string>
-    <string name="Scale_required">* Scale</string>
+    <string name="Scale_required">* Scale 1/</string>
     <!--Categories-->
     <string name="Ship">Ship</string>
     <string name="Air">Air</string>
@@ -387,6 +387,9 @@
     <string name="aftermarket_already_exist">Aftermarket is already in stash</string>
     <string name="media_decal">Decal</string>
     <string name="media_mask">Mask</string>
+    <string name="please_add_boxart_picture">Please add boxart picture</string>
+    <string name="please_use_numbers">Please use only numbers in this field</string>
+    <string name="media_unknown">Unknown</string>
 
 
 </resources>

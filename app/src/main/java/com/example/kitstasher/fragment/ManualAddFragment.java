@@ -76,6 +76,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import moe.feng.common.stepperview.VerticalStepperItemView;
 
@@ -92,7 +93,6 @@ import static com.example.kitstasher.activity.MainActivity.asyncService;
 
 public class ManualAddFragment extends Fragment implements View.OnClickListener, TextWatcher,
         AsyncApp42ServiceApi.App42StorageServiceListener, OnFragmentInteractionListener
-//        ,AdapterView.OnItemSelectedListener
 {
     private View view;
     private EditText etBrandCat_no, etScale, etKitName, etKitNoengName, etNotes, etPrice;
@@ -102,7 +102,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     private TextView tvPurchaseDate, tvModeKit, tvModeAftermarket;
     private ProgressDialog progressDialog;
     private String imageFileName;
-
+    private String ownerId;
     private String aftermarketName, aftemarketOriginalName, compilanceWith;
 
     private String barcode, brand, brandCatno, kitName, sendStatus, kitNoengname, dateAdded, datePurchased,
@@ -170,11 +170,17 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     @Override
     public void onResume() {
         super.onResume();
+        if (!isOnline()) {
+            btnCheckOnlineDatabase.setClickable(false);
+            stepper_0.setTitle(R.string.brand_and_name);
+            setAllSteps(1);
+        }
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+        outState.putString("imagePath", mCurrentPhotoPath);
         if (boxartPic != null){
             outState.putParcelable(Constants.BOXART_IMAGE, boxartPic);
             outState.putString("imagePath", mCurrentPhotoPath);
@@ -206,13 +212,21 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                 mCurrentPhotoPath = savedInstanceState.getString("imagePath");
                 Glide
                         .with(context)
-                        .load(Constants.BOXART_URL_PREFIX
-                                + savedInstanceState.getString(Constants.BOXART_URL)
+                        .load(
+                                savedInstanceState.getString(Constants.BOXART_URL)
                                 + Constants.BOXART_URL_LARGE
                                 + Constants.JPG)
                         .placeholder(ic_menu_camera)
                         .diskCacheStrategy(DiskCacheStrategy.ALL)
                         .into(ivGetBoxart);
+                if (!(mCurrentPhotoPath == null) || !mCurrentPhotoPath.equals(Constants.EMPTY)) {
+                    Glide
+                            .with(context)
+                            .load(new File(Uri.parse(mCurrentPhotoPath).getPath()))
+                            .placeholder(ic_menu_camera)
+                            .diskCacheStrategy(DiskCacheStrategy.ALL)
+                            .into(ivGetBoxart);
+                }
             }else if (savedInstanceState.getParcelable(Constants.BOXART_IMAGE) != null) {
                     boxartPic = savedInstanceState.getParcelable(Constants.BOXART_IMAGE);
                     ivGetBoxart.setImageBitmap(boxartPic);
@@ -283,7 +297,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         spCurrency.setSelection(spCurrencyPosition);
 
         String[] mediaTypes = new String[]{
-                getString(R.string.media_other),
+                getString(R.string.media_unknown),
                 getString(R.string.media_injected),
                 getString(R.string.media_shortrun),
                 getString(R.string.media_resin),
@@ -292,15 +306,18 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                 getString(R.string.media_wood),
                 getString(R.string.media_metal),
                 getString(R.string.media_3dprint),
-                getString(R.string.media_multimedia)
+                getString(R.string.media_multimedia),
+                getString(R.string.media_other),
+                getString(R.string.media_decal),
+                getString(R.string.media_mask)
         };
         mediaAdapter = new ArrayAdapter<>(context, R.layout.simple_spinner_item,
                 mediaTypes);
         spKitMedia.setAdapter(mediaAdapter);
         spKitMedia.setSelection(1);
 
-        String[] categories = new String[]{getString(R.string.other), getString(R.string.air), getString(R.string.ground),
-                getString(R.string.sea), getString(R.string.space), getString(R.string.auto_moto),
+        String[] categories = new String[]{getString(R.string.other), getString(R.string.Air), getString(R.string.Ground),
+                getString(R.string.Sea), getString(R.string.Space), getString(R.string.Auto_moto),
                 getString(R.string.Figures), getString(R.string.Fantasy)};
         int[] icons = new int[]{R.drawable.ic_check_box_outline_blank_black_24dp, R.drawable.ic_tag_air_black_24dp, R.drawable.ic_tag_afv_black_24dp,
                 R.drawable.ic_tag_ship_black_24dp, R.drawable.ic_tag_space_black_24dp,
@@ -412,6 +429,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         datePurchased = "";
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
         currency = sharedPref.getString(Constants.DEFAULT_CURRENCY,"");
+        ownerId = sharedPref.getString(Constants.USER_ID_FACEBOOK, "");
         quantity = 1;
         prototype = "";
         scalematesUrl = "";
@@ -593,15 +611,19 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         if (TextUtils.isEmpty(etScale.getText()) || etScale.getText().toString().equals("0")) {
             etScale.setError(getString(R.string.enter_scale));
             check = false;
+        } else if (!Pattern.matches("[0-9]+", etScale.getText().toString())) {
+            Toast.makeText(getActivity(), R.string.please_use_numbers, Toast.LENGTH_SHORT).show();
+            check = false;
         }
         if (TextUtils.isEmpty(etKitName.getText())) {
             etKitName.setError(getString(R.string.enter_kit_name));
             check = false;
         }
         if (boxartPic == null && !wasSearchedOnline){
-            Toast.makeText(getActivity(), "Please add boxart photo", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), R.string.please_add_boxart_picture, Toast.LENGTH_SHORT).show();
             check = false;
         }
+
         return check;
     }
 
@@ -772,42 +794,12 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                                 fragmentTransaction.replace(R.id.frameLayoutEditContainer, itemEditFragment);
                                 fragmentTransaction.commit();
                             }
-//                        }else{
-//                            Toast.makeText(getActivity(), R.string.entry_already_exist,
-//                                    Toast.LENGTH_SHORT).show();
-//                            break;
-//                        }
                     } else if (workMode == Constants.MODE_AFTERMARKET) {//////in work
                         if (!isInLocalBase(aftermarket.getBrand(), aftermarket.getBrandCatno())) {
-                            //запись в афтемаркет
-//                            writeToLocalDatabase(aftermarket);
                             dbConnector.addAftermarket(aftermarket);
                             Toast.makeText(getActivity(), R.string.aftermarket_added, Toast.LENGTH_SHORT).show();
                             sendStatus = "";
                             clearFields();
-//                            if (getArguments() != null) {
-//                                int position = getArguments().getInt(Constants.LIST_POSITION);
-//                                int categoryToReturn = getArguments().getInt(Constants.LIST_CATEGORY);
-//                                long after_id = getArguments().getLong(Constants.AFTER_ID);
-//                                long kit_id = getArguments().getLong(Constants.ID);
-//
-//
-//                                ItemEditFragment itemEditFragment = new ItemEditFragment();
-//
-//                                Bundle bundle = new Bundle(5);
-//                                bundle.putInt(Constants.POSITION, position);
-//                                bundle.putInt(Constants.CATEGORY, categoryToReturn);
-//                                bundle.putLong(Constants.ID, kit_id);
-//                                bundle.putLong(Constants.AFTER_ID, after_id);
-////                                bundle.putChar(Constants.WORK_MODE, Constants.MODE_KIT);
-//                                bundle.putChar(Constants.WORK_MODE, Constants.MODE_AFTERMARKET);
-//                                itemEditFragment.setArguments(bundle);
-//
-//                                android.support.v4.app.FragmentTransaction fragmentTransaction =
-//                                        getFragmentManager().beginTransaction();
-//                                fragmentTransaction.replace(R.id.frameLayoutEditContainer, itemEditFragment);
-//                                fragmentTransaction.commit();
-//                            }
                         } else {
                             Toast.makeText(getActivity(), R.string.aftermarket_already_exist,
                                     Toast.LENGTH_SHORT).show();
@@ -874,6 +866,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                         photoPath = Uri.fromFile(photoFile);
                     }
                     takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoPath);
+                    takePictureIntent.putExtra(MediaStore.EXTRA_SCREEN_ORIENTATION, 90);
                     startActivityForResult(takePictureIntent, MainActivity.REQUEST_CODE_CAMERA);
                 }
             }
@@ -933,18 +926,6 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                 return true;
             }
         }
-//        } else if (workMode == Constants.MODE_KIT) {
-//            if (dbConnector.searchForDoubles(workMode, brand, brand_catno)) {
-//                return true;
-//            }
-//        } else if (workMode == Constants.MODE_AFTERMARKET) {
-//            if (dbConnector.searchForDoubles(workMode, brand, brand_catno)) {
-//                return true;
-//            }
-//        } else if (workMode == Constants.MODE_AFTER_KIT){
-//            if (dbConnector.searchForDoubles(workMode, brand, brand_catno)) {
-//                return true;
-//        }
         return false;
     }
 
@@ -1018,7 +999,8 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             kit.setKit_name(etKitName.getText().toString().trim());
             kit.setKit_noeng_name(etKitNoengName.getText().toString().trim());
             kit.setBarcode(barcode);
-            kit.setCategory(category);
+            String cat = String.valueOf(spCategory.getSelectedItemPosition());
+            kit.setCategory(cat);
             String y = spYear.getSelectedItem().toString();
             if (!y.equals(getResources().getString(R.string.unknown))
                     || y.equals("")) {
@@ -1073,14 +1055,6 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             desc = "1";
         }else if (d.equals(getString(R.string.rebox))){
             desc = "2";
-//        }else if (d.equals(getString(R.string.new_decal))){
-//            desc = "3";
-//        }else if (d.equals(getString(R.string.changed_box))){
-//            desc = "4";
-//        }else if (d.equals(getString(R.string.repack))){
-//            desc = "5";
-//        }else if (d.equals(getString(R.string.reissue))){
-//            desc = "6";
         }
         return desc;
     }
@@ -1234,8 +1208,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     }
 
     private void checkBrandBcPrefix(String bcPrefix) {
-//// TODO: 04.05.2017 вынести в БД
-        //подстановка брэнда по префиксу баркода
+
         switch (bcPrefix) {
             default:
 //                acTvBrand.setText(bundle.getString("brand"));
@@ -1549,12 +1522,12 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                     boxartUrl = kitToAdd.getBoxart_url();
                     kit.setBoxart_url(kitToAdd.getBoxart_url());
                 }else{
-                    kit.setBoxart_url("");
+                    kit.setBoxart_url(Constants.EMPTY);
                 }
                     Glide
                             .with(context)
-                            .load(Constants.BOXART_URL_PREFIX
-                                    + kitToAdd.getBoxart_url()
+                            .load(
+                                    kitToAdd.getBoxart_url()
                                     + Constants.BOXART_URL_LARGE
                                     + Constants.JPG)
                             .placeholder(ic_menu_camera)
@@ -1625,7 +1598,6 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     @Override
     public void onFindDocFailed(App42Exception ex) {
         setAllSteps(1);
-//        stepper_1.setState(1);
         Toast.makeText(getActivity(),
                 R.string.nothing_found_online,
                 Toast.LENGTH_SHORT).show();
@@ -1677,6 +1649,8 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK && requestCode == MainActivity.REQUEST_CODE_CAMERA
                 ) {
+            //записываем временный файл
+
             Intent cropIntent = new Intent(getActivity(), CropActivity.class);
             cropIntent.putExtra(Constants.FILE_URI, mCurrentPhotoPath);
             startActivityForResult(cropIntent, REQUEST_CODE_CROP);
@@ -1686,13 +1660,10 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         }
 
         if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_CROP) {
-            final Uri resultUri = UCrop.getOutput(data);
             boxartPic = BitmapFactory.decodeFile(mCurrentPhotoPath);
             boxartUri = mCurrentPhotoPath;
             ivGetBoxart.setImageBitmap(boxartPic);
         } else if (resultCode == UCrop.RESULT_ERROR) {
-//            final Throwable cropError = UCrop.getError(data);
-//            String s = String.valueOf(resultUri);
             Toast.makeText(getActivity(), R.string.crop_error, Toast.LENGTH_SHORT).show();
         }
     }
@@ -1706,7 +1677,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         }
     }
 
-    private void saveThumbnail(final Kit kitSave, String imagePath, int height, final int width) {
+    private void saveThumbnail(final Kit kitSave, String imagePath, final int height, final int width) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         Bitmap bmp = BitmapFactory.decodeFile(imagePath);
         getResizedBitmap(bmp, height, width).compress(Bitmap.CompressFormat.JPEG, 100, stream);
@@ -1715,9 +1686,9 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         String fullName;
         String nameBody;
         if (height != Constants.SIZE_FULL_HEIGHT) {
-            nameBody = "-t";
+            nameBody = Constants.SIZE_SMALL;
         }else{
-            nameBody = "-720";
+            nameBody = Constants.SIZE_FULL;
         }
         fullName = name + nameBody + Constants.JPG;
         final ParseFile file = new ParseFile(fullName, data);
@@ -1728,7 +1699,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         boxartToSave.saveInBackground(new SaveCallback() {
             @Override
             public void done(ParseException ex) {
-                if (ex == null) {
+                if (ex == null && height == Constants.SIZE_FULL_HEIGHT) { ///////////////////////////////////////////////////////////////
                         kitSave.setBoxart_url(file.getUrl());
                     parseThumbnailUrl = file.getUrl();//?
                         saveOnline(kitSave);
@@ -1803,12 +1774,13 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         kitTowrite.put("kitNoengname", kitSave.getKit_noeng_name());
         kitTowrite.put(Constants.CATEGORY, Helper.tagToCode(kitSave.getCategory()));
         if (!TextUtils.isEmpty(kitSave.getBoxart_url())) {
-            kitTowrite.put(Constants.BOXART_URL, kitSave.getBoxart_url());
+            kitTowrite.put(Constants.BOXART_URL, Helper.trimUrl(kitSave.getBoxart_url())); //Убираем обозначение размера картинки
         }
         kitTowrite.put(Constants.DESCRIPTION, kitSave.getDescription());
-        SharedPreferences sharedPreferences = getActivity().getSharedPreferences(Constants.ACCOUNT_PREFS,
-                Context.MODE_PRIVATE); //todo Здесь ошибка сохранения онлайн!!!!!!!!!!!!!!!!!!!!!!!!
-        kitTowrite.put("owner_id", sharedPreferences.getString(Constants.USER_ID_FACEBOOK, ""));
+//        SharedPreferences sharedPreferences = getActivity().getSharedPreferences(Constants.ACCOUNT_PREFS,
+//                Context.MODE_PRIVATE); //todo Здесь ошибка сохранения онлайн!!!!!!!!!!!!!!!!!!!!!!!!
+//        kitTowrite.put("owner_id", sharedPreferences.getString(Constants.USER_ID_FACEBOOK, ""));
+        kitTowrite.put("owner_id", ownerId);
         kitTowrite.put(Constants.YEAR, kitSave.getYear());
         kitTowrite.saveInBackground();
     }

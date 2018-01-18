@@ -7,7 +7,7 @@
     <string name="Name_required">* Название</string>
     <string name="Non_english_name">Название (не латиницей)</string>
     <string name="Scale">Масштаб</string>
-    <string name="Scale_required">* Масштаб</string>
+    <string name="Scale_required">* Масштаб 1/</string>
     <string name="Scale_1">Масштаб 1/</string>
     <string name="Sea">Флот</string>
     <string name="Air">Авиация</string>
@@ -104,7 +104,7 @@
     <string name="Exception_Occured">Произошла ошибка</string>
     <string name="Export_database">Экспорт базы данных</string>
     <string name="Facebook_dont_know_you">Ято-то Фейсбук вас не признает</string>
-    <string name="Facebook_error">Фейсбук не отвечает, а есть ли у нас интернетом?</string>
+    <string name="Facebook_error">Фейсбук не отвечает, а есть ли у нас интернет?</string>
     <string name="Found">Нашли!</string>
     <string name="Kits_db_connection_error">Ошибка соединения с онлайн-базой</string>
     <string name="Kits_db_connection_ok">Соединение с онлайн-базой восстановлено</string>
@@ -261,4 +261,8 @@
     <string name="Wishlists">Списки желаний</string>
     <string name="aftermarket_added">Афтермаркет добавлен</string>
     <string name="aftermarket_already_exist">В базе уже есть такая запись</string>
+    <string name="media_decal">Декаль</string>
+    <string name="media_mask">Маска</string>
+    <string name="please_add_boxart_picture">Добавьте, пожалуйста, картинку коробки</string>
+    <string name="please_use_numbers">Используйте здесь только цифры</string>
 </resources>

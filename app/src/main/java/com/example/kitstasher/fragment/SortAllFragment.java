@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -60,6 +61,9 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
             linLayoutKitname;
     private ImageView ivSortBrand, ivSortScale, ivSortDate, ivSortKitname;
     private ListView lvKits;
+
+    private RecyclerView rvKits;
+
     private char workMode;
     public static String allTag;
     private String sortBy, activeTable, listname;
