@@ -2,11 +2,11 @@ package com.example.kitstasher.other;
 
 /**
  * Created by Алексей on 21.04.2017.
- * Constants for application.
+ * MyConstants for application.
  * Cloud constants.
  */
 
-public class Constants {
+public class MyConstants {
     /*
      * Cloud constants for App42 service
      * For getting API_KEY & SECRET_KEY, just login or register to AppHQ Console (http://apphq.shephertz.com/).
@@ -60,7 +60,7 @@ Category tags
 /*
 Prefixes and postfixes for links
  */
-
+// TODO: 19.02.2018 проверить категории!!! 0 - неправильно уже
     public static final String CAT_ALL = "all";
     public static final String CAT_AIR = "air";
     public static final String CODE_AIR = "1";
@@ -71,7 +71,7 @@ Prefixes and postfixes for links
     public static final String CAT_SPACE = "space";
     public static final String CODE_SPACE = "4";
     public static final String CAT_OTHER = "other";
-    public static final String CODE_OTHER = "0";
+    public static final String CODE_OTHER = "100";
     public static final String CAT_AUTOMOTO = "auto";
     public static final String CODE_AUTOMOTO = "5";
     public static final String CAT_FIGURES = "figures";
@@ -110,6 +110,7 @@ Prefixes and postfixes for links
     public static final String USER_NAME_FACEBOOK = "fb_user_name";
     public static final String PROFILE_PICTURE_URL_FACEBOOK = "fb_profile_picture_url";
     public static final String USER_ID_PARSE = "parse_user_id";
+    public static final String USER_IDTYPE = "idtype";
     public static final String PARSE_STATUS = "b4app_status";
     public static final String PARSE_REGISTERED = "registered";
 
@@ -155,11 +156,12 @@ Prefixes and postfixes for links
     public static final Character MODE_AFTER_KIT = 'k';
     public static final Character MODE_VIEW_FROM_KIT = 'v';
     public static final Character MODE_EDIT_FROM_KIT = 'e';
+    public static final Character MODE_SEARCH = 's';
 
     public static final String PASS_ID = "passid";
 
     //Media Codes
-    public static final int M_CODE_OTHER = 0;
+    public static final int M_CODE_UNKNOWN = 0;
     public static final int M_CODE_INJECTED = 1;
     public static final int M_CODE_SHORTRUN = 2;
     public static final int M_CODE_RESIN = 3;
@@ -169,8 +171,10 @@ Prefixes and postfixes for links
     public static final int M_CODE_METAL = 7;
     public static final int M_CODE_3DPRINT = 8;
     public static final int M_CODE_MULTIMEDIA = 9;
-    public static final int M_CODE_DECAL = 10;
-    public static final int M_CODE_MASK = 11;
+    public static final int M_CODE_OTHER = 10;
+    public static final int M_CODE_DECAL = 11;
+    public static final int M_CODE_MASK = 12;
+
 
     //Status codes
     public static final int STATUS_NEW = 0;
@@ -198,6 +202,7 @@ Prefixes and postfixes for links
     public static final String TABLE = "table";
 
     public static final String SORT_BY = "sortBy";
+    public static final String BARCODE = "barcode";
     public static final String KITNAME = "kitname";
     public static final String CURSOR_POSITION = "cursorPosition";
     public static final String BRAND = "brand";
@@ -232,13 +237,51 @@ Prefixes and postfixes for links
     //Cropping
     public static final String FILE_URI = "fileUri";
     public static final String CROPPED_URI = "croppedUri";
+
     //Parse
+    public static final String PARSE_C_STASH = "Stash";
+    public static final String PARSE_C_NEWKIT = "NewKits";
+    public static final String PARSE_C_BOXART = "Boxart";
+    public static final String PARSE_C_TOPUSERS = "Top_users";
+    public static final String PARSE_TU_OWNERID = "ownerId";
     public static final String PARSE_BARCODE = "barcode";
+    public static final String PARSE_OWNERID = "owner_id";
+    public static final String PARSE_IDTYPE = "owner_id_type";
     public static final String PARSE_BRAND = "brand";
-    public static final String PARSE_BRAND_CATNO = "brand_catno";
     public static final String PARSE_BOXART_URL = "boxart_url";
+    public static final String PARSE_SCALE = "scale";
+    public static final String PARSE_BRAND_CATNO = "brandCatno";
+    public static final String PARSE_NOENGNAME = "kit_noengname";
+    public static final String PARSE_KITNAME = "kit_name";
+    public static final String PARSE_DESCRIPTION = "description";
+    public static final String PARSE_YEAR = "year";
+    public static final String PARSE_CATEGORY = "category";
+    public static final String PARSE_SCALEMATES = "scalemates_url";
+    public static final String PARSE_DELETED = "isDeleted";
     public static final String PARSE_THUMBNAIL_URL = "thumbnail_url";
+
+    public static final String PARSE_IMAGE = "image";
+
 
     public static final String POSITIONS = "positions";
     public static final String EMPTY = "";
+
+    //ItemEdit
+    public static final int MODE_A_BRAND = 1; //карточка брэнда
+    public static final int MODE_A_SHOP = 2; // карточка магазина
+    public static final int MODE_A_LIST = 3; // карточка пункта вишлиста
+
+    public static final int MODE_A_KIT = 4; // карточка афтера без редактирования
+    public static final int MODE_A_EDIT = 5; // карточка афтера с редактированием
+
+    //Options
+    public static final int CLOUD_OFF = 0;
+    public static final int CLOUD_ON = 1;
+    public static final String CLOUD_MODE = "cloud_mode";
+
+    //Directories names
+    public static final String BOXART_DIRECTORY_NAME = "boxart";
+
+
+    public static final String CATEGORY_TAB = "category_tab";
 }

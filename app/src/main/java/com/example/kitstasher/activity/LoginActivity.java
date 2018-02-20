@@ -8,9 +8,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 
 import com.example.kitstasher.R;
+import com.example.kitstasher.objects.KsUser;
 import com.example.kitstasher.other.AsyncApp42ServiceApi;
-import com.example.kitstasher.other.Constants;
 import com.example.kitstasher.other.Helper;
+import com.example.kitstasher.other.MyConstants;
 import com.example.kitstasher.other.ValueContainer;
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
@@ -41,16 +42,14 @@ import org.json.JSONObject;
  */
 
 public class LoginActivity extends AppCompatActivity {
-    LoginButton loginButton;
-    TextView tvInfo;
-
-    CallbackManager callbackManager;
-    AccessToken accessToken;
-
+    private LoginButton loginButton;
+    private TextView tvInfo;
+    private CallbackManager callbackManager;
+    private AccessToken accessToken;
     public static AsyncApp42ServiceApi asyncService;
-
-    SharedPreferences sharedPreferences;
-    SharedPreferences.Editor editor;
+    private SharedPreferences sharedPreferences;
+    private KsUser ksUser;
+//    private SharedPreferences.Editor editor;
 
 
 
@@ -65,33 +64,25 @@ public class LoginActivity extends AppCompatActivity {
                 .server(getString(R.string.parse_server_url))
                 .build());
 
-        sharedPreferences = getApplicationContext().getSharedPreferences(Constants.ACCOUNT_PREFS,
+        sharedPreferences = getApplicationContext().getSharedPreferences(MyConstants.ACCOUNT_PREFS,
                 Context.MODE_PRIVATE);
-        editor = sharedPreferences.edit();
-
-        tvInfo = (TextView) findViewById(R.id.textView);
+        tvInfo = findViewById(R.id.textView);
         tvInfo.setText(R.string.Please_log_in);
 
         //Facebook LoginButton and Callback
-        loginButton = (LoginButton) findViewById(R.id.login_button);
+        loginButton = findViewById(R.id.login_button);
         callbackManager = CallbackManager.Factory.create();
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
 
             @Override
             public void onSuccess(LoginResult loginResult) {
                 accessToken = loginResult.getAccessToken();
-                //Retrieving and saving of Facebook user ID
                 final String fbID = loginResult.getAccessToken().getUserId();
-                setSprefData(Constants.USER_ID_FACEBOOK, fbID);
-//                editor.putString(Constants.USER_ID_FACEBOOK, fbID);
-//                editor.commit(); //todo setPref()
-
-                //Container for data from inner object
+                setSprefData(MyConstants.USER_ID_FACEBOOK, fbID);
                 final ValueContainer<String> fbName;
                 fbName = new ValueContainer<>();
                 fbName.setVal("fbName");
 
-                //Retrieving Facebook username and profile picture
                 GraphRequest request = GraphRequest.newMeRequest(accessToken, new GraphRequest.GraphJSONObjectCallback() {
                     @Override
                     public void onCompleted(JSONObject object, GraphResponse response) {
@@ -100,7 +91,7 @@ public class LoginActivity extends AppCompatActivity {
                                 if (object.has("name")) {
                                     String profileName = object.getString("name");
 
-                                    setSprefData(Constants.USER_NAME_FACEBOOK, profileName);
+                                    setSprefData(MyConstants.USER_NAME_FACEBOOK, profileName);
                                     fbName.setVal(profileName);
                                 }
 
@@ -109,8 +100,7 @@ public class LoginActivity extends AppCompatActivity {
                                             object.getJSONObject("picture")
                                                     .getJSONObject("data")
                                                     .getString("url");
-
-                                    setSprefData(Constants.PROFILE_PICTURE_URL_FACEBOOK, profilePicUrl);
+                                    setSprefData(MyConstants.PROFILE_PICTURE_URL_FACEBOOK, profilePicUrl);
                                 }
                             } catch (JSONException e) {
                                 e.printStackTrace(); //TODO catch
@@ -140,16 +130,11 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Register in cloud services if there are no data in sharedPreferences
-     * @param id Facebook ID
-     * @param name Facebook name
-     */
     private void registerInClouds(String id, String name) {
-        if (Helper.isBlank(sharedPreferences.getString(Constants.USER_ID_APPHQ, null))){
+        if (Helper.isBlank(sharedPreferences.getString(MyConstants.USER_ID_APPHQ, null))) {
             registerInAppHq();
         }
-        if (Helper.isBlank(sharedPreferences.getString(Constants.USER_ID_PARSE, null))){
+        if (Helper.isBlank(sharedPreferences.getString(MyConstants.USER_ID_PARSE, null))) {
             registerInParse(id, name);
         }
     }
@@ -161,13 +146,13 @@ public class LoginActivity extends AppCompatActivity {
      */
     private void registerInParse(final String id, final String name) {
         // Checking for doubles
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("Top_users");
-        query.whereContains("ownerId", id.trim());
+        ParseQuery<ParseObject> query = ParseQuery.getQuery(MyConstants.PARSE_C_TOPUSERS);
+        query.whereContains(MyConstants.PARSE_TU_OWNERID, id.trim());
         query.getFirstInBackground(new GetCallback<ParseObject>() {
             public void done(ParseObject object, ParseException e) {
                 if (e == null) {
                     //Saving Parse user ID
-                    setSprefData(Constants.USER_ID_PARSE,object.getObjectId());
+                    setSprefData(MyConstants.USER_ID_PARSE, object.getObjectId());
                 }
 
                 else {
@@ -182,7 +167,7 @@ public class LoginActivity extends AppCompatActivity {
                         e1.printStackTrace();
                     }
                     //Saving Parse user ID
-                    setSprefData(Constants.USER_ID_PARSE,newParseObject.getObjectId());
+                    setSprefData(MyConstants.USER_ID_PARSE, newParseObject.getObjectId());
                 }
             }
 
@@ -202,9 +187,7 @@ public class LoginActivity extends AppCompatActivity {
                     {
                         //Saving AppHq user ID in Shared Preferences
                         Social social  = (Social)response;
-                        setSprefData(Constants.USER_ID_APPHQ, social.getUserName());
-
-//                        tvInfo.setText(R.string.Kits_db_connection_ok);
+                        setSprefData(MyConstants.USER_ID_APPHQ, social.getUserName());
                     }
                     public void onException(Exception ex){
                         tvInfo.setText(R.string.Kits_db_connection_error);
@@ -220,7 +203,7 @@ public class LoginActivity extends AppCompatActivity {
     private void setSprefData(String key, String value){
         SharedPreferences settings;
         SharedPreferences.Editor editor;
-        settings = getApplicationContext().getSharedPreferences(Constants.ACCOUNT_PREFS,
+        settings = getApplicationContext().getSharedPreferences(MyConstants.ACCOUNT_PREFS,
                 Context.MODE_PRIVATE);
         editor = settings.edit();
         editor.putString(key, value);

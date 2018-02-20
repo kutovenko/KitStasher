@@ -8,35 +8,35 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.kitstasher.R;
 import com.example.kitstasher.activity.ChooserActivity;
-import com.example.kitstasher.activity.ViewActivity;
-import com.example.kitstasher.adapters.AdapterListGlide;
-import com.example.kitstasher.other.Constants;
+import com.example.kitstasher.adapters.AdapterKitList;
 import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.Helper;
+import com.example.kitstasher.other.MyConstants;
 import com.example.kitstasher.other.SortKits;
 
 import java.util.ArrayList;
-
-import static com.example.kitstasher.activity.MainActivity.REQUEST_CODE_VIEW;
 
 /**
  * Created by Алексей on 14.08.2017. Просмотр списка
  */
 
 public class ListViewFragment extends Fragment implements View.OnClickListener, SortKits {
-    private ListView lvListAllItems;
+    //    private ListView lvListAllItems;
+    private RecyclerView rvListAllItems;
+    private LinearLayoutManager rvKitsManager;
     private ArrayList<Long> ids;
     private Cursor cursor;
     private DbConnector dbConnector;
@@ -47,6 +47,7 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
     private Context context;
     private String listname;
     private View view;
+    private AdapterKitList rvAdapter;
 
 
     public ListViewFragment() {
@@ -69,20 +70,19 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
             }
         });
 
-        lvListAllItems = view.findViewById(R.id.lvListAllItems);
-        lvListAllItems.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-                showDeleteDialog(l);
-                return false;
-            }
-        });
-//        LinearLayout llListsContainer = view.findViewById(R.id.llListsContainer);
         Bundle bundle = getArguments();
-        listname = bundle.getString(Constants.LISTNAME);
+        listname = bundle.getString(MyConstants.LISTNAME);
 
 
         cursor = dbConnector.getListItems(listname, "_id DESC");
+
+
+        rvAdapter = new AdapterKitList(cursor, context, new String[]{},
+                DbConnector.TABLE_MYLISTSITEMS,
+                0, MyConstants.MODE_LIST, DbConnector.COLUMN_ID, MyConstants.EMPTY, listname);
+        rvAdapter.setHasStableIds(true);
+
+        rvListAllItems.setAdapter(rvAdapter);
 
         prepareListAndAdapter(cursor);
         returnToList();
@@ -102,8 +102,6 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
         dialogBuilder.setTitle(R.string.Do_you_wish_to_delete_from_list);
         dialogBuilder.setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
-//                File file = new File(getImagePath(l));
-//                file.delete();
                 dbConnector.delItemById(DbConnector.TABLE_MYLISTSITEMS, l);
                 cursor = dbConnector.getListItems(listname, "_id DESC");
                 prepareListAndAdapter(cursor);
@@ -125,7 +123,7 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
             int returnItem = bundle.getInt("position");
             cursor = dbConnector.getListItems(listname, "_id DESC"); //влияет на сортировку списка после возврата
             prepareListAndAdapter(cursor);
-            lvListAllItems.setSelectionFromTop(returnItem, 0);
+            rvListAllItems.getLayoutManager().scrollToPosition(returnItem);
         }
     }
     private void showChooseAddMethodDialog() {
@@ -145,8 +143,8 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
 
                 ScanFragment fragment = new ScanFragment();
                 Bundle bundle = new Bundle(2);
-                bundle.putChar(Constants.WORK_MODE, Constants.MODE_LIST);
-                bundle.putString(Constants.LISTNAME, listname);
+                bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_LIST);
+                bundle.putString(MyConstants.LISTNAME, listname);
                 fragment.setArguments(bundle);
                 android.support.v4.app.FragmentTransaction fragmentTransaction =
                         getFragmentManager().beginTransaction();
@@ -162,8 +160,8 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
             public void onClick(View view) {
                 ManualAddFragment fragment = new ManualAddFragment();
                 Bundle bundle = new Bundle(2);
-                bundle.putChar(Constants.WORK_MODE, Constants.MODE_LIST);
-                bundle.putString(Constants.LISTNAME, listname);
+                bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_LIST);
+                bundle.putString(MyConstants.LISTNAME, listname);
                 fragment.setArguments(bundle);
                 android.support.v4.app.FragmentTransaction fragmentTransaction =
                         getFragmentManager().beginTransaction();
@@ -178,8 +176,8 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(context, ChooserActivity.class);
-                intent.putExtra(Constants.LISTNAME, listname);
-                intent.putExtra(Constants.WORK_MODE, Constants.MODE_LIST);
+                intent.putExtra(MyConstants.LISTNAME, listname);
+                intent.putExtra(MyConstants.WORK_MODE, MyConstants.MODE_LIST);
                 startActivityForResult(intent, 10);
                 alertDialog.dismiss();
             }
@@ -189,33 +187,13 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
 
     public void prepareListAndAdapter(Cursor cursor){
 
-        AdapterListGlide adapterListGlide = new AdapterListGlide(context, cursor);
-        ids = new ArrayList<>();
-        final ArrayList<Integer> positions = new ArrayList<>();
-        for (int i = 0; i < adapterListGlide.getCount(); i++) {
-            ids.add(adapterListGlide.getItemId(i)); //заполняем список идентификаторов
-            positions.add(i);
-        }
-        lvListAllItems.setAdapter(adapterListGlide);
+        rvAdapter.changeCursor(cursor);
+        rvAdapter.notifyDataSetChanged();
 
-        lvListAllItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(context, ViewActivity.class);
-                intent.putExtra(Constants.POSITION, position);
-                intent.putExtra(Constants.POSITIONS, positions);
-                intent.putExtra(Constants.ID, id);
-                intent.putExtra(Constants.WORK_MODE, Constants.MODE_LIST);
-                intent.putExtra(Constants.IDS, ids);
-                intent.putExtra(Constants.SCALE_FILTER, "");
-                intent.putExtra(Constants.BRAND_FILTER, "");
-                intent.putExtra(Constants.KITNAME_FILTER, "");
-                intent.putExtra(Constants.MEDIA_FILTER, "");
-                intent.putExtra(Constants.STATUS_FILTER, "");
-                intent.putExtra(Constants.LISTNAME, listname);
-                startActivityForResult(intent, REQUEST_CODE_VIEW);
-            }
-        });
+//        MyListCursorAdapter rvAdapter = new MyListCursorAdapter(cursor, context, MyConstants.MODE_LISTITEMS);
+//
+
+
     }
 
 
@@ -321,6 +299,12 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
     }
 
     private void initPortraitUi(){
+        rvListAllItems = view.findViewById(R.id.rvListAllItems);
+        rvKitsManager = new LinearLayoutManager(getActivity());
+        rvListAllItems.setHasFixedSize(true);
+        rvListAllItems.setLayoutManager(rvKitsManager);
+        rvListAllItems.setItemAnimator(new DefaultItemAnimator());
+
         linLayoutListBrand = view.findViewById(R.id.linLayoutListSortBrand);
         linLayoutListBrand.setOnClickListener(this);
         linLayoutListScale = view.findViewById(R.id.linLayoutListSortScale);

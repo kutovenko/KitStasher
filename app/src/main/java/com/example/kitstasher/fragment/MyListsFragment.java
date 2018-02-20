@@ -2,30 +2,30 @@ package com.example.kitstasher.fragment;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.kitstasher.R;
-import com.example.kitstasher.activity.ListActivity;
 import com.example.kitstasher.activity.MainActivity;
-import com.example.kitstasher.adapters.AdapterMyLists;
+import com.example.kitstasher.adapters.MyListCursorAdapter;
 import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.Helper;
+import com.example.kitstasher.other.MyConstants;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -37,14 +37,16 @@ import java.util.Calendar;
 public class MyListsFragment extends Fragment implements View.OnClickListener {
     private DbConnector dbConnector;
     private Cursor cursor;
-    public AdapterMyLists adapterMyLists;
+    //    public AdapterMyLists adapterMyLists;
     private Context mContext;
-    private ListView lvMyLists;
+    //    private ListView lvMyLists;
+    private RecyclerView rvMyLists;
+    private LinearLayoutManager rvListsManager;
     private View view;
     private LinearLayout linLayoutDate, linLayoutListName;
     private ImageView ivSortDate, ivSortListName;
     private boolean sortDate, sortName;
-
+    private MyListCursorAdapter rvAdapter;
     public MyListsFragment() {
     }
 
@@ -73,18 +75,16 @@ public class MyListsFragment extends Fragment implements View.OnClickListener {
         ((MainActivity) getActivity())
                 .setActionBarTitle(getActivity().getResources().getString(R.string.Wishlists));
 
-        lvMyLists = view.findViewById(R.id.lvMyLists);
-        cursor = dbConnector.getAllLists("_id DESC");
-        adapterMyLists = new AdapterMyLists(getActivity(), cursor);
-        lvMyLists.setAdapter(adapterMyLists);
-        lvMyLists.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View v, int i, long l) {
-                Intent intent = new Intent(getActivity(), ListActivity.class);
-                intent.putExtra("list_name", l);
-                startActivity(intent);
-            }
-        });
+        rvMyLists = view.findViewById(R.id.rvMyLists);
+        rvListsManager = new LinearLayoutManager(mContext);
+        rvMyLists.setHasFixedSize(true);
+        rvMyLists.setLayoutManager(rvListsManager);
+        rvMyLists.setItemAnimator(new DefaultItemAnimator());
+        cursor = dbConnector.getLists("_id DESC");
+        rvAdapter = new MyListCursorAdapter(cursor, mContext, MyConstants.MODE_A_LIST);
+        rvAdapter.hasStableIds();
+        rvMyLists.setAdapter(rvAdapter);
+        cursor = dbConnector.getLists("_id DESC");
 
         Button btnAddMyList = view.findViewById(R.id.btnAddMylist);
         btnAddMyList.setOnClickListener(this);
@@ -188,10 +188,10 @@ public class MyListsFragment extends Fragment implements View.OnClickListener {
                     Toast.makeText(mContext, R.string.List_with_this_name_already_exists,
                             Toast.LENGTH_SHORT).show();
                 }else{
-                dbConnector.addList(etNewListName.getText().toString().trim(), date);
-                cursor = dbConnector.getAllLists("_id DESC");
-                adapterMyLists = new AdapterMyLists(getActivity(), cursor);
-                lvMyLists.setAdapter(adapterMyLists);
+                    dbConnector.addList(etNewListName.getText().toString().trim(), date);
+                    cursor = dbConnector.getLists("_id DESC");
+                    rvAdapter.notifyItemInserted(0);
+                    prepareListAndAdapter(cursor);
                 }
             }
         });
@@ -204,36 +204,35 @@ public class MyListsFragment extends Fragment implements View.OnClickListener {
     }
 
     public void SortByDateAcs() {
-        cursor = dbConnector.getAllLists("_id");
+        cursor = dbConnector.getLists("_id");
         prepareListAndAdapter(cursor);
         ivSortDate.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
         sortDate = true;
     }
 
     public void SortByDateDesc() {
-        cursor = dbConnector.getAllLists("_id DESC");
+        cursor = dbConnector.getLists("_id DESC");
         prepareListAndAdapter(cursor);
         ivSortDate.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
         sortDate = false;
     }
 
     public void SortByNameAsc() {
-        cursor = dbConnector.getAllLists("listname");
+        cursor = dbConnector.getLists("listname");
         prepareListAndAdapter(cursor);
-        ivSortListName.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
+        ivSortListName.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
         sortName = true;
     }
 
     public void SortByNameDesc() {
-        cursor = dbConnector.getAllLists("listname DESC");
+        cursor = dbConnector.getLists("listname DESC");
         prepareListAndAdapter(cursor);
-        ivSortListName.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
+        ivSortListName.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
         sortName = false;
     }
 
     public void prepareListAndAdapter(Cursor cursor) {
-        adapterMyLists = new AdapterMyLists(mContext, cursor);
-        lvMyLists.setAdapter(adapterMyLists);
-
+        rvAdapter.changeCursor(cursor);
+        rvAdapter.notifyDataSetChanged();
     }
 }

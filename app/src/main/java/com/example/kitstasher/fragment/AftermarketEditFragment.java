@@ -24,7 +24,6 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,9 +31,9 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.kitstasher.R;
 import com.example.kitstasher.adapters.AdapterSpinner;
-import com.example.kitstasher.other.Constants;
 import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.Helper;
+import com.example.kitstasher.other.MyConstants;
 import com.example.kitstasher.other.SelectDateFragment;
 
 import java.io.ByteArrayOutputStream;
@@ -48,6 +47,10 @@ import java.util.Calendar;
 
 import static android.R.drawable.ic_menu_camera;
 import static android.app.Activity.RESULT_OK;
+import static com.example.kitstasher.other.MyConstants.CODE_AUTOMOTO;
+import static com.example.kitstasher.other.MyConstants.CODE_FANTASY;
+import static com.example.kitstasher.other.MyConstants.CODE_FIGURES;
+import static com.example.kitstasher.other.MyConstants.CODE_OTHER;
 import static java.lang.Integer.parseInt;
 
 /**
@@ -62,10 +65,6 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
     private EditText etDetFullKitname, etDetFullBrand, etDetFullBrandCatNo, etDetFullScale,
             etDetFullKitNoengname,
             etFullNotes, etFullPrice, etPurchasedFrom;
-    //    private LinearLayout linLayoutAir, linLayoutGround, linLayoutSea, linLayoutSpace, linLayoutCar,
-//            linLayoutOther, linLayoutFigures, linLayoutFantasy;
-//    private Button btnSaveEdit, btnCancelEdit, btnDelete, btnRestoreImage, btnAddBoxart, btnClearDate,
-//            btnAddAftermarket;
     private AppCompatSpinner spKitDescription, spKitYear, spQuantity,
             spCurrency, spKitMedia, spKitStatus, spCategory;
     private String category, listname; // для переключения к вкладке. при изменении совпадает с category, иначе то, что было (пришло или сохранено в записи)
@@ -159,7 +158,7 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
                 R.drawable.ic_android_black_24dp};
         AdapterSpinner adapterSpinner = new AdapterSpinner(context, icons, categories);
         spCategory.setAdapter(adapterSpinner);
-        spCategory.setSelection(Integer.parseInt(Helper.tagToCode(category)));
+        spCategory.setSelection(Integer.parseInt(tagToCode(category)));
 
 
         String[] descriptionItems = new String[]{getString(R.string.kittype),
@@ -242,7 +241,7 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
         }
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        defaultCurrency = sharedPreferences.getString(Constants.DEFAULT_CURRENCY, "");
+        defaultCurrency = sharedPreferences.getString(MyConstants.DEFAULT_CURRENCY, "");
 
         if (!cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_CURRENCY)).equals("")){
             String cr = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_CURRENCY));
@@ -282,7 +281,7 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
     }
 
     private void receiveArguments() {
-        position = getArguments().getInt(Constants.LIST_POSITION);
+        position = getArguments().getInt(MyConstants.LIST_POSITION);
         afterId = getArguments().getLong("after_id");
         listname = "";
         scaleFilter = getArguments().getString("scaleFilter");
@@ -290,11 +289,7 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
         kitnameFilter = getArguments().getString("kitnameFilter");
         statusFilter = getArguments().getString("statusFilter");
         mediaFilter = getArguments().getString("mediaFilter");
-//
-//        mode = Constants.MODE_KIT;
-//        if (getArguments().getChar(Constants.WORK_MODE) != '\u0000'){
-//            mode = getArguments().getChar(Constants.WORK_MODE);
-//        }
+
     }
 
     private void setKitDescription(String description) {
@@ -369,7 +364,7 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
         if (cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_BOXART_URI)) != null
                 && cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_BOXART_URI)).length() > 1){
 
-            File imgFile = new  File(Constants.FOLDER_SDCARD_KITSTASHER
+            File imgFile = new File(MyConstants.FOLDER_SDCARD_KITSTASHER
                     + cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_BOXART_URI)));
 
             if(imgFile.exists()){
@@ -401,10 +396,10 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
 
     private String composeUrl(String url){
         if (!Helper.isBlank(url)) {
-            return Constants.BOXART_URL_PREFIX
+            return MyConstants.BOXART_URL_PREFIX
                     + url
                     + getSuffix()
-                    + Constants.JPG;
+                    + MyConstants.JPG;
         }else{
             return "";
         }
@@ -412,23 +407,23 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
     }
 
     private String getSuffix(){
-        String suffix = Constants.BOXART_URL_SMALL;
-        SharedPreferences preferences = context.getSharedPreferences(Constants.BOXART_SIZE,
+        String suffix = MyConstants.BOXART_URL_SMALL;
+        SharedPreferences preferences = context.getSharedPreferences(MyConstants.BOXART_SIZE,
                 Context.MODE_PRIVATE);
         if (preferences != null) {
             String temp = preferences.getString("boxart_size","");
             switch (temp){
-                case Constants.BOXART_URL_COMPANY_SUFFIX:
+                case MyConstants.BOXART_URL_COMPANY_SUFFIX:
                     suffix = "";
                     break;
-                case Constants.BOXART_URL_SMALL:
-                    suffix = Constants.BOXART_URL_SMALL;
+                case MyConstants.BOXART_URL_SMALL:
+                    suffix = MyConstants.BOXART_URL_SMALL;
                     break;
-                case Constants.BOXART_URL_MEDIUM:
-                    suffix = Constants.BOXART_URL_MEDIUM;
+                case MyConstants.BOXART_URL_MEDIUM:
+                    suffix = MyConstants.BOXART_URL_MEDIUM;
                     break;
-                case Constants.BOXART_URL_LARGE:
-                    suffix = Constants.BOXART_URL_LARGE;
+                case MyConstants.BOXART_URL_LARGE:
+                    suffix = MyConstants.BOXART_URL_LARGE;
                     break;
                 default:
                     break;
@@ -668,8 +663,8 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
         tvMPurchaseDate = (TextView) view.findViewById(R.id.tvEditPurchaseDate);
         tvMPurchaseDate.setOnClickListener(this);
 
-        ListView lvAftermarket = (ListView) view.findViewById(R.id.lvEditAftermarket);
-        lvAftermarket.setVisibility(View.GONE);
+//        ListView lvAftermarket = (ListView) view.findViewById(R.id.lvEditAftermarket);
+//        lvAftermarket.setVisibility(View.GONE);
     }
 
     private boolean checkAllFields() {
@@ -705,7 +700,7 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
             case R.id.btnEditSave:
                 if (checkAllFields()) {
                     if (bmBoxartPic != null) {
-                        size = Constants.SIZE_FULL;
+                        size = MyConstants.SIZE_FULL;
 
                         File pictures = Environment
                                 .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
@@ -722,7 +717,7 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
                         writeBoxartFile(exportDir);
 
                         bmBoxartPic = Bitmap.createScaledBitmap(bmBoxartPic, 280, 172, false);
-                        size = Constants.SIZE_MEDIUM;
+                        size = MyConstants.SIZE_MEDIUM;
                         pictureName = etDetFullBrand.getText().toString()
                                 + etDetFullBrandCatNo.getText().toString()
                                 + size
@@ -730,7 +725,7 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
                         writeBoxartFile(exportDir);
 
                         bmBoxartPic = Bitmap.createScaledBitmap(bmBoxartPic, 140, 86, false);
-                        size = Constants.SIZE_SMALL;
+                        size = MyConstants.SIZE_SMALL;
                         pictureName = etDetFullBrand.getText().toString()
                                 + etDetFullBrandCatNo.getText().toString()
                                 + size
@@ -743,8 +738,8 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
 
                     AftermarketCardFragment fragment = new AftermarketCardFragment();
                     Bundle bundle = new Bundle();
-                    bundle.putLong(Constants.AFTER_ID, afterId);
-                    bundle.putString(Constants.BOXART_URI, pictureName);
+                    bundle.putLong(MyConstants.AFTER_ID, afterId);
+                    bundle.putString(MyConstants.BOXART_URI, pictureName);
                     fragment.setArguments(bundle);
                     android.support.v4.app.FragmentTransaction fragmentTransaction =
                             getFragmentManager().beginTransaction();
@@ -799,4 +794,129 @@ public class AftermarketEditFragment extends Fragment implements View.OnClickLis
                 break;
         }
     }
+
+    private String codeToDescription(String code) {
+        String desc = "";
+        switch (code) {
+            case MyConstants.NEW_TOOL:
+                desc = getResources().getString(R.string.new_tool);
+                break;
+            case MyConstants.REBOX:
+                desc = getResources().getString(R.string.rebox);
+                break;
+        }
+        return desc;
+    }
+
+    private String tagToCode(String tag) {
+        String code = tag;
+        switch (code) {
+            case MyConstants.CAT_AIR:
+                code = MyConstants.CODE_AIR;
+                break;
+            case MyConstants.CAT_GROUND:
+                code = MyConstants.CODE_GROUND;
+                break;
+            case MyConstants.CAT_SEA:
+                code = MyConstants.CODE_SEA;
+                break;
+            case MyConstants.CAT_SPACE:
+                code = MyConstants.CODE_SPACE;
+                break;
+            case MyConstants.CAT_AUTOMOTO:
+                code = CODE_AUTOMOTO;
+                break;
+            case MyConstants.CAT_OTHER:
+                code = CODE_OTHER;
+                break;
+            case MyConstants.CAT_FIGURES:
+                code = CODE_FIGURES;
+                break;
+            case MyConstants.CAT_FANTASY:
+                code = CODE_FANTASY;
+                break;
+
+        }
+        return code;
+    }
+
+    private String codeToMedia(int mediaCode) {
+        String media;
+        switch (mediaCode) {
+            case MyConstants.M_CODE_UNKNOWN:
+                media = getResources().getString(R.string.unknown);
+                break;
+            case MyConstants.M_CODE_INJECTED:
+                media = getResources().getString(R.string.media_injected);
+                break;
+            case MyConstants.M_CODE_SHORTRUN:
+                media = getResources().getString(R.string.media_shortrun);
+                break;
+            case MyConstants.M_CODE_RESIN:
+                media = getResources().getString(R.string.media_resin);
+                break;
+            case MyConstants.M_CODE_VACU:
+                media = getResources().getString(R.string.media_vacu);
+                break;
+            case MyConstants.M_CODE_PAPER:
+                media = getResources().getString(R.string.media_paper);
+                break;
+            case MyConstants.M_CODE_WOOD:
+                media = getResources().getString(R.string.media_wood);
+                break;
+            case MyConstants.M_CODE_METAL:
+                media = getResources().getString(R.string.media_metal);
+                break;
+            case MyConstants.M_CODE_3DPRINT:
+                media = getResources().getString(R.string.media_3dprint);
+                break;
+            case MyConstants.M_CODE_MULTIMEDIA:
+                media = getResources().getString(R.string.media_multimedia);
+                break;
+            case MyConstants.M_CODE_OTHER:
+                media = getResources().getString(R.string.media_other);
+                break;
+            case MyConstants.M_CODE_DECAL:
+                media = getResources().getString(R.string.media_decal);
+                break;
+            case MyConstants.M_CODE_MASK:
+                media = getResources().getString(R.string.media_mask);
+                break;
+
+            default:
+                media = getResources().getString(R.string.unknown);
+                break;
+        }
+        return media;
+    }
+
+
+    private String codeToStatus(int code) {
+        String status;
+        switch (code) {
+            case MyConstants.STATUS_NEW:
+                status = getResources().getString(R.string.status_new);
+                break;
+            case MyConstants.STATUS_OPENED:
+                status = getResources().getString(R.string.status_opened);
+                break;
+            case MyConstants.STATUS_STARTED:
+                status = getResources().getString(R.string.status_started);
+                break;
+            case MyConstants.STATUS_INPROGRESS:
+                status = getResources().getString(R.string.status_inprogress);
+                break;
+            case MyConstants.STATUS_FINISHED:
+                status = getResources().getString(R.string.status_finished);
+                break;
+            case MyConstants.STATUS_LOST:
+                status = getResources().getString(R.string.status_lost_sold);
+                break;
+            default:
+                status = getResources().getString(R.string.status_new);
+                break;
+        }
+        return status;
+    }
+
 }

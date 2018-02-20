@@ -9,7 +9,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import com.example.kitstasher.R;
 import com.example.kitstasher.fragment.ManualAddFragment;
 import com.example.kitstasher.fragment.ScanFragment;
-import com.example.kitstasher.other.Constants;
+import com.example.kitstasher.other.MyConstants;
 
 /**
  * Created by Алексей on 21.04.2017.
@@ -30,7 +30,7 @@ public class AdapterAddFragment extends FragmentPagerAdapter {
     @Override
     public Fragment getItem(int position) {
         Bundle bundle = new Bundle();
-        bundle.putBoolean(Constants.AFTERMARKET_MODE, aftermarketMode);
+        bundle.putBoolean(MyConstants.AFTERMARKET_MODE, aftermarketMode);
 
         switch (position){
             case 0:
@@ -40,7 +40,7 @@ public class AdapterAddFragment extends FragmentPagerAdapter {
 //                return new ScanFragment();
             case 1:
                 ManualAddFragment manualAddFragment = new ManualAddFragment();
-                bundle.putChar(Constants.WORK_MODE, Constants.MODE_KIT);
+                bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_KIT);
                 manualAddFragment.setArguments(bundle);
                 return manualAddFragment;
 //                return new ManualAddFragment();

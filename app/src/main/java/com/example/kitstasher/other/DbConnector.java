@@ -17,7 +17,7 @@ public class DbConnector {
     private static final String DB_NAME = "myscalestash";
     private static final int DB_VERSION = 1;
 
-    private final Context mCtx;
+    private final Context context;
     private static DBHelper mDBHelper;
     private static SQLiteDatabase mDB;
 
@@ -142,10 +142,24 @@ public class DbConnector {
     public static final String BB_COLUMN_BARCODE = "bb_barcode";
     public static final String BB_COLUMN_SOURCE = "bb_source";
 
+    /////// TABLE CATEGORIES ///////////////
+    private static final String TABLE_CATEGORIES = "categories";
+    public static final String CAT_RESID = "res_id";
+    public static final String CAT_COUNT = "count";
+    public static final String CAT_NAME = "name";
+
 
     //////////////////////////////////
     ///////// CREATE SCRIPTS /////////
     /////////////////////////////////
+
+    private static final String CREATE_TABLE_CATEGORIES =
+            "create table " + TABLE_CATEGORIES + "(" +
+                    COLUMN_ID + " integer primary key autoincrement, " + // Локальный ключ -0
+                    CAT_RESID + " integer," + //
+                    CAT_NAME + " text, " + //
+                    CAT_COUNT + " integer" + //
+                    ");";
 
     private static final String CREATE_TABLE_BRAND_BARCODE =
             "create table " + TABLE_BRAND_BARCODE + "(" +
@@ -488,11 +502,15 @@ public class DbConnector {
                     " UNION SELECT 'USD'" +
                     " UNION SELECT 'UAH';";
 
-    private static final String INIT_TABLE_CATEGORY =
-            "INSERT INTO " + TABLE_TAGS + "(" + TAGS_COLUMN_TAG + ")" +
-                    " SELECT 'Airplane' AS " + TAGS_COLUMN_TAG +
-                    " UNION SELECT 'Ship'" +
-                    " UNION SELECT 'Armour';";
+    private static final String INIT_TABLE_CATEGORIES =
+            "INSERT INTO " + TABLE_CATEGORIES + "(name, res_id) VALUES (1," + R.string.Air + ");"
+                    + "INSERT INTO " + TABLE_CATEGORIES + "(name, res_id, count) VALUES (2," + R.string.Ground + ");"
+                    + "INSERT INTO " + TABLE_CATEGORIES + "(name, res_id, count) VALUES (3," + R.string.Sea + ");"
+                    + "INSERT INTO " + TABLE_CATEGORIES + "(name, res_id, count) VALUES (4," + R.string.Space + ");"
+                    + "INSERT INTO " + TABLE_CATEGORIES + "(name, res_id, count) VALUES (5," + R.string.Auto_moto + ");"
+                    + "INSERT INTO " + TABLE_CATEGORIES + "(name, res_id, count) VALUES (6," + R.string.Figures + ");"
+                    + "INSERT INTO " + TABLE_CATEGORIES + "(name, res_id, count) VALUES (7," + R.string.Fantasy + ");"
+                    + "INSERT INTO " + TABLE_CATEGORIES + "(name, res_id, count) VALUES (8," + R.string.Other + ",0" + ");";
 
     //todo delete?
     private static final String INIT_TABLE_ACCOUNT =
@@ -506,13 +524,13 @@ public class DbConnector {
 
     public DbConnector(Context context) {
 //           super(); //todo?
-        mCtx = context;
+        this.context = context;
     }
 
 
     // открыть подключение
     public void open() {
-        mDBHelper = new DBHelper(mCtx, DB_NAME, null, DB_VERSION);
+        mDBHelper = new DBHelper(context, DB_NAME, null, DB_VERSION);
         mDB = mDBHelper.getWritableDatabase();
 
     }
@@ -622,13 +640,13 @@ public class DbConnector {
         boolean found = false;
         String having = "";
         String tableName = TABLE_KITS;
-        if (editMode == Constants.MODE_KIT) {
+        if (editMode == MyConstants.MODE_KIT) {
             tableName = TABLE_KITS;
-        } else if (editMode == Constants.MODE_AFTERMARKET) {
+        } else if (editMode == MyConstants.MODE_AFTERMARKET) {
             tableName = TABLE_AFTERMARKET;
-        } else if (editMode == Constants.MODE_LIST) {
+        } else if (editMode == MyConstants.MODE_LIST) {
             tableName = TABLE_MYLISTSITEMS;
-//        } else if (editMode == Constants.MODE_AFTER_KIT){
+//        } else if (editMode == MyConstants.MODE_AFTER_KIT){
 //            tableName = TABLE_KIT_AFTER_CONNECTIONS;
 //            having = KIT_AFTER_KITID + " = '" + String.valueOf(kitId) + "'";
         }
@@ -724,7 +742,7 @@ public class DbConnector {
     }
 
     // Добавление записи в KITS
-    public void addKitRec(Kit kit){
+    public long addKitRec(Kit kit) {
 
         ContentValues cv = new ContentValues();
 
@@ -756,7 +774,7 @@ public class DbConnector {
         cv.put(COLUMN_SEND_STATUS, kit.getSendStatus());
         cv.put(COLUMN_PURCHASE_PLACE, kit.getPlacePurchased());
         cv.put(COLUMN_STATUS, kit.getStatus());
-        mDB.insert(TABLE_KITS, null, cv);
+        return mDB.insert(TABLE_KITS, null, cv);
     }
 
     //Добавление импортом
@@ -802,26 +820,26 @@ public class DbConnector {
     private String codeToStatus(int code){
         String status;
         switch (code){
-            case Constants.STATUS_NEW:
-                status = mCtx.getResources().getString(R.string.status_new);
+            case MyConstants.STATUS_NEW:
+                status = context.getResources().getString(R.string.status_new);
                 break;
-            case Constants.STATUS_OPENED:
-                status = mCtx.getResources().getString(R.string.status_opened);
+            case MyConstants.STATUS_OPENED:
+                status = context.getResources().getString(R.string.status_opened);
                 break;
-            case Constants.STATUS_STARTED:
-                status = mCtx.getResources().getString(R.string.status_started);
+            case MyConstants.STATUS_STARTED:
+                status = context.getResources().getString(R.string.status_started);
                 break;
-            case Constants.STATUS_INPROGRESS:
-                status = mCtx.getResources().getString(R.string.status_inprogress);
+            case MyConstants.STATUS_INPROGRESS:
+                status = context.getResources().getString(R.string.status_inprogress);
                 break;
-            case Constants.STATUS_FINISHED:
-                status = mCtx.getResources().getString(R.string.status_finished);
+            case MyConstants.STATUS_FINISHED:
+                status = context.getResources().getString(R.string.status_finished);
                 break;
-            case Constants.STATUS_LOST:
-                status = mCtx.getResources().getString(R.string.status_lost_sold);
+            case MyConstants.STATUS_LOST:
+                status = context.getResources().getString(R.string.status_lost_sold);
                 break;
             default:
-                status = mCtx.getResources().getString(R.string.status_new);
+                status = context.getResources().getString(R.string.status_new);
                 break;
         }
         return status;
@@ -830,38 +848,38 @@ public class DbConnector {
     private String codeToMedia(int mediaCode){
         String media;
         switch (mediaCode){
-            case Constants.M_CODE_OTHER:
-                media = mCtx.getResources().getString(R.string.media_other);
+            case MyConstants.M_CODE_OTHER:
+                media = context.getResources().getString(R.string.media_other);
                 break;
-            case Constants.M_CODE_INJECTED:
-                media = mCtx.getResources().getString(R.string.media_injected);
+            case MyConstants.M_CODE_INJECTED:
+                media = context.getResources().getString(R.string.media_injected);
                 break;
-            case Constants.M_CODE_SHORTRUN:
-                media = mCtx.getResources().getString(R.string.media_shortrun);
+            case MyConstants.M_CODE_SHORTRUN:
+                media = context.getResources().getString(R.string.media_shortrun);
                 break;
-            case Constants.M_CODE_RESIN:
-                media = mCtx.getResources().getString(R.string.media_resin);
+            case MyConstants.M_CODE_RESIN:
+                media = context.getResources().getString(R.string.media_resin);
                 break;
-            case Constants.M_CODE_VACU:
-                media = mCtx.getResources().getString(R.string.media_vacu);
+            case MyConstants.M_CODE_VACU:
+                media = context.getResources().getString(R.string.media_vacu);
                 break;
-            case Constants.M_CODE_PAPER:
-                media = mCtx.getResources().getString(R.string.media_paper);
+            case MyConstants.M_CODE_PAPER:
+                media = context.getResources().getString(R.string.media_paper);
                 break;
-            case Constants.M_CODE_WOOD:
-                media = mCtx.getResources().getString(R.string.media_wood);
+            case MyConstants.M_CODE_WOOD:
+                media = context.getResources().getString(R.string.media_wood);
                 break;
-            case Constants.M_CODE_METAL:
-                media = mCtx.getResources().getString(R.string.media_metal);
+            case MyConstants.M_CODE_METAL:
+                media = context.getResources().getString(R.string.media_metal);
                 break;
-            case Constants.M_CODE_3DPRINT:
-                media = mCtx.getResources().getString(R.string.media_3dprint);
+            case MyConstants.M_CODE_3DPRINT:
+                media = context.getResources().getString(R.string.media_3dprint);
                 break;
-            case Constants.M_CODE_MULTIMEDIA:
-                media = mCtx.getResources().getString(R.string.media_multimedia);
+            case MyConstants.M_CODE_MULTIMEDIA:
+                media = context.getResources().getString(R.string.media_multimedia);
                 break;
             default:
-                media = mCtx.getResources().getString(R.string.media_other);
+                media = context.getResources().getString(R.string.media_other);
                 break;
         }
         return media;
@@ -869,34 +887,34 @@ public class DbConnector {
 
 // Список с фильтрацией и сортировкой
 public Cursor filteredKits(String tableName, String[] filters, String sortBy,
-                           int categoryTab, String listname) {
+                           String categoryTab, String listname) {
         String groupBy = "_id";
         String having;
-    if (listname.equals(Constants.EMPTY)) {
+    if (listname.equals(MyConstants.EMPTY)) {
         switch (categoryTab) {
-            case 1:
-                having = DbConnector.COLUMN_CATEGORY + " = '" + Constants.CODE_AIR + "'"; //"category = 'air'"
+            case "1":
+                having = DbConnector.COLUMN_CATEGORY + " = '" + MyConstants.CODE_AIR + "'"; //"category = 'air'"
                 break;
-            case 2:
-                having = DbConnector.COLUMN_CATEGORY + " = '" + Constants.CODE_GROUND + "'";
+            case "2":
+                having = DbConnector.COLUMN_CATEGORY + " = '" + MyConstants.CODE_GROUND + "'";
                 break;
-            case 3:
-                having = DbConnector.COLUMN_CATEGORY + " = '" + Constants.CODE_SEA + "'";
+            case "3":
+                having = DbConnector.COLUMN_CATEGORY + " = '" + MyConstants.CODE_SEA + "'";
                 break;
-            case 4:
-                having = DbConnector.COLUMN_CATEGORY + " = '" + Constants.CODE_SPACE + "'";
+            case "4":
+                having = DbConnector.COLUMN_CATEGORY + " = '" + MyConstants.CODE_SPACE + "'";
                 break;
-            case 5:
-                having = DbConnector.COLUMN_CATEGORY + " = '" + Constants.CODE_AUTOMOTO + "'";
+            case "5":
+                having = DbConnector.COLUMN_CATEGORY + " = '" + MyConstants.CODE_AUTOMOTO + "'";
                 break;
-            case 6:
-                having = DbConnector.COLUMN_CATEGORY + " = '" + Constants.CODE_FIGURES + "'";
+            case "6":
+                having = DbConnector.COLUMN_CATEGORY + " = '" + MyConstants.CODE_FIGURES + "'";
                 break;
-            case 7:
-                having = DbConnector.COLUMN_CATEGORY + " = '" + Constants.CODE_FANTASY + "'";
+            case "7":
+                having = DbConnector.COLUMN_CATEGORY + " = '" + MyConstants.CODE_FANTASY + "'";
                 break;
-            case 8:
-                having = DbConnector.COLUMN_CATEGORY + " = '" + Constants.CODE_OTHER + "'";
+            case "8":
+                having = DbConnector.COLUMN_CATEGORY + " = '" + MyConstants.CODE_OTHER + "'";
                 break;
             default:
                 having = null;
@@ -1009,11 +1027,26 @@ public Cursor filteredKits(String tableName, String[] filters, String sortBy,
         return allBrands;
     }
 
+    public boolean isBrandExists(String brandname) {
+        return getBrand(brandname).getCount() != 0;
+    }
+
+    public Cursor getBrand(String brandname) {
+        return mDB.query(TABLE_BRANDS, null, "brand = ?", new String[]{brandname}, null, null, null);
+    }
+
+    public void updateBrand(long id, String newName) {
+        ContentValues cv = new ContentValues();
+        cv.put(BRANDS_COLUMN_BRAND, newName);
+        mDB.update(TABLE_BRANDS, cv, "_id=?", new String[]{String.valueOf(id)});
+    }
 
 
     // удалить запись из TABLE_BRANDS
     public void delBrand(long id) {
-        mDB.delete(TABLE_BRANDS, COLUMN_ID + " = " + id, null);
+//        mDB.delete(TABLE_BRANDS, COLUMN_ID + " = " + id, null);
+        mDB.delete(TABLE_BRANDS, COLUMN_ID + " =? ", new String[]{String.valueOf(id)});
+
     }
 
     /////////////////ACCOUNT//////////////////////
@@ -1053,7 +1086,7 @@ public Cursor filteredKits(String tableName, String[] filters, String sortBy,
         mDB.insert(TABLE_MYLISTS, null, cv);
     }
 
-    public Cursor getAllLists (String sortBy){
+    public Cursor getLists(String sortBy) {
         return mDB.query(TABLE_MYLISTS, null, null, null, null, null, sortBy);
     }
 
@@ -1065,14 +1098,17 @@ public Cursor filteredKits(String tableName, String[] filters, String sortBy,
         return mDB.query(TABLE_MYLISTS, null, "listname = ?", new String[] { listname }, null, null, null);
     }
 
-    public void deleteList (String listId){
-            mDB.delete(TABLE_MYLISTS, MYLISTS_COLUMN_ID + " = " + listId, null);
+    public void deleteList(long id, String listName) {
+        mDB.delete(TABLE_MYLISTS, MYLISTS_COLUMN_ID + " =?", new String[]{String.valueOf(id)});
+        clearList(listName);
+//            delListItems(listName);
     }
 
-    public void updateList (String listName, String newListname){
+    public void updateList(long id, String listName, String newListname) {
         ContentValues cv = new ContentValues();
         cv.put(MYLISTS_COLUMN_LIST_NAME, newListname);
         mDB.update(TABLE_MYLISTS, cv, "listname = ?", new String[] { listName });
+
         updateListItems(listName, newListname);
     }
 
@@ -1082,6 +1118,10 @@ public Cursor filteredKits(String tableName, String[] filters, String sortBy,
         }else{
             return false;
         }
+    }
+
+    private void deleteListItems(String listName) {
+        mDB.delete(TABLE_MYLISTSITEMS, MYLISTS_COLUMN_LIST_NAME + " =?", new String[]{listName});
     }
 
     ////////// LISTITEMS //////////
@@ -1175,7 +1215,9 @@ public Cursor filteredKits(String tableName, String[] filters, String sortBy,
     }
 
     public void clearList (String listname){
-        mDB.delete(TABLE_MYLISTSITEMS, MYLISTSITEMS_LISTNAME + " = '" + listname + "'", null);
+        mDB.delete(TABLE_MYLISTSITEMS, MYLISTSITEMS_LISTNAME + " =?", new String[]{listname});
+//        mDB.delete(TABLE_MYLISTSITEMS, MYLISTSITEMS_LISTNAME + " = '" + listname + "'", null);
+
     }
 
     public boolean searchListForDoubles(String listname, String bcode){
@@ -1263,8 +1305,10 @@ public Cursor filteredKits(String tableName, String[] filters, String sortBy,
         mDB.delete(TABLE_MYSHOPS, null, null);
     }
 
-    public void updateShop (String shopName, ContentValues cv){
-        mDB.update(TABLE_MYSHOPS, cv, "shop_name = ?", new String[] { shopName });
+    public void updateShop(long id, String newName) {
+        ContentValues cv = new ContentValues(1);
+        cv.put(MYSHOPS_COLUMN_SHOP_NAME, newName);
+        mDB.update(TABLE_MYSHOPS, cv, "_id = ?", new String[]{String.valueOf(id)});
     }
 
     private boolean isShopExist(String shopName){
@@ -1290,6 +1334,11 @@ public Cursor filteredKits(String tableName, String[] filters, String sortBy,
 
     public void addAftersToKits(ContentValues cv){
         mDB.insert(TABLE_KIT_AFTER_CONNECTIONS, null, cv);
+    }
+
+    public Cursor getKitForAfterById(long id) {
+        return mDB.query(TABLE_KIT_AFTER_CONNECTIONS, null,
+                "afterid = ?", new String[]{String.valueOf(id)}, null, null, null);
     }
 
     public Cursor getAftermarketForKit(long id, String listname){
@@ -1372,12 +1421,20 @@ public Cursor filteredKits(String tableName, String[] filters, String sortBy,
         return mDB.query(TABLE_AFTERMARKET, null, "_id = " + after_id, null, null, null, null);
     }
 
-    public void removeAftermarketFromKit(long id) {
-        mDB.delete(TABLE_KIT_AFTER_CONNECTIONS, KIT_AFTER_AFTERID + " = " + id, null);
+
+    public void deleteAftermarketFromKit(long kitId, long afterId) {
+        mDB.delete(TABLE_KIT_AFTER_CONNECTIONS, KIT_AFTER_KITID + " = ? " +
+                        "AND " + KIT_AFTER_AFTERID + " = ? ",
+                new String[]{String.valueOf(kitId), String.valueOf(afterId)});
     }
 
-    public void deleteAftermarketById(long id) {
-        mDB.delete(TABLE_MYSHOPS, COLUMN_ID + " = " + id, null);
+    public void deleteAllAftermarketForKit(long kitId) {
+        mDB.delete(TABLE_KIT_AFTER_CONNECTIONS, KIT_AFTER_KITID + " = ? ",
+                new String[]{String.valueOf(kitId)});
+    }
+
+    public void deleteAftermarketById(long afterId) {
+        mDB.delete(TABLE_AFTERMARKET, COLUMN_ID + " = " + afterId, null);
     }
 
     public Cursor getAllAftermarket(String sortBy){
@@ -1398,11 +1455,35 @@ public Cursor filteredKits(String tableName, String[] filters, String sortBy,
 //    }
 
     //////////// VIEW STASH PAGER //////////////
-    public Cursor getActiveCategories(String tableName) {
-        return mDB.rawQuery("SELECT category, COUNT(*) FROM "
-                + tableName
-                + " ORDER BY COUNT(*) DESC", null);
-//        return mDB.query(tableName, null, null, null, null, null, sortBy);
+    public Cursor getActiveCategories() {
+//        return mDB.query(TABLE_CATEGORIES, null, "count >? ", new String[]{"0"}, null, null, "count DESC");
+//        return mDB.rawQuery("SELECT * FROM " + TABLE_CATEGORIES  + " WHERE count > 0 ORDER BY count DESC", null);
+        return mDB.rawQuery("SELECT category, count(*) FROM kits GROUP BY category HAVING count(*) > 0 ORDER BY count(*) DESC", null);
+
+//                return mDB.rawQuery("SELECT * FROM " + TABLE_CATEGORIES, null);
+
+    }
+
+    public void updateCategories() {
+        mDB.rawQuery(
+                "UPDATE " + TABLE_CATEGORIES + " SET count = " + countCategory("1") + " WHERE name = '1';"
+                        + "UPDATE " + TABLE_CATEGORIES + " SET count = " + countCategory("2") + " WHERE name = '2';"
+                        + "UPDATE " + TABLE_CATEGORIES + " SET count = " + countCategory("3") + " WHERE name = '3';"
+                        + "UPDATE " + TABLE_CATEGORIES + " SET count = " + countCategory("4") + " WHERE name = '4';"
+                        + "UPDATE " + TABLE_CATEGORIES + " SET count = " + countCategory("5") + " WHERE name = '5';"
+                        + "UPDATE " + TABLE_CATEGORIES + " SET count = " + countCategory("6") + " WHERE name = '6';"
+                        + "UPDATE " + TABLE_CATEGORIES + " SET count = " + countCategory("7") + " WHERE name = '7';"
+                        + "UPDATE " + TABLE_CATEGORIES + " SET count = " + countCategory("8") + " WHERE name = '8';"
+                , null);
+    }
+
+    private int countCategory(String category) {
+        return mDB.rawQuery("SELECT _id FROM " + TABLE_KITS + " WHERE category = "
+                + category + ";", null).getCount();
+    }
+
+    public Cursor getAfterActiveCategories() {
+        return mDB.rawQuery("SELECT category, count(*) FROM aftermarket GROUP BY category HAVING count(*) > 0 ORDER BY count(*)", null);
     }
 
     ////////////////ПРОВЕРКИ ПРИ ДОБАВЛЕНИИ////////////////////
@@ -1441,6 +1522,7 @@ public Cursor filteredKits(String tableName, String[] filters, String sortBy,
         cursor.close();
     }
 
+
     //////////////////////////////////////////////////////
 
     private class DBHelper extends SQLiteOpenHelper {
@@ -1452,13 +1534,17 @@ public Cursor filteredKits(String tableName, String[] filters, String sortBy,
 
         @Override
         public void onCreate(SQLiteDatabase db) {
+
+
             // создаем таблицу с полями
             db.execSQL(CREATE_TABLE_KITS);
             //Таблица брэндов и заполнение списка
             db.execSQL(CREATE_TABLE_BRANDS);
             db.execSQL(INIT_TABLE_BRANDS);
-            db.execSQL(CREATE_TABLE_CATEGORY);
-            db.execSQL(INIT_TABLE_CATEGORY);
+//            db.execSQL(CREATE_TABLE_CATEGORY);
+//            db.execSQL(INIT_TABLE_CATEGORY);
+            db.execSQL(CREATE_TABLE_CATEGORIES);
+            db.execSQL(INIT_TABLE_CATEGORIES);
             db.execSQL(CREATE_TABLE_STATISTIC);
             db.execSQL(CREATE_TABLE_ACCOUNT);
             db.execSQL(CREATE_TABLE_MYLISTS);

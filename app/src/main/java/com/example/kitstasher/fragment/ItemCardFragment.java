@@ -6,30 +6,29 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ListAdapter;
-import android.widget.ListView;
+import android.widget.LinearLayout;
+import android.widget.TableLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.kitstasher.R;
 import com.example.kitstasher.activity.EditActivity;
-import com.example.kitstasher.activity.ViewActivity;
-import com.example.kitstasher.adapters.AdapterAfterItemsList;
-import com.example.kitstasher.other.Constants;
+import com.example.kitstasher.adapters.MyListCursorAdapter;
 import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.Helper;
+import com.example.kitstasher.other.MyConstants;
 
 import java.io.File;
-import java.io.Serializable;
-import java.util.ArrayList;
 
 
 /**
@@ -38,10 +37,38 @@ import java.util.ArrayList;
 
 public class ItemCardFragment extends Fragment {
     private Context context;
-    private ImageView ivCategory;
-    private String category, tableName;
+    private View view;
+    private ImageView ivBoxart,
+            ivCategory;
+    private TextView tvKitname,
+            tvOriginalKitName,
+            tvBrand,
+            tvBrandcatno,
+            tvScale,
+            tvStatus,
+            tvMedia,
+            tvDesc,
+            tvYear,
+            tvShop,
+            tvNotes,
+            tvQuantity,
+            tvDatePurchased,
+            tvPrice,
+            tvCurrency,
+            tvScalematesUrl,
+            tvGoogleUrl,
+            tvPurchaseTitle,
+            tvAftermarketTitle,
+            tvNotesTitle;
+    private Button btnEdit;
+    private TableLayout tableLayoutPurchase;
+    private RecyclerView rvAftermarket;
+    private String category,
+            tableName;
     private final int EDIT_ACTIVITY_CODE = 21;
+    private int tabToReturn;
     private boolean demoMode;
+
 
     public ItemCardFragment() {
         super();
@@ -60,38 +87,91 @@ public class ItemCardFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        //todo REFACTOR
-        DbConnector dbConnector = new DbConnector(context);
-        dbConnector.open();
-        final long id = getArguments().getLong(Constants.ID);
-        Cursor cursor = dbConnector.getKitById(id);
-        cursor.moveToFirst();
-
     }
 
     @Override
     public View onCreateView(final LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_item_card, container, false);
+        view = inflater.inflate(R.layout.fragment_item_card, container, false);
         context = getActivity();
-        final DbConnector dbConnector = new DbConnector(context);
-        dbConnector.open();
 
-        final char workMode = getArguments().getChar(Constants.WORK_MODE);
-        if (workMode == Constants.MODE_AFTERMARKET || workMode == Constants.MODE_AFTER_KIT) {
+        initUi();
+        final char workMode = getArguments().getChar(MyConstants.WORK_MODE);
+
+        if ((workMode == MyConstants.MODE_SEARCH)) {
+            showSearchCard();
+        } else {
+            showDbCard(workMode);
+        }
+
+        return view;
+    }
+
+    private void initUi() {
+        ivBoxart = view.findViewById(R.id.ivBoxart);
+        tvKitname = view.findViewById(R.id.tvKitname);
+        tvOriginalKitName = view.findViewById(R.id.tvOriginalKitName);
+        tvBrand = view.findViewById(R.id.tvBrand);
+        tvBrandcatno = view.findViewById(R.id.tvCatno);
+        tvScale = view.findViewById(R.id.tvScale);
+        ivCategory = view.findViewById(R.id.ivCategory);
+        tvStatus = view.findViewById(R.id.tvStatus);
+        tvMedia = view.findViewById(R.id.tvMedia);
+        tvDesc = view.findViewById(R.id.tvDesc);
+        tvYear = view.findViewById(R.id.tvYear);
+        tvNotes = view.findViewById(R.id.tvNotes);
+        tvQuantity = view.findViewById(R.id.tvQuantity);
+        tvShop = view.findViewById(R.id.tvShop);
+        tvDatePurchased = view.findViewById(R.id.tvDatePurchased);
+        tvPrice = view.findViewById(R.id.tvPrice);
+        tvCurrency = view.findViewById(R.id.tvCurrency);
+        rvAftermarket = view.findViewById(R.id.lvAftermarket);
+        RecyclerView.LayoutManager afterManager = new LinearLayoutManager(context);
+        rvAftermarket.setHasFixedSize(true);
+        rvAftermarket.setLayoutManager(afterManager);
+        DefaultItemAnimator animator = new DefaultItemAnimator() {
+            @Override
+            public boolean canReuseUpdatedViewHolder(RecyclerView.ViewHolder viewHolder) {
+                return true;
+            }
+        };
+        rvAftermarket.setItemAnimator(animator);
+
+        tvScalematesUrl = view.findViewById(R.id.tvScalemates);
+        tvGoogleUrl = view.findViewById(R.id.tvGoogle);
+        btnEdit = view.findViewById(R.id.btnEdit);
+
+        tvPurchaseTitle = view.findViewById(R.id.tvPurchaseTitle);
+        tvAftermarketTitle = view.findViewById(R.id.tvAftermarketTitle);
+        tableLayoutPurchase = view.findViewById(R.id.tableLayoutPurchase);
+        tvNotesTitle = view.findViewById(R.id.tvNotesTitle);
+
+    }
+
+    private void showDbCard(final char workMode) {
+        if (workMode == MyConstants.MODE_AFTERMARKET) {
             tableName = DbConnector.TABLE_AFTERMARKET;
-        } else if (workMode == Constants.MODE_KIT) {
+            tvAftermarketTitle.setVisibility(View.GONE);
+            rvAftermarket.setVisibility(View.GONE);
+        } else if (workMode == MyConstants.MODE_AFTER_KIT) {
+            tableName = DbConnector.TABLE_AFTERMARKET;
+            tvAftermarketTitle.setVisibility(View.GONE);
+            rvAftermarket.setVisibility(View.GONE);
+            btnEdit.setVisibility(View.GONE);
+
+        } else if (workMode == MyConstants.MODE_KIT) {
             tableName = DbConnector.TABLE_KITS;
-        } else if (workMode == Constants.MODE_LIST) {
+        } else if (workMode == MyConstants.MODE_LIST) {
             tableName = DbConnector.TABLE_MYLISTSITEMS;
         }
 
-        final int position = getArguments().getInt(Constants.POSITION);
-        final long id = getArguments().getLong(Constants.ID);
-//        final String scaleFilter = getArguments().getString(Constants.SCALE_FILTER);
-//        final String brandFilter = getArguments().getString(Constants.BRAND_FILTER);
-//        final String kitnameFilter = getArguments().getString(Constants.KITNAME_FILTER);
-//        final String statusFilter = getArguments().getString(Constants.STATUS_FILTER);
-//        final String mediaFilter = getArguments().getString(Constants.MEDIA_FILTER);
+        final DbConnector dbConnector = new DbConnector(context);
+        dbConnector.open();
+
+
+        final int position = getArguments().getInt(MyConstants.POSITION);
+        final long id = getArguments().getLong(MyConstants.ID);
+
+        tabToReturn = getArguments().getInt(MyConstants.CATEGORY_TAB);
 
         final Cursor cursor = dbConnector.getItemById(tableName, id);
         cursor.moveToFirst();
@@ -116,46 +196,30 @@ public class ItemCardFragment extends Fragment {
         final String currency = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_CURRENCY));
 
         final String listname = "";
-        demoMode = true; //для адаптера
+        demoMode = true; //для адаптера, убирает блок афтермаркета not needed
 
-        ImageView ivBoxart = view.findViewById(R.id.ivBoxart);
-        TextView tvKitname = view.findViewById(R.id.tvKitname);
+        tvKitname = view.findViewById(R.id.tvKitname);
         tvKitname.setText(kitname);
-        TextView tvOriginalKitName = view.findViewById(R.id.tvOriginalKitName);
         tvOriginalKitName.setText(origName);
-        TextView tvBrand = view.findViewById(R.id.tvBrand);
         tvBrand.setText(brand);
-        TextView tvBrandcatno = view.findViewById(R.id.tvCatno);
         tvBrandcatno.setText(catno);
-        TextView tvScale = view.findViewById(R.id.tvScale);
         tvScale.setText("1/" + String.valueOf(scale));
         ivCategory = view.findViewById(R.id.ivCategory);
 
-        TextView tvStatus = view.findViewById(R.id.tvStatus);
         tvStatus.setText(codeToStatus(status));
-        TextView tvMedia = view.findViewById(R.id.tvMedia);
         tvMedia.setText(codeToMedia(media));
-        TextView tvDesc = view.findViewById(R.id.tvDesc);
         tvDesc.setText(codeToDescription(description));
-        TextView tvYear = view.findViewById(R.id.tvYear);
         tvYear.setText(year);
-        TextView tvShop = view.findViewById(R.id.tvShop);
+
         tvShop.setText(shop);
 
-        TextView tvNotes = view.findViewById(R.id.tvNotes);
-        if (!notes.equals("")) {
+        if (notes != null && !notes.equals(MyConstants.EMPTY)) {
             tvNotes.setText(notes);
         }
-        TextView tvQuantity = view.findViewById(R.id.tvQuantity);
         tvQuantity.setText(String.valueOf(quantity));
-        TextView tvDatePurchased = view.findViewById(R.id.tvDatePurchased);
         tvDatePurchased.setText(purchaseDate);
-        TextView tvPrice = view.findViewById(R.id.tvPrice);
         tvPrice.setText(String.valueOf(price / 100));
-        TextView tvCurrency = view.findViewById(R.id.tvCurrency);
         tvCurrency.setText(currency);
-        ListView lvAftermarket = view.findViewById(R.id.lvAftermarket);
-        TextView tvScalematesUrl = view.findViewById(R.id.tvScalemates);
         tvScalematesUrl.setClickable(true);
         tvScalematesUrl.setMovementMethod(LinkMovementMethod.getInstance());
 
@@ -168,7 +232,6 @@ public class ItemCardFragment extends Fragment {
             tvScalematesUrl.setText("");
         }
 
-        TextView tvGoogleUrl = view.findViewById(R.id.tvGoogle);
         tvGoogleUrl.setClickable(true);
         tvGoogleUrl.setMovementMethod(LinkMovementMethod.getInstance());
         String googleText = "<a href='https://www.google.com/search?"
@@ -185,284 +248,262 @@ public class ItemCardFragment extends Fragment {
         } else {
             Glide
                     .with(context)
-                    .load(composeUrl(url))
+                    .load(Helper.composeUrl(url))
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(ivBoxart);
         }
 
-        setCategoryImage();
+        setCategoryImage(category);
 
 
         final Cursor aCursor = dbConnector.getAftermarketForKit(id, listname);
-        final AdapterAfterItemsList afterAdapter = new AdapterAfterItemsList(context, aCursor, 0, id,
-                listname, workMode, demoMode);
-        lvAftermarket.setAdapter(afterAdapter);
+        MyListCursorAdapter afterAdapter = new MyListCursorAdapter(aCursor, context, MyConstants.MODE_A_KIT);
+        rvAftermarket.setAdapter(afterAdapter);
 
-        setListViewHeightBasedOnChildren(lvAftermarket);
-
-        lvAftermarket.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                int size = aCursor.getCount();
-                final ArrayList<Long> ids = new ArrayList<>(size);
-                final ArrayList<Integer> positions = new ArrayList<>(size);
-                aCursor.moveToFirst();
-                for (int y = 0; y < aCursor.getCount(); y++) {
-                    ids.add(afterAdapter.getItemId(y));
-                    positions.add(y);
-                    aCursor.moveToNext();
-                }
-                Intent intent;
-                intent = new Intent(context, ViewActivity.class);
-                intent.putExtra(Constants.ID, id);//ид кита, на котором должен открыться пейджер
-                intent.putExtra(Constants.WORK_MODE, Constants.MODE_AFTER_KIT);
-                intent.putExtra(Constants.POSITION, i);//ид открытия пейджера
-                intent.putExtra(Constants.SORT_BY, Constants._ID);
-                intent.putExtra(Constants.CATEGORY, category);
-                String[] filters = new String[5];
-                filters[0] = Constants.EMPTY;
-                filters[1] = Constants.EMPTY;
-                filters[2] = Constants.EMPTY;
-                filters[3] = Constants.EMPTY;
-                filters[4] = Constants.EMPTY;
-                intent.putExtra(Constants.SCALE_FILTER, filters[0]);
-                intent.putExtra(Constants.BRAND_FILTER, filters[1]);
-                intent.putExtra(Constants.KITNAME_FILTER, filters[2]);
-                intent.putExtra(Constants.STATUS_FILTER, filters[3]);
-                intent.putExtra(Constants.MEDIA_FILTER, filters[4]);
-                intent.putExtra(Constants.IDS, ids);
-                intent.putExtra(Constants.POSITIONS, positions);
-                intent.putExtra(Constants.SORT_BY, Constants._ID);
-                intent.putExtra(Constants.FILTERS, (Serializable) filters);
-                intent.putExtra(Constants.WORK_MODE, Constants.MODE_AFTER_KIT);
-                intent.putExtra(Constants.LISTNAME, Constants.EMPTY); //мы идем из карточки кита, не из списка
-                intent.putExtra(Constants.CATEGORY, category);
-                startActivity(intent);
-            }
-        });
-
-
-        TextView tvAftermarketTitle = view.findViewById(R.id.tvAftermarketTitle);
-        Button btnEdit = view.findViewById(R.id.btnEdit);
         btnEdit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getActivity(), EditActivity.class);
-                intent.putExtra(Constants.POSITION, position);
-                intent.putExtra(Constants.WORK_MODE, workMode);
-                intent.putExtra(Constants.ID, id);
-                intent.putExtra(Constants.LIST_CATEGORY, category);
-                intent.putExtra(Constants.KITNAME, kitname);
-                intent.putExtra(Constants.BRAND, brand);
-                intent.putExtra(Constants.CATNO, catno);
-                intent.putExtra(Constants.URL, url);
-                intent.putExtra(Constants.URI, uri);
-                intent.putExtra(Constants.SCALE, scale);
-                intent.putExtra(Constants.CATEGORY, category);
-                intent.putExtra(Constants.YEAR, year);
-                intent.putExtra(Constants.DESCRIPTION, description);
-                intent.putExtra(Constants.ORIGINAL_NAME, origName);
-                intent.putExtra(Constants.NOTES, notes);
-                intent.putExtra(Constants.MEDIA, media);
-                intent.putExtra(Constants.QUANTITY, quantity);
-                intent.putExtra(Constants.STATUS, status);
-                intent.putExtra(Constants.SHOP, shop);
-                intent.putExtra(Constants.PURCHASE_DATE, purchaseDate);
-                intent.putExtra(Constants.PRICE, price);
-                intent.putExtra(Constants.CURRENCY, currency);
+                intent.putExtra(MyConstants.POSITION, position);
+                intent.putExtra(MyConstants.WORK_MODE, workMode);
+                intent.putExtra(MyConstants.ID, id);
+//                intent.putExtra(MyConstants.LIST_CATEGORY, category);
+                intent.putExtra(MyConstants.KITNAME, kitname);
+                intent.putExtra(MyConstants.BRAND, brand);
+                intent.putExtra(MyConstants.CATNO, catno);
+                intent.putExtra(MyConstants.URL, url);
+                intent.putExtra(MyConstants.URI, uri);
+                intent.putExtra(MyConstants.SCALE, scale);
+                intent.putExtra(MyConstants.CATEGORY, category);
+                intent.putExtra(MyConstants.CATEGORY_TAB, tabToReturn);
+                intent.putExtra(MyConstants.YEAR, year);
+                intent.putExtra(MyConstants.DESCRIPTION, description);
+                intent.putExtra(MyConstants.ORIGINAL_NAME, origName);
+                intent.putExtra(MyConstants.NOTES, notes);
+                intent.putExtra(MyConstants.MEDIA, media);
+                intent.putExtra(MyConstants.QUANTITY, quantity);
+                intent.putExtra(MyConstants.STATUS, status);
+                intent.putExtra(MyConstants.SHOP, shop);
+                intent.putExtra(MyConstants.PURCHASE_DATE, purchaseDate);
+                intent.putExtra(MyConstants.PRICE, price);
+                intent.putExtra(MyConstants.CURRENCY, currency);
                 getActivity().startActivityForResult(intent, EDIT_ACTIVITY_CODE);
             }
         });
-
-        //Если пришли сюда из карточек кита, отключаем редактирование
-        if (workMode == Constants.MODE_AFTER_KIT) {
-            tvAftermarketTitle.setVisibility(View.GONE);
-            btnEdit.setVisibility(View.GONE);
-            lvAftermarket.setVisibility(View.GONE);
-        }
-        //Если из афтемаркета, вложенный афтер отключаем
-        if (workMode == Constants.MODE_AFTERMARKET) {
-            tvAftermarketTitle.setVisibility(View.GONE);
-            lvAftermarket.setVisibility(View.GONE);
-        }
-
-        return view;
     }
 
-    private String codeToDescription(String code) {
-        String desc = "";
-        switch (code) {
-            case Constants.NEW_TOOL:
-                desc = context.getResources().getString(R.string.new_tool);
-                break;
-            case Constants.REBOX:
-                desc = context.getResources().getString(R.string.rebox);
-                break;
+    private void showSearchCard() {
+
+        String kitname = getArguments().getString(MyConstants.KITNAME);
+        tvKitname.setText(kitname);
+
+        String origName = getArguments().getString(MyConstants.ORIGINAL_NAME);
+        tvOriginalKitName.setText(origName);
+
+        String brand = getArguments().getString(MyConstants.BRAND);
+        tvBrand.setText(brand);
+
+        String catno = getArguments().getString(MyConstants.CATNO);
+        tvBrandcatno.setText(catno);
+
+        int scale = getArguments().getInt(MyConstants.SCALE);
+        tvScale.setText("1/" + String.valueOf(scale));
+
+        tvStatus.setVisibility(View.GONE);
+        tvMedia.setText(codeToMedia(getArguments().getInt(MyConstants.MEDIA)));
+        tvDesc.setText(codeToDescription(getArguments().getString(MyConstants.DESCRIPTION)));
+        tvYear.setText(getArguments().getString(MyConstants.YEAR));
+        tvShop.setVisibility(View.GONE);
+        tvQuantity.setVisibility(View.GONE);
+        tvDatePurchased.setVisibility(View.GONE);
+        tvPrice.setVisibility(View.GONE);
+        tvCurrency.setVisibility(View.GONE);
+        tvAftermarketTitle.setVisibility(View.GONE);
+        rvAftermarket.setVisibility(View.GONE);
+        tvPurchaseTitle.setVisibility(View.GONE);
+        tableLayoutPurchase.setVisibility(View.GONE);
+        tvNotesTitle.setVisibility(View.GONE);
+        tvNotes.setVisibility(View.GONE);
+        btnEdit.setVisibility(View.GONE);
+
+
+        tvScalematesUrl.setClickable(true);
+        tvScalematesUrl.setMovementMethod(LinkMovementMethod.getInstance());
+        String scalemates = getArguments().getString(MyConstants.SCALEMATES);
+        String scalematesText = "<a href='"
+                + scalemates
+                + "'> " + getString(R.string.Look_up_on_Scalemates) + "</a>";
+        if (scalemates != null) {
+            tvScalematesUrl.setText(Helper.fromHtml(scalematesText));
+        } else {
+            tvScalematesUrl.setText("");
         }
-        return desc;
+        LinearLayout llButton = view.findViewById(R.id.llButton);
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        layoutParams.setMargins(16, 16, 16, 16);
+        llButton.setLayoutParams(layoutParams);
+
+
+        tvGoogleUrl.setClickable(true);
+        tvGoogleUrl.setMovementMethod(LinkMovementMethod.getInstance());
+        String googleText = "<a href='https://www.google.com/search?"
+                + "q=" + brand + "+" + catno + "+" + kitname + "+" + scale
+                + "'> " + getString(R.string.Search_with_Google) + "</a>";
+        tvGoogleUrl.setText(Helper.fromHtml(googleText));
+        String url = getArguments().getString(MyConstants.BOXART_URL);
+
+        Glide
+                .with(context)
+                .load(Helper.composeUrl(url))
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .into(ivBoxart);
+
+        setCategoryImage(category);
     }
 
-    private String codeToStatus(int code) {
-        String status;
-        switch (code) {
-            case Constants.STATUS_NEW:
-                status = context.getResources().getString(R.string.status_new);
-                break;
-            case Constants.STATUS_OPENED:
-                status = context.getResources().getString(R.string.status_opened);
-                break;
-            case Constants.STATUS_STARTED:
-                status = context.getResources().getString(R.string.status_started);
-                break;
-            case Constants.STATUS_INPROGRESS:
-                status = context.getResources().getString(R.string.status_inprogress);
-                break;
-            case Constants.STATUS_FINISHED:
-                status = context.getResources().getString(R.string.status_finished);
-                break;
-            case Constants.STATUS_LOST:
-                status = context.getResources().getString(R.string.status_lost_sold);
-                break;
-            default:
-                status = context.getResources().getString(R.string.status_new);
-                break;
-        }
-        return status;
-    }
 
-    private String codeToMedia(int mediaCode) {
-        String media;
-        switch (mediaCode) {
-            case Constants.M_CODE_OTHER:
-                media = context.getResources().getString(R.string.media_other);
-                break;
-            case Constants.M_CODE_INJECTED:
-                media = context.getResources().getString(R.string.media_injected);
-                break;
-            case Constants.M_CODE_SHORTRUN:
-                media = context.getResources().getString(R.string.media_shortrun);
-                break;
-            case Constants.M_CODE_RESIN:
-                media = context.getResources().getString(R.string.media_resin);
-                break;
-            case Constants.M_CODE_VACU:
-                media = context.getResources().getString(R.string.media_vacu);
-                break;
-            case Constants.M_CODE_PAPER:
-                media = context.getResources().getString(R.string.media_paper);
-                break;
-            case Constants.M_CODE_WOOD:
-                media = context.getResources().getString(R.string.media_wood);
-                break;
-            case Constants.M_CODE_METAL:
-                media = context.getResources().getString(R.string.media_metal);
-                break;
-            case Constants.M_CODE_3DPRINT:
-                media = context.getResources().getString(R.string.media_3dprint);
-                break;
-            case Constants.M_CODE_MULTIMEDIA:
-                media = context.getResources().getString(R.string.media_multimedia);
-                break;
-            case Constants.M_CODE_DECAL:
-                media = getString(R.string.media_decal);
-                break;
-            case Constants.M_CODE_MASK:
-                media = getString(R.string.media_mask);
-                break;
-
-            default:
-                media = context.getResources().getString(R.string.media_other);
-                break;
-        }
-        return media;
-    }
-
-    private void setCategoryImage() {
-        if (Constants.CODE_SEA.equals(category)) {
+    private void setCategoryImage(String category) {
+        if (MyConstants.CODE_SEA.equals(category)) {
             ivCategory.setImageResource(R.drawable.ic_tag_ship_black_24dp);
         }
-        if (Constants.CODE_AIR.equals(category)) {
+        if (MyConstants.CODE_AIR.equals(category)) {
             ivCategory.setImageResource(R.drawable.ic_tag_air_black_24dp);
         }
-        if (Constants.CODE_GROUND.equals(category)) {
+        if (MyConstants.CODE_GROUND.equals(category)) {
             ivCategory.setImageResource(R.drawable.ic_tag_afv_black_24dp);
         }
-        if (Constants.CODE_SPACE.equals(category)) {
+        if (MyConstants.CODE_SPACE.equals(category)) {
             ivCategory.setImageResource(R.drawable.ic_tag_space_black_24dp);
         }
-        if (Constants.CODE_OTHER.equals(category)) {
+        if (MyConstants.CODE_OTHER.equals(category)) {
             ivCategory.setImageResource(R.drawable.ic_check_box_outline_blank_black_24dp);
         }
-        if (Constants.CODE_AUTOMOTO.equals(category)) {
+        if (MyConstants.CODE_AUTOMOTO.equals(category)) {
             ivCategory.setImageResource(R.drawable.ic_directions_car_black_24dp);
         }
-        if (Constants.CODE_FIGURES.equals(category)) {
+        if (MyConstants.CODE_FIGURES.equals(category)) {
             ivCategory.setImageResource(R.drawable.ic_wc_black_24dp);
         }
-        if (Constants.CODE_FANTASY.equals(category)) {
+        if (MyConstants.CODE_FANTASY.equals(category)) {
             ivCategory.setImageResource(R.drawable.ic_android_black_24dp);
         }
     }
 
     /**** Method for Setting the Height of the ListView dynamically.
      **** Hack to fix the issue of not showing all the items of the ListView
-     **** when placed inside a ScrollView  ****/
-    private void setListViewHeightBasedOnChildren(ListView listView) { //todo helper
-        ListAdapter listAdapter = listView.getAdapter();
+     **** when placed inside a ScrollView
+     * @param listView****/
+    private void setListViewHeightBasedOnChildren(RecyclerView listView) { //todo helper
+//        ListAdapter listAdapter = listView.getAdapter();
+        MyListCursorAdapter listAdapter = (MyListCursorAdapter) listView.getAdapter();
         if (listAdapter == null)
             return;
 
         int desiredWidth = View.MeasureSpec.makeMeasureSpec(listView.getWidth(), View.MeasureSpec.UNSPECIFIED);
         int totalHeight = 0;
         View view = null;
-        for (int i = 0; i < listAdapter.getCount(); i++) {
-            view = listAdapter.getView(i, view, listView);
+        for (int i = 0; i < listAdapter.getItemCount(); i++) {
+            view = listView;
             if (i == 0)
                 view.setLayoutParams(new ViewGroup.LayoutParams(desiredWidth, ViewGroup.LayoutParams.WRAP_CONTENT));
 
             view.measure(desiredWidth, View.MeasureSpec.UNSPECIFIED);
-            totalHeight += view.getMeasuredHeight();
+            totalHeight += view.getHeight();
         }
         ViewGroup.LayoutParams params = listView.getLayoutParams();
-        params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
+        params.height = totalHeight + (listView.getChildAt(0).getHeight() * (listAdapter.getItemCount() - 1));
         listView.setLayoutParams(params);
     }
 
-
-    private String composeUrl(String url){//// TODO: 04.09.2017 Helper
-        if (!Helper.isBlank(url)) {
-            return Constants.BOXART_URL_PREFIX
-                    + url
-                    + Constants.BOXART_URL_LARGE
-                    + Constants.JPG;
-        }else{
-            return ""; //TODO проверить!!!
+    private String codeToDescription(String code) {
+        String desc = "";
+        switch (code) {
+            case MyConstants.NEW_TOOL:
+                desc = getResources().getString(R.string.new_tool);
+                break;
+            case MyConstants.REBOX:
+                desc = getResources().getString(R.string.rebox);
+                break;
         }
+        return desc;
     }
 
-//    private String getSuffix(){
-//        String suffix = Constants.BOXART_URL_SMALL;
-//        SharedPreferences preferences = context.getSharedPreferences(Constants.BOXART_SIZE,
-//                Context.MODE_PRIVATE);
-//        if (preferences != null) {
-//            String temp = preferences.getString(Constants.BOXART_SIZE, "");
-//            switch (temp){
-//                case Constants.BOXART_URL_COMPANY_SUFFIX:
-//                    suffix = "";
-//                    break;
-//                case Constants.BOXART_URL_SMALL:
-//                    suffix = Constants.BOXART_URL_SMALL;
-//                    break;
-//                case Constants.BOXART_URL_MEDIUM:
-//                    suffix = Constants.BOXART_URL_MEDIUM;
-//                    break;
-//                case Constants.BOXART_URL_LARGE:
-//                    suffix = Constants.BOXART_URL_LARGE;
-//                    break;
-//                default:
-//                    break;
-//            }
-//        }
-//        return suffix;
-//    }
+    private String codeToMedia(int mediaCode) {
+        String media;
+        switch (mediaCode) {
+            case MyConstants.M_CODE_UNKNOWN:
+                media = getResources().getString(R.string.unknown);
+                break;
+            case MyConstants.M_CODE_INJECTED:
+                media = getResources().getString(R.string.media_injected);
+                break;
+            case MyConstants.M_CODE_SHORTRUN:
+                media = getResources().getString(R.string.media_shortrun);
+                break;
+            case MyConstants.M_CODE_RESIN:
+                media = getResources().getString(R.string.media_resin);
+                break;
+            case MyConstants.M_CODE_VACU:
+                media = getResources().getString(R.string.media_vacu);
+                break;
+            case MyConstants.M_CODE_PAPER:
+                media = getResources().getString(R.string.media_paper);
+                break;
+            case MyConstants.M_CODE_WOOD:
+                media = getResources().getString(R.string.media_wood);
+                break;
+            case MyConstants.M_CODE_METAL:
+                media = getResources().getString(R.string.media_metal);
+                break;
+            case MyConstants.M_CODE_3DPRINT:
+                media = getResources().getString(R.string.media_3dprint);
+                break;
+            case MyConstants.M_CODE_MULTIMEDIA:
+                media = getResources().getString(R.string.media_multimedia);
+                break;
+            case MyConstants.M_CODE_OTHER:
+                media = getResources().getString(R.string.media_other);
+                break;
+            case MyConstants.M_CODE_DECAL:
+                media = getResources().getString(R.string.media_decal);
+                break;
+            case MyConstants.M_CODE_MASK:
+                media = getResources().getString(R.string.media_mask);
+                break;
+
+            default:
+                media = getResources().getString(R.string.unknown);
+                break;
+        }
+        return media;
+    }
+
+    private String codeToStatus(int code) {
+        String status;
+        switch (code) {
+            case MyConstants.STATUS_NEW:
+                status = getResources().getString(R.string.status_new);
+                break;
+            case MyConstants.STATUS_OPENED:
+                status = getResources().getString(R.string.status_opened);
+                break;
+            case MyConstants.STATUS_STARTED:
+                status = getResources().getString(R.string.status_started);
+                break;
+            case MyConstants.STATUS_INPROGRESS:
+                status = getResources().getString(R.string.status_inprogress);
+                break;
+            case MyConstants.STATUS_FINISHED:
+                status = getResources().getString(R.string.status_finished);
+                break;
+            case MyConstants.STATUS_LOST:
+                status = getResources().getString(R.string.status_lost_sold);
+                break;
+            default:
+                status = getResources().getString(R.string.status_new);
+                break;
+        }
+        return status;
+    }
 }

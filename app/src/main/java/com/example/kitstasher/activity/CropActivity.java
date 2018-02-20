@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
 import com.example.kitstasher.R;
-import com.example.kitstasher.other.Constants;
+import com.example.kitstasher.other.MyConstants;
 import com.yalantis.ucrop.UCrop;
 
 
@@ -19,13 +19,13 @@ public class CropActivity extends AppCompatActivity {
         setContentView(R.layout.activity_crop);
         Intent intent = getIntent();
 
-        String u = "file:///" + intent.getExtras().getString(Constants.FILE_URI);
+        String u = "file:///" + intent.getExtras().getString(MyConstants.FILE_URI);
         Uri uri = Uri.parse(u);
 
-//        brand = intent.getExtras().getString(Constants.BRAND);
-//        brandCatno = intent.getExtras().getString(Constants.CATNO);
-//        description = intent.getExtras().getString(Constants.DESCRIPTION);
-//        year = intent.getExtras().getString(Constants.YEAR);
+//        brand = intent.getExtras().getString(MyConstants.BRAND);
+//        brandCatno = intent.getExtras().getString(MyConstants.CATNO);
+//        description = intent.getExtras().getString(MyConstants.DESCRIPTION);
+//        year = intent.getExtras().getString(MyConstants.YEAR);
 
         UCrop.Options options = new UCrop.Options();
         options.setToolbarTitle(getResources().getString(R.string.edit_image));
@@ -37,7 +37,7 @@ public class CropActivity extends AppCompatActivity {
                 .withOptions(options)
                 .start(this);
         Intent intent1 = new Intent();
-        intent1.putExtra(Constants.CROPPED_URI, String.valueOf(uri));
+        intent1.putExtra(MyConstants.CROPPED_URI, String.valueOf(uri));
         setResult(RESULT_OK, intent1);
 
         finish();

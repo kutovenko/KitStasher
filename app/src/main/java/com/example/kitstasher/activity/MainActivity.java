@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
@@ -35,8 +36,8 @@ import com.example.kitstasher.fragment.SettingsFragment;
 import com.example.kitstasher.fragment.StatisticsFragment;
 import com.example.kitstasher.other.AsyncApp42ServiceApi;
 import com.example.kitstasher.other.CircleTransform;
-import com.example.kitstasher.other.Constants;
 import com.example.kitstasher.other.DbConnector;
+import com.example.kitstasher.other.MyConstants;
 import com.parse.Parse;
 
 
@@ -123,8 +124,9 @@ public class MainActivity extends AppCompatActivity
 
 
 
+
         //Loading SharedPreferences
-        sharedPreferences = this.getSharedPreferences(Constants.ACCOUNT_PREFS,
+        sharedPreferences = this.getSharedPreferences(MyConstants.ACCOUNT_PREFS,
                 Context.MODE_PRIVATE);
 
         //Setting up UI
@@ -188,10 +190,10 @@ public class MainActivity extends AppCompatActivity
      */
     private void loadNavHeader() {
         // Setting Username
-        txtName.setText(sharedPreferences.getString(Constants.USER_NAME_FACEBOOK, ""));
+        txtName.setText(sharedPreferences.getString(MyConstants.USER_NAME_FACEBOOK, ""));
 //        txtWebsite.setText("www.kitstashers.com");
         // Loading profile image
-        String accountPictureUrl = sharedPreferences.getString(Constants.PROFILE_PICTURE_URL_FACEBOOK, null);
+        String accountPictureUrl = sharedPreferences.getString(MyConstants.PROFILE_PICTURE_URL_FACEBOOK, null);
         Glide.with(this).load(accountPictureUrl)
                 .crossFade()
                 .thumbnail(0.5f)
@@ -209,12 +211,12 @@ public class MainActivity extends AppCompatActivity
 //        //Default image
 //        int result = R.drawable.default_texture;
 //        //Choosing background image
-//        int air = dbConnector.getByTag(Constants.CAT_AIR).getCount();
-//        int ground = dbConnector.getByTag(Constants.CAT_GROUND).getCount();
-//        int sea = dbConnector.getByTag(Constants.CAT_SEA).getCount();
-//        int space = dbConnector.getByTag(Constants.CAT_SPACE).getCount();
-//        int car = dbConnector.getByTag(Constants.CAT_AUTOMOTO).getCount();
-//        int other = dbConnector.getByTag(Constants.CAT_OTHER).getCount();
+//        int air = dbConnector.getByTag(MyConstants.CAT_AIR).getCount();
+//        int ground = dbConnector.getByTag(MyConstants.CAT_GROUND).getCount();
+//        int sea = dbConnector.getByTag(MyConstants.CAT_SEA).getCount();
+//        int space = dbConnector.getByTag(MyConstants.CAT_SPACE).getCount();
+//        int car = dbConnector.getByTag(MyConstants.CAT_AUTOMOTO).getCount();
+//        int other = dbConnector.getByTag(MyConstants.CAT_OTHER).getCount();
 //
 //        int max = (int)Helper.findMax(air, ground, sea, space, car, other);
 //        if (max == air)
@@ -237,12 +239,12 @@ public class MainActivity extends AppCompatActivity
 //    public int setHeaderBackground(){
 //        int result = Helper.getColor(this, R.color.colorPrimary);
 //        //Choosing background color
-//        int air = dbConnector.getByTag(Constants.CAT_AIR).getCount();
-//        int ground = dbConnector.getByTag(Constants.CAT_GROUND).getCount();
-//        int sea = dbConnector.getByTag(Constants.CAT_SEA).getCount();
-//        int space = dbConnector.getByTag(Constants.CAT_SPACE).getCount();
-//        int car = dbConnector.getByTag(Constants.CAT_AUTOMOTO).getCount();
-//        int other = dbConnector.getByTag(Constants.CAT_OTHER).getCount();
+//        int air = dbConnector.getByTag(MyConstants.CAT_AIR).getCount();
+//        int ground = dbConnector.getByTag(MyConstants.CAT_GROUND).getCount();
+//        int sea = dbConnector.getByTag(MyConstants.CAT_SEA).getCount();
+//        int space = dbConnector.getByTag(MyConstants.CAT_SPACE).getCount();
+//        int car = dbConnector.getByTag(MyConstants.CAT_AUTOMOTO).getCount();
+//        int other = dbConnector.getByTag(MyConstants.CAT_OTHER).getCount();
 //
 //        int max = (int)Helper.findMax(air, ground, sea, space, car, other);
 //        if (max == air)
@@ -413,12 +415,12 @@ public class MainActivity extends AppCompatActivity
             public void run() {
                 Bundle bundle = new Bundle();
                 if (aftermarketMode) {
-                    bundle.putBoolean(Constants.AFTERMARKET_MODE, aftermarketMode);
+                    bundle.putBoolean(MyConstants.AFTERMARKET_MODE, aftermarketMode);
                 }
 //                if (workMode != '\u0000'){
-//                    bundle.putChar(Constants.WORK_MODE, workMode);
+//                    bundle.putChar(MyConstants.WORK_MODE, workMode);
 //                }else {
-//                    bundle.putChar(Constants.WORK_MODE, Constants.MODE_KIT);
+//                    bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_KIT);
 //                }
                 // update the main content by replacing fragments
                 android.support.v4.app.Fragment fragment = getHomeFragment();
@@ -441,6 +443,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     private android.support.v4.app.Fragment getHomeFragment() {
+        Fragment fragment = new KitsFragment();
+        Bundle bundle = new Bundle();
         switch (navItemIndex) {
             case 0:
                 // Home fragment
@@ -448,9 +452,15 @@ public class MainActivity extends AppCompatActivity
             case 1:
                 return new AddFragment();
             case 2:
-                return new KitsFragment();
+                bundle.putBoolean(MyConstants.AFTERMARKET_MODE, false);
+                fragment.setArguments(bundle);
+                return fragment;
+//                return new KitsFragment();
             case 3:
-                return new AftermarketFragment();
+                bundle.putBoolean(MyConstants.AFTERMARKET_MODE, true);
+                fragment.setArguments(bundle);
+                return fragment;
+//                return new AftermarketFragment();
             case 4:
                 return new MyListsFragment();
             case 5:
@@ -513,38 +523,38 @@ public class MainActivity extends AppCompatActivity
 
         if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_VIEW) {
             super.onActivityResult(requestCode, resultCode, data);
-            workMode = data.getExtras().getChar(Constants.WORK_MODE);
+            workMode = data.getExtras().getChar(MyConstants.WORK_MODE);
             //Если вернулись напрямую из афтермаркетЭдит, будет MODE_AFTERMARKET
             //Если из карточки KitCard - MODE_KIT
             //Если из KitEdit - MODE_KIT AFTER
             ///
             boolean was_deleted = data.getExtras().getBoolean("was_deleted");
             ///
-            int position = data.getExtras().getInt(Constants.LIST_POSITION);
-            int categoryTab = data.getExtras().getInt(Constants.LIST_CATEGORY);
+            int position = data.getExtras().getInt(MyConstants.LIST_POSITION);
+            int categoryTab = data.getExtras().getInt(MyConstants.LIST_CATEGORY);
 
 
-            String scaleFilter = data.getExtras().getString(Constants.SCALE_FILTER);
-            String brandFilter = data.getExtras().getString(Constants.BRAND_FILTER);
-            String kitnameFilter = data.getExtras().getString(Constants.KITNAME_FILTER);
+            String scaleFilter = data.getExtras().getString(MyConstants.SCALE_FILTER);
+            String brandFilter = data.getExtras().getString(MyConstants.BRAND_FILTER);
+            String kitnameFilter = data.getExtras().getString(MyConstants.KITNAME_FILTER);
 
-            String statusFilter = data.getExtras().getString(Constants.STATUS_FILTER);
-            String mediaFilter = data.getExtras().getString(Constants.MEDIA_FILTER);
+            String statusFilter = data.getExtras().getString(MyConstants.STATUS_FILTER);
+            String mediaFilter = data.getExtras().getString(MyConstants.MEDIA_FILTER);
 
 
             Bundle bundle = new Bundle();
-            bundle.putInt(Constants.LIST_POSITION, position);
-            bundle.putInt(Constants.LIST_CATEGORY, categoryTab);
-            bundle.putChar(Constants.WORK_MODE, workMode);
+            bundle.putInt(MyConstants.LIST_POSITION, position);
+            bundle.putInt(MyConstants.LIST_CATEGORY, categoryTab);
+            bundle.putChar(MyConstants.WORK_MODE, workMode);
 
-            bundle.putString(Constants.SCALE_FILTER, scaleFilter);
-            bundle.putString(Constants.BRAND_FILTER, brandFilter);
-            bundle.putString(Constants.KITNAME_FILTER, kitnameFilter);
+            bundle.putString(MyConstants.SCALE_FILTER, scaleFilter);
+            bundle.putString(MyConstants.BRAND_FILTER, brandFilter);
+            bundle.putString(MyConstants.KITNAME_FILTER, kitnameFilter);
 
-            bundle.putString(Constants.STATUS_FILTER, statusFilter);
-            bundle.putString(Constants.MEDIA_FILTER, mediaFilter);
+            bundle.putString(MyConstants.STATUS_FILTER, statusFilter);
+            bundle.putString(MyConstants.MEDIA_FILTER, mediaFilter);
 
-            if (workMode == Constants.MODE_KIT) {
+            if (workMode == MyConstants.MODE_KIT) {
                 //Возвращаемся в таблицу китов
                 KitsFragment fragment = new KitsFragment();
                 fragment.setArguments(bundle);
@@ -554,9 +564,10 @@ public class MainActivity extends AppCompatActivity
                 fragmentTransaction.commit();
                 ViewPager viewPager = findViewById(R.id.viewpagerViewStash);
                 viewPager.setCurrentItem(categoryTab);
-            } else if (workMode == Constants.MODE_AFTERMARKET) {
+            } else if (workMode == MyConstants.MODE_AFTERMARKET) {
                 //Возвоащаемся в пейджер SortAll
                 AftermarketFragment fragment = new AftermarketFragment();
+
                 fragment.setArguments(bundle);
                 android.support.v4.app.FragmentTransaction fragmentTransaction =
                         getSupportFragmentManager().beginTransaction();
@@ -564,13 +575,13 @@ public class MainActivity extends AppCompatActivity
                 fragmentTransaction.commit();
                 ViewPager viewPager = findViewById(R.id.viewpagerViewStash);
                 viewPager.setCurrentItem(categoryTab);
-//            }else if (workMode == Constants.MODE_AFTER_KIT){
+//            }else if (workMode == MyConstants.MODE_AFTER_KIT){
 //
 
-            } else if (workMode == Constants.MODE_VIEW_FROM_KIT) {
+            } else if (workMode == MyConstants.MODE_VIEW_FROM_KIT) {
                 //Возвращаемся в просмотр кита
 
-            } else if (workMode == Constants.MODE_EDIT_FROM_KIT) {
+            } else if (workMode == MyConstants.MODE_EDIT_FROM_KIT) {
                 //Возвращаемся в КитЕдит
             }
         }
@@ -590,26 +601,26 @@ public class MainActivity extends AppCompatActivity
     private void checkDeleted() {
         if (getIntent().hasExtra("was_deleted")
                 && getIntent().getExtras().getBoolean("was_deleted")) {
-            int position = getIntent().getExtras().getInt(Constants.LIST_POSITION);
-            int categoryTab = getIntent().getExtras().getInt(Constants.LIST_CATEGORY);
-            String scaleFilter = getIntent().getExtras().getString(Constants.SCALE_FILTER);
-            String brandFilter = getIntent().getExtras().getString(Constants.BRAND_FILTER);
-            String kitnameFilter = getIntent().getExtras().getString(Constants.KITNAME_FILTER);
+            int position = getIntent().getExtras().getInt(MyConstants.LIST_POSITION);
+            int categoryTab = getIntent().getExtras().getInt(MyConstants.LIST_CATEGORY);
+            String scaleFilter = getIntent().getExtras().getString(MyConstants.SCALE_FILTER);
+            String brandFilter = getIntent().getExtras().getString(MyConstants.BRAND_FILTER);
+            String kitnameFilter = getIntent().getExtras().getString(MyConstants.KITNAME_FILTER);
 
-            String statusFilter = getIntent().getExtras().getString(Constants.STATUS_FILTER);
-            String mediaFilter = getIntent().getExtras().getString(Constants.MEDIA_FILTER);
+            String statusFilter = getIntent().getExtras().getString(MyConstants.STATUS_FILTER);
+            String mediaFilter = getIntent().getExtras().getString(MyConstants.MEDIA_FILTER);
 
 
             Bundle bundle = new Bundle();
-            bundle.putInt(Constants.LIST_POSITION, position);
-            bundle.putInt(Constants.LIST_CATEGORY, categoryTab);
+            bundle.putInt(MyConstants.LIST_POSITION, position);
+            bundle.putInt(MyConstants.LIST_CATEGORY, categoryTab);
 
-            bundle.putString(Constants.SCALE_FILTER, scaleFilter);
-            bundle.putString(Constants.BRAND_FILTER, brandFilter);
-            bundle.putString(Constants.KITNAME_FILTER, kitnameFilter);
+            bundle.putString(MyConstants.SCALE_FILTER, scaleFilter);
+            bundle.putString(MyConstants.BRAND_FILTER, brandFilter);
+            bundle.putString(MyConstants.KITNAME_FILTER, kitnameFilter);
 
-            bundle.putString(Constants.STATUS_FILTER, statusFilter);
-            bundle.putString(Constants.MEDIA_FILTER, mediaFilter);
+            bundle.putString(MyConstants.STATUS_FILTER, statusFilter);
+            bundle.putString(MyConstants.MEDIA_FILTER, mediaFilter);
 
             KitsFragment fragment = new KitsFragment();
             fragment.setArguments(bundle);

@@ -28,9 +28,9 @@ import android.widget.Toast;
 import com.example.kitstasher.R;
 import com.example.kitstasher.adapters.AdapterChooserList;
 import com.example.kitstasher.objects.Kit;
-import com.example.kitstasher.other.Constants;
 import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.Helper;
+import com.example.kitstasher.other.MyConstants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,15 +52,16 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
             linLayoutKitname;
     private ImageView ivSortBrand, ivSortScale, ivSortDate, ivSortKitname;
     private String[] filters;
-    private int categoryTab;
+    private String category;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chooser);
-        listname = getIntent().getExtras().getString(Constants.LISTNAME);
-        workMode = getIntent().getExtras().getChar(Constants.WORK_MODE);
+        listname = getIntent().getExtras().getString(MyConstants.LISTNAME);
+        workMode = getIntent().getExtras().getChar(MyConstants.WORK_MODE);
+        category = getIntent().getExtras().getString(MyConstants.CATEGORY);
         initVariables();
         initUI();
 
@@ -87,7 +88,7 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
             public boolean onLongClick(View view) {
                 filters = new String[0];
                 ibtnChooseFilter.setBackgroundColor(Color.TRANSPARENT);
-                cursor = dbConnector.filteredKits(tableMode, filters, "_id DESC", categoryTab, listname);
+                cursor = dbConnector.filteredKits(tableMode, filters, "_id DESC", category, listname);
                 prepareListAndAdapter(cursor);
                 Toast.makeText(ChooserActivity.this, R.string.Filters_disabled, Toast.LENGTH_SHORT).show();
                 return true;
@@ -98,7 +99,7 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
         doneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (workMode == Constants.MODE_LIST) {
+                if (workMode == MyConstants.MODE_LIST) {
                     if (choosedIds != null && !choosedIds.isEmpty()) {
                         for (int i = 0; i < choosedIds.size(); i++) {
                             long l = Long.valueOf(choosedIds.get(i));
@@ -119,11 +120,12 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
                         choosedIds.clear();
                     }
                     finish();
-                } else if (workMode == Constants.MODE_AFTER_KIT) {
+                } else if (workMode == MyConstants.MODE_AFTER_KIT) {
                     if (choosedIds != null && !choosedIds.isEmpty()) {
                         for (int i = 0; i < choosedIds.size(); i++) {
                             long afterId = Long.valueOf(choosedIds.get(i));
                             dbConnector.addAfterToKit(kitId, afterId);
+
                         }
                     } else {
                         Intent intent = new Intent();
@@ -176,12 +178,12 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
     private void initVariables() {
         dbConnector = new DbConnector(this);
         dbConnector.open();
-        if (workMode == Constants.MODE_LIST || workMode == Constants.MODE_KIT) {
+        if (workMode == MyConstants.MODE_LIST || workMode == MyConstants.MODE_KIT) {
             tableMode = DbConnector.TABLE_KITS;
             cursor = dbConnector.getAllData("_id DESC");
-        } else if (workMode == Constants.MODE_AFTER_KIT || workMode == Constants.MODE_AFTERMARKET) {
+        } else if (workMode == MyConstants.MODE_AFTER_KIT || workMode == MyConstants.MODE_AFTERMARKET) {
             tableMode = DbConnector.TABLE_AFTERMARKET;
-            kitId = getIntent().getExtras().getLong(Constants.KIT_ID);
+            kitId = getIntent().getExtras().getLong(MyConstants.KIT_ID);
             cursor = dbConnector.getAllAftermarket("_id DESC");
         }
         filters = new String[]{"","","","",""}; //todo уточнить количество
@@ -354,56 +356,56 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     public void SortByBrandAsc() {
-        cursor = dbConnector.filteredKits(tableMode, filters, "brand", categoryTab, listname);
+        cursor = dbConnector.filteredKits(tableMode, filters, "brand", category, listname);
         prepareListAndAdapter(cursor);
         ivSortBrand.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
         sortBrand = true;
     }
 
     public void SortByBrandDesc() {
-        cursor = dbConnector.filteredKits(tableMode, filters, "brand DESC", categoryTab, listname);
+        cursor = dbConnector.filteredKits(tableMode, filters, "brand DESC", category, listname);
         prepareListAndAdapter(cursor);
         ivSortBrand.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
         sortBrand = false;
     }
 
     public void SortByScaleAsc() {
-        cursor = dbConnector.filteredKits(tableMode, filters, "scale", categoryTab, listname);
+        cursor = dbConnector.filteredKits(tableMode, filters, "scale", category, listname);
         prepareListAndAdapter(cursor);
         ivSortScale.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
         sortScale = true;
     }
 
     public void SortByScaleDesc() {
-        cursor = dbConnector.filteredKits(tableMode, filters, "scale DESC", categoryTab, listname);
+        cursor = dbConnector.filteredKits(tableMode, filters, "scale DESC", category, listname);
         prepareListAndAdapter(cursor);
         ivSortScale.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
         sortScale = false;
     }
 
     public void SortByDateAcs() {
-        cursor = dbConnector.filteredKits(tableMode, filters, "_id", categoryTab, listname);
+        cursor = dbConnector.filteredKits(tableMode, filters, "_id", category, listname);
         prepareListAndAdapter(cursor);
         ivSortDate.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
         sortDate = true;
     }
 
     public void SortByDateDesc() {
-        cursor = dbConnector.filteredKits(tableMode, filters, "_id DESC", categoryTab, listname);
+        cursor = dbConnector.filteredKits(tableMode, filters, "_id DESC", category, listname);
         prepareListAndAdapter(cursor);
         ivSortDate.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
         sortDate = false;
     }
 
     public void SortByNameAsc() {
-        cursor = dbConnector.filteredKits(tableMode, filters, "kit_name", categoryTab, listname);
+        cursor = dbConnector.filteredKits(tableMode, filters, "kit_name", category, listname);
         prepareListAndAdapter(cursor);
         ivSortKitname.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
         sortName = true;
     }
 
     public void SortByNameDesc() {
-        cursor = dbConnector.filteredKits(tableMode, filters, "kit_name DESC", categoryTab, listname);
+        cursor = dbConnector.filteredKits(tableMode, filters, "kit_name DESC", category, listname);
         prepareListAndAdapter(cursor);
         ivSortKitname.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
         sortName = false;
@@ -525,7 +527,7 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
                     filters[3] = statusFilter;
                     filters[4] = mediaFilter;
 
-                    cursor = dbConnector.filteredKits(tableMode, filters, "_id DESC", categoryTab, listname);
+                    cursor = dbConnector.filteredKits(tableMode, filters, "_id DESC", category, listname);
                     prepareListAndAdapter(cursor);
 
                     ibtnChooseFilter.setBackgroundColor(Helper.getColor(ChooserActivity.this, R.color.colorAccent));

@@ -37,7 +37,7 @@ public class AdapterMyLists extends CursorAdapter {
     // you don't bind any data to the view at this point.
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        return LayoutInflater.from(context).inflate(R.layout.item_mylists, parent, false);
+        return LayoutInflater.from(context).inflate(R.layout.item_with_edit, parent, false);
     }
 
     // The bindView method is used to bind all data to a given view
@@ -63,9 +63,9 @@ public class AdapterMyLists extends CursorAdapter {
             public void onClick(View view) {
                 Object obj = view.getTag();
                 String st = obj.toString();
-                dbConnector.deleteList(st);
+//                dbConnector.deleteList(st);
                 dbConnector.clearList(name);
-                Cursor newcursor = dbConnector.getAllLists("_id DESC");
+                Cursor newcursor = dbConnector.getLists("_id DESC");
                 changeCursor(newcursor);
                 notifyDataSetChanged();
             }
@@ -95,8 +95,8 @@ public class AdapterMyLists extends CursorAdapter {
                             Toast.makeText(context, R.string.List_with_this_name_already_exists,
                                     Toast.LENGTH_SHORT).show();
                         }else {
-                            dbConnector.updateList(nameToChange, listname);
-                            Cursor newcursor = dbConnector.getAllLists("_id DESC");
+//                            dbConnector.updateList(nameToChange, listname); /////////////TO CHANGE
+                            Cursor newcursor = dbConnector.getLists("_id DESC");
                             changeCursor(newcursor);
                             notifyDataSetChanged();
                         }

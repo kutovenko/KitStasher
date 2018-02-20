@@ -1,6 +1,5 @@
 package com.example.kitstasher.fragment;
 
-import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -19,16 +18,24 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.example.kitstasher.R;
-import com.example.kitstasher.other.Constants;
+import com.example.kitstasher.objects.Kit;
 import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.Helper;
+import com.example.kitstasher.other.MyConstants;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
+import com.parse.FindCallback;
+import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -38,8 +45,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.example.kitstasher.other.DbConnector.COLUMN_AFTERMARKET_NAME;
 import static com.example.kitstasher.other.DbConnector.COLUMN_BARCODE;
@@ -89,15 +96,12 @@ import static com.example.kitstasher.other.DbConnector.MYLISTSITEMS_LISTNAME;
  */
 
 public class SettingsOptionsFragment extends Fragment implements View.OnClickListener {
-    //    private Button btnBackup, btnRestore, btnRepairImages, btnSetDefault;
     private DbConnector dbConnector;
-    private Cursor cursor;
     private View view;
     private EditText etNewCurrency;
-    private ProgressDialog progressDialog;
-    //    private String todayDate;
+    private ProgressBar progressBarDb,
+            progressBarExport;
     private Spinner spDefaultCurrency;
-//    private static AsyncTask asyncTask;
 
     public SettingsOptionsFragment(){
 
@@ -108,9 +112,8 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
                              Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_options, container, false);
 
-        Calendar c = Calendar.getInstance();
-        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
-        String todayDate = df.format(c.getTime());
+//        Calendar c = Calendar.getInstance();
+//        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());
         dbConnector = new DbConnector(getActivity());
         dbConnector.open();
         initUI();
@@ -118,6 +121,10 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
     }
 
     private void initUI() {
+        progressBarDb = view.findViewById(R.id.pbOptionsDb);
+        progressBarDb.setVisibility(View.GONE);
+        progressBarExport = view.findViewById(R.id.pbOptionsExport);
+        progressBarExport.setVisibility(View.GONE);
         Button btnBackup = view.findViewById(R.id.btnBackup);
         btnBackup.setOnClickListener(this);
         Button btnRestore = view.findViewById(R.id.btnRestore);
@@ -129,68 +136,107 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
         Button btnAddNewCurrency = view.findViewById(R.id.btnAddCurrency);
         btnAddNewCurrency.setOnClickListener(this);
         etNewCurrency = view.findViewById(R.id.etNewCurrency);
-
-        progressDialog = new ProgressDialog(getActivity());
-
         spDefaultCurrency = view.findViewById(R.id.spDefaultCurrency);
         loadCurrencySpinner();
-
-        Button imp = view.findViewById(R.id.button2);
-        imp.setOnClickListener(new View.OnClickListener() {
+        Button btnRestoreFromCloud = view.findViewById(R.id.btnRestoreFromCloud);
+        btnRestoreFromCloud.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                restoreOldDb();
+                progressBarDb.setVisibility(View.VISIBLE);
+                restoreFromCloud();
             }
         });
+        CheckBox cbCloudMode = view.findViewById(R.id.cbCloudMode);
+        cbCloudMode.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putBoolean(MyConstants.CLOUD_MODE, b).apply();
+            }
+        });
+    }
 
+    private void restoreFromCloud() {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String ownerId = sharedPreferences.getString(MyConstants.USER_ID_PARSE, "");//todo
+        ParseQuery<ParseObject> ownerIds = ParseQuery.getQuery("Stash");
+        ownerIds.whereEqualTo(MyConstants.PARSE_OWNERID, ownerId);
 
+//        String idType = sharedPreferences.getString(MyConstants.USER_IDTYPE, "");//todo
+//        ParseQuery<ParseObject> idTypes = ParseQuery.getQuery("Stash");
+//        idTypes.whereEqualTo(MyConstants.PARSE_IDTYPE, idType);
+
+        ParseQuery<ParseObject> notDeleted = ParseQuery.getQuery("Stash");
+        notDeleted.whereNotEqualTo(MyConstants.PARSE_DELETED, true);
+
+        List<ParseQuery<ParseObject>> queries = new ArrayList<ParseQuery<ParseObject>>();
+        queries.add(ownerIds);
+//        queries.add(idTypes);
+        queries.add(notDeleted);
+
+        ParseQuery<ParseObject> mainQuery = ParseQuery.or(queries);
+        mainQuery.findInBackground(new FindCallback<ParseObject>() {
+            public void done(List<ParseObject> results, ParseException e) {
+                for (ParseObject object : results) {
+                    Kit kit = new Kit.KitBuilder()
+                            .hasOnlineId(object.getObjectId())
+                            .hasBrand(object.getString(MyConstants.PARSE_BRAND))
+                            .hasBrand_catno(object.getString(MyConstants.PARSE_BRAND_CATNO))
+                            .hasKit_name(object.getString(MyConstants.PARSE_KITNAME))
+                            .hasScale(object.getInt(MyConstants.PARSE_SCALE))
+                            .hasCategory(object.getString(MyConstants.PARSE_CATEGORY))
+                            .hasDescription(object.getString(MyConstants.PARSE_DESCRIPTION))
+//                            .hasPrototype(object.getString(MyConstants.PARSE_PROTOTYPE))//not in use
+                            .hasKit_noeng_name(object.getString(MyConstants.PARSE_NOENGNAME))
+                            .hasBoxart_url(object.getString(MyConstants.PARSE_BOXART_URL))
+                            .hasBarcode(object.getString(MyConstants.PARSE_BARCODE))
+                            .hasScalemates_url(object.getString(MyConstants.PARSE_SCALEMATES))
+                            .hasYear(object.getString(MyConstants.PARSE_YEAR))
+                            .build();
+                    dbConnector.addKitRec(kit);
+                }
+                progressBarDb.setVisibility(View.GONE);
+                Toast.makeText(getActivity(), getString(R.string.Restored), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override
     public void onClick(View view) {
-
-
         switch (view.getId()){
             case R.id.btnAddCurrency:
                 String cur = etNewCurrency.getText().toString();
                 if (!Helper.isBlank(cur)) {
                     dbConnector.addCurrency(cur);
                     loadCurrencySpinner();
-                    etNewCurrency.setText("");
+                    etNewCurrency.setText(MyConstants.EMPTY);
                 }
                 break;
             case R.id.btnSetDefault:
                 setDefaultCurrency(spDefaultCurrency.getSelectedItem().toString());
                 break;
             case R.id.btnBackup:
-                Toast.makeText(getActivity(), getString(R.string.Saving), Toast.LENGTH_SHORT).show();
+                progressBarDb.setVisibility(View.VISIBLE);
                 backupDb();
+                progressBarDb.setVisibility(View.GONE);
                 Toast.makeText(getActivity(), getString(R.string.Saved), Toast.LENGTH_SHORT).show();
                 break;
             case R.id.btnRestore:
-                Toast.makeText(getActivity(), getString(R.string.Saving), Toast.LENGTH_SHORT).show();
+                progressBarDb.setVisibility(View.VISIBLE);
                 restoreDb();
-                Toast.makeText(getActivity(), getString(R.string.Saved), Toast.LENGTH_SHORT).show();
+                progressBarDb.setVisibility(View.GONE);
                 break;
             case R.id.btnRepairImages:
-                String[] items = new String[]{"TXT"
-//                        , "PDF"
-                };
+                String[] items = new String[]{"TXT"};
                 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                 builder.setTitle(R.string.choose_output_format);
                 builder.setItems(items, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int item) {
-//                 Do something with the selection
                         switch (item){
                             case 0:
                                 exportStashTo("TXT");
-//                                progressDialog.dismiss();
                                 break;
-//                            case 1:
-//
-//                                exportStashTo("PDF (coming soon)");
-////                                progressDialog.dismiss();
-//                                break;
                         }
                     }
                 });
@@ -198,12 +244,11 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
                 alert.show();
                 break;
         }
-        progressDialog.dismiss();
     }
 
     private void loadCurrencySpinner() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        String defCurrency = sharedPreferences.getString(Constants.DEFAULT_CURRENCY, "BYN");
+        String defCurrency = sharedPreferences.getString(MyConstants.DEFAULT_CURRENCY, "USD");
         Cursor currCursor = dbConnector.getAllFromTable(DbConnector.TABLE_CURRENCIES,
                 DbConnector.CURRENCIES_COLUMN_CURRENCY);
         currCursor.moveToFirst();
@@ -220,26 +265,19 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
     }
 
 
-
     private void exportStashTo(String mode){
-        progressDialog = ProgressDialog.show(getActivity(), "Export to File", getString(R.string.Saving));
-        progressDialog.setCancelable(true);
+        progressBarExport.setVisibility(View.VISIBLE);
         final String m = mode;
         AsyncTask asyncTask = new AsyncTask() {
             @Override
             protected Object doInBackground(Object[] objects) {
-
-
-//                File exportDir = new File(Environment.getExternalStorageDirectory(),"Kitstasher");
                 File exportDir = getActivity().getExternalFilesDir("export");
-                if (!exportDir.exists())
-                {
+                if (!exportDir.exists()) {
                     exportDir.mkdirs();
                 }
                 switch (m){
                     case "TXT":
-                        try
-                        {
+                        try {
                             File fileStash = new File(exportDir, "collection.txt");
                             fileStash.delete();
                             fileStash.createNewFile();
@@ -274,71 +312,15 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
                         }catch(Exception sqlEx){
                             Log.e("MainActivity", sqlEx.getMessage(), sqlEx);
                         }
-//                Toast.makeText(getActivity(), "Done!", Toast.LENGTH_SHORT).show();
-                        progressDialog.dismiss();
+                        progressBarExport.setVisibility(View.GONE);
                         Intent sharingIntent = new Intent(Intent.ACTION_SEND);
                         Uri txtUri = Uri.fromFile(new File(Environment.getExternalStorageDirectory()
-                                + Constants.APP_FOLDER + "MyStash.txt"));
+                                + MyConstants.APP_FOLDER + "MyStash.txt"));
 
                         sharingIntent.setType("text/plain");
                         sharingIntent.putExtra(Intent.EXTRA_STREAM, txtUri);
                         startActivity(Intent.createChooser(sharingIntent, getString(R.string.save_file_using)));
                         break;
-
-//                    case "PDF (coming soon)":
-//                        progressDialog.dismiss();
-//                        Toast.makeText(getActivity(), "Coming soon", Toast.LENGTH_SHORT).show();
-//                        break;
-
-
-
-
-
-//            case "CSV":
-//
-//                Toast.makeText(getActivity(), R.string.coming_soon, Toast.LENGTH_SHORT).show();
-//
-//                File fileKits = new File(exportDir, "kits.csv");
-//                try
-//                {
-//                    fileKits.createNewFile();
-//                    CSVWriter csvWrite = new CSVWriter(new FileWriter(fileKits),
-//                            CSVWriter.DEFAULT_SEPARATOR,
-//                            CSVWriter.NO_QUOTE_CHARACTER);
-//                    Cursor curCSV = dbConnector.getAllData("_id");
-//                    while(curCSV.moveToNext())
-//                    {
-//                        //Which column you want to export
-//                        String arrStr[] = {
-//                                curCSV.getString(1), //barcode
-//                                curCSV.getString(2), //brand
-//                                curCSV.getString(3), //brand_catno
-//                                curCSV.getString(4), //scale
-//                                curCSV.getString(5), //kitname
-//                                curCSV.getString(6), //desc
-//                                curCSV.getString(7), //original name
-//                                curCSV.getString(8), //category - tag
-//                                curCSV.getString(9), //collection
-//                                curCSV.getString(10), //send status
-//                                curCSV.getString(11), // online id
-//                                curCSV.getString(12), // boxart uri
-//                                curCSV.getString(13), //boxart url
-//
-//                                curCSV.getString(14), //is deleted !!
-//                                curCSV.getString(15)}; //date !!
-//
-//
-//                        csvWrite.writeNext(arrStr);
-//                    }
-//                    csvWrite.close();
-//                    curCSV.close();
-//                }
-//                catch(Exception sqlEx)
-//                {
-//                }
-////                Toast.makeText(getActivity(), "Done!", Toast.LENGTH_SHORT).show();
-//
-//                break;
                 }
                 return null;
             }
@@ -350,8 +332,7 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
 
 //        File exportDir = new File(Environment.getExternalStorageDirectory(),"Kitstasher");
         File exportDir = getActivity().getExternalFilesDir("backup");
-        if (!exportDir.exists())
-        {
+        if (!(exportDir != null ? exportDir.exists() : false)) {
             exportDir.mkdirs();
         }
         backupKits(exportDir);
@@ -364,15 +345,10 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
     }
 
     private void restoreDb() {
-        // проверяем доступность SD
         if (!Environment.getExternalStorageState().equals(
                 Environment.MEDIA_MOUNTED)) {
             Toast.makeText(getActivity(), R.string.sdcard_failed, Toast.LENGTH_SHORT).show();
         }
-        // получаем путь к SD
-//        File sdPath = Environment.getExternalStorageDirectory();
-        // добавляем свой каталог к пути
-//        sdPath = new File(sdPath.getAbsolutePath() + "/" + "Kitstasher");
         File sdPath = getActivity().getExternalFilesDir("backup");
 
         restoreKits(sdPath);
@@ -387,17 +363,15 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
     /////////// AFTERMARKET ////////////
     private void backupAftermarket(File exportDir) {
         //сохраняем таблицу афтемаркета
-        File fileAfter = new File(exportDir, Constants.AFTER_FILE_NAME);
-        try
-        {
+        File fileAfter = new File(exportDir, MyConstants.AFTER_FILE_NAME);
+        try {
             fileAfter.createNewFile();
             CSVWriter csvWrite = new CSVWriter(new FileWriter(fileAfter),
                     CSVWriter.DEFAULT_SEPARATOR,
                     CSVWriter.NO_QUOTE_CHARACTER);
             Cursor curCSV = dbConnector.getAllAftermarket("_id");
             curCSV.moveToFirst();
-            while(!curCSV.isAfterLast())
-            {
+            while(!curCSV.isAfterLast()) {
                 String arrStr[] = {
                         curCSV.getString(0), //id
                         curCSV.getString(1), //barcode
@@ -436,15 +410,13 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
             csvWrite.close();
             curCSV.close();
             Helper.encrypt(fileAfter);
-        }
-        catch(Exception sqlEx)
-        {
+        } catch(Exception sqlEx) {
             Log.e("Aftermarket Backup", sqlEx.getMessage(), sqlEx);
         }
     }
 
     private void restoreAftermarket(File sdPath) {
-        File aftermarketFile = new File(sdPath, Constants.AFTER_FILE_NAME);
+        File aftermarketFile = new File(sdPath, MyConstants.AFTER_FILE_NAME);
 
         try {
             Helper.decrypt(aftermarketFile);
@@ -458,42 +430,6 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
             String[] colums;
             ContentValues cv = new ContentValues();
             while ((colums = reader.readNext()) != null) {
-//                cv.put(COLUMN_ID, colums[0]);
-//                cv.put(COLUMN_BARCODE, colums[1]);
-//                cv.put(COLUMN_BRAND, colums[2]);
-//                cv.put(COLUMN_BRAND_CATNO, colums[3]);
-//                cv.put(COLUMN_SCALE, colums[4]);
-//                cv.put(COLUMN_AFTERMARKET_NAME, colums[5]);
-//                cv.put(COLUMN_DESCRIPTION, colums[6]);
-//                cv.put(COLUMN_ORIGINAL_NAME, colums[7]);//!
-//                // если отличается
-//                cv.put(COLUMN_CATEGORY, colums[8]);
-//                cv.put(COLUMN_COLLECTION, colums[9]);
-//                cv.put(COLUMN_SEND_STATUS, colums[10]);
-//                cv.put(COLUMN_ID_ONLINE, colums[11]);
-//                //заметки? LOCAL?
-//                cv.put(COLUMN_BOXART_URI, colums[12]);
-//                cv.put(COLUMN_BOXART_URL, colums[13]);
-//                cv.put(COLUMN_IS_DELETED, colums[14]);
-//                cv.put(COLUMN_DATE, colums[15]);
-//                cv.put(COLUMN_YEAR, colums[16]);
-//                cv.put(COLUMN_PURCHASE_DATE, colums[17]);
-//                cv.put(COLUMN_PRICE, colums[18]);
-//                cv.put(COLUMN_QUANTITY, colums[19]);
-//                cv.put(COLUMN_NOTES, colums[20]);
-//                cv.put(COLUMN_CURRENCY, colums[21]);
-//                cv.put(COLUMN_PURCHASE_PLACE, colums[22]);
-//                cv.put(MYLISTS_COLUMN_LIST_NAME, colums[23]);
-//
-//
-//
-//
-//                //////////////
-//
-//
-//
-
-
                 cv.put(COLUMN_ID, colums[0]); // Локальный ключ -0
                 cv.put(COLUMN_BARCODE, colums[1]); // штрихкод NOBARCODE по умолчанию для garage kit? - 1
                 cv.put(COLUMN_BRAND, colums[2]); // производитель - 2
@@ -535,17 +471,15 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
     }
 
     private void backupKitAfter(File exportDir){
-        File fileAfter = new File(exportDir, Constants.KIT_AFTER_FILE_NAME);
-        try
-        {
+        File fileAfter = new File(exportDir, MyConstants.KIT_AFTER_FILE_NAME);
+        try {
             fileAfter.createNewFile();
             CSVWriter csvWrite = new CSVWriter(new FileWriter(fileAfter),
                     CSVWriter.DEFAULT_SEPARATOR,
                     CSVWriter.NO_QUOTE_CHARACTER);
             Cursor curCSV = dbConnector.getKitAfterConnections("_id");
             curCSV.moveToFirst();
-            while(!curCSV.isAfterLast())
-            {
+            while(!curCSV.isAfterLast()) {
                 String arrStr[] = {
                         curCSV.getString(0), //id
                         curCSV.getString(1), //barcode
@@ -569,15 +503,13 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
             csvWrite.close();
             curCSV.close();
             Helper.encrypt(fileAfter);
-        }
-        catch(Exception sqlEx)
-        {
+        } catch(Exception sqlEx) {
             Log.e("Kit+After Backup failed", sqlEx.getMessage(), sqlEx);
         }
     }
 
     private void restoreKitAfter(File sdPath){
-        File aftermarketFile = new File(sdPath, Constants.KIT_AFTER_FILE_NAME);
+        File aftermarketFile = new File(sdPath, MyConstants.KIT_AFTER_FILE_NAME);
 
         try {
             Helper.decrypt(aftermarketFile);
@@ -620,135 +552,17 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
         }
     }
 
-//////////// KITSTASHER 0.8 /////////////
-    private void restoreOldDb() {
-        // проверяем доступность SD
-        if (!Environment.getExternalStorageState().equals(
-                Environment.MEDIA_MOUNTED)) {
-            Toast.makeText(getActivity(), R.string.sdcard_failed, Toast.LENGTH_SHORT).show();
-        }
-        // получаем путь к SD
-        File sdPath = getActivity().getExternalFilesDir("backup");
-        // добавляем свой каталог к пути
-//        sdPath = new File(sdPath.getAbsolutePath() + "/" + "Kitstasher");
-
-
-        restoreOldKitsDb(sdPath);
-        restoreOldBrandsDb(sdPath);
-        Toast.makeText(getActivity(), "Импортировано " + dbConnector.getAllData().getCount() + " записей", Toast.LENGTH_SHORT).show();
-    }
-
-    private void restoreOldKitsDb(File sdPath) {// TODO: 28.08.2017 убрать в 0.8.2!!
-
-        File sdFile = new File(sdPath, "kits.csv");
-
-        try {
-            Helper.decrypt(sdFile);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        //Очищаем базу
-        dbConnector = new DbConnector(getActivity());
-        dbConnector.open();
-        dbConnector.clearTable(DbConnector.TABLE_KITS);
-        try {
-            dbConnector = new DbConnector(getActivity());
-            dbConnector.open();
-            // открываем поток для чтения
-            BufferedReader br = new BufferedReader(new FileReader(sdFile));
-            String str = "";
-            // читаем содержимое
-            while ((str = br.readLine()) != null) {
-                String[] colums = str.split(",");
-                ContentValues cv = new ContentValues();
-                cv.put(COLUMN_BARCODE, colums[0].trim()); //barcode
-                cv.put(COLUMN_BRAND, colums[1].trim());//brand
-                cv.put(COLUMN_BRAND_CATNO, colums[2].trim());//brand_catno
-                cv.put(COLUMN_SCALE, colums[3].trim());//scale INT
-                cv.put(COLUMN_KIT_NAME, colums[4].trim());//kitname
-                cv.put(COLUMN_DESCRIPTION, colums[5].trim());//desc
-                cv.put(COLUMN_ORIGINAL_NAME, colums[6].trim());//original name
-                cv.put(COLUMN_CATEGORY, colums[7].trim());//category - tag
-                cv.put(COLUMN_COLLECTION, colums[8].trim());//collection
-                cv.put(COLUMN_SEND_STATUS, colums[9].trim());//send status
-                cv.put(COLUMN_ID_ONLINE, colums[10]); // cloud id
-                cv.put(COLUMN_BOXART_URI, colums[11]); // local boxart image file
-                cv.put(COLUMN_BOXART_URL, colums[12].trim());//boxart url
-//                cv.put(DbConnector.COLUMN_IS_DELETED, colums[13].trim());//is deleted
-                if(!colums[14].isEmpty()) {
-                    cv.put(COLUMN_DATE, colums[14].trim());//date added
-                }else{
-                    cv.put(COLUMN_DATE, "");//date added
-                }
-
-                cv.put(COLUMN_YEAR, ""); //// TODO: 30.08.2017 проверить колонки
-                cv.put(COLUMN_PURCHASE_DATE, "");
-                cv.put(COLUMN_PRICE, 0);
-                cv.put(COLUMN_QUANTITY, 1);
-                cv.put(COLUMN_NOTES, "");
-                cv.put(COLUMN_CURRENCY, "");//валюта
-                cv.put(COLUMN_PURCHASE_PLACE, "");//валюта
-
-                dbConnector = new DbConnector(getActivity());
-                dbConnector.open();
-                dbConnector.addKitRec(cv);
-            }
-            Helper.encrypt(sdFile);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void restoreOldBrandsDb(File sdPath) {
-        File sdBrandsFile = new File(sdPath, "brands.csv");
-        try {
-            Helper.decrypt(sdBrandsFile);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        //Очищаем базу
-        // TODO: 17.08.2017 Сделать бэкап на случай сбоя записи?
-        dbConnector.clearTable(DbConnector.TABLE_BRANDS);
-        try {
-
-            // открываем поток для чтения
-            BufferedReader br = new BufferedReader(new FileReader(sdBrandsFile));
-            String str = "";
-            // читаем содержимое
-
-            while ((str = br.readLine()) != null) {
-                String[] colums = str.split(",");
-                ContentValues cv = new ContentValues();
-                cv.put(DbConnector.BRANDS_COLUMN_BRAND, colums[0].trim());
-                dbConnector.addBrand(cv);
-            }
-            Helper.encrypt(sdBrandsFile);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     ////////// SHOPS ////////////////
     private void backupShops(File exportDir) {
-        File fileShops = new File(exportDir, Constants.MYSHOPS_FILE_NAME);
-        try
-        {
+        File fileShops = new File(exportDir, MyConstants.MYSHOPS_FILE_NAME);
+        try {
             fileShops.createNewFile();
             CSVWriter csvWrite = new CSVWriter(new FileWriter(fileShops),
                     CSVWriter.DEFAULT_SEPARATOR,
                     CSVWriter.NO_QUOTE_CHARACTER);
             Cursor curCSV = dbConnector.getShops("_id");
             curCSV.moveToFirst();
-            while(!curCSV.isAfterLast())
-            {
+            while(!curCSV.isAfterLast()) {
                 String arrStr[] ={
                         curCSV.getString(0), //id
                         curCSV.getString(1), //name
@@ -762,15 +576,13 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
             }
             csvWrite.close();
             curCSV.close();
-        }
-        catch(Exception sqlEx)
-        {
+        } catch(Exception sqlEx) {
             Log.e("Shops backup failed", sqlEx.getMessage(), sqlEx);
         }
     }
 
     private void restoreShops(File sdPath) {
-        File shopsFile = new File(sdPath, Constants.MYSHOPS_FILE_NAME);
+        File shopsFile = new File(sdPath, MyConstants.MYSHOPS_FILE_NAME);
         dbConnector.clearTable(DbConnector.TABLE_MYSHOPS);
         try {
             BufferedReader br = new BufferedReader(new FileReader(shopsFile));
@@ -798,17 +610,15 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
     //////////////// KITS //////////////////
 
     private void backupKits(File exportDir) {
-        File fileKits = new File(exportDir, Constants.KITS_FILE_NAME);
-        try
-        {
+        File fileKits = new File(exportDir, MyConstants.KITS_FILE_NAME);
+        try {
             fileKits.createNewFile();
             CSVWriter csvWrite = new CSVWriter(new FileWriter(fileKits),
                     CSVWriter.DEFAULT_SEPARATOR,
                     CSVWriter.NO_QUOTE_CHARACTER);
             Cursor curCSV = dbConnector.getAllData("_id");
             curCSV.moveToFirst();
-            while(!curCSV.isAfterLast())
-            {
+            while(!curCSV.isAfterLast()) {
                 String arrStr[] = {
                         curCSV.getString(0), //id
                         curCSV.getString(1), //barcode
@@ -845,15 +655,13 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
             csvWrite.close();
             curCSV.close();
             Helper.encrypt(fileKits);
-        }
-        catch(Exception sqlEx)
-        {
+        } catch(Exception sqlEx) {
             Log.e("Kits backup failed", sqlEx.getMessage(), sqlEx);
         }
     }
 
     private void restoreKits(File sdPath) {
-        File sdFile = new File(sdPath, Constants.KITS_FILE_NAME);
+        File sdFile = new File(sdPath, MyConstants.KITS_FILE_NAME);
         try {
             Helper.decrypt(sdFile);
         } catch (Exception e) {
@@ -866,37 +674,9 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
             String[] colums;
             ContentValues cv = new ContentValues();
             while ((colums = reader.readNext()) != null) {
-//                cv.put(COLUMN_ID, colums[0]);
-//                cv.put(COLUMN_BARCODE, colums[1]);
-//                cv.put(COLUMN_BRAND, colums[2]);
-//                cv.put(COLUMN_BRAND_CATNO, colums[3]);
-//                cv.put(COLUMN_SCALE, colums[4]);
-//                cv.put(COLUMN_KIT_NAME, colums[5]);
-//                cv.put(COLUMN_DESCRIPTION, colums[6]);
-//                cv.put(COLUMN_ORIGINAL_NAME, colums[7]);
-//                cv.put(COLUMN_CATEGORY, colums[8]);
-//                cv.put(COLUMN_COLLECTION, colums[9]);
-//                cv.put(COLUMN_SEND_STATUS, colums[10]);
-//                cv.put(COLUMN_ID_ONLINE, colums[11]);
-//                cv.put(COLUMN_BOXART_URI, colums[12]);
-//                cv.put(COLUMN_BOXART_URL, colums[13]);
-//                cv.put(COLUMN_IS_DELETED, colums[14]);
-//                cv.put(COLUMN_DATE, colums[15]);
-//                cv.put(COLUMN_YEAR, colums[16]);
-//                cv.put(COLUMN_PURCHASE_DATE, colums[17]);
-//                cv.put(COLUMN_PRICE, colums[18]);
-//                cv.put(COLUMN_QUANTITY, colums[19]);
-//                cv.put(COLUMN_NOTES, colums[20]);
-//                cv.put(COLUMN_CURRENCY, colums[21]);
-//                cv.put(COLUMN_PURCHASE_PLACE, colums[22]);
-//
-//
-//                ///////////////
-//
                 cv.put(COLUMN_ID, colums[0]); // Локальный ключ -0
                 cv.put(COLUMN_BARCODE, colums[1]); // штрихкод NOBARCODE по умолчанию для garage kit? - 1
-                cv.put(COLUMN_BRAND, colums[2]);
-                ; // производитель - 2
+                cv.put(COLUMN_BRAND, colums[2]); // производитель - 2
                 cv.put(COLUMN_BRAND_CATNO, colums[3]); //каталожный номер набора - 3
                 cv.put(COLUMN_SCALE, colums[4]); //масштаб - 4
                 cv.put(COLUMN_KIT_NAME, colums[5]); //название набора - 5
@@ -935,17 +715,15 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
 
     ///////////// BRANDS ////////////////
     private void backupBrands(File exportDir) {
-        File fileBrands = new File(exportDir, Constants.BRANDS_FILE_NAME);
-        try
-        {
+        File fileBrands = new File(exportDir, MyConstants.BRANDS_FILE_NAME);
+        try {
             fileBrands.createNewFile();
             CSVWriter csvWrite = new CSVWriter(new FileWriter(fileBrands),
                     CSVWriter.DEFAULT_SEPARATOR,
                     CSVWriter.NO_QUOTE_CHARACTER);
             Cursor curCSV = dbConnector.getBrands("_id");
             curCSV.moveToFirst();
-            while(curCSV.moveToNext())
-            {
+            while(curCSV.moveToNext()) {
                 String arrStr[] = {
                         curCSV.getString(0),
                         curCSV.getString(1)
@@ -954,15 +732,13 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
             }
             csvWrite.close();
             curCSV.close();
-        }
-        catch(Exception sqlEx)
-        {
+        } catch(Exception sqlEx) {
             Log.e("Brands backup failed", sqlEx.getMessage(), sqlEx);
         }
     }
 
     private void restoreBrands(File sdPath) {
-        File sdBrandsFile = new File(sdPath, Constants.BRANDS_FILE_NAME);
+        File sdBrandsFile = new File(sdPath, MyConstants.BRANDS_FILE_NAME);
 
         dbConnector.clearTable(DbConnector.TABLE_BRANDS);
 
@@ -989,17 +765,15 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
     ////////////// MY LISTS ///////////////
 
     private void backupLists(File exportDir) {
-        File fileLists = new File(exportDir, Constants.LISTS_FILE_NAME);
-        try
-        {
+        File fileLists = new File(exportDir, MyConstants.LISTS_FILE_NAME);
+        try {
             fileLists.createNewFile();
             CSVWriter csvWrite = new CSVWriter(new FileWriter(fileLists),
                     CSVWriter.DEFAULT_SEPARATOR,
                     CSVWriter.NO_QUOTE_CHARACTER);
-            Cursor listCur = dbConnector.getAllLists("_id DESC");
+            Cursor listCur = dbConnector.getLists("_id DESC");
             listCur.moveToFirst();
-            while(!listCur.isAfterLast())
-            {
+            while(!listCur.isAfterLast()) {
                 String arrStr[] ={
                         listCur.getString(0), //id
                         listCur.getString(1), //listname
@@ -1010,21 +784,18 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
             }
             csvWrite.close();
             listCur.close();
-        }
-        catch(Exception sqlEx)
-        {
+        } catch(Exception sqlEx) {
             Log.e("Lists backup failed", sqlEx.getMessage(), sqlEx);
         }
     }
 
     private void restoreLists(File sdPath) {
-        File sdListsFile = new File(sdPath, Constants.LISTS_FILE_NAME);
-        //Очищаем базу
+        File sdListsFile = new File(sdPath, MyConstants.LISTS_FILE_NAME);
         dbConnector.clearTable(DbConnector.TABLE_MYLISTS);
         try {
             // открываем поток для чтения
             BufferedReader br = new BufferedReader(new FileReader(sdListsFile));
-            String str = "";
+            String str;
             // читаем содержимое
             while ((str = br.readLine()) != null) {
                 String[] colums = str.split(",");
@@ -1046,17 +817,15 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
     /////////// LISTSITEMS //////////////
 
     private void backupListItems(File exportDir) {
-        File fileListItems = new File(exportDir, Constants.LISTITEMS_FILE_NAME);
-        try
-        {
+        File fileListItems = new File(exportDir, MyConstants.LISTITEMS_FILE_NAME);
+        try {
             fileListItems.createNewFile();
             CSVWriter csvWrite = new CSVWriter(new FileWriter(fileListItems),
                     CSVWriter.DEFAULT_SEPARATOR,
                     CSVWriter.NO_QUOTE_CHARACTER);
             Cursor curCSV = dbConnector.getAllListsItems("_id");
             curCSV.moveToFirst();
-            while(!curCSV.isAfterLast())
-            {
+            while(!curCSV.isAfterLast()) {
                 String arrStr[] = {
                         curCSV.getString(0), //id
                         curCSV.getString(1), //barcode
@@ -1094,15 +863,13 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
             csvWrite.close();
             curCSV.close();
             Helper.encrypt(fileListItems);
-        }
-        catch(Exception sqlEx)
-        {
+        } catch(Exception sqlEx) {
             Log.e("ListItems backup failed", sqlEx.getMessage(), sqlEx);
         }
     }
 
     private void restoreListsItems(File sdPath) {
-        File sdListItemsFile = new File(sdPath, Constants.LISTITEMS_FILE_NAME);
+        File sdListItemsFile = new File(sdPath, MyConstants.LISTITEMS_FILE_NAME);
         try {
             Helper.decrypt(sdListItemsFile);
         } catch (Exception e) {
@@ -1115,41 +882,6 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
             String[] colums;
             ContentValues cv = new ContentValues();
             while ((colums = reader.readNext()) != null) {
-//                cv.put(COLUMN_ID, colums[0]);
-//                cv.put(COLUMN_BARCODE, colums[1]);
-//                cv.put(COLUMN_BRAND, colums[2]);
-//                cv.put(COLUMN_BRAND_CATNO, colums[3]);
-//                cv.put(COLUMN_SCALE, colums[4]);
-//                cv.put(COLUMN_KIT_NAME, colums[5]);
-//                cv.put(COLUMN_DESCRIPTION, colums[6]);
-//                cv.put(COLUMN_ORIGINAL_NAME, colums[7]);
-//                cv.put(COLUMN_CATEGORY, colums[8]);
-//                cv.put(COLUMN_COLLECTION, colums[9]);
-//                cv.put(COLUMN_SEND_STATUS, colums[10]);
-//                cv.put(COLUMN_ID_ONLINE, colums[11]);
-//                cv.put(COLUMN_BOXART_URI, colums[12]);
-//                cv.put(COLUMN_BOXART_URL, colums[13]);
-//                cv.put(COLUMN_IS_DELETED, colums[14]);
-//                cv.put(COLUMN_DATE, colums[15]);
-//                cv.put(COLUMN_YEAR, colums[16]);
-//                cv.put(COLUMN_PURCHASE_DATE, colums[17]);
-//                cv.put(COLUMN_PRICE, colums[18]);
-//                cv.put(COLUMN_QUANTITY, colums[19]);
-//                cv.put(COLUMN_NOTES, colums[20]);
-//                cv.put(COLUMN_CURRENCY, colums[21]);
-//                cv.put(COLUMN_PURCHASE_PLACE, colums[22]);
-//                cv.put(MYLISTS_COLUMN_LIST_NAME, colums[23]);
-//                cv.put(COLUMN_STATUS, colums[24]);
-//                cv.put(COLUMN_MEDIA, colums[25]);
-//                cv.put(COLUMN_SCALEMATES_URL, colums[26]);
-//
-//                cv.put(MYLISTSITEMS_LISTNAME, colums[27]);
-//
-//
-///////////////////////////////////
-//
-//
-
                 cv.put(COLUMN_ID, colums[0]);
                 cv.put(COLUMN_BARCODE, colums[1]);
                 cv.put(COLUMN_BRAND, colums[2]);
@@ -1189,11 +921,33 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
         }
     }
 
-    /////////////////////
-
     private void setDefaultCurrency(String currency){
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
         SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString(Constants.DEFAULT_CURRENCY, currency).apply();
+        editor.putString(MyConstants.DEFAULT_CURRENCY, currency).apply();
     }
+
+    private void setCloudOn() {
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean(MyConstants.CLOUD_MODE, true).apply();
+    }
+
+    private void setCloudOff() {
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean(MyConstants.CLOUD_MODE, false).apply();
+    }
+
+    private void setCloudMode(boolean b) {
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean(MyConstants.CLOUD_MODE, b).apply();
+    }
+
+    private void setAllOptions(String currency, boolean cloudMode) {
+        setDefaultCurrency(currency);
+        setCloudMode(cloudMode);
+    }
+
 }

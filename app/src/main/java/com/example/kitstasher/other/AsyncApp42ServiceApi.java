@@ -8,7 +8,6 @@ import android.content.Context;
 import android.os.Handler;
 
 import com.shephertz.app42.paas.sdk.android.App42API;
-import com.shephertz.app42.paas.sdk.android.App42CallBack;
 import com.shephertz.app42.paas.sdk.android.App42Exception;
 import com.shephertz.app42.paas.sdk.android.game.Game;
 import com.shephertz.app42.paas.sdk.android.game.ScoreBoardService;
@@ -34,7 +33,7 @@ public class AsyncApp42ServiceApi {
     private static AsyncApp42ServiceApi mInstance = null;
 
     private AsyncApp42ServiceApi(Context context) {
-        App42API.initialize(context, Constants.App42ApiKey, Constants.App42ApiSecret);
+        App42API.initialize(context, MyConstants.App42ApiKey, MyConstants.App42ApiSecret);
         this.userService = App42API.buildUserService();
         this.storageService = App42API.buildStorageService();
         this.scoreBoardService = App42API.buildScoreBoardService();

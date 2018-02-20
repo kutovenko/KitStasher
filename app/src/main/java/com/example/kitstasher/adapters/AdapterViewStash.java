@@ -1,6 +1,7 @@
 package com.example.kitstasher.adapters;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -8,116 +9,100 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 
 import com.example.kitstasher.R;
 import com.example.kitstasher.fragment.SortAllFragment;
-import com.example.kitstasher.other.Constants;
+import com.example.kitstasher.other.DbConnector;
+import com.example.kitstasher.other.MyConstants;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Created by Алексей on 22.04.2017.
+ * Created by Алексей on 22.04.2017. Adapter for viewPager with kits and aftermarket
  */
 
 public class AdapterViewStash extends FragmentStatePagerAdapter {
-    private static int FRAGMENT_COUNT = 9;
-    private Context mContext;
-    private boolean aftermarketMode;
+    private Context context;
+    private Cursor cursor;
+    private int activeCategoriesCount;
+    private List<Fragment> fragments;
 
-    public AdapterViewStash(FragmentManager fm, Context context, boolean aftermarketMode) {
+    public AdapterViewStash(FragmentManager fm, Context context, boolean aftermarketMode, Cursor cursor) {
         super(fm);
-        mContext = context;
-        this.aftermarketMode = aftermarketMode;
+        this.context = context;
+        this.cursor = cursor;
+        this.activeCategoriesCount = cursor.getCount();
+        fragments = new ArrayList<>();
+        Bundle bundle = new Bundle();
+        bundle.putInt(MyConstants.CATEGORY_TAB, 0);
+        bundle.putString(MyConstants.CATEGORY, MyConstants.EMPTY);
+        bundle.putBoolean(MyConstants.AFTERMARKET_MODE, aftermarketMode);
+        fragments.add(Fragment.instantiate(context, SortAllFragment.class.getName(), bundle));
+        cursor.moveToFirst();
+        for (int i = 0; i < activeCategoriesCount; i++) {
+            String cat = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_CATEGORY));
+            bundle = new Bundle();
+            bundle.putInt(MyConstants.CATEGORY_TAB, i + 1);
+            bundle.putString(MyConstants.CATEGORY, cat);
+            bundle.putBoolean(MyConstants.AFTERMARKET_MODE, aftermarketMode);
+            fragments.add(Fragment.instantiate(context, SortAllFragment.class.getName(), bundle));
+            cursor.moveToNext();
+        }
     }
 
     @Override
     public Fragment getItem(int position) {
-        Bundle bundle = new Bundle();
-        SortAllFragment fragment = new SortAllFragment();
-        switch (position){
-            case 0:
-                bundle.putInt(Constants.CATEGORY, 0);
-                bundle.putBoolean(Constants.AFTERMARKET_MODE, aftermarketMode);
-                fragment.setArguments(bundle);
-                return fragment;
-            case 1:
-                bundle.putInt(Constants.CATEGORY, 1);
-                bundle.putBoolean(Constants.AFTERMARKET_MODE, aftermarketMode);
-                fragment.setArguments(bundle);
-                return fragment;
-            case 2:
-                bundle.putInt(Constants.CATEGORY, 2);
-                bundle.putBoolean(Constants.AFTERMARKET_MODE, aftermarketMode);
-                fragment.setArguments(bundle);
-                return fragment;
-            case 3:
-                bundle.putInt(Constants.CATEGORY, 3);
-                bundle.putBoolean(Constants.AFTERMARKET_MODE, aftermarketMode);
-                fragment.setArguments(bundle);
-                return fragment;
-            case 4:
-                bundle.putInt(Constants.CATEGORY, 4);
-                bundle.putBoolean(Constants.AFTERMARKET_MODE, aftermarketMode);
-                fragment.setArguments(bundle);
-                return fragment;
-            case 5:
-                bundle.putInt(Constants.CATEGORY, 5);
-                bundle.putBoolean(Constants.AFTERMARKET_MODE, aftermarketMode);
-                fragment.setArguments(bundle);
-                return fragment;
-            case 6:
-                bundle.putInt(Constants.CATEGORY, 6);
-                bundle.putBoolean(Constants.AFTERMARKET_MODE, aftermarketMode);
-                fragment.setArguments(bundle);
-                return fragment;
-            case 7:
-                bundle.putInt(Constants.CATEGORY, 7);
-                bundle.putBoolean(Constants.AFTERMARKET_MODE, aftermarketMode);
-                fragment.setArguments(bundle);
-                return fragment;
-            case 8:
-                bundle.putInt(Constants.CATEGORY, 8);
-                bundle.putBoolean(Constants.AFTERMARKET_MODE, aftermarketMode);
-                fragment.setArguments(bundle);
-                return fragment;
-        }
-        return null;
-    }
 
+        return fragments.get(position);
+
+    }
 
     @Override
     public int getCount() {
-        return FRAGMENT_COUNT;
+        if (activeCategoriesCount == 0) {
+            return 1;
+        } else {
+            return activeCategoriesCount + 1;
+        }
     }
 
     @Override
     public CharSequence getPageTitle(int position) {
-        switch (position){
-            case 0:
-                return mContext.getResources().getString(R.string.all);
-            case 1:
-                return mContext.getResources().getString(R.string.Air);
-            case 2:
-                return mContext.getResources().getString(R.string.Ground);
-            case 3:
-                return mContext.getResources().getString(R.string.Sea);
-            case 4:
-                return mContext.getResources().getString(R.string.Space);
-            case 5:
-                return mContext.getResources().getString(R.string.Auto_moto);
-            case 6:
-                return mContext.getResources().getString(R.string.Figures);
-            case 7:
-                return mContext.getResources().getString(R.string.Fantasy);
-            case 8:
-                return mContext.getResources().getString(R.string.Other);
+        ArrayList<Integer> names = new ArrayList<>();
+        names.add(R.string.all);
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            String cat = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_CATEGORY));
+            names.add(getTitleName(cat));
+            cursor.moveToNext();
         }
-        return null;
+        return context.getResources().getString(names.get(position));
     }
 
+    private int getTitleName(String cat) {
+        switch (cat) {
+            case "0":
+                return R.string.unknown;
+            case "1":
+                return R.string.Air;
+            case "2":
+                return R.string.Ground;
+            case "3":
+                return R.string.Sea;
+            case "4":
+                return R.string.Space;
+            case "5":
+                return R.string.Auto_moto;
+            case "6":
+                return R.string.Figures;
+            case "7":
+                return R.string.Fantasy;
+            case "8":
+                return R.string.Other;
+        }
+        return 0;
+    }
+
+    @Override
     public int getItemPosition(Object object) {
-        //////////
-//        int index = views.indexOf (object);
-//        if (index == -1)
-//            return POSITION_NONE;
-//        else
-//            return index;
-        //////////
         return POSITION_NONE;
     }
 }

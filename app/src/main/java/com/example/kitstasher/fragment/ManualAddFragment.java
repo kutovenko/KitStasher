@@ -1,7 +1,7 @@
 package com.example.kitstasher.fragment;
 
-import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -33,6 +33,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,9 +50,9 @@ import com.example.kitstasher.objects.Aftermarket;
 import com.example.kitstasher.objects.Item;
 import com.example.kitstasher.objects.Kit;
 import com.example.kitstasher.other.AsyncApp42ServiceApi;
-import com.example.kitstasher.other.Constants;
 import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.Helper;
+import com.example.kitstasher.other.MyConstants;
 import com.example.kitstasher.other.OnFragmentInteractionListener;
 import com.example.kitstasher.other.SelectDateFragment;
 import com.example.kitstasher.other.ValueContainer;
@@ -76,6 +77,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 import moe.feng.common.stepperview.VerticalStepperItemView;
@@ -85,78 +87,98 @@ import static android.app.Activity.RESULT_OK;
 import static com.example.kitstasher.activity.MainActivity.REQUEST_CODE_CROP;
 import static com.example.kitstasher.activity.MainActivity.asyncService;
 
-//import com.example.kitstasher.activity.UCropActivity;
 
 /**
  * Created by Алексей on 21.04.2017. Manual add items to database
  */
 
 public class ManualAddFragment extends Fragment implements View.OnClickListener, TextWatcher,
-        AsyncApp42ServiceApi.App42StorageServiceListener, OnFragmentInteractionListener
-{
+        AsyncApp42ServiceApi.App42StorageServiceListener, OnFragmentInteractionListener {
+    public static String manualTag;
     private View view;
-    private EditText etBrandCat_no, etScale, etKitName, etKitNoengName, etNotes, etPrice;
-    private Button btnCheckOnlineDatabase, btnContinueStep;
-    private AppCompatSpinner spYear, spDescription, spQuantity, spCurrency, spKitMedia, spCategory;
+    private EditText etBrandCat_no,
+            etScale,
+            etKitName,
+            etKitNoengName,
+            etNotes,
+            etPrice;
+    private Button btnCheckOnlineDatabase;
+    private AppCompatSpinner spYear,
+            spDescription,
+            spQuantity,
+            spCurrency,
+            spKitMedia,
+            spCategory;
     private ImageView ivGetBoxart;
-    private TextView tvPurchaseDate, tvModeKit, tvModeAftermarket;
-    private ProgressDialog progressDialog;
-    private String imageFileName;
-    private String ownerId;
-    private String aftermarketName, aftemarketOriginalName, compilanceWith;
-
-    private String barcode, brand, brandCatno, kitName, sendStatus, kitNoengname, dateAdded, datePurchased,
-            boxartUrl, category, boxartUri, fbId, description, year, onlineId, listname, notes,
-    currency, prototype, scalematesUrl, placePurchased;
-    private int status, media;
-
-    private String defCurrency;
+    private TextView tvPurchaseDate,
+            tvModeKit,
+            tvModeAftermarket;
+    private VerticalStepperItemView stepper_0,
+            stepper_1,
+            stepper_2,
+            stepper_3,
+            stepper_4;
+    private ProgressBar progressBar;
+    private String imageFileName,
+            ownerId,
+            aftermarketName,
+            aftemarketOriginalName,
+            compilanceWith,
+            barcode,
+            brand,
+            brandCatno,
+            kitName,
+            sendStatus,
+            kitNoengname,
+            dateAdded,
+            datePurchased,
+            boxartUrl,
+            category,
+            boxartUri,
+            fbId, //for future use
+            description,
+            year,
+            onlineId,
+            listname,
+            notes,
+            currency,
+            prototype,
+            scalematesUrl,
+            placePurchased,
+            defCurrency,
+            mCurrentPhotoPath; //path for use with ACTION_VIEW intents
+    private int status,
+            media,
+            scale,
+            quantity,
+            price;
+    private long currentId;
     private char workMode;
-    private int scale, quantity, price;
-    private int spCurrencyPosition;
-    private boolean isFoundOnline, isReported, wasSearchedOnline;
-
+    private boolean isFoundOnline,
+            cloudModeOn,
+            isBoxartTemporary,
+            isReported,//for future use
+            wasSearchedOnline;
     private Context context;
     private DbConnector dbConnector;
-
-    ArrayAdapter currencyAdapter;
-
-    List<String> myBrands;
-    ArrayAdapter<String> acAdapterMybrands;
-    AutoCompleteTextView acTvBrand;
-
-    List<String> myShops;
-    ArrayAdapter<String> acAdapterMyshops;
-    AutoCompleteTextView acPurchasedFrom;
-
+    private ArrayAdapter<String> currencyAdapter;
+    private List<String> myBrands;
+    private ArrayAdapter<String> acAdapterMybrands,
+            acAdapterMyshops,
+            descriptionAdapter,
+            yearsAdapter;
+    private AutoCompleteTextView acTvBrand,
+            acPurchasedFrom;
+    private List<String> myShops;
     private OnFragmentInteractionListener mListener;
-    public static String manualTag;
-
     private Bitmap boxartPic;
-    private ByteArrayOutputStream bytes;
-
     private Kit kit;
     private Aftermarket aftermarket;
-    private ArrayAdapter<String> descriptionAdapter, yearsAdapter, mediaAdapter;
 
-    static final int REQUEST_TAKE_PHOTO = 1;
-    private String mCurrentPhotoPath; //path for use with ACTION_VIEW intents
-
-    private VerticalStepperItemView stepper_0, stepper_1, stepper_2, stepper_3, stepper_4;
-
-    private String parseImageUrl, parseThumbnailUrl;
-    private Uri photoPath;
-
-    private char incomeWorkMode;
     public ManualAddFragment() {
 
     }
 
-
-    /**
-     * Returns a new instance of this fragment for the given section
-     * number.
-     */
     public static ManualAddFragment newInstance() {
         return new ManualAddFragment();
     }
@@ -173,8 +195,9 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         if (!isOnline()) {
             btnCheckOnlineDatabase.setClickable(false);
             stepper_0.setTitle(R.string.brand_and_name);
-            setAllSteps(1);
+            setAllStepsState(1);
         }
+        progressBar.setVisibility(View.GONE);
     }
 
     @Override
@@ -182,13 +205,13 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         super.onSaveInstanceState(outState);
         outState.putString("imagePath", mCurrentPhotoPath);
         if (boxartPic != null){
-            outState.putParcelable(Constants.BOXART_IMAGE, boxartPic);
+            outState.putParcelable(MyConstants.BOXART_IMAGE, boxartPic);
             outState.putString("imagePath", mCurrentPhotoPath);
         }
         if (kit != null){
-            outState.putString(Constants.BOXART_URL, kit.getBoxart_url());
+            outState.putString(MyConstants.BOXART_URL, kit.getBoxart_url());
         }
-        outState.putString(Constants.CATEGORY, category);
+        outState.putString(MyConstants.CATEGORY, category);
     }
 
     @Override
@@ -197,29 +220,30 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         view = inflater.inflate(R.layout.fragment_tabbed_manualadd, container, false);
         dbConnector = new DbConnector(getActivity());
         dbConnector.open();
-        manualTag = getTag(); //Receiving the tag for fragment (for passing data)
+        manualTag = getTag();
 
         initUI();
-        initVariables();
-        prepareMyList();
 
+        initVariables();
+
+        prepareBrandsList();
 
         stepper_0.setState(1);
         stepper_0.setNormalColor(Color.GREEN);
 
         if (savedInstanceState != null){
-            if (savedInstanceState.getString(Constants.BOXART_URL) != null) {
+            if (savedInstanceState.getString(MyConstants.BOXART_URL) != null) {
                 mCurrentPhotoPath = savedInstanceState.getString("imagePath");
                 Glide
                         .with(context)
                         .load(
-                                savedInstanceState.getString(Constants.BOXART_URL)
-                                + Constants.BOXART_URL_LARGE
-                                + Constants.JPG)
+                                savedInstanceState.getString(MyConstants.BOXART_URL)
+                                        + MyConstants.BOXART_URL_LARGE
+                                        + MyConstants.JPG)
                         .placeholder(ic_menu_camera)
                         .diskCacheStrategy(DiskCacheStrategy.ALL)
                         .into(ivGetBoxart);
-                if (!(mCurrentPhotoPath == null) || !mCurrentPhotoPath.equals(Constants.EMPTY)) {
+                if (mCurrentPhotoPath != null && !mCurrentPhotoPath.equals(MyConstants.EMPTY)) {
                     Glide
                             .with(context)
                             .load(new File(Uri.parse(mCurrentPhotoPath).getPath()))
@@ -227,20 +251,18 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                             .diskCacheStrategy(DiskCacheStrategy.ALL)
                             .into(ivGetBoxart);
                 }
-            }else if (savedInstanceState.getParcelable(Constants.BOXART_IMAGE) != null) {
-                    boxartPic = savedInstanceState.getParcelable(Constants.BOXART_IMAGE);
-                    ivGetBoxart.setImageBitmap(boxartPic);
+            } else if (savedInstanceState.getParcelable(MyConstants.BOXART_IMAGE) != null) {
+                boxartPic = savedInstanceState.getParcelable(MyConstants.BOXART_IMAGE);
+                ivGetBoxart.setImageBitmap(boxartPic);
             }
         }
 
-        //Обрабатываем список автодополнения брэндов
-        acAdapterMybrands = new ArrayAdapter<String>(getActivity(),
+        acAdapterMybrands = new ArrayAdapter<>(getActivity(),
                 android.R.layout.simple_dropdown_item_1line, myBrands);
         acTvBrand.addTextChangedListener(this);
         acTvBrand.setAdapter(acAdapterMybrands);
 
-        //Обрабатываем список автодополнения магазинов
-        acAdapterMyshops = new ArrayAdapter<String>(getActivity(),
+        acAdapterMyshops = new ArrayAdapter<>(getActivity(),
                 android.R.layout.simple_dropdown_item_1line, myShops);
         acPurchasedFrom.addTextChangedListener(this);
         acPurchasedFrom.setAdapter(acAdapterMyshops);
@@ -248,13 +270,12 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         if (!isOnline()) {
             btnCheckOnlineDatabase.setClickable(false);
             stepper_0.setTitle(R.string.brand_and_name);
-            setAllSteps(1);
+            setAllStepsState(1);
         }
 
-        //Если пришли не из Хоум
-        if (workMode == Constants.MODE_AFTERMARKET || workMode == Constants.MODE_AFTER_KIT) {
+        if (workMode == MyConstants.MODE_AFTERMARKET || workMode == MyConstants.MODE_AFTER_KIT) {
             setAftermarketUI();
-        } else if (workMode == Constants.MODE_KIT || workMode == Constants.MODE_LIST) {
+        } else if (workMode == MyConstants.MODE_KIT || workMode == MyConstants.MODE_LIST) {
             setKitUI();
         }
 
@@ -275,7 +296,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         spYear.setAdapter(yearsAdapter);
 
         Integer[] quants = new Integer[]{1,2,3,4,5,6,7,8,9,10};
-        ArrayAdapter quantityAdapter = new ArrayAdapter<>(getActivity(),
+        ArrayAdapter<Integer> quantityAdapter = new ArrayAdapter<>(getActivity(),
                 R.layout.simple_spinner_item, quants);
         spQuantity.setAdapter(quantityAdapter);
         spQuantity.setSelection(0, true);
@@ -288,11 +309,11 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             currencies[i] = currCursor.getString(1);
             currCursor.moveToNext();
         }
-        currencyAdapter = new ArrayAdapter<String>(context,
+        currencyAdapter = new ArrayAdapter<>(context,
                 R.layout.simple_spinner_item, currencies);
         spCurrency.setAdapter(currencyAdapter);
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        String defaultCurrency = sharedPreferences.getString(Constants.DEFAULT_CURRENCY, "");
+        String defaultCurrency = sharedPreferences.getString(MyConstants.DEFAULT_CURRENCY, MyConstants.EMPTY);
         int spCurrencyPosition = currencyAdapter.getPosition(defaultCurrency);
         spCurrency.setSelection(spCurrencyPosition);
 
@@ -311,7 +332,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                 getString(R.string.media_decal),
                 getString(R.string.media_mask)
         };
-        mediaAdapter = new ArrayAdapter<>(context, R.layout.simple_spinner_item,
+        ArrayAdapter<String> mediaAdapter = new ArrayAdapter<>(context, R.layout.simple_spinner_item,
                 mediaTypes);
         spKitMedia.setAdapter(mediaAdapter);
         spKitMedia.setSelection(1);
@@ -325,121 +346,77 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                 R.drawable.ic_android_black_24dp};
         AdapterSpinner adapterSpinner = new AdapterSpinner(context, icons, categories);
         spCategory.setAdapter(adapterSpinner);
-        spCategory.setSelection(Integer.parseInt(Helper.tagToCode(category)));
+        spCategory.setSelection(Integer.parseInt(category));
 
         return view;
     }
-    // Проверяем, откуда обратились к редактору
-//    private void checkMode() {
-//        if (getArguments() != null){
-//            listname = getArguments().getString(Constants.LISTNAME);
-//            workMode = getArguments().getChar(Constants.WORK_MODE);
-//            switch (getArguments().getChar(Constants.WORK_MODE)){
-//                case 'l':
-//                    workMode = Constants.MODE_LIST;
-//                    break;
-//                case 'm':
-//                    workMode = Constants.MODE_KIT;
-//                    break;
-//                case 'a':
-//                    workMode = Constants.MODE_AFTERMARKET;
-//                    break;
-//                default:
-//                    workMode = Constants.MODE_KIT;
-//                    break;
-//            }
-//        }
-//    }
 
     private void initVariables() {
         context = getActivity();
-
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        cloudModeOn = sharedPreferences.getBoolean(MyConstants.CLOUD_MODE, true);
+        Calendar c = Calendar.getInstance();
+        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());
         if (getArguments() != null) {
-            workMode = getArguments().getChar(Constants.WORK_MODE);
-            if (workMode == Constants.MODE_AFTERMARKET) {
+            workMode = getArguments().getChar(MyConstants.WORK_MODE);
+            if (workMode == MyConstants.MODE_AFTERMARKET) {
                 setAftermarketUI();
-//                scale = getArguments().getInt(Constants.SCALE);
-//                etScale.setText(String.valueOf(scale));
-                listname = Constants.EMPTY;
-            } else if (workMode == Constants.MODE_KIT) {
+                listname = MyConstants.EMPTY;
+            } else if (workMode == MyConstants.MODE_KIT) {
                 setKitUI();
-                listname = Constants.EMPTY;
-            } else if (workMode == Constants.MODE_LIST) {
+                listname = MyConstants.EMPTY;
+            } else if (workMode == MyConstants.MODE_LIST) {
                 setKitUI();
                 tvModeAftermarket.setClickable(false);
-                listname = getArguments().getString(Constants.LISTNAME);
-            } else if (workMode == Constants.MODE_AFTER_KIT) {
+                listname = getArguments().getString(MyConstants.LISTNAME);
+            } else if (workMode == MyConstants.MODE_AFTER_KIT) {
                 setAftermarketUI();
                 tvModeKit.setClickable(false);
-                listname = Constants.EMPTY;
-//                listname = getArguments().getString(Constants.LISTNAME);
+                listname = MyConstants.EMPTY;
             }
-
         } else {
-            workMode = Constants.MODE_KIT;
-            listname = Constants.EMPTY;
+            workMode = MyConstants.MODE_KIT;
+            listname = MyConstants.EMPTY;
         }
-
-
-        //Установка текущей даты для записи в локальную базу
-        Calendar c = Calendar.getInstance();
-        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
-
-
-        //экономим обращения к онлайновой базе - если уже искали, не искать.
         wasSearchedOnline = false;
-//        isRbChanged = false;
         isFoundOnline = false;
         isReported = false;
-        sendStatus = "";//Статус для последующей записи пропущенных в офлайне записей
-//        workMode = Constants.MODE_KIT; //// TODO: 06.09.2017 Check
-
-//        workMode = Constants.MODE_KIT; //// TODO: 06.09.2017 Check
-
-        brand = "";
-        brandCatno = "";
+        sendStatus = MyConstants.EMPTY;//Статус для последующей записи пропущенных в офлайне записей
+        brand = MyConstants.EMPTY;
+        brandCatno = MyConstants.EMPTY;
         scale = 0;
-
-
-        kitName = "";
-        kitNoengname = "";
-        boxartUrl = "";
-        boxartUri = "";
-
-        if (getArguments() != null && getArguments().getChar(Constants.WORK_MODE) == Constants.MODE_AFTERMARKET//???
-                && getArguments().getString(Constants.BOXART_URI) != null) {
-            boxartUri = getArguments().getString(Constants.BOXART_URI);
-
+        kitName = MyConstants.EMPTY;
+        kitNoengname = MyConstants.EMPTY;
+        boxartUrl = MyConstants.EMPTY;
+        boxartUri = MyConstants.EMPTY;
+        if (getArguments() != null && getArguments().getChar(MyConstants.WORK_MODE) == MyConstants.MODE_AFTERMARKET//???
+                && getArguments().getString(MyConstants.BOXART_URI) != null) {
+            boxartUri = getArguments().getString(MyConstants.BOXART_URI);
         }
-
         dateAdded = df.format(c.getTime());
-        barcode = "";
-
-        if (getArguments() != null && getArguments().getChar(Constants.WORK_MODE) == Constants.MODE_LIST
-                && getArguments().getString("barcode") != null){
-            barcode = getArguments().getString("barcode");
+        barcode = MyConstants.EMPTY;
+        if (getArguments() != null && getArguments().getChar(MyConstants.WORK_MODE) == MyConstants.MODE_LIST
+                && getArguments().getString(MyConstants.BARCODE) != null) {
+            barcode = getArguments().getString(MyConstants.BARCODE);
         }
-        description = "";
+        description = MyConstants.EMPTY;
         year = "0";
-//        category = Constants.CAT_OTHER;
-        category = Constants.CODE_OTHER;
-        onlineId = "";
+        category = MyConstants.CODE_OTHER;
+        onlineId = MyConstants.EMPTY;
         price = 0;
-        notes = "";
-        datePurchased = "";
+        notes = MyConstants.EMPTY;
+        datePurchased = MyConstants.EMPTY;
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-        currency = sharedPref.getString(Constants.DEFAULT_CURRENCY,"");
-        ownerId = sharedPref.getString(Constants.USER_ID_FACEBOOK, "");
+        currency = sharedPref.getString(MyConstants.DEFAULT_CURRENCY, MyConstants.EMPTY);
+        ownerId = sharedPref.getString(MyConstants.USER_ID_FACEBOOK, MyConstants.EMPTY);
+        defCurrency = sharedPref.getString(MyConstants.DEFAULT_CURRENCY, MyConstants.EMPTY);
         quantity = 1;
-        prototype = "";
-        scalematesUrl = "";
-        placePurchased = "";
-        status = Constants.STATUS_NEW;
-        media = Constants.M_CODE_INJECTED;
+        prototype = MyConstants.EMPTY;
+        scalematesUrl = MyConstants.EMPTY;
+        placePurchased = MyConstants.EMPTY;
+        status = MyConstants.STATUS_NEW;
+        media = MyConstants.M_CODE_INJECTED;
 
-//        if (workMode == Constants.MODE_KIT || workMode == Constants.MODE_LIST) {
-
-        //New kit with empty fields
         kit = new Kit.KitBuilder()
                 .hasBrand(brand)
                 .hasBrand_catno(brandCatno)
@@ -449,14 +426,11 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                 .hasBarcode(barcode)
                 .hasKit_noeng_name(kitNoengname)
                 .hasDescription(description)
-
-                .hasPrototype("")//not in use
-
+                .hasPrototype(MyConstants.EMPTY)//not in use
                 .hasSendStatus(sendStatus)
-
                 .hasBoxart_url(boxartUrl)
                 .hasBoxart_uri(boxartUri)
-                .hasScalemates_url("")
+                .hasScalemates_url(MyConstants.EMPTY)
                 .hasYear(year)
                 .hasOnlineId(onlineId)
                 .hasDateAdded(dateAdded)
@@ -469,45 +443,43 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                 .hasStatus(status)
                 .hasMedia(media)
                 .build();
-//        }else if (workMode == Constants.MODE_AFTERMARKET || workMode == Constants.MODE_AFTER_KIT) {
-            aftermarketName = "";
-            aftemarketOriginalName = "";
-            compilanceWith = "";
-            aftermarket = new Aftermarket.AftermarketBuilder()
-                    .hasBrand(brand)
-                    .hasBrandCatno(brandCatno)
-                    .hasAftermarketName(aftermarketName)
-                    .hasScale(scale)
-                    .hasCategory(category)
-                    .hasBarcode(barcode)
-                    .hasAftermarketOriginalName(aftemarketOriginalName)
-                    .hasDescription(description)
-                    .hasCompilance(compilanceWith)
-                    .hasBoxartUrl(boxartUrl)
-                    .hasScalematesUrl(scalematesUrl)
-                    .hasBoxartUri(boxartUri)
-                    .hasYear(year)
-                    .hasOnlineId(onlineId)
-                    .hasDateAdded(dateAdded)
-                    .hasDatePurchased(datePurchased)
-                    .hasQuantity(quantity)
-                    .hasNotes(notes)
-                    .hasPrice(price)
-                    .hasCurrency(currency)
-                    .hasSendStatus(sendStatus)
-                    .hasPlacePurchased(placePurchased)
-                    .hasStatus(status)
-                    .hasMedia(media)
-                    .hasListname(listname)
-                    .build();
-//        }
+        aftermarketName = MyConstants.EMPTY;
+        aftemarketOriginalName = MyConstants.EMPTY;
+        compilanceWith = MyConstants.EMPTY;
+        aftermarket = new Aftermarket.AftermarketBuilder()
+                .hasBrand(brand)
+                .hasBrandCatno(brandCatno)
+                .hasAftermarketName(aftermarketName)
+                .hasScale(scale)
+                .hasCategory(category)
+                .hasBarcode(barcode)
+                .hasAftermarketOriginalName(aftemarketOriginalName)
+                .hasDescription(description)
+                .hasCompilance(compilanceWith)
+                .hasBoxartUrl(boxartUrl)
+                .hasScalematesUrl(scalematesUrl)
+                .hasBoxartUri(boxartUri)
+                .hasYear(year)
+                .hasOnlineId(onlineId)
+                .hasDateAdded(dateAdded)
+                .hasDatePurchased(datePurchased)
+                .hasQuantity(quantity)
+                .hasNotes(notes)
+                .hasPrice(price)
+                .hasCurrency(currency)
+                .hasSendStatus(sendStatus)
+                .hasPlacePurchased(placePurchased)
+                .hasStatus(status)
+                .hasMedia(media)
+                .hasListname(listname)
+                .build();
     }
 
     private void initUI() {
         btnCheckOnlineDatabase = view.findViewById(R.id.btnCheckOnlineDb);
         btnCheckOnlineDatabase.setOnClickListener(this);
-//        btnContinueStep = view.findViewById(R.id.btnContinueStep);
-//        btnContinueStep.setOnClickListener(this);
+        progressBar = view.findViewById(R.id.pbManualAdd);
+        progressBar.setVisibility(View.GONE);
         Button btnAdd = view.findViewById(R.id.btnMAdd);
         btnAdd.setOnClickListener(this);
         Button btnCancel = view.findViewById(R.id.btnMCancel);
@@ -521,14 +493,11 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         spDescription = view.findViewById(R.id.spDescription);
         spYear = view.findViewById(R.id.spYear);
         spCategory = view.findViewById(R.id.spCategory);
-
-
         acTvBrand = view.findViewById(R.id.acTvBrand);
         acPurchasedFrom = view.findViewById(R.id.acPlacePurchased);
         spCurrency = view.findViewById(R.id.spCurrency);
         spQuantity = view.findViewById(R.id.spQuantity);
         spKitMedia = view.findViewById(R.id.spAfterMedia);
-
         etNotes = view.findViewById(R.id.etNotes);
         tvPurchaseDate = view.findViewById(R.id.tvPurchaseDate);
         tvPurchaseDate.setText(R.string.Date_not_set);
@@ -536,7 +505,6 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         etPrice = view.findViewById(R.id.etPrice);
         Button btnClearDate = view.findViewById(R.id.btnClearDate);
         btnClearDate.setOnClickListener(this);
-
         stepper_0 = view.findViewById(R.id.stepper_0);
         stepper_0.setPadding(0, 16, 0, 0);
         stepper_1 = view.findViewById(R.id.stepper_1);
@@ -544,86 +512,53 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         stepper_3 = view.findViewById(R.id.stepper_3);
         stepper_4 = view.findViewById(R.id.stepper_4);
         stepper_4.setIsLastStep(true);
-
-//        btnNextStepper1 = view.findViewById(R.id.btnNextStepper1);
-//        btnNextStepper1.setOnClickListener(this);
-//        btnNextStepper2 = view.findViewById(R.id.btnNextStepper2);
-//        btnNextStepper2.setOnClickListener(this);
-//        btnNextStepper3 = view.findViewById(R.id.btnNextStepper3);
-//        btnNextStepper3.setOnClickListener(this);
-//
-//        btnStepper2Back = view.findViewById(R.id.btnStepper2Back);
-//        btnStepper2Back.setOnClickListener(this);
-//        btnStepper3Back = view.findViewById(R.id.btnStepper3Back);
-//        btnStepper3Back.setOnClickListener(this);
-//        btnStepper4Back = view.findViewById(R.id.btnStepper4Back);
-//        btnStepper4Back.setOnClickListener(this);
-
         tvModeKit = view.findViewById(R.id.tvModeKit);
         tvModeKit.setOnClickListener(this);
         tvModeAftermarket = view.findViewById(R.id.tvModeAftermarket);
         tvModeAftermarket.setOnClickListener(this);
     }
 
-
-    //Подготовка автодополняемого списка брэндов и магазинов
-    private void prepareMyList() {
+    private void prepareBrandsList() {
         myBrands = new ArrayList<>();
         myBrands = DbConnector.getAllBrands();
         myShops = new ArrayList<>();
         myShops = DbConnector.getAllShops();
     }
 
-    //Проверки заполнения полей
     private boolean checkSearchFields() {
-        boolean check = true; //Если true, проверка пройдена, можно записывать
-
+        boolean check = true;
         if (TextUtils.isEmpty(acTvBrand.getText())) {
-            acTvBrand.setError(getString(R.string.enter_brand));
-//            cancel = true;
+            Toast.makeText(context, R.string.please_fill_fields, Toast.LENGTH_SHORT).show();
             check = false;
         }
         if (TextUtils.isEmpty(etBrandCat_no.getText())) {
-            etBrandCat_no.setError(getString(R.string.enter_cat_no));
-//            cancel = true;
+            Toast.makeText(context, R.string.please_fill_fields, Toast.LENGTH_SHORT).show();
             check = false;
         }
         return check;
     }
 
-    private void removeWarnings() {
-        acTvBrand.setError(null);
-        etBrandCat_no.setError(null);
-        etScale.setError(null);
-        etKitName.setError(null);
-    }
-
     private boolean checkAllFields() {
         boolean check = true;
         if (TextUtils.isEmpty(acTvBrand.getText())) {
-            acTvBrand.setError(getString(R.string.enter_brand));
             check = false;
         }
         if (TextUtils.isEmpty(etBrandCat_no.getText())) {
-            etBrandCat_no.setError(getString(R.string.enter_cat_no));
             check = false;
         }
         if (TextUtils.isEmpty(etScale.getText()) || etScale.getText().toString().equals("0")) {
-            etScale.setError(getString(R.string.enter_scale));
             check = false;
         } else if (!Pattern.matches("[0-9]+", etScale.getText().toString())) {
             Toast.makeText(getActivity(), R.string.please_use_numbers, Toast.LENGTH_SHORT).show();
             check = false;
         }
         if (TextUtils.isEmpty(etKitName.getText())) {
-            etKitName.setError(getString(R.string.enter_kit_name));
             check = false;
         }
         if (boxartPic == null && !wasSearchedOnline){
             Toast.makeText(getActivity(), R.string.please_add_boxart_picture, Toast.LENGTH_SHORT).show();
             check = false;
         }
-
         return check;
     }
 
@@ -632,11 +567,9 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         switch (v.getId()) {
             case (R.id.btnMCancel):
                 clearFields();
-                removeWarnings();
                 returnToScan();
 
             case (R.id.btnCheckOnlineDb):
-                //todo Первый вариант - баркода нет, интернет есть.
                 if (checkSearchFields()) {
                     if (isOnline()) {
                         if (isInLocalBase(acTvBrand.getText().toString().trim(),
@@ -644,40 +577,33 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                             Toast.makeText(getActivity(), R.string.entry_already_exist,
                                     Toast.LENGTH_SHORT).show();
                             break;
-                        } else {//ищем онлайн
-                            Query q1 = QueryBuilder.build(Constants.TAG_BRAND, acTvBrand.getText().toString().trim(),
+                        } else {
+                            progressBar.setVisibility(View.VISIBLE);
+                            Query q1 = QueryBuilder.build(MyConstants.TAG_BRAND, acTvBrand.getText().toString().trim(),
                                     QueryBuilder.Operator.EQUALS);
-                            Query q2 = QueryBuilder.build(Constants.TAG_BRAND_CATNO, etBrandCat_no.getText().toString().trim(),
+                            Query q2 = QueryBuilder.build(MyConstants.TAG_BRAND_CATNO, etBrandCat_no.getText().toString().trim(),
                                     QueryBuilder.Operator.EQUALS);
                             Query query = QueryBuilder.compoundOperator(q1, QueryBuilder.Operator.AND, q2);
-                            asyncService.findDocByQuery(Constants.App42DBName, Constants.CollectionName, query, this);
- //проведен поиск в онлайне //todo вернуть фолс если изменяли текст
+                            asyncService.findDocByQuery(MyConstants.App42DBName, MyConstants.CollectionName, query, this);
                         }
 
                     } else {
-                        //нет интернета, кнопка и так не активна
                         if (isInLocalBase(brand, brandCatno)) {
                             Toast.makeText(getActivity(), R.string.entry_already_exist,
                                     Toast.LENGTH_SHORT).show();
                         }
                     }
                 } else {
-                    Toast.makeText(getActivity(), "Please enter data",
+                    Toast.makeText(getActivity(), R.string.please_fill_fields,
                             Toast.LENGTH_SHORT).show();
                 }
-
                 break;
 
             case (R.id.btnMAdd):
-                //Обработка пополнения списка автодополнения брэндов
                 String newBrand = acTvBrand.getText().toString().trim();
-
                 if (!myBrands.contains(newBrand)) {
-                    //Срабатывает немедленно
                     if (newBrand.length() > 1) {
                         myBrands.add(newBrand);
-                        //Срабатывает при перезапуске, записывает в базу
-                        // и при следующем запуске уже берет из нее
                         dbConnector.addBrand(newBrand);
                     }
                     acAdapterMybrands = new ArrayAdapter<>(
@@ -685,16 +611,11 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                             android.R.layout.simple_dropdown_item_1line, myBrands);
                     acTvBrand.setAdapter(acAdapterMybrands);
                 }
-
-                //Обработка пополнения списка магазинов
                 String newShop = acPurchasedFrom.getText().toString().trim();
 
                 if (!myShops.contains(newShop)) {
-                    //Срабатывает немедленно
                     if (newShop.length() > 1) {
                         myShops.add(newShop);
-                        //Срабатывает при перезапуске, записывает в базу
-                        // и при следующем запуске уже берет из нее
                         dbConnector.addShop(newShop);
                     }
                     acAdapterMyshops = new ArrayAdapter<>(
@@ -703,113 +624,115 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                     acPurchasedFrom.setAdapter(acAdapterMyshops);
                 }
 
-                //******************************************************************
-                if (checkAllFields()) {//Проверяем все поля - начальная проверка
-                    getFieldsValues(); //getting data from form fields and prepare kit object
-                    ////////////////////////
-                    if (workMode == Constants.MODE_KIT) {//из ручного добавления +
-                        if (!isInLocalBase(kit.getBrand(), kit.getBrandCatno())) {
-                            if (isOnline()) {
-//                                writeToLocalDatabase(kit); //writes kit to database
-                                dbConnector.addKitRec(kit);
-                                if (wasSearchedOnline && !isFoundOnline) {
-                                    if (!TextUtils.isEmpty(mCurrentPhotoPath)) {
-                                        saveWithBoxartToParse(mCurrentPhotoPath, kit);
+                if (checkAllFields()) {
+                    getFieldsValues();
+                    isBoxartTemporary = false;
+                    switch (workMode) {
+                        case 'm': //MODE_KIT
+                            if (!isInLocalBase(kit.getBrand(), kit.getBrandCatno())) {
+                                if (isOnline()) {
+                                    currentId = dbConnector.addKitRec(kit);
+                                    if (wasSearchedOnline && !isFoundOnline) { //todo проверка в mystash на дубли
+                                        if (!TextUtils.isEmpty(mCurrentPhotoPath)) {
+                                            saveWithBoxartToParse(mCurrentPhotoPath, kit);
+                                        }
+                                    } else {
+                                        saveToOnlineStash(kit);
                                     }
-                                    clearFields();
-                                    returnToScan(); //??
-                                    Toast.makeText(getActivity(), R.string.kit_added, Toast.LENGTH_SHORT).show();
                                 } else {
-                                    saveToOnlineStash(kit); //save online in personal list
-                                    clearFields();
-                                    returnToScan();
-                                    Toast.makeText(getActivity(), R.string.kit_added, Toast.LENGTH_SHORT).show();
-                                }
+                                    String sendStatus = "n";//Надо потом записать в облако
+                                    kit.setSendStatus(sendStatus);
+                                    dbConnector.addKitRec(kit);
 
-                            } else {
-                                sendStatus = "n";//Надо потом записать в облако
-                                kit.setSendStatus(sendStatus);
-                                dbConnector.addKitRec(kit);
-//                                writeToLocalDatabase(kit);
+                                    dbConnector.updateCategories();
+
+                                    if (cloudModeOn && isOnline()) {
+                                        saveToOnlineStash(kit);
+                                    } else {
+                                        Toast.makeText(context, R.string.online_backup_is_off, Toast.LENGTH_SHORT).show();
+                                    }
+                                }
                                 Toast.makeText(getActivity(), R.string.kit_added, Toast.LENGTH_SHORT).show();
-                                sendStatus = "";
                                 clearFields();
                                 returnToScan();
+                            } else {
+                                Toast.makeText(getActivity(), R.string.entry_already_exist,
+                                        Toast.LENGTH_SHORT).show();
+                                break;
                             }
-                        } else {
-                            Toast.makeText(getActivity(), R.string.entry_already_exist,
-                                    Toast.LENGTH_SHORT).show();
                             break;
-                        }
-                    } else if (workMode == Constants.MODE_LIST) { //из списков +
-                        //todo проверка на наличие в списке?
-                        dbConnector.addListItem(kit, listname);
-//                        writeToLocalDatabase(kit);
-                        Toast.makeText(getActivity(), R.string.Kit_added_to_list, Toast.LENGTH_SHORT).show();
-                        sendStatus = "";
-                        clearFields();
-                        returnToScan();
-                        ListViewFragment listViewFragment = new ListViewFragment();
-                        Bundle bundle = new Bundle(1);
-                        bundle.putString(Constants.LISTNAME, listname);
-                        listViewFragment.setArguments(bundle);
-                        android.support.v4.app.FragmentTransaction fragmentTransaction =
-                                getFragmentManager().beginTransaction();
-                        fragmentTransaction.replace(R.id.llListsContainer, listViewFragment);
-                        fragmentTransaction.commit();
 
-                    } else if (workMode == Constants.MODE_AFTER_KIT) { // +
-//                        if (!isInLocalBase(aftermarket.getBrand(), aftermarket.getBrandCatno())) {
-                        //запись в афтемаркет кита
-                        long aftId = dbConnector.addAftermarket(aftermarket);
-                        if (getArguments() != null && getArguments().containsKey(Constants.ID)) {
-                            Long incomeKitId = getArguments().getLong(Constants.ID);
-                            dbConnector.addAfterToKit(incomeKitId, aftId);
-                        }
-//                            writeToLocalDatabase(aftermarket);
-                        Toast.makeText(getActivity(), R.string.aftermarket_added, Toast.LENGTH_SHORT).show();
-                            sendStatus = "";
+                        case 'l': //MODE_LIST из списков
+                            dbConnector.addListItem(kit, listname);
+                            Toast.makeText(getActivity(), R.string.Kit_added_to_list, Toast.LENGTH_SHORT)
+                                    .show();
+                            clearFields();
+                            returnToScan();
+
+                            ListViewFragment listViewFragment = new ListViewFragment();
+                            Bundle bundle = new Bundle(1);
+                            bundle.putString(MyConstants.LISTNAME, listname);
+                            listViewFragment.setArguments(bundle);
+                            android.support.v4.app.FragmentTransaction fragmentTransaction =
+                                    getFragmentManager().beginTransaction();
+                            fragmentTransaction.replace(R.id.llListsContainer, listViewFragment);
+                            fragmentTransaction.commit();
+                            break;
+
+                        case 'k': //MODE_AFTER_KIT запись в афтемаркет кита
+                            long aftId = dbConnector.addAftermarket(aftermarket);
+                            if (getArguments() != null
+                                    && getArguments().containsKey(MyConstants.ID)) {
+                                Long incomeKitId = getArguments().getLong(MyConstants.ID);
+                                dbConnector.addAfterToKit(incomeKitId, aftId);
+                            }
+                            Toast.makeText(getActivity(), R.string.aftermarket_added,
+                                    Toast.LENGTH_SHORT).show();
+                            sendStatus = MyConstants.EMPTY;
                             clearFields();
 
                             if (getArguments() != null) {
-                                int position = getArguments().getInt(Constants.LIST_POSITION);
-                                int categoryToReturn = getArguments().getInt(Constants.LIST_CATEGORY);
-                                long after_id = getArguments().getLong(Constants.AFTER_ID);
-                                long kit_id = getArguments().getLong(Constants.ID);
-
+                                int position = getArguments().getInt(MyConstants.LIST_POSITION);
+                                int categoryToReturn = getArguments()
+                                        .getInt(MyConstants.LIST_CATEGORY);
+                                long after_id = getArguments().getLong(MyConstants.AFTER_ID);
+                                long kit_id = getArguments().getLong(MyConstants.ID);
 
                                 ItemEditFragment itemEditFragment = new ItemEditFragment();
 
-                                Bundle bundle = new Bundle(5);
-                                bundle.putInt(Constants.POSITION, position);
-                                bundle.putInt(Constants.CATEGORY, categoryToReturn);
-                                bundle.putLong(Constants.ID, kit_id);
-                                bundle.putLong(Constants.AFTER_ID, after_id);
-//                                bundle.putChar(Constants.WORK_MODE, Constants.MODE_KIT);
-                                bundle.putChar(Constants.WORK_MODE, Constants.MODE_AFTER_KIT);
-                                itemEditFragment.setArguments(bundle);
+                                Bundle bundleA = new Bundle(5);
+                                bundleA.putInt(MyConstants.POSITION, position);
+                                bundleA.putInt(MyConstants.CATEGORY, categoryToReturn);
+                                bundleA.putLong(MyConstants.ID, kit_id);
+                                bundleA.putLong(MyConstants.AFTER_ID, after_id);
+                                bundleA.putChar(MyConstants.WORK_MODE, MyConstants.MODE_AFTER_KIT);
+                                itemEditFragment.setArguments(bundleA);
 
-                                android.support.v4.app.FragmentTransaction fragmentTransaction =
+                                android.support.v4.app.FragmentTransaction fragmentTransactionA =
                                         getFragmentManager().beginTransaction();
-                                fragmentTransaction.replace(R.id.frameLayoutEditContainer, itemEditFragment);
-                                fragmentTransaction.commit();
+                                fragmentTransactionA.replace(R.id.frameLayoutEditContainer,
+                                        itemEditFragment);
+                                fragmentTransactionA.commit();
                             }
-                    } else if (workMode == Constants.MODE_AFTERMARKET) {//////in work
-                        if (!isInLocalBase(aftermarket.getBrand(), aftermarket.getBrandCatno())) {
-                            dbConnector.addAftermarket(aftermarket);
-                            Toast.makeText(getActivity(), R.string.aftermarket_added, Toast.LENGTH_SHORT).show();
-                            sendStatus = "";
-                            clearFields();
-                        } else {
-                            Toast.makeText(getActivity(), R.string.aftermarket_already_exist,
-                                    Toast.LENGTH_SHORT).show();
                             break;
-                        }
+
+                        case 'a': //MODE_AFTERMARKET
+                            if (!isInLocalBase(aftermarket.getBrand(), aftermarket.getBrandCatno())) {
+                                dbConnector.addAftermarket(aftermarket);
+                                Toast.makeText(getActivity(), R.string.aftermarket_added,
+                                        Toast.LENGTH_SHORT).show();
+                                sendStatus = MyConstants.EMPTY;
+                                clearFields();
+                            } else {
+                                Toast.makeText(getActivity(), R.string.aftermarket_already_exist,
+                                        Toast.LENGTH_SHORT).show();
+                                break;
+                            }
+                            break;
                     }
                 } else {
-                    //Проверяем все поля - начальная проверка не пройдена!
                     Toast.makeText(getActivity(), R.string.Please_enter_data, Toast.LENGTH_SHORT).show();
-                    setAllSteps(1);
+                    setAllStepsState(1);
                 }
                 break;
 
@@ -827,32 +750,29 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             case R.id.tvPurchaseDate:
                 DialogFragment newFragment = new SelectDateFragment();
                 Bundle bundle = new Bundle(1);
-                bundle.putString("caller", "manualadd"); //// TODO: 30.08.2017 поменять на тэг
+                bundle.putString("caller", "manualadd");
                 newFragment.setArguments(bundle);
                 newFragment.show(getFragmentManager(), "DatePicker");
                 break;
 
             case R.id.btnClearDate:
-                datePurchased = "";
+                datePurchased = MyConstants.EMPTY;
                 tvPurchaseDate.setText(R.string.Date_not_set);
                 break;
 
             case R.id.tvModeKit:
-                workMode = Constants.MODE_KIT;
+                workMode = MyConstants.MODE_KIT;
                 setKitUI();
                 break;
             case R.id.tvModeAftermarket:
-                workMode = Constants.MODE_AFTERMARKET;
+                workMode = MyConstants.MODE_AFTERMARKET;
                 setAftermarketUI();
                 break;
         }
     }
 
-    private boolean isBoxartSet() {
-        return (boxartPic != null);
-    }
-
     private void dispatchTakePictureIntent() {
+        Uri photoPath;
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null) {
             if (Helper.getExternalStorageState() == Helper.StorageState.WRITEABLE) {
@@ -874,50 +794,32 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     }
 
     private File createImageFile() {
+        isBoxartTemporary = true;
         imageFileName = getTimestamp();
         File storageDir = getActivity().getExternalFilesDir("boxart");
-        if (!storageDir.exists()) {
+        if (!(storageDir != null && storageDir.exists())) {
             storageDir.mkdirs();
         }
         File image = null;
         try {
             image = File.createTempFile(
                     imageFileName,  /* prefix */
-                    Constants.JPG,         /* suffix */
+                    MyConstants.JPG,         /* suffix */
                     storageDir      /* directory */
             );
         } catch (IOException e) {
             Toast.makeText(context, "Нельзя создать файл", Toast.LENGTH_LONG).show();
         }
-        mCurrentPhotoPath = image.getAbsolutePath();
+        mCurrentPhotoPath = image != null ? image.getAbsolutePath() : null;
         return image;
     }
 
     private String getTimestamp() {
-        return new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        return new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
     }
 
-    /*
-* Writes kit object to local Sqlite database*/
-    private void writeToLocalDatabase(Object itemSave) {
-        if (workMode == Constants.MODE_KIT) {
-            dbConnector.addKitRec((Kit) itemSave);
-        } else if (workMode == Constants.MODE_LIST) {
-            dbConnector.addListItem((Kit)itemSave, listname);
-        } else if (workMode == Constants.MODE_AFTERMARKET) {
-            dbConnector.addAftermarket((Aftermarket) itemSave);
-        } else if (workMode == Constants.MODE_AFTER_KIT) {
-            long aftId = dbConnector.addAftermarket((Aftermarket)itemSave);
-            if (getArguments() != null && getArguments().containsKey(Constants.ID)) {
-                Long incomeKitId = getArguments().getLong(Constants.ID);
-                dbConnector.addAfterToKit(incomeKitId, aftId);
-            }
-        }
-    }
-
-    /*Checks if local database already includes this kit*/
     private boolean isInLocalBase(String brand, String brand_catno) {
-        if (workMode == Constants.MODE_LIST) {
+        if (workMode == MyConstants.MODE_LIST) {
             if (dbConnector.searchListForDoubles(listname, brand, brand_catno)) {
                 return true;
             }
@@ -929,7 +831,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         return false;
     }
 
-    private void setAllSteps(int state) {
+    private void setAllStepsState(int state) {
         stepper_0.setState(state);
         stepper_1.setState(state);
         stepper_2.setState(state);
@@ -937,9 +839,8 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         stepper_4.setState(state);
     }
 
-
     private void getFieldsValues() {
-        if (workMode == Constants.MODE_AFTERMARKET || workMode == Constants.MODE_AFTER_KIT) {
+        if (workMode == MyConstants.MODE_AFTERMARKET || workMode == MyConstants.MODE_AFTER_KIT) {
             aftermarket.setBrand(acTvBrand.getText().toString().trim());
             aftermarket.setBrandCatno(etBrandCat_no.getText().toString().trim());
             aftermarket.setScale(Integer.parseInt(etScale.getText().toString()));
@@ -953,7 +854,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             if (!y.equals(getString(R.string.unknown))) {
                 aftermarket.setYear(y);
             }else{
-                aftermarket.setYear("");
+                aftermarket.setYear(MyConstants.EMPTY);
             }
 
             aftermarket.setMedia(spKitMedia.getSelectedItemPosition());
@@ -962,7 +863,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             if (!d.equals(getString(R.string.kittype))){
                 aftermarket.setDescription(descToCode(d));
             }else{
-                aftermarket.setDescription(Constants.CODE_OTHER);
+                aftermarket.setDescription(MyConstants.CODE_OTHER);
             }
             currency = spCurrency.getSelectedItem().toString();
             aftermarket.setCurrency(currency);
@@ -970,18 +871,18 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             aftermarket.setQuantity(quantity);
             notes = etNotes.getText().toString();
             aftermarket.setNotes(notes);
-            if (!etPrice.getText().toString().equals("")){
+            if (!etPrice.getText().toString().equals(MyConstants.EMPTY)) {
                 price = Integer.parseInt(etPrice.getText().toString()) * 100;
             }else{
                 price = 0;
             }
             aftermarket.setPrice(price);
-            if (!tvPurchaseDate.getText().toString().equals("")
+            if (!tvPurchaseDate.getText().toString().equals(MyConstants.EMPTY)
                     || tvPurchaseDate.getText().toString().equals(getResources()
                     .getString(R.string.Date_not_set))) {
                 datePurchased = tvPurchaseDate.getText().toString();
             }else{
-                datePurchased = Constants.EMPTY;
+                datePurchased = MyConstants.EMPTY;
             }
 
             placePurchased = acPurchasedFrom.getText().toString().trim();
@@ -1003,10 +904,10 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             kit.setCategory(cat);
             String y = spYear.getSelectedItem().toString();
             if (!y.equals(getResources().getString(R.string.unknown))
-                    || y.equals("")) {
+                    || y.equals(MyConstants.EMPTY)) {
                 kit.setYear(y);
             }else{
-                kit.setYear(Constants.EMPTY);
+                kit.setYear(MyConstants.EMPTY);
             }
             kit.setScalemates_url(scalematesUrl);
 
@@ -1016,7 +917,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             if (!d.equals(getString(R.string.kittype))){
                 kit.setDescription(descToCode(d));
             }else{
-                kit.setDescription(Constants.CODE_OTHER);
+                kit.setDescription(MyConstants.CODE_OTHER);
             }
             currency = spCurrency.getSelectedItem().toString();
             kit.setCurrency(currency);
@@ -1024,23 +925,20 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             kit.setQuantity(quantity);
             notes = etNotes.getText().toString();
             kit.setNotes(notes);
-            if (!etPrice.getText().toString().equals("")){
+            if (!etPrice.getText().toString().equals(MyConstants.EMPTY)) {
                 price = Integer.parseInt(etPrice.getText().toString()) * 100;
             }else{
                 price = 0;
             }
             kit.setPrice(price);
-            //SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
-            if (!tvPurchaseDate.getText().toString().equals("")
-                    && tvPurchaseDate.getText().toString().equals(R.string.Date_not_set)) {
+            if (!tvPurchaseDate.getText().toString().equals(MyConstants.EMPTY)
+                    && tvPurchaseDate.getText().toString().equals(getString(R.string.Date_not_set))) {
                 datePurchased = tvPurchaseDate.getText().toString();
             }else{
-                datePurchased = "";
+                datePurchased = MyConstants.EMPTY;
             }
-
             placePurchased = acPurchasedFrom.getText().toString().trim();
             kit.setPlacePurchased(placePurchased);
-
             kit.setDatePurchased(datePurchased);
             kit.setBoxart_uri(boxartUri);
             kit.setBoxart_url(boxartUrl);
@@ -1048,7 +946,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     }
 
     private String descToCode(String d) {
-        String desc = "";
+        String desc = MyConstants.EMPTY;
         if (d.equals(getString(R.string.kittype))){
             desc = "0";
         }else if (d.equals(getString(R.string.newkit))){
@@ -1059,84 +957,64 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         return desc;
     }
 
-    public boolean isOnline() {//// TODO: 06.09.2017 Helper
+    public boolean isOnline() {
         ConnectivityManager cm =
                 (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        NetworkInfo netInfo = cm != null ? cm.getActiveNetworkInfo() : null;
         return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
-
-    //Очистка полей и переменных
     private void clearFields() {
-
-        //Очищаем поля
-        acTvBrand.setText("");
-        acTvBrand.setError(null);
-        etBrandCat_no.setText("");
-        etBrandCat_no.setError(null);
-        etKitNoengName.setText("");
-        etKitNoengName.setError(null);
-        etScale.setText("");
-        etKitName.setText("");
+        acTvBrand.setText(MyConstants.EMPTY);
+        etBrandCat_no.setText(MyConstants.EMPTY);
+        etKitNoengName.setText(MyConstants.EMPTY);
+        etScale.setText(MyConstants.EMPTY);
+        etKitName.setText(MyConstants.EMPTY);
         isFoundOnline = false;
         wasSearchedOnline = false;
         ivGetBoxart.setImageResource(R.drawable.ic_menu_camera);
         ivGetBoxart.setBackgroundResource(R.drawable.button);
         spDescription.setSelection(0);
         spYear.setSelection(0);
-
         spQuantity.setSelection(0);
-        etNotes.setText("");
-        etPrice.setText("");
-
+        etNotes.setText(MyConstants.EMPTY);
+        etPrice.setText(MyConstants.EMPTY);
         tvPurchaseDate.setText(R.string.Date_not_set);
-        acPurchasedFrom.setText("");
-
-        setAllSteps(0);
+        acPurchasedFrom.setText(MyConstants.EMPTY);
+        setAllStepsState(0);
         stepper_0.setState(1);
         kit = new Kit.KitBuilder().build();
-        //экономим обращения к онлайновой базе - если уже искали, не искать.
         wasSearchedOnline = false;
-//        isRbChanged = false;
         isFoundOnline = false;
         isReported = false;
-        sendStatus = "";//Статус для последующей записи пропущенных в офлайне записей
-        workMode = 'm';
-
-        brand = "";
-        brandCatno = "";
+        sendStatus = MyConstants.EMPTY;//Статус для последующей записи пропущенных в офлайне записей
+        workMode = MyConstants.MODE_KIT;
+        brand = MyConstants.EMPTY;
+        brandCatno = MyConstants.EMPTY;
         scale = 0;
-        kitName = "";
-        kitNoengname = "";
-        boxartUrl = "";
-        boxartUri = "";
-        barcode = "";
-        description = "";
+        kitName = MyConstants.EMPTY;
+        kitNoengname = MyConstants.EMPTY;
+        boxartUrl = MyConstants.EMPTY;
+        boxartUri = MyConstants.EMPTY;
+        barcode = MyConstants.EMPTY;
+        description = MyConstants.EMPTY;
         year = "0";
-        category = Constants.CODE_OTHER;
-//        category = Constants.CAT_OTHER;
-        onlineId = "";
+        category = MyConstants.CODE_OTHER;
+        onlineId = MyConstants.EMPTY;
         price = 0;
-        notes = "";
+        notes = MyConstants.EMPTY;
         datePurchased = dateAdded;
-        currency = "";
+        currency = MyConstants.EMPTY;
         quantity = 1;
-        prototype = "";
-        sendStatus = "";//Статус для последующей записи пропущенных в офлайне записей
-        scalematesUrl = "";
-
-        spCurrencyPosition = currencyAdapter.getPosition(defCurrency);
+        prototype = MyConstants.EMPTY;
+        scalematesUrl = MyConstants.EMPTY;
+        int spCurrencyPosition = currencyAdapter.getPosition(defCurrency);
         spCurrency.setSelection(spCurrencyPosition);
-
-        placePurchased = "";
+        placePurchased = MyConstants.EMPTY;
         acPurchasedFrom.setText(placePurchased);
-
-        status = Constants.STATUS_NEW;
-        media = Constants.M_CODE_INJECTED;
-
-
-//обнуляем значения кита
+        status = MyConstants.STATUS_NEW;
+        media = MyConstants.M_CODE_INJECTED;
+        currentId = 0;
         kit.setBrand(brand);
         kit.setBrandCatno(brandCatno);
         kit.setKit_name(kitName);
@@ -1164,10 +1042,10 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         kit.setStatus(status);
         kit.setMedia(media);
 
-        aftermarketName = "";
-        aftemarketOriginalName = "";
-        compilanceWith = "";
-        listname = "";
+        aftermarketName = MyConstants.EMPTY;
+        aftemarketOriginalName = MyConstants.EMPTY;
+        compilanceWith = MyConstants.EMPTY;
+        listname = MyConstants.EMPTY;
 
         aftermarket.setBrand(brand);
         aftermarket.setBrandCatno(brandCatno);
@@ -1197,218 +1075,58 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
-        editor.remove("barcode").commit();
+        editor.remove(MyConstants.BARCODE).commit();
     }
-
 
     private void returnToScan() {
-        android.support.v4.app.FragmentManager fragmentManager = getFragmentManager();
-        AdapterAddFragment adapterAddFragment = new AdapterAddFragment(fragmentManager, getActivity(), false);
-        adapterAddFragment.openScan();
+        AdapterAddFragment.openScan();
     }
 
-    private void checkBrandBcPrefix(String bcPrefix) {
-
-        switch (bcPrefix) {
-            default:
-//                acTvBrand.setText(bundle.getString("brand"));
-                acTvBrand.setText("");
-                break;
-//AOSHIMA+
-            case "905083":
-                acTvBrand.setText("Aoshima");
-                break;
-//ACADEMY+
-            case "035501":
-                acTvBrand.setText("Academy");
-                break;
-            case "809258":
-                acTvBrand.setText("Academy");
-                break;
-//AIRFIX+
-            case "924918":
-                acTvBrand.setText("Airfix");
-                break;
-            case "816243":
-                acTvBrand.setText("Airfix");
-                break;
-            case "542957":
-                acTvBrand.setText("Airfix");
-                break;
-            case "431001":
-                acTvBrand.setText("Airfix");
-                break;
-            case "345483":
-                acTvBrand.setText("Airfix");
-                break;
-            case "0553891":
-                acTvBrand.setText("Airfix");
-                break;
-            case "055297":
-                acTvBrand.setText("Airfix");
-                break;
-            case "055288":
-                acTvBrand.setText("Airfix");
-                break;
-            case "014429":
-                acTvBrand.setText("Airfix");
-                break;
-            case "335993":
-                acTvBrand.setText("Airfix");
-                break;
-            case "885922":
-                acTvBrand.setText("Airfix");
-                break;
-            case "793625":
-                acTvBrand.setText("Airfix");
-                break;
-            case "785924":
-                acTvBrand.setText("Airfix");
-                break;
-            case "754295":
-                acTvBrand.setText("Airfix");
-                break;
-            case "505395":
-                acTvBrand.setText("Airfix");
-                break;
-            case "505375":
-                acTvBrand.setText("Airfix");
-                break;
-            case "501442":
-                acTvBrand.setText("Airfix");
-                break;
-            case "088567":
-                acTvBrand.setText("Airfix");
-                break;
-            case "088533":
-                acTvBrand.setText("Airfix");
-                break;
-            case "079795":
-                acTvBrand.setText("Airfix");
-                break;
-            case "079249":
-                acTvBrand.setText("Airfix");
-                break;
-            case "078592":
-                acTvBrand.setText("Airfix");
-                break;
-            case "078523":
-                acTvBrand.setText("Airfix");
-                break;
-            case "078371":
-                acTvBrand.setText("Airfix");
-                break;
-            case "078332":
-                acTvBrand.setText("Airfix");
-                break;
-            case "078236":
-                acTvBrand.setText("Airfix");
-                break;
-            case "078162":
-                acTvBrand.setText("Airfix");
-                break;
-            case "076748":
-                acTvBrand.setText("Airfix");
-                break;
-            case "075429":
-                acTvBrand.setText("Airfix");
-                break;
-            case "071608":
-                acTvBrand.setText("Airfix");
-                break;
-            case "071593":
-                acTvBrand.setText("Airfix");
-                break;
-            case "0433599":
-                acTvBrand.setText("Airfix");
-                break;
-            case "020254":
-                acTvBrand.setText("Airfix");
-                break;
-            case "052615":
-                acTvBrand.setText("Airfix");
-                break;
-
-//HASEGAWA+
-            case "853171":
-                acTvBrand.setText("Hasegawa");
-                break;
-            case "852618":
-                acTvBrand.setText("Hasegawa");
-                break;
-            case "982771":
-                acTvBrand.setText("Hasegawa");
-                break;
-            case "982568":
-                acTvBrand.setText("Hasegawa");
-                break;
-            case "958649":
-                acTvBrand.setText("Hasegawa");
-                break;
-
-            case "877997":
-                acTvBrand.setText("Hasegawa");
-                break;
-            case "875517":
-                acTvBrand.setText("Hasegawa");
-                break;
-            case "431000":
-                acTvBrand.setText("Hasegawa");
-                break;
-            case "384990"://?Trumpeter
-                acTvBrand.setText("Hasegawa");
-                break;
-            case "967834":
-                acTvBrand.setText("Hasegawa");
-                break;
-            case "200000":
-                acTvBrand.setText("Hasegawa");
-                break;
-
-//RODEN
-            case "482301":
-                acTvBrand.setText("Roden");
-                break;
-            case "742655":
-                acTvBrand.setText("Roden");
-                break;
-            case "823017":
-                acTvBrand.setText("Roden");
-                break;
-//TRUMPETER+
-            case "580208":
-                acTvBrand.setText("Trumpeter");
-                break;
-            case "939319":
-                acTvBrand.setText("Trumpeter");
-                break;
-            case "875519":
-                acTvBrand.setText("Trumpeter");
-                break;
-            case "922803":
-                acTvBrand.setText("Trumpeter");
-                break;
-
-
-//ITALERI+
-            case "001283":
-                acTvBrand.setText("Italeri");
-                break;
-
-//REVELL+
-            case "009803":
-                acTvBrand.setText("Revell");
-                break;
-            case "765130"://?
-                acTvBrand.setText("Revell");
-                break;
-            case "3144505"://?
-                acTvBrand.setText("Revell");
-                break;
-
+    private void setDescription(String description) {
+        if (!description.equals(MyConstants.EMPTY)) {
+            String desc = MyConstants.EMPTY;
+            if (!description.equals(MyConstants.EMPTY)) {
+                switch (description) {
+                    case "0":
+                        desc = getString(R.string.unknown);
+                        break;
+                    case "1":
+                        desc = getString(R.string.newkit);
+                        break;
+                    case "2":
+                        desc = getString(R.string.rebox);
+                        break;
+                    case "3":
+                        desc = getString(R.string.rebox);
+                        break;
+                    case "4":
+                        desc = getString(R.string.rebox);
+                        break;
+                    case "5":
+                        desc = getString(R.string.rebox);
+                        break;
+                    case "6":
+                        desc = getString(R.string.rebox);
+                        break;
+                }
+            }else{
+                desc = getString(R.string.unknown);
+            }
+            int spDescPosition = descriptionAdapter.getPosition(desc);
+            spDescription.setSelection(spDescPosition);
+        }else{
+            spDescription.setSelection(0);
         }
     }
 
+    private void setKitYear(String year) {
+        if (year.length() == 4 && !year.contains("-")) {
+            int spYearPosition = yearsAdapter.getPosition(year);
+            spYear.setSelection(spYearPosition);
+        }else{
+            spYear.setSelection(0);
+        }
+    }
 
     @Override
     public void onDetach() {
@@ -1416,6 +1134,14 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         mListener = null;
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (isBoxartTemporary) {
+            File file = new File(mCurrentPhotoPath);
+            file.deleteOnExit();
+        }
+    }
 
     @Override
     public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -1432,47 +1158,203 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 
     }
 
-    /////////////////////CLOUD
+    /* Passing data from scanFragment In the child fragment. */
+    public void onAttachToParentFragment(Fragment fragment) {
+        try {
+            mListener = (OnFragmentInteractionListener) fragment;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(
+                    fragment.toString());
+        }
+    }
 
-/*
-* As user can change text in fields manually, we don't add data to Kit object directly, just show
-* variants in dialog. Only boxart url is added at once.*/
     @Override
-    public void onFindDocSuccess(Storage response){
+    public void onFragmentInteraction(String b, char mode) {
+        barcode = b;
+        wasSearchedOnline = true;
+        isFoundOnline = false;
+        workMode = mode;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == RESULT_OK && requestCode == MainActivity.REQUEST_CODE_CAMERA) {
+            Intent cropIntent = new Intent(getActivity(), CropActivity.class);
+            cropIntent.putExtra(MyConstants.FILE_URI, mCurrentPhotoPath);
+            startActivityForResult(cropIntent, REQUEST_CODE_CROP);
+        }
+        if (resultCode != RESULT_OK) {
+            Toast.makeText(getActivity(), R.string.camera_failure, Toast.LENGTH_LONG).show();
+        }
+
+        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_CROP) {
+            boxartPic = BitmapFactory.decodeFile(mCurrentPhotoPath);
+            boxartUri = mCurrentPhotoPath;
+            ivGetBoxart.setImageBitmap(boxartPic);
+        } else if (resultCode == UCrop.RESULT_ERROR) {
+            Toast.makeText(getActivity(), R.string.crop_error, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void saveWithBoxartToParse(String imagePath, Kit kitSave) {
+        try {
+            saveThumbnail(kitSave, imagePath, MyConstants.SIZE_SMALL_HEIGHT, MyConstants.SIZE_SMALL_WIDTH);
+            saveThumbnail(kitSave, imagePath, MyConstants.SIZE_FULL_HEIGHT, MyConstants.SIZE_FULL_WIDTH);
+        } catch (Exception ex) {
+            sendStatus = "n";
+        }
+    }
+
+    private void saveThumbnail(final Kit kitSave, String imagePath, final int height, final int width) {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        Bitmap bmp = BitmapFactory.decodeFile(imagePath);
+        getResizedBitmap(bmp, height, width).compress(Bitmap.CompressFormat.JPEG, 100, stream);
+        byte[] data = stream.toByteArray();
+        String name = imageFileName;
+        String fullName;
+        String nameBody;
+        if (height != MyConstants.SIZE_FULL_HEIGHT) {
+            nameBody = MyConstants.SIZE_SMALL;
+        }else{
+            nameBody = MyConstants.SIZE_FULL;
+        }
+        fullName = name + nameBody + MyConstants.JPG;
+        final ParseFile file = new ParseFile(fullName, data);
+        ParseObject boxartToSave = new ParseObject(MyConstants.PARSE_C_BOXART);
+        boxartToSave.put(MyConstants.PARSE_IMAGE, file);
+        boxartToSave.put(MyConstants.PARSE_DESCRIPTION, getBoxartDescription());
+        boxartToSave.saveInBackground(new SaveCallback() {
+            @Override
+            public void done(ParseException ex) {
+                if (ex == null && height == MyConstants.SIZE_FULL_HEIGHT) {
+                    kitSave.setBoxart_url(file.getUrl());
+                    saveOnline(kitSave);
+                } else {
+                    sendStatus = "n";
+                }
+            }
+        });
+    }
+
+    private Bitmap getResizedBitmap(Bitmap bm, int newHeight, int newWidth) {
+        int width = bm.getWidth();
+        int height = bm.getHeight();
+        float scaleWidth = ((float) newWidth) / width;
+        float scaleHeight = ((float) newHeight) / height;
+        Matrix matrix = new Matrix();
+        matrix.postScale(scaleWidth, scaleHeight);
+        return Bitmap.createScaledBitmap(bm, newWidth, newHeight, false);
+    }
+
+    private String getBoxartDescription() {
+        return spYear.getSelectedItem().toString() + "-" + spDescription.getSelectedItem().toString();
+    }
+
+    private void saveOnline(Kit kitSave) {
+        saveToNewKit(kitSave);
+        saveToOnlineStash(kitSave);
+    }
+
+    private void saveToOnlineStash(Kit kitSave) {
+        final ParseObject kitTowrite = new ParseObject(MyConstants.PARSE_C_STASH);
+        kitTowrite.put(MyConstants.PARSE_BARCODE, kitSave.getBarcode());
+        kitTowrite.put(MyConstants.PARSE_BRAND, kitSave.getBrand());
+        kitTowrite.put(MyConstants.PARSE_BRAND_CATNO, kitSave.getBrandCatno());
+        kitTowrite.put(MyConstants.PARSE_SCALE, kitSave.getScale());
+        kitTowrite.put(MyConstants.PARSE_KITNAME, kitSave.getKit_name());
+        kitTowrite.put(MyConstants.PARSE_NOENGNAME, kitSave.getKit_noeng_name());
+        kitTowrite.put(MyConstants.CATEGORY, kitSave.getCategory());
+        if (!TextUtils.isEmpty(kitSave.getBoxart_url())) {
+            kitTowrite.put(MyConstants.BOXART_URL, kitSave.getBoxart_url());
+        }
+        kitTowrite.put(MyConstants.PARSE_DESCRIPTION, kitSave.getDescription());
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences(MyConstants.ACCOUNT_PREFS,
+                Context.MODE_PRIVATE);
+        kitTowrite.put(MyConstants.PARSE_OWNERID, sharedPreferences.getString(MyConstants.USER_ID_FACEBOOK, MyConstants.EMPTY));
+        kitTowrite.put(MyConstants.YEAR, kitSave.getYear());
+        kitTowrite.saveInBackground(new SaveCallback() {
+            @Override
+            public void done(ParseException e) {
+                onlineId = kitTowrite.getObjectId();
+                ContentValues cv = new ContentValues(1);
+                cv.put(DbConnector.COLUMN_ID_ONLINE, onlineId);
+                dbConnector.editItemById(DbConnector.TABLE_KITS, currentId, cv);
+            }
+        });
+    }
+
+    private void saveToNewKit(Kit kitSave){
+        ParseObject kitTowrite = new ParseObject(MyConstants.PARSE_C_NEWKIT);
+        kitTowrite.put(MyConstants.PARSE_BARCODE, kitSave.getBarcode());
+        kitTowrite.put(MyConstants.BRAND, kitSave.getBrand());
+        kitTowrite.put(MyConstants.PARSE_BRAND_CATNO, kitSave.getBrandCatno());
+        kitTowrite.put(MyConstants.SCALE, kitSave.getScale());
+        kitTowrite.put(MyConstants.PARSE_KITNAME, kitSave.getKit_name());
+        kitTowrite.put(MyConstants.PARSE_NOENGNAME, kitSave.getKit_noeng_name());
+        kitTowrite.put(MyConstants.CATEGORY, kitSave.getCategory());
+        if (!TextUtils.isEmpty(kitSave.getBoxart_url())) {
+            kitTowrite.put(MyConstants.BOXART_URL, Helper.trimUrl(kitSave.getBoxart_url())); //Убираем обозначение размера картинки
+        }
+        kitTowrite.put(MyConstants.DESCRIPTION, kitSave.getDescription());
+        kitTowrite.put(MyConstants.PARSE_OWNERID, ownerId);
+        kitTowrite.put(MyConstants.YEAR, kitSave.getYear());
+        kitTowrite.saveInBackground();
+    }
+
+    private void setKitUI() {
+        stepper_0.setTitle(R.string.search_by_code);
+        tvModeKit.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
+        tvModeKit.setTextColor(Helper.getColor(context, R.color.colorItem));
+        tvModeAftermarket.setBackgroundColor(Helper.getColor(context, R.color.colorPassive));
+        tvModeAftermarket.setTextColor(Helper.getColor(context, R.color.colorText));
+        btnCheckOnlineDatabase.setVisibility(View.VISIBLE);
+        setAllStepsState(0);
+        stepper_0.setState(1);
+    }
+
+    private void setAftermarketUI() {
+        stepper_0.setTitle(R.string.brand_and_name);
+        tvModeAftermarket.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
+        tvModeAftermarket.setTextColor(Helper.getColor(context, R.color.colorItem));
+        tvModeKit.setBackgroundColor(Helper.getColor(context, R.color.colorPassive));
+        tvModeKit.setTextColor(Helper.getColor(context, R.color.colorText));
+        btnCheckOnlineDatabase.setVisibility(View.GONE);
+        setAllStepsState(1);
+    }
+
+    /* CLOUD methods */
+    @Override
+    public void onFindDocSuccess(Storage response) {
+        progressBar.setVisibility(View.GONE);
         String showKit;
         final List<Kit> itemsToShow = new ArrayList<>();
         final List<Item> itemList = new ArrayList<Item>();
 
         wasSearchedOnline = true;
         isFoundOnline = true;
-        final ValueContainer <String> urlContainer = new ValueContainer<>();
-        urlContainer.setVal("");
+        final ValueContainer<String> urlContainer = new ValueContainer<>();
+        urlContainer.setVal(MyConstants.EMPTY);
         final ValueContainer<String> categoryContainer;
         categoryContainer = new ValueContainer<>();
         final ValueContainer<String> barcodeContainer = new ValueContainer<>();
 
-        //Нашли по коду в базе
         ArrayList<Storage.JSONDocument> jsonDocList = response.getJsonDocList();
         for (int i = 0; i < jsonDocList.size(); i++) {
             String in = jsonDocList.get(i).getJsonDoc();
             try {
                 JSONObject reader = new JSONObject(in);
-                //Containers should be first in list, not working otherwise
-                urlContainer.setVal(reader.getString(Constants.TAG_BOXART_URL));
-//                categoryContainer.setVal(Helper.codeToTag(reader.getString(Constants.TAG_CATEGORY)));
-//                categoryContainer.setVal(reader.getString(Constants.TAG_CATEGORY));
-                categoryContainer.setVal(String.valueOf(reader.getInt(Constants.TAG_CATEGORY)));
-                barcodeContainer.setVal(reader.getString(Constants.TAG_BARCODE));
-
-                brand = reader.getString(Constants.TAG_BRAND);
-                brandCatno = reader.getString(Constants.TAG_BRAND_CATNO);
-                scale = reader.getInt(Constants.TAG_SCALE);
-                kitName = reader.getString(Constants.TAG_KIT_NAME);
-                kitNoengname = reader.getString(Constants.TAG_NOENG_NAME);
-                barcode = reader.getString(Constants.TAG_BARCODE);
-                description = reader.getString(Constants.TAG_DESCRIPTION);
-                year = reader.getString(Constants.TAG_YEAR);
-                scalematesUrl = reader.getString(Constants.TAG_SCALEMATES_PAGE);
+                urlContainer.setVal(reader.getString(MyConstants.TAG_BOXART_URL));
+                categoryContainer.setVal(String.valueOf(reader.getInt(MyConstants.TAG_CATEGORY)));
+                barcodeContainer.setVal(reader.getString(MyConstants.TAG_BARCODE));
+                brand = reader.getString(MyConstants.TAG_BRAND);
+                brandCatno = reader.getString(MyConstants.TAG_BRAND_CATNO);
+                scale = reader.getInt(MyConstants.TAG_SCALE);
+                kitName = reader.getString(MyConstants.TAG_KIT_NAME);
+                kitNoengname = reader.getString(MyConstants.TAG_NOENG_NAME);
+                barcode = reader.getString(MyConstants.TAG_BARCODE);
+                description = reader.getString(MyConstants.TAG_DESCRIPTION);
+                year = reader.getString(MyConstants.TAG_YEAR);
+                scalematesUrl = reader.getString(MyConstants.TAG_SCALEMATES_PAGE);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -1494,7 +1376,6 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                     .hasBoxart_url(urlContainer.getVal())
                     .hasBarcode(barcodeContainer.getVal())
                     .hasScalemates_url(scalematesUrl)
-
                     .hasYear(year)
                     .build();
             itemsToShow.add(kitToShow);
@@ -1507,33 +1388,33 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         builder.setAdapter(adapterAlertDialog, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int item) {
-                setAllSteps(1);
-                    Kit kitToAdd = itemsToShow.get(item);
-                    etScale.setText(String.valueOf(kitToAdd.getScale()));
-                    etKitName.setText(kitToAdd.getKit_name());
-                    etKitNoengName.setText(kitToAdd.getKit_noeng_name());
+                setAllStepsState(1);
+                Kit kitToAdd = itemsToShow.get(item);
+                etScale.setText(String.valueOf(kitToAdd.getScale()));
+                etKitName.setText(kitToAdd.getKit_name());
+                etKitNoengName.setText(kitToAdd.getKit_noeng_name());
                 setKitYear(kitToAdd.getYear());
                 setDescription(kitToAdd.getDescription());
 
-                    barcode = kitToAdd.getBarcode();//todo???
+                barcode = kitToAdd.getBarcode();
                 category = kitToAdd.getCategory();
 
                 if (wasSearchedOnline && isFoundOnline) {
                     boxartUrl = kitToAdd.getBoxart_url();
                     kit.setBoxart_url(kitToAdd.getBoxart_url());
-                }else{
-                    kit.setBoxart_url(Constants.EMPTY);
+                } else {
+                    kit.setBoxart_url(MyConstants.EMPTY);
                 }
-                    Glide
-                            .with(context)
-                            .load(
-                                    kitToAdd.getBoxart_url()
-                                    + Constants.BOXART_URL_LARGE
-                                    + Constants.JPG)
-                            .placeholder(ic_menu_camera)
-                            .diskCacheStrategy(DiskCacheStrategy.ALL)
-                            .into(ivGetBoxart);
-                }
+                Glide
+                        .with(context)
+                        .load(
+                                kitToAdd.getBoxart_url()
+                                        + MyConstants.BOXART_URL_LARGE
+                                        + MyConstants.JPG)
+                        .placeholder(ic_menu_camera)
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .into(ivGetBoxart);
+            }
         });
 
         ivGetBoxart.setBackgroundResource(0);
@@ -1541,63 +1422,10 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         alert.show();
     }
 
-
-    private void setDescription(String description) {
-        if (!description.equals("")) {
-            String desc = "";
-            if (!description.equals("")) {
-                switch (description) {
-                    case "0":
-                        desc = "";
-                        break;
-                    case "1":
-                        desc = getString(R.string.newkit);
-                        break;
-                    case "2":
-                        desc = getString(R.string.rebox);
-                        break;
-                    case "3":
-//                        desc = getString(R.string.new_decal);
-                        desc = getString(R.string.rebox);
-//                        desc = getString(R.string.rebox);
-                        break;
-                    case "4":
-//                        desc = getString(R.string.changed_box);
-                        desc = getString(R.string.rebox);
-
-                        break;
-                    case "5":
-//                        desc = getString(R.string.repack);
-                        desc = getString(R.string.rebox);
-                        break;
-                    case "6":
-//                        desc = getString(R.string.reissue);
-                        desc = getString(R.string.rebox);
-
-                }
-            }else{
-                desc = getString(R.string.kittype);
-            }
-            int spDescPosition = descriptionAdapter.getPosition(desc);
-            spDescription.setSelection(spDescPosition);
-        }else{
-            spDescription.setSelection(0);
-        }
-    }
-
-    private void setKitYear(String year) {
-        if (year.length() == 4 && !year.contains("-")) {
-            int spYearPosition = yearsAdapter.getPosition(year);
-            spYear.setSelection(spYearPosition);
-        }else{
-            spYear.setSelection(0); //оставляем на первой
-        }
-    }
-
-
     @Override
     public void onFindDocFailed(App42Exception ex) {
-        setAllSteps(1);
+        progressBar.setVisibility(View.GONE);
+        setAllStepsState(1);
         Toast.makeText(getActivity(),
                 R.string.nothing_found_online,
                 Toast.LENGTH_SHORT).show();
@@ -1607,225 +1435,22 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 
     @Override
     public void onDocumentInserted(Storage response) {
-
+        progressBar.setVisibility(View.GONE);
     }
 
     @Override
     public void onUpdateDocSuccess(Storage response) {
-
+        progressBar.setVisibility(View.GONE);
     }
 
     @Override
     public void onInsertionFailed(App42Exception ex) {
-        progressDialog.dismiss();
+        progressBar.setVisibility(View.GONE);
         Toast.makeText(getActivity(), "Saving failed. Please, try again!", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onUpdateDocFailed(App42Exception ex) {
-
+        progressBar.setVisibility(View.GONE);
     }
-
-    // Passing data from scanFragment In the child fragment.
-    public void onAttachToParentFragment(Fragment fragment) {
-        try {
-            mListener = (OnFragmentInteractionListener) fragment;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(
-                    fragment.toString() + " must implement OnPlayerSelectionSetListener");
-        }
-    }
-
-    @Override
-    public void onFragmentInteraction(String b, char mode) {
-        checkBrandBcPrefix(b.substring(1, 7));
-        barcode = b;
-        wasSearchedOnline = true;
-        isFoundOnline = false;
-        workMode = mode;
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == RESULT_OK && requestCode == MainActivity.REQUEST_CODE_CAMERA
-                ) {
-            //записываем временный файл
-
-            Intent cropIntent = new Intent(getActivity(), CropActivity.class);
-            cropIntent.putExtra(Constants.FILE_URI, mCurrentPhotoPath);
-            startActivityForResult(cropIntent, REQUEST_CODE_CROP);
-        }
-        if (resultCode != RESULT_OK) {
-            Toast.makeText(getActivity(), R.string.camera_failure, Toast.LENGTH_LONG).show();
-        }
-
-        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_CROP) {
-            boxartPic = BitmapFactory.decodeFile(mCurrentPhotoPath);
-            boxartUri = mCurrentPhotoPath;
-            ivGetBoxart.setImageBitmap(boxartPic);
-        } else if (resultCode == UCrop.RESULT_ERROR) {
-            Toast.makeText(getActivity(), R.string.crop_error, Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void saveWithBoxartToParse(String imagePath, Kit kitSave) {
-        try {
-            saveThumbnail(kitSave, imagePath, Constants.SIZE_SMALL_HEIGHT, Constants.SIZE_SMALL_WIDTH);
-            saveThumbnail(kitSave, imagePath, Constants.SIZE_FULL_HEIGHT, Constants.SIZE_FULL_WIDTH);
-        } catch (Exception ex) {
-            sendStatus = "n";
-        }
-    }
-
-    private void saveThumbnail(final Kit kitSave, String imagePath, final int height, final int width) {
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        Bitmap bmp = BitmapFactory.decodeFile(imagePath);
-        getResizedBitmap(bmp, height, width).compress(Bitmap.CompressFormat.JPEG, 100, stream);
-        byte[] data = stream.toByteArray();
-        String name = imageFileName;
-        String fullName;
-        String nameBody;
-        if (height != Constants.SIZE_FULL_HEIGHT) {
-            nameBody = Constants.SIZE_SMALL;
-        }else{
-            nameBody = Constants.SIZE_FULL;
-        }
-        fullName = name + nameBody + Constants.JPG;
-        final ParseFile file = new ParseFile(fullName, data);
-        ParseObject boxartToSave = new ParseObject("Boxart");
-        boxartToSave.put("image", file);
-        boxartToSave.put("description", getBoxartDescription());
-
-        boxartToSave.saveInBackground(new SaveCallback() {
-            @Override
-            public void done(ParseException ex) {
-                if (ex == null && height == Constants.SIZE_FULL_HEIGHT) { ///////////////////////////////////////////////////////////////
-                        kitSave.setBoxart_url(file.getUrl());
-                    parseThumbnailUrl = file.getUrl();//?
-                        saveOnline(kitSave);
-                } else {
-                    sendStatus = "n";
-//                    Toast.makeText(context, "parse error", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-    }
-
-    private Bitmap getResizedBitmap(Bitmap bm, int newHeight, int newWidth) {
-        int width = bm.getWidth();
-        int height = bm.getHeight();
-        float scaleWidth = ((float) newWidth) / width;
-        float scaleHeight = ((float) newHeight) / height;
-        // Create a matrix for the manipulation
-        Matrix matrix = new Matrix();
-        // Resize the bit map
-        matrix.postScale(scaleWidth, scaleHeight);
-        // Recreate the new Bitmap
-        return Bitmap.createScaledBitmap(bm, newWidth, newHeight, false);
-    }
-
-    private String getBoxartDescription() {
-        return spYear.getSelectedItem().toString() + "-" + spDescription.getSelectedItem().toString();
-    }
-
-    private void saveOnline(Kit kitSave) {
-        saveToNewKit(kitSave); //save to intermediate online database with moderation
-        saveToOnlineStash(kitSave);
-    }
-
-    /**
-    * Writes new kit entry to Stash class of the Parse database. Then will be used in statistics**/
-    private void saveToOnlineStash(Kit kitSave) {
-        ParseObject kitTowrite = new ParseObject("Stash");
-        kitTowrite.put("barcode", kitSave.getBarcode());
-        kitTowrite.put("brand", kitSave.getBrand());
-        kitTowrite.put("brandCatno", kitSave.getBrandCatno());
-        kitTowrite.put("scale", kitSave.getScale());
-        kitTowrite.put("kit_name", kitSave.getKit_name());
-        kitTowrite.put("kitNoengname", kitSave.getKit_noeng_name());
-        kitTowrite.put("category", Helper.tagToCode(kitSave.getCategory()));
-        if (!TextUtils.isEmpty(kitSave.getBoxart_url())) {
-            kitTowrite.put(Constants.BOXART_URL, kitSave.getBoxart_url());
-        }
-        kitTowrite.put("description", kitSave.getDescription());
-        SharedPreferences sharedPreferences = getActivity().getSharedPreferences(Constants.ACCOUNT_PREFS,
-                Context.MODE_PRIVATE);
-        kitTowrite.put("owner_id", sharedPreferences.getString(Constants.USER_ID_FACEBOOK, ""));
-        kitTowrite.put("year", kitSave.getYear());
-        kitTowrite.saveInBackground(new SaveCallback() {
-            @Override
-            public void done(ParseException ex) {
-                if (ex == null) {
-                } else {
-                }
-            }
-        });
-    }
-    /*
-    * Writes new entry to NewKit class of Parse database. After moderation it will be added
-    * to the main kits database*/
-    private void saveToNewKit(Kit kitSave){
-        ParseObject kitTowrite = new ParseObject("NewKits");
-        kitTowrite.put("barcode", kitSave.getBarcode());
-        kitTowrite.put(Constants.BRAND, kitSave.getBrand());
-        kitTowrite.put("brandCatno", kitSave.getBrandCatno());
-        kitTowrite.put(Constants.SCALE, kitSave.getScale());
-        kitTowrite.put("kit_name", kitSave.getKit_name());
-        kitTowrite.put("kitNoengname", kitSave.getKit_noeng_name());
-        kitTowrite.put(Constants.CATEGORY, Helper.tagToCode(kitSave.getCategory()));
-        if (!TextUtils.isEmpty(kitSave.getBoxart_url())) {
-            kitTowrite.put(Constants.BOXART_URL, Helper.trimUrl(kitSave.getBoxart_url())); //Убираем обозначение размера картинки
-        }
-        kitTowrite.put(Constants.DESCRIPTION, kitSave.getDescription());
-//        SharedPreferences sharedPreferences = getActivity().getSharedPreferences(Constants.ACCOUNT_PREFS,
-//                Context.MODE_PRIVATE); //todo Здесь ошибка сохранения онлайн!!!!!!!!!!!!!!!!!!!!!!!!
-//        kitTowrite.put("owner_id", sharedPreferences.getString(Constants.USER_ID_FACEBOOK, ""));
-        kitTowrite.put("owner_id", ownerId);
-        kitTowrite.put(Constants.YEAR, kitSave.getYear());
-        kitTowrite.saveInBackground();
-    }
-
-    private void setKitUI() {
-        stepper_0.setTitle(R.string.search_by_code);
-        tvModeKit.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
-        tvModeKit.setTextColor(Helper.getColor(context, R.color.colorItem));
-        tvModeAftermarket.setBackgroundColor(Helper.getColor(context, R.color.colorPassive));
-        tvModeAftermarket.setTextColor(Helper.getColor(context, R.color.colorText));
-        btnCheckOnlineDatabase.setVisibility(View.VISIBLE);
-        setAllSteps(0);
-        stepper_0.setState(1);
-
-    }
-
-    private void setAftermarketUI() {
-        stepper_0.setTitle(R.string.brand_and_name);
-        tvModeAftermarket.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
-        tvModeAftermarket.setTextColor(Helper.getColor(context, R.color.colorItem));
-        tvModeKit.setBackgroundColor(Helper.getColor(context, R.color.colorPassive));
-        tvModeKit.setTextColor(Helper.getColor(context, R.color.colorText));
-        btnCheckOnlineDatabase.setVisibility(View.GONE);
-        setAllSteps(1);
-    }
-
-//    @Override
-//    public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
-//        if(adapterView.getId() == R.id.spDescription){
-//            description = adapterView.getItemAtPosition(position).toString();
-//        }
-//        if(adapterView.getId() == R.id.spYear){
-//            if ((adapterView.getItemAtPosition(position)).toString().equals (getString(R.string.unknown))){
-//                year = "0";
-//            }else {
-//                year = adapterView.getItemAtPosition(position).toString();
-//            }
-//        }
-//        if(adapterView.getId() == R.id.spCategory){
-//            category = String.valueOf(spCategory.getSelectedItemPosition());
-//        }
-//    }
-//
-//    @Override
-//    public void onNothingSelected(AdapterView<?> adapterView) {
-//
-//    }
 }

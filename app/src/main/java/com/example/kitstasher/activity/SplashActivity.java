@@ -7,6 +7,7 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
+
 import com.example.kitstasher.R;
 import com.facebook.AccessToken;
 import com.facebook.AccessTokenTracker;
@@ -53,13 +54,10 @@ public class SplashActivity extends AppCompatActivity {
         }
     }
 
-
     public boolean isOnline() {
         ConnectivityManager cm =
                 (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
         return netInfo != null && netInfo.isConnectedOrConnecting();
     }
-
-
 }

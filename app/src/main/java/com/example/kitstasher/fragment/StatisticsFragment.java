@@ -25,8 +25,8 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.kitstasher.R;
 import com.example.kitstasher.activity.MainActivity;
 import com.example.kitstasher.other.CircleTransform;
-import com.example.kitstasher.other.Constants;
 import com.example.kitstasher.other.DbConnector;
+import com.example.kitstasher.other.MyConstants;
 import com.github.mikephil.charting.charts.HorizontalBarChart;
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.components.XAxis;
@@ -50,6 +50,7 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Locale;
 
 import static com.facebook.FacebookSdk.getApplicationContext;
 
@@ -120,14 +121,14 @@ public class StatisticsFragment extends Fragment implements View.OnClickListener
                 .setActionBarTitle(getActivity().getResources().getString(R.string.nav_statistics));
 
         // Getting shared preferences.
-        sharedPreferences = getApplicationContext().getSharedPreferences(Constants.ACCOUNT_PREFS, Context.MODE_PRIVATE);
+        sharedPreferences = getApplicationContext().getSharedPreferences(MyConstants.ACCOUNT_PREFS, Context.MODE_PRIVATE);
 
         // Setting up basic statistics (total stash, max stash by day, etc.)
         getAndSetStats();
 
-        cloudId = sharedPreferences.getString(Constants.USER_ID_FACEBOOK, "");
+        cloudId = sharedPreferences.getString(MyConstants.USER_ID_FACEBOOK, "");
         // Getting Facebook userpic URL
-        String accountPictureUrl = sharedPreferences.getString(Constants.PROFILE_PICTURE_URL_FACEBOOK, null);
+        String accountPictureUrl = sharedPreferences.getString(MyConstants.PROFILE_PICTURE_URL_FACEBOOK, null);
         // Loading profile image
         Glide.with(getApplicationContext())
                 .load(accountPictureUrl)
@@ -139,7 +140,7 @@ public class StatisticsFragment extends Fragment implements View.OnClickListener
                 .into(ivProfilePic);
 
         // Setting up username
-        tvUserName.setText(sharedPreferences.getString(Constants.USER_NAME_FACEBOOK, null));
+        tvUserName.setText(sharedPreferences.getString(MyConstants.USER_NAME_FACEBOOK, null));
 
         //Checking if local database is empty
         if (dbConnector.getAllData("_id").getCount() > 0) {
@@ -175,19 +176,12 @@ public class StatisticsFragment extends Fragment implements View.OnClickListener
             // Adding data to Bar Chart
             addBrandData();
 
-            // Preparing Categories data
-//            float countAir = dbConnector.getByTag(Constants.CAT_AIR).getCount();
-//            float countSea = dbConnector.getByTag(Constants.CAT_SEA).getCount();
-//            float countGround = dbConnector.getByTag(Constants.CAT_GROUND).getCount();
-//            float countSpace = dbConnector.getByTag(Constants.CAT_SPACE).getCount();
-//            float countCarBike = dbConnector.getByTag(Constants.CAT_AUTOMOTO).getCount();
-//            float countOther = dbConnector.getByTag(Constants.CAT_OTHER).getCount();
-            float countAir = dbConnector.getByTag(Constants.CODE_AIR).getCount();
-            float countSea = dbConnector.getByTag(Constants.CODE_SEA).getCount();
-            float countGround = dbConnector.getByTag(Constants.CODE_GROUND).getCount();
-            float countSpace = dbConnector.getByTag(Constants.CODE_SPACE).getCount();
-            float countCarBike = dbConnector.getByTag(Constants.CODE_AUTOMOTO).getCount();
-            float countOther = dbConnector.getByTag(Constants.CODE_OTHER).getCount();
+            float countAir = dbConnector.getByTag(MyConstants.CODE_AIR).getCount();
+            float countSea = dbConnector.getByTag(MyConstants.CODE_SEA).getCount();
+            float countGround = dbConnector.getByTag(MyConstants.CODE_GROUND).getCount();
+            float countSpace = dbConnector.getByTag(MyConstants.CODE_SPACE).getCount();
+            float countCarBike = dbConnector.getByTag(MyConstants.CODE_AUTOMOTO).getCount();
+            float countOther = dbConnector.getByTag(MyConstants.CODE_OTHER).getCount();
 
             cxData = new String[]{
                     getString(R.string.air) + String.valueOf((int) countAir),
@@ -251,7 +245,7 @@ public class StatisticsFragment extends Fragment implements View.OnClickListener
     public void getAndSetStats(){
         // Setting current date
         Calendar c = Calendar.getInstance();
-        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
+        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());
         String date = df.format(c.getTime());
         // Counting daily record
         int dailyMax = dbConnector.getDataDate(date).getCount();

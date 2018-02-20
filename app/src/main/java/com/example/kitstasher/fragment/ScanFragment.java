@@ -1,16 +1,21 @@
 package com.example.kitstasher.fragment;
 
-import android.app.ProgressDialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.kitstasher.R;
@@ -18,14 +23,17 @@ import com.example.kitstasher.adapters.AdapterAlertDialog;
 import com.example.kitstasher.objects.Item;
 import com.example.kitstasher.objects.Kit;
 import com.example.kitstasher.other.AsyncApp42ServiceApi;
-import com.example.kitstasher.other.Constants;
 import com.example.kitstasher.other.DbConnector;
+import com.example.kitstasher.other.MyConstants;
 import com.example.kitstasher.other.OnFragmentInteractionListener;
 import com.google.zxing.ResultPoint;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.journeyapps.barcodescanner.BarcodeCallback;
 import com.journeyapps.barcodescanner.BarcodeResult;
 import com.journeyapps.barcodescanner.DecoratedBarcodeView;
+import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.SaveCallback;
 import com.shephertz.app42.paas.sdk.android.App42Exception;
 import com.shephertz.app42.paas.sdk.android.storage.Query;
 import com.shephertz.app42.paas.sdk.android.storage.QueryBuilder;
@@ -38,40 +46,50 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
 import static com.example.kitstasher.activity.MainActivity.asyncService;
 
 /**
- * Created by Алексей on 21.04.2017.
+ * Created by Алексей on 21.04.2017. Adding new items by Scanning
  */
 
 public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42StorageServiceListener {
 
-    private String barcode, docId, brand, brand_catno, kit_name,
-            kit_noeng_name, sendStatus, date, boxart_url, category, description, scalemates_page, boxart_uri,
-            prototype, year, showKit, onlineId, listname;
-    private int status, media;
-
-    private int scale;
-    boolean isReported;
-    private ProgressDialog progressDialog;
-    private TextView textView;
-    DecoratedBarcodeView barcodeView;
-    BarcodeCallback callback;
-    DbConnector dbConnector;
+    private String barcode,
+            docId,
+            brand,
+            brand_catno,
+            kit_name,
+            kit_noeng_name,
+            sendStatus, date,
+            boxart_url,
+            category,
+            description,
+            scalemates_page,
+            boxart_uri,
+            prototype,
+            year,
+            onlineId,
+            listname,
+            notes,
+            purchaseDate,
+            currency;
+    private int status,
+            scale,
+            media,
+            quantity,
+            price;
+    private long currentId;
+    private boolean isReported,
+            cloudModeOn;
+    private DecoratedBarcodeView barcodeView;
+    private ProgressBar progressBar;
+    private DbConnector dbConnector;
     private OnFragmentInteractionListener mListener;
     public static String scanTag;
     private char workMode;
     private Context mContext;
-
-    private String notes, purchaseDate, currency;
-    private int quantity;
-    private int price;
-
-    //for permission check
-    private final int MY_PERMISSIONS_REQUEST_CAMERA = 11;
-//    private final int MY_PERMISSIONS_REQUEST_INTERNET = 12;
-//    private final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 13;
 
     public ScanFragment() {
     }
@@ -84,13 +102,24 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
         return new ScanFragment();
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        barcodeView.pauseAndWait();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        barcodeView.resume();
+        initiateScanner(getCallback());
+        barcode = MyConstants.EMPTY;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
-//        Log.i(TAG, "onCreate");
         super.onCreate(savedInstanceState);
-
         onAttachToParentFragment(getParentFragment());
 
     }
@@ -98,99 +127,120 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_tabbed_scanning, container, false);
+        View view = inflater.inflate(R.layout.fragment_tabbed_scanning, container,
+                false);
         mContext = getActivity();
-        barcodeView = (DecoratedBarcodeView)view.findViewById(R.id.barcode_view);
-        textView = (TextView)view.findViewById(R.id.textView);
-//        constraintLayout = (ConstraintLayout)view.findViewById(R.id.clScanLayout);
-
+        barcodeView = view.findViewById(R.id.barcode_view);
+        progressBar = view.findViewById(R.id.pbScan);
+        progressBar.setVisibility(View.GONE);
         dbConnector = new DbConnector(getActivity());
         dbConnector.open();
         checkMode();
         isReported = false;
         scanTag = this.getTag();
-        sendStatus = "";
-        status = Constants.STATUS_NEW;
-        media = Constants.M_CODE_INJECTED;
-
+        sendStatus = MyConstants.EMPTY;
+        status = MyConstants.STATUS_NEW;
+        media = MyConstants.M_CODE_INJECTED;
         Calendar c = Calendar.getInstance();
-        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
+        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());
         date = df.format(c.getTime());
-        boxart_uri = "";
-
-        notes = "";
-        purchaseDate = "";
+        boxart_uri = MyConstants.EMPTY;
+        notes = MyConstants.EMPTY;
+        purchaseDate = MyConstants.EMPTY;
         quantity = 1;
         price = 0;
-        currency = "";
+        currency = MyConstants.EMPTY;
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        cloudModeOn = sharedPreferences.getBoolean(MyConstants.CLOUD_MODE, true);
 
-//        checkPermissions();
-//        initiateScanner(getCallback());
         return view;
     }
 
 
-    // Проверяем, откуда обратились к редактору
-    private void checkMode() {
-        if (getArguments() != null){
-            workMode = getArguments().getChar(Constants.WORK_MODE);
-            listname = getArguments().getString(Constants.LISTNAME);
-
-//            if (getArguments().getChar(Constants.WORK_MODE) == 'l'){
-//                workMode = 'l';
-//            }else{
-//                workMode = 'm';
-//            }
-//        }else{
-//            workMode = 'm';
-        }else{
-            workMode = Constants.MODE_KIT;
-            listname = Constants.EMPTY;
+    public void onAttachToParentFragment(Fragment fragment) {
+        try {
+            mListener = (OnFragmentInteractionListener) fragment;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(
+                    fragment.toString() + " must implement OnPlayerSelectionSetListener");
         }
     }
 
-    private BarcodeCallback getCallback() {
-        BarcodeCallback cb = new BarcodeCallback() {
-            @Override
-            public void barcodeResult(BarcodeResult result) {
-                if (result.getText() == null || result.getText().equals(barcode)) {
-                    // Prevent duplicate scans
-                    return;
-                } else {
-                    barcode = result.getResult().toString();
-                    //Check for doubles in local DB and then in cloud
-                    if (isInLocalBase(barcode)) {
-                        Toast.makeText(getActivity(), getString(R.string.entry_already_exist),
-                                Toast.LENGTH_SHORT).show();
-                        initiateScanner(getCallback());
-                    } else {
-                        searchCloud(barcode);
-                    }
-                }
-            }
-
-            @Override
-            public void possibleResultPoints(List<ResultPoint> resultPoints) {
-            }
-        };
-        return cb;
+    private void checkMode() {
+        if (getArguments() != null){
+            workMode = getArguments().getChar(MyConstants.WORK_MODE);
+            listname = getArguments().getString(MyConstants.LISTNAME);
+        }else{
+            workMode = MyConstants.MODE_KIT;
+            listname = MyConstants.EMPTY;
+        }
     }
 
-    private void initiateScanner(BarcodeCallback callback) {
-        IntentIntegrator scanIntegrator = new IntentIntegrator(getActivity());
-        scanIntegrator.setBeepEnabled(true);
-        scanIntegrator.setOrientationLocked(false);
-        barcodeView.decodeContinuous(callback);
+    private void openManualAdd() {
+        if (workMode == MyConstants.MODE_LIST) {
+            ManualAddFragment fragment = new ManualAddFragment();
+            Bundle bundle = new Bundle(3);
+            bundle.putChar("workMode", MyConstants.MODE_LIST);
+            bundle.putString(MyConstants.LISTNAME, listname);
+            bundle.putString(MyConstants.PARSE_BARCODE, barcode);
+            fragment.setArguments(bundle);
+            android.support.v4.app.FragmentTransaction fragmentTransaction =
+                    getFragmentManager().beginTransaction();
+            fragmentTransaction.replace(R.id.llListsContainer, fragment);
+            fragmentTransaction.commit();
+        } else {
+            if (mListener != null) {
+                mListener.onFragmentInteraction(barcode, workMode);
+            }
+            ViewPager viewPager = getActivity().findViewById(R.id.viewpagerAdd);
+            viewPager.setCurrentItem(1);
+        }
+        initiateScanner(getCallback());
     }
 
-    /*Checks if local database already includes this kit*/
+    public String getBarcode() {
+        return barcode;
+    }
+
+    public char getWorkMode() {
+        return workMode;
+    }
+
+    private String setDescription(String description) {
+        String desc = MyConstants.EMPTY;
+        if (!description.equals(MyConstants.EMPTY)) {
+            switch (description) {
+                case "0":
+                    desc = MyConstants.EMPTY;
+                    break;
+                case "1":
+                    desc = getString(R.string.new_tool);
+                    break;
+                case "2":
+                    desc = getString(R.string.changed_parts);
+                    break;
+                case "3":
+                    desc = getString(R.string.new_decal);
+                    break;
+                case "4":
+                    desc = getString(R.string.changed_box);
+                    break;
+                case "5":
+                    desc = getString(R.string.repack);
+                    break;
+                case "6":
+                    desc = MyConstants.EMPTY;
+            }
+        }
+        return desc;
+    }
+
     private boolean isInLocalBase(String barcode) {
-        //Проверяем локально
-        if (workMode == 'l') {
+        if (workMode == MyConstants.MODE_LIST) {
             if (dbConnector.searchListForDoubles(listname, barcode)) {
                 return true;
             }
-        }else{
+        } else {
             if (dbConnector.searchForDoubles(barcode)) {
                 return true;
             }
@@ -198,14 +248,44 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
         return false;
     }
 
+    public boolean isOnline() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm != null ? cm.getActiveNetworkInfo() : null;
+        return netInfo != null && netInfo.isConnectedOrConnecting();
+    }
 
-    private void searchCloud(String bc) {
-        progressDialog = ProgressDialog.show(getActivity(), "", getString(R.string.searching));
-        progressDialog.setCancelable(true);
-// TODO: 14.07.2017 ошибка в баркоде java.lang.StringIndexOutOfBoundsException: length=8; regionStart=0; regionLength=12
-        Query query = QueryBuilder.build(Constants.TAG_BARCODE,
-                bc.substring(0, bc.length() - 1), QueryBuilder.Operator.LIKE);
-        asyncService.findDocByQuery(Constants.App42DBName, Constants.CollectionName, query, this);
+    /* SCANNER */
+    private void initiateScanner(BarcodeCallback callback) {
+        IntentIntegrator scanIntegrator = new IntentIntegrator(getActivity());
+        scanIntegrator.setBeepEnabled(true);
+        scanIntegrator.setOrientationLocked(false);
+        barcodeView.decodeContinuous(callback);
+    }
+
+    private BarcodeCallback getCallback() {
+        return new BarcodeCallback() {
+            @Override
+            public void barcodeResult(BarcodeResult result) {
+                if (result.getText() != null && !result.getText().equals(barcode)) {
+                    barcode = result.getResult().toString();
+                    if (isInLocalBase(barcode)) {
+                        Toast.makeText(getActivity(), getString(R.string.entry_already_exist),
+                                Toast.LENGTH_SHORT).show();
+                        initiateScanner(getCallback());
+                    } else {
+                        searchCloud(barcode);
+                    }
+
+                } else {
+                    initiateScanner(getCallback());
+                }
+            }
+
+            @Override
+            public void possibleResultPoints(List<ResultPoint> resultPoints) {
+            }
+        };
     }
 
     @Override
@@ -220,121 +300,73 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
         }
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        barcodeView.pauseAndWait();
+    /* CLOUD */
+    private void searchCloud(String bc) {
+        progressBar.setVisibility(View.VISIBLE);
+        Query query = QueryBuilder.build(MyConstants.TAG_BARCODE,
+                bc.substring(0, bc.length() - 1), QueryBuilder.Operator.LIKE);
+        asyncService.findDocByQuery(MyConstants.App42DBName, MyConstants.CollectionName, query,
+                this);
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        barcodeView.resume();
-//        getCallback();
-        initiateScanner(getCallback());
-        barcode = "";
-    }
-
-    @Override
-    public void onDocumentInserted(Storage response) {
-        // TODO Auto-generated method stub
-        progressDialog.dismiss();
-        String getJson = response.getJsonDocList().get(0).getJsonDoc();
-        try{
-            JSONObject json = new JSONObject(getJson);
-            createAlertDialog("Document Inserted for key 'Name' with value: "+ json.get("Name"));
-            docId = response.getJsonDocList().get(0).getDocId();
-        }catch(JSONException ex){
-
+    private void saveToOnlineStash(Kit kitSave) {
+        final ParseObject kitTowrite = new ParseObject(MyConstants.PARSE_C_STASH);
+        kitTowrite.put(MyConstants.PARSE_BARCODE, kitSave.getBarcode());
+        kitTowrite.put(MyConstants.PARSE_BRAND, kitSave.getBrand());
+        kitTowrite.put(MyConstants.PARSE_BRAND_CATNO, kitSave.getBrandCatno());
+        kitTowrite.put(MyConstants.PARSE_SCALE, kitSave.getScale());
+        kitTowrite.put(MyConstants.PARSE_KITNAME, kitSave.getKit_name());
+        kitTowrite.put(MyConstants.PARSE_NOENGNAME, kitSave.getKit_noeng_name());
+        kitTowrite.put(MyConstants.CATEGORY, kitSave.getCategory());
+        if (!TextUtils.isEmpty(kitSave.getBoxart_url())) {
+            kitTowrite.put(MyConstants.BOXART_URL, kitSave.getBoxart_url());
         }
-
-    }
-
-    @Override
-    public void onInsertionFailed(App42Exception ex) {
-        // TODO Auto-generated method stub
-        progressDialog.dismiss();
-        createAlertDialog(getString(R.string.Exception_Occured)+ ex.getMessage());
-    }
-
-    @Override
-    public void onFindDocFailed(App42Exception ex) {
-        progressDialog.dismiss();
-        openManualAdd();
-    }
-
-    private void openManualAdd() {
-        if (workMode == 'l') {
-            ManualAddFragment fragment = new ManualAddFragment();
-            Bundle bundle = new Bundle(3);
-            bundle.putChar("workMode", 'l');
-            bundle.putString("listname", listname);
-            bundle.putString("barcode", barcode);
-            fragment.setArguments(bundle);
-            android.support.v4.app.FragmentTransaction fragmentTransaction =
-                    getFragmentManager().beginTransaction();
-            fragmentTransaction.replace(R.id.llListsContainer, fragment);
-            fragmentTransaction.commit();
-        }else {
-            if (mListener != null) {
-                mListener.onFragmentInteraction(barcode, workMode);
+        kitTowrite.put(MyConstants.PARSE_DESCRIPTION, kitSave.getDescription());
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences(MyConstants.ACCOUNT_PREFS,
+                Context.MODE_PRIVATE);
+        kitTowrite.put(MyConstants.PARSE_OWNERID, sharedPreferences.getString(MyConstants.USER_ID_FACEBOOK, MyConstants.EMPTY));
+        kitTowrite.put(MyConstants.YEAR, kitSave.getYear());
+        kitTowrite.saveInBackground(new SaveCallback() {
+            @Override
+            public void done(ParseException e) {
+                onlineId = kitTowrite.getObjectId();
+                ContentValues cv = new ContentValues(1);
+                cv.put(DbConnector.COLUMN_ID_ONLINE, onlineId);
+                dbConnector.editItemById(DbConnector.TABLE_KITS, currentId, cv);
             }
-
-            ViewPager viewPager = getActivity().findViewById(R.id.viewpagerAdd);
-            viewPager.setCurrentItem(1);
-        }
-
-        initiateScanner(getCallback());
+        });
     }
 
     @Override
     public void onFindDocSuccess(Storage response) {
-
-        showKit = "";
         final List<Kit> itemsForDb = new ArrayList<>();
         final List<Item> itemList = new ArrayList<>();
-
-        //НАйденный документ
-        // TODO Auto-generated method stub
-        progressDialog.dismiss();
-        ///////
-//        mItems.add("Add another variant"); //Add another version of the kit with scanned barcode
-//        mBoxarts.add(""); //Empty boxart url for "Add new variant" line
-/////
-        Item startItem = new Item("", getString(R.string.add_another_variant));
+        progressBar.setVisibility(View.GONE);
+        Item startItem = new Item(MyConstants.EMPTY, getString(R.string.add_another_variant));
         itemList.add(startItem);
-        //////////////////
+
         ArrayList<Storage.JSONDocument> jsonDocList = response.getJsonDocList();
         for(int i = 0; i < jsonDocList.size(); i++)
         {
-            //поля для демонстрации
             String inputDoc = jsonDocList.get(i).getJsonDoc();
-//            onlineId = jsonDocList.get(i).getDocId();
-
             JSONObject object;
             try {
                 object = new JSONObject(inputDoc);
-                year = object.getString(Constants.TAG_YEAR);
-                kit_noeng_name = object.getString(Constants.TAG_NOENG_NAME);
-                kit_name = object.getString(Constants.TAG_KIT_NAME);
-                brand = object.getString(Constants.TAG_BRAND);
-                brand_catno = object.getString(Constants.TAG_BRAND_CATNO);
-                description = object.getString(Constants.TAG_DESCRIPTION);
-//                description = getKitDescription(object.getString(Constants.TAG_DESCRIPTION));
-                boxart_url = object.getString(Constants.TAG_BOXART_URL);
-//                category = Helper.codeToTag(object.getString(Constants.TAG_CATEGORY));
-                category = String.valueOf(object.getInt(Constants.TAG_CATEGORY));
-//                category = object.getString(Constants.TAG_CATEGORY);
-
-                scalemates_page = object.getString(Constants.TAG_SCALEMATES_PAGE);
-
-                scale = Integer.valueOf(object.getString(Constants.TAG_SCALE)); //// TODO: 10.05.2017 подумать, когда преобразовывать
-                prototype = object.getString(Constants.TAG_PROTOTYPE);
-
+                year = object.getString(MyConstants.TAG_YEAR);
+                kit_noeng_name = object.getString(MyConstants.TAG_NOENG_NAME);
+                kit_name = object.getString(MyConstants.TAG_KIT_NAME);
+                brand = object.getString(MyConstants.TAG_BRAND);
+                brand_catno = object.getString(MyConstants.TAG_BRAND_CATNO);
+                description = object.getString(MyConstants.TAG_DESCRIPTION);
+                boxart_url = object.getString(MyConstants.TAG_BOXART_URL);
+                category = String.valueOf(object.getInt(MyConstants.TAG_CATEGORY));
+                scalemates_page = object.getString(MyConstants.TAG_SCALEMATES_PAGE);
+                scale = Integer.valueOf(object.getString(MyConstants.TAG_SCALE));
+                prototype = object.getString(MyConstants.TAG_PROTOTYPE);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            showKit = kit_name + " " + kit_noeng_name + " " + brand
+            String showKit = kit_name + " " + kit_noeng_name + " " + brand
                     + " " + brand_catno + " "
                     + "1/" + String.valueOf(scale) + " " + setDescription(description) + " " + year;
             Item item = new Item(boxart_url, showKit);
@@ -354,16 +386,13 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
                     .hasBarcode(barcode)
                     .hasScalemates_url(scalemates_page)//not in use
                     .hasYear(year)
-//                    .hasOnlineId(onlineId)
+                    .hasOnlineId(onlineId)
                     .build();
             itemsForDb.add(kit);
-
         }
-
-//        final String[] items = mItems.toArray(new String[mItems.size()]);
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(R.string.Found);
-//////////////////////////////////////////
+
         AdapterAlertDialog adapterAlertDialog = new AdapterAlertDialog(getActivity(), itemList);
         builder.setAdapter(adapterAlertDialog, new DialogInterface.OnClickListener() {
             @Override
@@ -371,7 +400,7 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
                 if (item == 0){
                     openManualAdd();
                 }else {
-                    Kit kitToAdd = itemsForDb.get(item - 1);// TODO: 11.07.2017 добавить год в базу
+                    Kit kitToAdd = itemsForDb.get(item - 1);
                     kitToAdd.setDate_added(date);
                     kitToAdd.setNotes(notes);
                     kitToAdd.setDatePurchased(purchaseDate);
@@ -379,84 +408,69 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
                     kitToAdd.setPrice(price);
                     kitToAdd.setCurrency(currency);
                     kitToAdd.setSendStatus(sendStatus);
-                    kitToAdd.setOnlineId("");
-                    kitToAdd.setBoxart_uri("");
-                    kitToAdd.setPlacePurchased("");
+                    kitToAdd.setOnlineId(MyConstants.EMPTY);
+                    kitToAdd.setBoxart_uri(MyConstants.EMPTY);
+                    kitToAdd.setPlacePurchased(MyConstants.EMPTY);
                     kitToAdd.setScalemates_url(scalemates_page);
 
                     kitToAdd.setStatus(status);
                     kitToAdd.setMedia(media);
 
-                    if (workMode == 'l') {
-
+                    if (workMode == MyConstants.MODE_LIST) {
                         dbConnector.addListItem(kitToAdd, listname);
-
-                        Toast.makeText(mContext, R.string.Kit_added_to_list, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(mContext, R.string.Kit_added_to_list, Toast.LENGTH_SHORT)
+                                .show();
                         ListViewFragment listViewFragment = new ListViewFragment();
                         Bundle bundle = new Bundle(1);
-                        bundle.putString("listname", listname);
+                        bundle.putString(MyConstants.LISTNAME, listname);
                         listViewFragment.setArguments(bundle);
                         android.support.v4.app.FragmentTransaction fragmentTransaction =
                                 getFragmentManager().beginTransaction();
                         fragmentTransaction.replace(R.id.llListsContainer, listViewFragment);
                         fragmentTransaction.commit();
-
                     }else {
-                        dbConnector.addKitRec(kitToAdd);
+                        currentId = dbConnector.addKitRec(kitToAdd);
+
+                        dbConnector.updateCategories();
+
+                        if (cloudModeOn && isOnline()) {
+                            saveToOnlineStash(kitToAdd);
+                        } else {
+                            Toast.makeText(mContext, R.string.online_backup_is_off, Toast.LENGTH_SHORT).show();
+                        }
                         Toast.makeText(mContext, R.string.kit_added, Toast.LENGTH_SHORT).show();
                     }
                 }
+
             }
         });
-
         AlertDialog alert = builder.create();
         alert.show();
     }
 
-    private String setDescription(String description) { // TODO: 03.09.2017 Helper
-        String desc = "";
-        if (!description.equals("")) {
-            switch (description) {
-                case "0":
-                    desc = "";
-                    break;
-                case "1":
-                    desc = getString(R.string.new_tool);
-                    break;
+    @Override
+    public void onFindDocFailed(App42Exception ex) {
+        progressBar.setVisibility(View.GONE);
+        openManualAdd();
+    }
 
-                case "2":
-                    desc = getString(R.string.changed_parts);
-                    break;
-                case "3":
-                    desc = getString(R.string.new_decal);
-                    break;
-                case "4":
-                    desc = getString(R.string.changed_box);
-                    break;
-                case "5":
-                    desc = getString(R.string.repack);
-                    break;
-                case "6":
-                    desc = "";
-            }
+    @Override
+    public void onDocumentInserted(Storage response) {
+        progressBar.setVisibility(View.GONE);
+        String getJson = response.getJsonDocList().get(0).getJsonDoc();
+        try {
+            JSONObject json = new JSONObject(getJson);
+            createAlertDialog("Document Inserted with value: " + json.get("Name"));
+            docId = response.getJsonDocList().get(0).getDocId();
+        } catch (JSONException ex) {
         }
-        return desc;
-    }
 
-
-
-    @Override
-    public void onUpdateDocSuccess(Storage response) {
-        // TODO Auto-generated method stub
-        progressDialog.dismiss();
-        createAlertDialog("Document SuccessFully Updated : "+ response.getJsonDocList().get(0).getJsonDoc());
     }
 
     @Override
-    public void onUpdateDocFailed(App42Exception ex) {
-        // TODO Auto-generated method stub
-        progressDialog.dismiss();
-        createAlertDialog("Exception Occurred : "+ ex.getMessage());
+    public void onInsertionFailed(App42Exception ex) {
+        progressBar.setVisibility(View.GONE);
+        createAlertDialog(getString(R.string.Exception_Occured) + ex.getMessage());
     }
 
     public void createAlertDialog(String msg) {
@@ -465,7 +479,6 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
         alertbox.setTitle("Response Message");
         alertbox.setMessage(msg);
         alertbox.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-            // do something when the button is clicked
             public void onClick(DialogInterface arg0, int arg1)
             {
             }
@@ -473,31 +486,14 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
         alertbox.show();
     }
 
-    public String getBarcode(){ //?
-        return barcode;
+    @Override
+    public void onUpdateDocSuccess(Storage response) {
+        progressBar.setVisibility(View.GONE);
     }
 
-    public char getWorkMode() {
-        return workMode;
+    @Override
+    public void onUpdateDocFailed(App42Exception ex) {
+        progressBar.setVisibility(View.GONE);
+        createAlertDialog("Exception Occurred : " + ex.getMessage());
     }
-
-//    private void writeToLocalDatabase() {
-////        dbConnector.open();
-////        dbConnector.addKitRec(barcode, brand, brand_catno, scale, kitname,
-////                kit_noengname, sendStatus, date, boxart_url, category, "");
-//    }
-
-    public void onAttachToParentFragment(Fragment fragment)
-    {
-        try
-        {
-            mListener = (OnFragmentInteractionListener) fragment;
-        }
-        catch (ClassCastException e)
-        {
-            throw new ClassCastException(
-                    fragment.toString() + " must implement OnPlayerSelectionSetListener");
-        }
-    }
-
 }

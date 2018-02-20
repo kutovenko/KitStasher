@@ -1,28 +1,17 @@
 package com.example.kitstasher.other;
 
-import android.app.ProgressDialog;
 import android.os.Environment;
 import android.util.Log;
-import android.widget.Toast;
 
-import com.example.kitstasher.R;
 import com.shephertz.app42.paas.sdk.android.App42CallBack;
-import com.shephertz.app42.paas.sdk.android.App42Exception;
 import com.shephertz.app42.paas.sdk.android.storage.Storage;
 import com.shephertz.app42.paas.sdk.android.storage.StorageService;
-import com.shephertz.app42.paas.sdk.android.upload.Upload;
-import com.shephertz.app42.paas.sdk.android.upload.UploadFileType;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-
-import static com.example.kitstasher.activity.MainActivity.asyncService;
 
 /**
  * Created by Алексей on 18.04.2017.
@@ -132,7 +121,7 @@ public class App42Helper {
 //            Toast.makeText(context, R.string.Error_on_cloud_saving, Toast.LENGTH_SHORT).show();
 //            e.printStackTrace();
 //        }
-//        asyncService.insertJSONDoc(Constants.App42DBName, Constants.CollectionName, jsonToSave, this);//
+//        asyncService.insertJSONDoc(MyConstants.App42DBName, MyConstants.CollectionName, jsonToSave, this);//
 //
 //    }
 //

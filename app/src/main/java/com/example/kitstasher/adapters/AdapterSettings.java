@@ -37,6 +37,11 @@ public class AdapterSettings extends FragmentPagerAdapter {
     }
 
     @Override
+    public int getItemPosition(Object object) {
+        return POSITION_NONE;
+    }
+
+    @Override
     public int getCount() {
         return FRAGMENT_COUNT;
     }

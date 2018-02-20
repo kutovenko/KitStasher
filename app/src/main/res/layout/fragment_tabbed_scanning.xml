@@ -1,55 +1,32 @@
 <android.support.v7.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorText">
-    <!--tools:context="com.example.kitstasher.activity.SplashActivity"-->
+    android:background="@color/colorText"
+    android:gravity="center_vertical"
+    android:orientation="vertical">
+
+    <ProgressBar
+        android:id="@+id/pbScan"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:indeterminate="true" />
 
     <LinearLayout
-        android:id="@+id/llTest2"
+        android:id="@+id/llBarcodePreview"
         android:layout_width="match_parent"
         android:layout_height="200dp"
-        android:layout_gravity="center_vertical"
         android:orientation="vertical">
 
         <com.journeyapps.barcodescanner.DecoratedBarcodeView
             android:id="@+id/barcode_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="0dp"
             android:layout_marginBottom="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="9dp"
             android:layout_weight="1" />
     </LinearLayout>
-
-
-    <!--<com.journeyapps.barcodescanner.DecoratedBarcodeView-->
-    <!--android:id="@+id/barcode_view"-->
-    <!--android:layout_width="0dp"-->
-    <!--android:layout_height="0dp"-->
-    <!--android:layout_marginBottom="8dp"-->
-    <!--android:layout_marginEnd="8dp"-->
-    <!--android:layout_marginStart="8dp"-->
-    <!--android:layout_marginTop="9dp" />-->
-    <!--app:layout_constraintBottom_toBottomOf="parent"-->
-    <!--app:layout_constraintLeft_toLeftOf="parent"-->
-    <!--app:layout_constraintRight_toRightOf="parent"-->
-    <!--app:layout_constraintTop_toBottomOf="@+id/textView"-->
-    <!--tools:layout_constraintBottom_creator="1"-->
-    <!--tools:layout_constraintLeft_creator="1"-->
-    <!--tools:layout_constraintRight_creator="1"-->
-    <!--tools:layout_constraintTop_creator="1" -->
-
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="368dp"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp" />
-    <!--app:layout_constraintLeft_toLeftOf="parent"-->
-    <!--app:layout_constraintTop_toTopOf="parent"-->
-    <!--tools:layout_constraintLeft_creator="1"-->
-    <!--tools:layout_constraintTop_creator="1" -->
-
 </android.support.v7.widget.LinearLayoutCompat>

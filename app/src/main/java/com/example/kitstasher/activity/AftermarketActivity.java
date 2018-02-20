@@ -7,7 +7,7 @@ import android.widget.LinearLayout;
 
 import com.example.kitstasher.R;
 import com.example.kitstasher.fragment.AftermarketCardFragment;
-import com.example.kitstasher.other.Constants;
+import com.example.kitstasher.other.MyConstants;
 
 public class AftermarketActivity extends AppCompatActivity {
     private char mode;
@@ -31,21 +31,21 @@ public class AftermarketActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_aftermarket);
         counter = 1;
-        position = getIntent().getExtras().getInt(Constants.LIST_POSITION);
-        kitId = getIntent().getExtras().getLong(Constants.ID);
-        afterId = getIntent().getExtras().getLong(Constants.AFTER_ID);
-        categoryToReturn = getIntent().getExtras().getInt(Constants.LIST_CATEGORY);
-        sortBy = getIntent().getExtras().getString(Constants.SORT_BY);
+        position = getIntent().getExtras().getInt(MyConstants.LIST_POSITION);
+        kitId = getIntent().getExtras().getLong(MyConstants.ID);
+        afterId = getIntent().getExtras().getLong(MyConstants.AFTER_ID);
+        categoryToReturn = getIntent().getExtras().getInt(MyConstants.LIST_CATEGORY);
+        sortBy = getIntent().getExtras().getString(MyConstants.SORT_BY);
 
-        scaleFilter = getIntent().getExtras().getString(Constants.SCALE_FILTER);
-        brandFilter = getIntent().getExtras().getString(Constants.BRAND_FILTER);
-        kitnameFilter = getIntent().getExtras().getString(Constants.KITNAME_FILTER);
+        scaleFilter = getIntent().getExtras().getString(MyConstants.SCALE_FILTER);
+        brandFilter = getIntent().getExtras().getString(MyConstants.BRAND_FILTER);
+        kitnameFilter = getIntent().getExtras().getString(MyConstants.KITNAME_FILTER);
 
-        statusFilter = getIntent().getExtras().getString(Constants.STATUS_FILTER);
-        mediaFilter = getIntent().getExtras().getString(Constants.MEDIA_FILTER);
+        statusFilter = getIntent().getExtras().getString(MyConstants.STATUS_FILTER);
+        mediaFilter = getIntent().getExtras().getString(MyConstants.MEDIA_FILTER);
 
 
-        mode = getIntent().getExtras().getChar(Constants.WORK_MODE);
+        mode = getIntent().getExtras().getChar(MyConstants.WORK_MODE);
         //запрос может прийти от SortAll,
         // таблица афтермаркет тогда MODE_AFTERMARKET
         //от KitCardFragment MODE_VIEW_FROM_KIT
@@ -59,18 +59,18 @@ public class AftermarketActivity extends AppCompatActivity {
         // на просмотр афтера определенного кита, MODE_KIT
 
         bundle = new Bundle();
-        bundle.putChar(Constants.WORK_MODE, mode);
-        bundle.putInt(Constants.LIST_POSITION, position);
-        bundle.putLong(Constants.KIT_ID, kitId);
-        bundle.putLong(Constants.AFTER_ID, afterId);
-        bundle.putInt(Constants.LIST_CATEGORY, categoryToReturn);
+        bundle.putChar(MyConstants.WORK_MODE, mode);
+        bundle.putInt(MyConstants.LIST_POSITION, position);
+        bundle.putLong(MyConstants.KIT_ID, kitId);
+        bundle.putLong(MyConstants.AFTER_ID, afterId);
+        bundle.putInt(MyConstants.LIST_CATEGORY, categoryToReturn);
 
-        bundle.putString(Constants.SCALE_FILTER, scaleFilter);
-        bundle.putString(Constants.BRAND_FILTER, brandFilter);
-        bundle.putString(Constants.KITNAME_FILTER, kitnameFilter);
+        bundle.putString(MyConstants.SCALE_FILTER, scaleFilter);
+        bundle.putString(MyConstants.BRAND_FILTER, brandFilter);
+        bundle.putString(MyConstants.KITNAME_FILTER, kitnameFilter);
 
-        bundle.putString(Constants.STATUS_FILTER, statusFilter);
-        bundle.putString(Constants.MEDIA_FILTER, mediaFilter);
+        bundle.putString(MyConstants.STATUS_FILTER, statusFilter);
+        bundle.putString(MyConstants.MEDIA_FILTER, mediaFilter);
 
         //если пришел знак режима просмотра, открываем карточки.
         AftermarketCardFragment aftermarketCardFragment = new AftermarketCardFragment();
@@ -88,15 +88,15 @@ public class AftermarketActivity extends AppCompatActivity {
         //1. Открыть список афтера в майнАктивити
         if (counter == 1 || counter > 2) {
             Intent intent = new Intent(AftermarketActivity.this, MainActivity.class);
-            intent.putExtra(Constants.SORT_BY, sortBy);
-            intent.putExtra(Constants.WORK_MODE, mode);
-            intent.putExtra(Constants.LIST_CATEGORY, categoryToReturn);
-            intent.putExtra(Constants.LIST_POSITION, position);
-            intent.putExtra(Constants.SCALE_FILTER, scaleFilter);
-            intent.putExtra(Constants.BRAND_FILTER, brandFilter);
-            intent.putExtra(Constants.KITNAME_FILTER, kitnameFilter);
-            intent.putExtra(Constants.STATUS_FILTER, statusFilter);
-            intent.putExtra(Constants.MEDIA_FILTER, mediaFilter);
+            intent.putExtra(MyConstants.SORT_BY, sortBy);
+            intent.putExtra(MyConstants.WORK_MODE, mode);
+            intent.putExtra(MyConstants.LIST_CATEGORY, categoryToReturn);
+            intent.putExtra(MyConstants.LIST_POSITION, position);
+            intent.putExtra(MyConstants.SCALE_FILTER, scaleFilter);
+            intent.putExtra(MyConstants.BRAND_FILTER, brandFilter);
+            intent.putExtra(MyConstants.KITNAME_FILTER, kitnameFilter);
+            intent.putExtra(MyConstants.STATUS_FILTER, statusFilter);
+            intent.putExtra(MyConstants.MEDIA_FILTER, mediaFilter);
             intent.putExtra("was_deleted", true);
             setResult(RESULT_OK, intent);
             finish();

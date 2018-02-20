@@ -12,13 +12,13 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.kitstasher.R;
 import com.example.kitstasher.objects.Item;
-import com.example.kitstasher.other.Constants;
 import com.example.kitstasher.other.Helper;
+import com.example.kitstasher.other.MyConstants;
 
 import java.util.List;
 
 /**
- * Created by Алексей on 06.07.2017. Adapter for AlertDialog in Manual Add
+ * Created by Алексей on 06.07.2017. Adapter for AlertDialog in Scan and Manual Add
  */
 
 public class AdapterAlertDialog extends ArrayAdapter<Item> {
@@ -63,8 +63,8 @@ public class AdapterAlertDialog extends ArrayAdapter<Item> {
     private String composeUrl(String url){
         if (!Helper.isBlank(url)) {
             return url
-                    + Constants.BOXART_URL_SMALL
-                    + Constants.JPG;
+                    + MyConstants.BOXART_URL_SMALL
+                    + MyConstants.JPG;
         }else{
             return "";
         }

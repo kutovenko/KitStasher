@@ -1,5 +1,16 @@
 package com.example.kitstasher.objects;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.text.TextUtils;
+
+import com.example.kitstasher.other.DbConnector;
+import com.example.kitstasher.other.Helper;
+import com.example.kitstasher.other.MyConstants;
+import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.SaveCallback;
+
 /**
  * Created by Алексей on 04.05.2017.
  */
@@ -207,6 +218,73 @@ public class Kit {
     }
 
 
+    public String saveToOnlineStash(final Context context) {
+        final String[] parseId = new String[1];
+        final ParseObject kitTowrite = new ParseObject(MyConstants.PARSE_C_STASH);
+        kitTowrite.put(MyConstants.PARSE_BARCODE, this.getBarcode());
+        kitTowrite.put(MyConstants.PARSE_BRAND, this.getBrand());
+        kitTowrite.put(MyConstants.PARSE_BRAND_CATNO, this.getBrandCatno());
+        kitTowrite.put(MyConstants.PARSE_SCALE, this.getScale());
+        kitTowrite.put(MyConstants.PARSE_KITNAME, this.getKit_name());
+        kitTowrite.put(MyConstants.PARSE_NOENGNAME, this.getKit_noeng_name());
+        kitTowrite.put(MyConstants.CATEGORY, this.getCategory());
+        if (!TextUtils.isEmpty(this.getBoxart_url())) {
+            kitTowrite.put(MyConstants.BOXART_URL, this.getBoxart_url());
+        }
+        kitTowrite.put(MyConstants.PARSE_DESCRIPTION, this.getDescription());
+        SharedPreferences sharedPreferences = context.getSharedPreferences(MyConstants.ACCOUNT_PREFS,
+                Context.MODE_PRIVATE);
+        kitTowrite.put(MyConstants.PARSE_OWNERID, sharedPreferences.getString(MyConstants.USER_ID_FACEBOOK, MyConstants.EMPTY));
+        kitTowrite.put(MyConstants.YEAR, this.getYear());
+        kitTowrite.saveInBackground(new SaveCallback() {
+            @Override
+            public void done(ParseException e) {
+                parseId[0] = kitTowrite.getObjectId();
+            }
+        });
+        return parseId[0];
+    }
+
+    public void saveToNewKit(String parseId) {
+        ParseObject kitTowrite = new ParseObject(MyConstants.PARSE_C_NEWKIT);
+        kitTowrite.put(MyConstants.PARSE_BARCODE, this.getBarcode());
+        kitTowrite.put(MyConstants.BRAND, this.getBrand());
+        kitTowrite.put(MyConstants.PARSE_BRAND_CATNO, this.getBrandCatno());
+        kitTowrite.put(MyConstants.SCALE, this.getScale());
+        kitTowrite.put(MyConstants.PARSE_KITNAME, this.getKit_name());
+        kitTowrite.put(MyConstants.PARSE_NOENGNAME, this.getKit_noeng_name());
+        kitTowrite.put(MyConstants.CATEGORY, this.getCategory());
+        if (!TextUtils.isEmpty(this.getBoxart_url())) {
+            kitTowrite.put(MyConstants.BOXART_URL, Helper.trimUrl(this.getBoxart_url())); //Убираем обозначение размера картинки
+        }
+        kitTowrite.put(MyConstants.DESCRIPTION, this.getDescription());
+        kitTowrite.put(MyConstants.PARSE_OWNERID, parseId);
+        kitTowrite.put(MyConstants.YEAR, this.getYear());
+        kitTowrite.saveInBackground();
+    }
+
+    public boolean saveToLocalDatabase(Context context, char workMode, Object itemSave,
+                                       String listname, Long incomeKitId) {
+        DbConnector dbConnector = new DbConnector(context);
+        dbConnector.open();
+        if (workMode == MyConstants.MODE_KIT) {
+            dbConnector.addKitRec((Kit) itemSave);
+        } else if (workMode == MyConstants.MODE_LIST) {
+            dbConnector.addListItem((Kit) itemSave, listname);
+        } else if (workMode == MyConstants.MODE_AFTERMARKET) {
+            dbConnector.addAftermarket((Aftermarket) itemSave);
+        } else if (workMode == MyConstants.MODE_AFTER_KIT) {
+            long aftId = dbConnector.addAftermarket((Aftermarket) itemSave);
+            dbConnector.addAfterToKit(incomeKitId, aftId);
+        }
+        dbConnector.close();
+        return false;
+    }
+
+
+
+
+
     private Kit(KitBuilder kitBuilder){
         this.brand = kitBuilder.brand;
         this.brandCatno = kitBuilder.brand_catno;
@@ -284,7 +362,7 @@ public class Kit {
         private int media;
 
         public KitBuilder(){
-            this.barcode = ""; //todo ??
+//            this.barcode = "";
 //            this.brand = brand;
 //            this.brandCatno = brandCatno;
 //            this.kit_name = kit_name;
@@ -292,7 +370,7 @@ public class Kit {
 //            this.category = category;
         }
         public KitBuilder hasBrand(String brand){
-         this.brand = brand;
+            this.brand = brand;
             return this;
         }
 

@@ -14,9 +14,9 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.kitstasher.R;
-import com.example.kitstasher.other.Constants;
 import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.Helper;
+import com.example.kitstasher.other.MyConstants;
 
 import java.io.File;
 
@@ -91,10 +91,10 @@ public class AdapterListGlide extends CursorAdapter {
 
     private String composeUrl(String url){  //// TODO: 04.09.2017 Helper
         if (!Helper.isBlank(url)) {
-            return Constants.BOXART_URL_PREFIX
+            return MyConstants.BOXART_URL_PREFIX
                     + url
                     + getSuffix()
-                    + Constants.JPG;
+                    + MyConstants.JPG;
         }else{
             return "";
         }
@@ -133,23 +133,23 @@ public class AdapterListGlide extends CursorAdapter {
 //    }
 
     private String getSuffix(){ //// TODO: 04.09.2017 Helper
-        String suffix = Constants.BOXART_URL_SMALL;
-        SharedPreferences preferences = context.getSharedPreferences(Constants.BOXART_SIZE,
+        String suffix = MyConstants.BOXART_URL_SMALL;
+        SharedPreferences preferences = context.getSharedPreferences(MyConstants.BOXART_SIZE,
                 Context.MODE_PRIVATE);
         if (preferences != null) {
             String temp = preferences.getString("boxart_size","");
             switch (temp){
-                case Constants.BOXART_URL_COMPANY_SUFFIX:
+                case MyConstants.BOXART_URL_COMPANY_SUFFIX:
                     suffix = "";
                     break;
-                case Constants.BOXART_URL_SMALL:
-                    suffix = Constants.BOXART_URL_SMALL;
+                case MyConstants.BOXART_URL_SMALL:
+                    suffix = MyConstants.BOXART_URL_SMALL;
                     break;
-                case Constants.BOXART_URL_MEDIUM:
-                    suffix = Constants.BOXART_URL_MEDIUM;
+                case MyConstants.BOXART_URL_MEDIUM:
+                    suffix = MyConstants.BOXART_URL_MEDIUM;
                     break;
-                case Constants.BOXART_URL_LARGE:
-                    suffix = Constants.BOXART_URL_LARGE;
+                case MyConstants.BOXART_URL_LARGE:
+                    suffix = MyConstants.BOXART_URL_LARGE;
                     break;
                 default:
                     break;

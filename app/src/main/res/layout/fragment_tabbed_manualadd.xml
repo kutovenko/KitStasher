@@ -96,6 +96,13 @@
                             android:textColorHint="@color/colorAccent" />
                     </android.support.design.widget.TextInputLayout>
 
+                    <ProgressBar
+                        android:id="@+id/pbManualAdd"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:indeterminate="true" />
+
                     <Button
                         android:id="@+id/btnCheckOnlineDb"
                         android:layout_width="match_parent"

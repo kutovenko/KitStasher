@@ -9,8 +9,8 @@ import android.widget.LinearLayout;
 
 import com.example.kitstasher.R;
 import com.example.kitstasher.fragment.ListViewFragment;
-import com.example.kitstasher.other.Constants;
 import com.example.kitstasher.other.DbConnector;
+import com.example.kitstasher.other.MyConstants;
 
 import static com.example.kitstasher.activity.MainActivity.REQUEST_CODE_VIEW;
 
@@ -29,15 +29,15 @@ public class ListActivity extends AppCompatActivity{
         llListsContainer = (LinearLayout) findViewById(R.id.llListsContainer);
         dbConnector = new DbConnector(this);
         dbConnector.open();
-        cursor = dbConnector.getListById(getIntent().getExtras().getLong("list_name"));
+        cursor = dbConnector.getListById(getIntent().getExtras().getLong(MyConstants.LISTNAME));
         cursor.moveToFirst();
         title = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.MYLISTS_COLUMN_LIST_NAME));
         setTitle(title);
 
         //Loading fragment with kit list
         Bundle bundle = new Bundle(2);
-        bundle.putChar(Constants.WORK_MODE, Constants.MODE_LIST); //??
-        bundle.putString(Constants.LISTNAME, title);
+        bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_LIST); //??
+        bundle.putString(MyConstants.LISTNAME, title);
         ListViewFragment listViewFragment = new ListViewFragment();
         listViewFragment.setArguments(bundle);
         android.support.v4.app.FragmentTransaction fragmentTransaction =

@@ -18,9 +18,9 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.kitstasher.R;
 import com.example.kitstasher.activity.AftermarketActivity;
-import com.example.kitstasher.other.Constants;
 import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.Helper;
+import com.example.kitstasher.other.MyConstants;
 
 import java.io.File;
 
@@ -54,13 +54,13 @@ public class AftermarketCardFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_item_card, container, false);
         Context context = getActivity();
 
-//        String listname = getArguments().getString(Constants.LISTNAME);
-//        final long kitId = getArguments().getLong(Constants.ID); //для возврата в Кит
-        final long afterId = getArguments().getLong(Constants.AFTER_ID); //для демонстрации карточки
+//        String listname = getArguments().getString(MyConstants.LISTNAME);
+//        final long kitId = getArguments().getLong(MyConstants.ID); //для возврата в Кит
+        final long afterId = getArguments().getLong(MyConstants.AFTER_ID); //для демонстрации карточки
         //Модет быть MODE_AFTERMARKET, если из таблицы
         // MODE_KIT, если из просмотра
         // или редактора MODE_AFTER_KIT
-        mode = getArguments().getChar(Constants.WORK_MODE);
+        mode = getArguments().getChar(MyConstants.WORK_MODE);
 
         DbConnector dbConnector = new DbConnector(context);
         dbConnector.open();
@@ -71,9 +71,9 @@ public class AftermarketCardFragment extends Fragment {
         String kitname = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_AFTERMARKET_NAME));
         String brand = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BRAND));
         String catno = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BRAND_CATNO));
-        String scale = "1/" + String.valueOf(getArguments().getInt(Constants.SCALE));
-//        String url = getArguments().getString(Constants.URL);
-//        String scalematesUrl = getArguments().getString(Constants.SCALEMATES);
+        String scale = "1/" + String.valueOf(getArguments().getInt(MyConstants.SCALE));
+//        String url = getArguments().getString(MyConstants.URL);
+//        String scalematesUrl = getArguments().getString(MyConstants.SCALEMATES);
         String notes = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_NOTES));
 
         Button btnEditAftermarket = view.findViewById(R.id.btnEdit);
@@ -84,9 +84,9 @@ public class AftermarketCardFragment extends Fragment {
 //                AftermarketEditFragment fragment = new AftermarketEditFragment();
                 ItemEditFragment fragment = new ItemEditFragment();
                 Bundle bundle = new Bundle();
-                bundle.putLong(Constants.AFTER_ID, afterId);
-                bundle.putLong(Constants.ID, afterId);
-                bundle.putChar(Constants.WORK_MODE, mode); //отправляем , еслди
+                bundle.putLong(MyConstants.AFTER_ID, afterId);
+                bundle.putLong(MyConstants.ID, afterId);
+                bundle.putChar(MyConstants.WORK_MODE, mode); //отправляем , еслди
                 // пришли из таблицы посмотреть MODE_AFTARMARKET
                 //ЕСли из Кита - MODE_KIT
                 //Если из КптЕдит - MODE_AFTER_KIT
@@ -146,28 +146,28 @@ public class AftermarketCardFragment extends Fragment {
     }
 
     private void setCategoryImage() {
-        if (Constants.CODE_SEA.equals(category)) {
+        if (MyConstants.CODE_SEA.equals(category)) {
             ivCategory.setImageResource(R.drawable.ic_tag_ship_black_24dp);
         }
-        if (Constants.CODE_AIR.equals(category)) {
+        if (MyConstants.CODE_AIR.equals(category)) {
             ivCategory.setImageResource(R.drawable.ic_tag_air_black_24dp);
         }
-        if (Constants.CODE_GROUND.equals(category)) {
+        if (MyConstants.CODE_GROUND.equals(category)) {
             ivCategory.setImageResource(R.drawable.ic_tag_afv_black_24dp);
         }
-        if (Constants.CODE_SPACE.equals(category)) {
+        if (MyConstants.CODE_SPACE.equals(category)) {
             ivCategory.setImageResource(R.drawable.ic_tag_space_black_24dp);
         }
-        if (Constants.CODE_OTHER.equals(category)) {
+        if (MyConstants.CODE_OTHER.equals(category)) {
             ivCategory.setImageResource(R.drawable.ic_check_box_outline_blank_black_24dp);
         }
-        if (Constants.CODE_AUTOMOTO.equals(category)) {
+        if (MyConstants.CODE_AUTOMOTO.equals(category)) {
             ivCategory.setImageResource(R.drawable.ic_directions_car_black_24dp);
         }
-        if (Constants.CODE_FIGURES.equals(category)) {
+        if (MyConstants.CODE_FIGURES.equals(category)) {
             ivCategory.setImageResource(R.drawable.ic_wc_black_24dp);
         }
-        if (Constants.CODE_FANTASY.equals(category)) {
+        if (MyConstants.CODE_FANTASY.equals(category)) {
             ivCategory.setImageResource(R.drawable.ic_android_black_24dp);
         }
     }

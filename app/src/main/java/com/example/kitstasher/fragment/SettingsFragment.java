@@ -12,16 +12,14 @@ import com.example.kitstasher.R;
 import com.example.kitstasher.activity.MainActivity;
 import com.example.kitstasher.adapters.AdapterSettings;
 
+
 /**
- * Created by Алексей on 21.04.2017.
+ * Created by Алексей on 21.04.2017. Adapter for More section with 3 pages in ViewPager
  */
 
 public class SettingsFragment extends Fragment{
-    private TabLayout tabLayout;
-    private ViewPager viewPager;
 
     public SettingsFragment(){
-
     }
 
     @Override
@@ -29,9 +27,10 @@ public class SettingsFragment extends Fragment{
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
 
-        tabLayout = (TabLayout)view.findViewById(R.id.tabsSettings);
-        viewPager = (ViewPager)view.findViewById(R.id.viewpagerSettings);
-        viewPager.setAdapter(new AdapterSettings(getChildFragmentManager(), getActivity()));
+        TabLayout tabLayout = view.findViewById(R.id.tabsSettings);
+        ViewPager viewPager = view.findViewById(R.id.viewpagerSettings);
+        AdapterSettings adapterSettings = new AdapterSettings(getChildFragmentManager(), getActivity());
+        viewPager.setAdapter(adapterSettings);
         tabLayout.setupWithViewPager(viewPager);
 
         ((MainActivity) getActivity())

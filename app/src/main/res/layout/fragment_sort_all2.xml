@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/linLayoutViewAllContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/com_facebook_button_login_silver_background_color"
+    android:background="@color/colorBackground"
     android:orientation="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/com_facebook_button_border_color_focused"
-        android:gravity="right|center"
+        android:layout_marginBottom="8dp"
+        android:background="@color/colorHighlight"
         android:orientation="horizontal">
 
 
         <LinearLayout
-            android:id="@+id/linLayoutListSortDate"
+            android:id="@+id/linLayoutSortDate"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="0.25"
             android:gravity="center_horizontal"
             android:orientation="vertical">
@@ -27,22 +28,21 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="4dp"
-                android:layout_weight="1"
-                android:gravity="right|center"
+                android:gravity="center"
                 android:text="@string/date" />
 
             <ImageView
-                android:id="@+id/ivListSortDate"
+                android:id="@+id/ivSortDate"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:layout_weight="1"
                 app:srcCompat="@drawable/ic_keyboard_arrow_down_white_24dp" />
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/linLayoutListSortBrand"
+            android:id="@+id/linLayoutSortBrand"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="0.25"
             android:gravity="center_horizontal"
             android:orientation="vertical">
@@ -51,22 +51,21 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="4dp"
-                android:layout_weight="1"
                 android:gravity="end|center"
                 android:text="@string/Brand" />
 
             <ImageView
-                android:id="@+id/ivListSortBrand"
+                android:id="@+id/ivSortBrand"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:layout_weight="1"
                 app:srcCompat="@drawable/ic_keyboard_arrow_up_black_24dp" />
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/linLayoutListSortKitname"
+            android:id="@+id/linLayoutSortKitname"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="0.25"
             android:gravity="center_horizontal"
             android:orientation="vertical">
@@ -75,22 +74,21 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="4dp"
-                android:layout_weight="1"
                 android:gravity="right|center"
                 android:text="@string/Kit_name" />
 
             <ImageView
-                android:id="@+id/ivListSortKitname"
+                android:id="@+id/ivSortKitname"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:layout_weight="1"
                 app:srcCompat="@drawable/ic_keyboard_arrow_up_black_24dp" />
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/linLayoutListSortScale"
+            android:id="@+id/linLayoutSortScale"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="0.25"
             android:gravity="center_horizontal"
             android:orientation="vertical">
@@ -99,44 +97,42 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="4dp"
-                android:layout_weight="1"
                 android:gravity="right|center"
                 android:text="@string/Scale" />
 
             <ImageView
-                android:id="@+id/ivListSortScale"
+                android:id="@+id/ivSortScale"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:layout_weight="1"
                 app:srcCompat="@drawable/ic_keyboard_arrow_up_black_24dp" />
 
+
         </LinearLayout>
 
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
-        android:layout_weight="20"
-        android:orientation="vertical">
-
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/rvListAllItems"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
-        <Button
-            android:id="@+id/btnAddListItem"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
-            android:layout_marginTop="16dp"
+        <ImageButton
+            android:id="@+id/ibtnFilter"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="top"
             android:background="@drawable/button"
-            android:text="@string/add" />
+            android:paddingEnd="12dp"
+            android:paddingStart="12dp"
+            app:srcCompat="@drawable/ic_filter_list_black_24dp" />
 
     </LinearLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rvKits"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="8dp"
+
+        android:divider="@color/colorPrimary"
+        android:dividerHeight="1px"
+
+        android:layout_weight="0.25" />
+
 </LinearLayout>

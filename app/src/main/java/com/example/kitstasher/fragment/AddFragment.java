@@ -12,7 +12,7 @@ import android.view.ViewGroup;
 import com.example.kitstasher.R;
 import com.example.kitstasher.activity.MainActivity;
 import com.example.kitstasher.adapters.AdapterAddFragment;
-import com.example.kitstasher.other.Constants;
+import com.example.kitstasher.other.MyConstants;
 import com.example.kitstasher.other.OnFragmentInteractionListener;
 
 /**
@@ -43,7 +43,7 @@ public class AddFragment extends Fragment implements OnFragmentInteractionListen
 
         tabLayout = view.findViewById(R.id.tabsAdd);
         viewPager = view.findViewById(R.id.viewpagerAdd);
-        boolean aftermarketMode = getArguments().getBoolean(Constants.AFTERMARKET_MODE);
+        boolean aftermarketMode = getArguments().getBoolean(MyConstants.AFTERMARKET_MODE);
         viewPager.setAdapter(new AdapterAddFragment(getChildFragmentManager(), getActivity(), aftermarketMode));
         tabLayout.setupWithViewPager(viewPager);
 

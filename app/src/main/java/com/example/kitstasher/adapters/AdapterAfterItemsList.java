@@ -65,13 +65,13 @@ public class AdapterAfterItemsList extends CursorAdapter {
         holder.ibRemoveAftermarket.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Object obj = view.getTag();
-                String st = obj.toString();
-                long aftId = Long.valueOf(st);
-                dbConnector.removeAftermarketFromKit(aftId);
-                Cursor newcursor = dbConnector.getAftermarketForKit(kitId, listname);
-                changeCursor(newcursor);
-                notifyDataSetChanged();
+//                Object obj = view.getTag();
+//                String st = obj.toString();
+//                long aftId = Long.valueOf(st);
+//                dbConnector.deleteAftermarketFromKit(aftId);
+//                Cursor newcursor = dbConnector.getAftermarketForKit(kitId, listname);
+//                changeCursor(newcursor);
+//                notifyDataSetChanged();
             }
         });
 

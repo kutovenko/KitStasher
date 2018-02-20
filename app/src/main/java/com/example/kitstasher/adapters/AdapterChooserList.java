@@ -16,8 +16,8 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.kitstasher.R;
 import com.example.kitstasher.activity.ChooserActivity;
 import com.example.kitstasher.other.CheckableLinearLayout;
-import com.example.kitstasher.other.Constants;
 import com.example.kitstasher.other.DbConnector;
+import com.example.kitstasher.other.MyConstants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -91,9 +91,9 @@ public class AdapterChooserList extends CursorAdapter {
         holder.cllContainer = view.findViewById(R.id.llChooseItemContainer);
 
         String kitname = "";
-        if (workMode == Constants.MODE_LIST || workMode == Constants.MODE_KIT) {
+        if (workMode == MyConstants.MODE_LIST || workMode == MyConstants.MODE_KIT) {
             kitname = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_KIT_NAME));
-        } else if (workMode == Constants.MODE_AFTER_KIT || workMode == Constants.MODE_AFTERMARKET) {
+        } else if (workMode == MyConstants.MODE_AFTER_KIT || workMode == MyConstants.MODE_AFTERMARKET) {
             kitname = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_AFTERMARKET_NAME));
         }
         String brand = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BRAND));
@@ -105,32 +105,32 @@ public class AdapterChooserList extends CursorAdapter {
         holder.tvScale.setText(scale);
 
 
-        if (Constants.CODE_SEA.equals(category)) {
+        if (MyConstants.CODE_SEA.equals(category)) {
             holder.ivChooseKitCategory.setImageResource(R.drawable.ic_tag_ship_black_24dp);
         }
-        if (Constants.CODE_AIR.equals(category)) {
+        if (MyConstants.CODE_AIR.equals(category)) {
             holder.ivChooseKitCategory.setImageResource(R.drawable.ic_tag_air_black_24dp);
         }
-        if (Constants.CODE_GROUND.equals(category)) {
+        if (MyConstants.CODE_GROUND.equals(category)) {
             holder.ivChooseKitCategory.setImageResource(R.drawable.ic_tag_afv_black_24dp);
         }
-        if (Constants.CODE_SPACE.equals(category)) {
+        if (MyConstants.CODE_SPACE.equals(category)) {
             holder.ivChooseKitCategory.setImageResource(R.drawable.ic_tag_space_black_24dp);
         }
-        if (Constants.CODE_OTHER.equals(category)) {
+        if (MyConstants.CODE_OTHER.equals(category)) {
             holder.ivChooseKitCategory.setImageResource(R.drawable.ic_check_box_outline_blank_black_24dp);
         }
-        if (Constants.CODE_AUTOMOTO.equals(category)) {
+        if (MyConstants.CODE_AUTOMOTO.equals(category)) {
             holder.ivChooseKitCategory.setImageResource(R.drawable.ic_directions_car_black_24dp);
         }
-        if (Constants.CODE_FANTASY.equals(category)) {
+        if (MyConstants.CODE_FANTASY.equals(category)) {
             Glide
                     .with(context)
                     .load(R.drawable.ic_android_black_24dp)
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(holder.ivChooseKitCategory);
         }
-        if (Constants.CODE_FIGURES.equals(category)) {
+        if (MyConstants.CODE_FIGURES.equals(category)) {
             Glide
                     .with(context)
                     .load(R.drawable.ic_wc_black_24dp)

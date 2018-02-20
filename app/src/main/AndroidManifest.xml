@@ -40,7 +40,6 @@
             android:name="com.yalantis.ucrop.UCropActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
-        <!-- </activity> -->
         <activity
             android:name=".activity.ListActivity"
             android:label="@string/title_activity_list"
@@ -48,7 +47,6 @@
         <activity android:name=".activity.ChooserActivity" />
         <activity android:name=".activity.AftermarketActivity" />
         <activity android:name=".activity.EditActivity" />
-        <!-- <activity android:name=".activUCropActivityvity" /> -->
 
         <provider
             android:name="android.support.v4.content.FileProvider"
@@ -61,7 +59,7 @@
         </provider>
 
 
-        <activity android:name=".activity.CropActivity"></activity>
+        <activity android:name=".activity.CropActivity" />
     </application>
 
 </manifest>

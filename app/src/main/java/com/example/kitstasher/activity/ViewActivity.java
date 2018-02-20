@@ -4,14 +4,16 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 
 import com.example.kitstasher.R;
 import com.example.kitstasher.adapters.AdapterViewCards;
+import com.example.kitstasher.fragment.AftermarketFragment;
 import com.example.kitstasher.fragment.ItemCardFragment;
-import com.example.kitstasher.other.Constants;
+import com.example.kitstasher.fragment.KitsFragment;
+import com.example.kitstasher.objects.CustomKitsViewPager;
 import com.example.kitstasher.other.DbConnector;
+import com.example.kitstasher.other.MyConstants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,30 +23,28 @@ import java.util.List;
  */
 
 public class ViewActivity extends AppCompatActivity {
+    public static CustomKitsViewPager viewPager;
     private Cursor cursor;
+    private DbConnector dbConnector;
+    private final int EDIT_ACTIVITY_CODE = 21;
     private long kitId;
     private Long[] ids;
     private Integer[] positions;
     private ArrayList<Long> listIds;
-    private ArrayList<Integer> listPositions;
-    private DbConnector dbConnector;
     private String[] filters;
-    private final int EDIT_ACTIVITY_CODE = 21;
-    private int cursorPosition;
-    private String tableName;
-    private String sortBy;
-    private String listname;
-    int categoryToReturn;
-
-    private String scaleFilter;
-    private String brandFilter;
-    private String kitnameFilter;
-    private String statusFilter;
-    private String mediaFilter;
-    private int position;
+    private String tableName,
+            sortBy,
+            listname,
+            scaleFilter,
+            brandFilter,
+            kitnameFilter,
+            statusFilter,
+            mediaFilter,
+            category;
+    private int tabToReturn,
+            position;
     private char workMode;
-    public ViewPager viewPager;
-    private int newPosition;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,21 +54,25 @@ public class ViewActivity extends AppCompatActivity {
         dbConnector = new DbConnector(this);
         dbConnector.open();
 
-        listIds = (ArrayList<Long>) getIntent().getSerializableExtra(Constants.IDS);
-        listPositions = (ArrayList<Integer>) getIntent().getSerializableExtra("positions");
+        category = getIntent().getExtras().getString(MyConstants.CATEGORY);
+        tabToReturn = getIntent().getExtras().getInt(MyConstants.CATEGORY_TAB);
 
-        workMode = getIntent().getExtras().getChar(Constants.WORK_MODE);
-        sortBy = getIntent().getExtras().getString(Constants.SORT_BY);
+        listIds = (ArrayList<Long>) getIntent().getSerializableExtra(MyConstants.IDS);
+        ArrayList<Integer> listPositions = (ArrayList<Integer>) getIntent().getSerializableExtra("positions");
 
-        position = getIntent().getExtras().getInt(Constants.POSITION);
-        categoryToReturn = getIntent().getExtras().getInt(Constants.LIST_CATEGORY);
-        listname = getIntent().getStringExtra(Constants.LISTNAME);
-        kitId = getIntent().getExtras().getLong(Constants.ID);
-        scaleFilter = getIntent().getExtras().getString(Constants.SCALE_FILTER);
-        brandFilter = getIntent().getExtras().getString(Constants.BRAND_FILTER);
-        kitnameFilter = getIntent().getExtras().getString(Constants.KITNAME_FILTER);
-        statusFilter = getIntent().getExtras().getString(Constants.STATUS_FILTER);
-        mediaFilter = getIntent().getExtras().getString(Constants.MEDIA_FILTER);
+        workMode = getIntent().getExtras().getChar(MyConstants.WORK_MODE);
+        sortBy = getIntent().getExtras().getString(MyConstants.SORT_BY);
+
+        position = getIntent().getExtras().getInt(MyConstants.POSITION);
+
+
+        listname = getIntent().getStringExtra(MyConstants.LISTNAME);
+        kitId = getIntent().getExtras().getLong(MyConstants.ID);
+        scaleFilter = getIntent().getExtras().getString(MyConstants.SCALE_FILTER);
+        brandFilter = getIntent().getExtras().getString(MyConstants.BRAND_FILTER);
+        kitnameFilter = getIntent().getExtras().getString(MyConstants.KITNAME_FILTER);
+        statusFilter = getIntent().getExtras().getString(MyConstants.STATUS_FILTER);
+        mediaFilter = getIntent().getExtras().getString(MyConstants.MEDIA_FILTER);
 
         filters = new String[5];
         filters[0] = scaleFilter;
@@ -77,15 +81,13 @@ public class ViewActivity extends AppCompatActivity {
         filters[3] = statusFilter;
         filters[4] = mediaFilter;
 
-//        chooseCursor();
-
         ids = new Long[listIds.size()];
         listIds.toArray(ids);
         positions = new Integer[listPositions.size()];
         listPositions.toArray(positions);
 
         List<Fragment> fragments = buildFragments();
-        ViewPager viewPager = findViewById(R.id.viewpagerViewKits);
+        viewPager = findViewById(R.id.viewpagerViewKits);
         AdapterViewCards adapterViewCards = new AdapterViewCards(this, getSupportFragmentManager(), fragments);
         viewPager.setAdapter(adapterViewCards);
         viewPager.setCurrentItem(position);
@@ -97,23 +99,23 @@ public class ViewActivity extends AppCompatActivity {
         cursor.moveToFirst();
         for (int i = 0; i < cursor.getCount(); i++) {
             Long id = ids[i];
-            newPosition = positions[i];
+            int newPosition = positions[i];
 
-//нужно ли что-то, кроме id?
             Bundle bundle = new Bundle();
-            bundle.putLong(Constants.ID, id); //id записи, по которой кликнули в списке
-            bundle.putSerializable(Constants.IDS, listIds);
-            bundle.putSerializable(Constants.POSITIONS, positions);
-            bundle.putString(Constants.TABLE, tableName);
-            bundle.putChar(Constants.WORK_MODE, workMode);
-            bundle.putString(Constants.SORT_BY, sortBy);
-            bundle.putInt(Constants.LIST_CATEGORY, categoryToReturn);
-            bundle.putInt(Constants.POSITION, newPosition);
-            bundle.putString(Constants.SCALE_FILTER, scaleFilter);
-            bundle.putString(Constants.BRAND_FILTER, brandFilter);
-            bundle.putString(Constants.KITNAME_FILTER, kitnameFilter);
-            bundle.putString(Constants.STATUS_FILTER, statusFilter);
-            bundle.putString(Constants.MEDIA_FILTER, mediaFilter);
+            bundle.putLong(MyConstants.ID, id); //id записи, по которой кликнули в списке
+            bundle.putSerializable(MyConstants.IDS, listIds);
+            bundle.putSerializable(MyConstants.POSITIONS, positions);
+            bundle.putString(MyConstants.TABLE, tableName);
+            bundle.putChar(MyConstants.WORK_MODE, workMode);
+            bundle.putString(MyConstants.SORT_BY, sortBy);
+            bundle.putInt(MyConstants.CATEGORY_TAB, tabToReturn);
+            bundle.putInt(MyConstants.POSITION, newPosition);
+            bundle.putString(MyConstants.CATEGORY, category);
+            bundle.putString(MyConstants.SCALE_FILTER, scaleFilter);
+            bundle.putString(MyConstants.BRAND_FILTER, brandFilter);
+            bundle.putString(MyConstants.KITNAME_FILTER, kitnameFilter);
+            bundle.putString(MyConstants.STATUS_FILTER, statusFilter);
+            bundle.putString(MyConstants.MEDIA_FILTER, mediaFilter);
 
             fragments.add(Fragment.instantiate(this, ItemCardFragment.class.getName(), bundle));
             cursor.moveToNext();
@@ -122,20 +124,20 @@ public class ViewActivity extends AppCompatActivity {
     }
 
     private void chooseCursor() {
-        if (workMode == Constants.MODE_KIT) {
+        if (workMode == MyConstants.MODE_KIT) {
             tableName = DbConnector.TABLE_KITS;
-            cursor = dbConnector.filteredKits(tableName, filters, sortBy, categoryToReturn, listname); //todo нужно по категориям
+            cursor = dbConnector.filteredKits(tableName, filters, sortBy, category, listname);
 
-        } else if (workMode == Constants.MODE_LIST) {
+        } else if (workMode == MyConstants.MODE_LIST) {
             tableName = DbConnector.TABLE_MYLISTSITEMS;
-            cursor = dbConnector.filteredKits(tableName, filters, sortBy, categoryToReturn, listname); //todo нужно по категориям
+            cursor = dbConnector.filteredKits(tableName, filters, sortBy, category, listname);
 
-        } else if (workMode == Constants.MODE_AFTERMARKET) {
+        } else if (workMode == MyConstants.MODE_AFTERMARKET) {
             tableName = DbConnector.TABLE_AFTERMARKET;
-            cursor = dbConnector.filteredKits(tableName, filters, sortBy, categoryToReturn, listname); //todo нужно по категориям
+            cursor = dbConnector.filteredKits(tableName, filters, sortBy, category, listname);
 
-        } else if (workMode == Constants.MODE_AFTER_KIT) {
-            cursor = dbConnector.getAftermarketForKit(kitId, Constants.EMPTY);
+        } else if (workMode == MyConstants.MODE_AFTER_KIT) {
+            cursor = dbConnector.getAftermarketForKit(kitId, MyConstants.EMPTY);
         }
     }
 
@@ -143,36 +145,57 @@ public class ViewActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK && requestCode == EDIT_ACTIVITY_CODE) {
             super.onActivityResult(requestCode, resultCode, data);
-            position = data.getExtras().getInt(Constants.POSITION);
+            position = data.getExtras().getInt(MyConstants.POSITION);
             List<Fragment> fragments = buildFragments();
-            viewPager = findViewById(R.id.viewpagerViewKits);
             AdapterViewCards adapterViewCards = new AdapterViewCards(this, getSupportFragmentManager(), fragments);
             viewPager.setAdapter(adapterViewCards);
             viewPager.setCurrentItem(position);
-        }
-        if (resultCode != RESULT_OK) {
         }
     }
 
     @Override
     public void onBackPressed() {
         //1. Возврат в майн активити во всех случаях, кроме MODE_LIST
-        if (workMode != Constants.MODE_LIST) {
+        if (workMode == MyConstants.MODE_KIT) {
             Intent intent = new Intent(ViewActivity.this, MainActivity.class);
-            intent.putExtra(Constants.SORT_BY, sortBy);
-            intent.putExtra(Constants.WORK_MODE, workMode);
-            intent.putExtra(Constants.LIST_CATEGORY, categoryToReturn);
-            intent.putExtra(Constants.LIST_POSITION, position);
-            intent.putExtra(Constants.SCALE_FILTER, scaleFilter);
-            intent.putExtra(Constants.BRAND_FILTER, brandFilter);
-            intent.putExtra(Constants.KITNAME_FILTER, kitnameFilter);
-            intent.putExtra(Constants.STATUS_FILTER, statusFilter);
-            intent.putExtra(Constants.MEDIA_FILTER, mediaFilter);
+            intent.putExtra(MyConstants.SORT_BY, sortBy);
+            intent.putExtra(MyConstants.WORK_MODE, workMode);
+            intent.putExtra(MyConstants.CATEGORY_TAB, tabToReturn);
+            intent.putExtra(MyConstants.LIST_POSITION, position);
+            intent.putExtra(MyConstants.CATEGORY, category);
+            intent.putExtra(MyConstants.SCALE_FILTER, scaleFilter);
+            intent.putExtra(MyConstants.BRAND_FILTER, brandFilter);
+            intent.putExtra(MyConstants.KITNAME_FILTER, kitnameFilter);
+            intent.putExtra(MyConstants.STATUS_FILTER, statusFilter);
+            intent.putExtra(MyConstants.MEDIA_FILTER, mediaFilter);
             intent.putExtra("was_deleted", true);
             setResult(RESULT_OK, intent);
+            KitsFragment.refreshPages();
             finish();
-        } else {
+        } else if (workMode == MyConstants.MODE_AFTERMARKET) {
+            Intent intent = new Intent(ViewActivity.this, MainActivity.class);
+            intent.putExtra(MyConstants.SORT_BY, sortBy);
+            intent.putExtra(MyConstants.WORK_MODE, workMode);
+            intent.putExtra(MyConstants.CATEGORY_TAB, tabToReturn);
+            intent.putExtra(MyConstants.LIST_POSITION, position);
+            intent.putExtra(MyConstants.CATEGORY, category);
+            intent.putExtra(MyConstants.SCALE_FILTER, scaleFilter);
+            intent.putExtra(MyConstants.BRAND_FILTER, brandFilter);
+            intent.putExtra(MyConstants.KITNAME_FILTER, kitnameFilter);
+            intent.putExtra(MyConstants.STATUS_FILTER, statusFilter);
+            intent.putExtra(MyConstants.MEDIA_FILTER, mediaFilter);
+            intent.putExtra("was_deleted", true);
+            setResult(RESULT_OK, intent);
+            AftermarketFragment.refreshPages();
+            finish();
+        } else if (workMode == MyConstants.MODE_LIST) {
             super.onBackPressed(); //todo обработать LIST
+        } else if (workMode == MyConstants.MODE_AFTER_KIT) {
+            super.onBackPressed();
         }
+    }
+
+    public static void refreshPages() {
+        viewPager.refresh();
     }
 }

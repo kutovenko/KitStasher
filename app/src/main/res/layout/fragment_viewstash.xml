@@ -13,7 +13,7 @@
         android:background="@color/com_facebook_button_background_color_selected"
         android:padding="@dimen/dp4" />
 
-    <android.support.v4.view.ViewPager
+    <com.example.kitstasher.objects.CustomKitsViewPager
         android:id="@+id/viewpagerViewStash"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
