@@ -70,14 +70,14 @@ Prefixes and postfixes for links
     public static final String CODE_SEA = "3";
     public static final String CAT_SPACE = "space";
     public static final String CODE_SPACE = "4";
-    public static final String CAT_OTHER = "other";
-    public static final String CODE_OTHER = "100";
     public static final String CAT_AUTOMOTO = "auto";
     public static final String CODE_AUTOMOTO = "5";
     public static final String CAT_FIGURES = "figures";
     public static final String CODE_FIGURES = "6";
     public static final String CAT_FANTASY = "fantasy";
     public static final String CODE_FANTASY = "7";
+    public static final String CAT_OTHER = "other";
+    public static final String CODE_OTHER = "0";
 
 
     public static final String LIST_ID = "id";
@@ -247,6 +247,7 @@ Prefixes and postfixes for links
     public static final String PARSE_BARCODE = "barcode";
     public static final String PARSE_OWNERID = "owner_id";
     public static final String PARSE_IDTYPE = "owner_id_type";
+    public static final String PARSE_SOCIALTYPE = "socialType";
     public static final String PARSE_BRAND = "brand";
     public static final String PARSE_BOXART_URL = "boxart_url";
     public static final String PARSE_SCALE = "scale";
@@ -284,4 +285,5 @@ Prefixes and postfixes for links
 
 
     public static final String CATEGORY_TAB = "category_tab";
+    public static final java.lang.String LISTID = "list_id";
 }

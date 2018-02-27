@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -27,7 +28,6 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.kitstasher.R;
 import com.example.kitstasher.fragment.AddFragment;
-import com.example.kitstasher.fragment.AftermarketFragment;
 import com.example.kitstasher.fragment.HomeFragment;
 import com.example.kitstasher.fragment.KitsFragment;
 import com.example.kitstasher.fragment.MyListsFragment;
@@ -39,6 +39,7 @@ import com.example.kitstasher.other.CircleTransform;
 import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.MyConstants;
 import com.parse.Parse;
+//import com.parse.ParseFacebookUtils;
 
 
 /**
@@ -114,6 +115,7 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         //Setting up cloud connections
         asyncService = AsyncApp42ServiceApi.instance(this);
+//        ParseFacebookUtils.initialize(this);
         Parse.initialize(new Parse.Configuration.Builder(this)
                 .applicationId(getString(R.string.parse_application_id))
                 .clientKey(getString(R.string.parse_client_key))
@@ -272,65 +274,65 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener
                 (new NavigationView.OnNavigationItemSelectedListener() {
 
-            // This method will trigger on item Click of navigation menu
-            @Override
-            public boolean onNavigationItemSelected(MenuItem menuItem) {
+                    // This method will trigger on item Click of navigation menu
+                    @Override
+                    public boolean onNavigationItemSelected(MenuItem menuItem) {
 
-                //Check to see which item was being clicked and perform appropriate action
-                switch (menuItem.getItemId()) {
-                    //Replacing the main content with ContentFragment Which is our Inbox View;
-                    case R.id.nav_home:
-                        navItemIndex = 0;
-                        CURRENT_TAG = TAG_HOME;
-                        break;
-                    case R.id.nav_addstash:
-                        navItemIndex = 1;
-                        CURRENT_TAG = TAG_ADDSTASH;
-                        break;
-                    case R.id.nav_viewstash:
-                        navItemIndex = 2;
-                        CURRENT_TAG = TAG_VIEWSTASH;
+                        //Check to see which item was being clicked and perform appropriate action
+                        switch (menuItem.getItemId()) {
+                            //Replacing the main content with ContentFragment Which is our Inbox View;
+                            case R.id.nav_home:
+                                navItemIndex = 0;
+                                CURRENT_TAG = TAG_HOME;
+                                break;
+                            case R.id.nav_addstash:
+                                navItemIndex = 1;
+                                CURRENT_TAG = TAG_ADDSTASH;
+                                break;
+                            case R.id.nav_viewstash:
+                                navItemIndex = 2;
+                                CURRENT_TAG = TAG_VIEWSTASH;
 //                        toolbar.setTitle(title);
-                        break;
-                    case R.id.nav_aftermarket:
-                        navItemIndex = 3;
-                        CURRENT_TAG = TAG_AFTERMARKET;
+                                break;
+                            case R.id.nav_aftermarket:
+                                navItemIndex = 3;
+                                CURRENT_TAG = TAG_AFTERMARKET;
 //                        toolbar.setTitle(title);
-                        break;
-                    case R.id.nav_mylists:
-                        navItemIndex = 4;
-                        CURRENT_TAG = TAG_MYLISTS;
-                        break;
-                    case R.id.nav_search:
-                        navItemIndex = 5;
-                        CURRENT_TAG = TAG_SEARCH;
-                        break;
-                    case R.id.nav_statistics:
-                        navItemIndex = 6;
-                        CURRENT_TAG = TAG_STATISTICS;
-                        break;
-                    case R.id.nav_settings:
-                        navItemIndex = 7;
-                        CURRENT_TAG = TAG_SETTINGS;
-                        break;
-                    default:
-                        navItemIndex = 0;
-                        CURRENT_TAG = TAG_HOME;
-                }
-                //Checking if the item is in checked state or not, if not make it in checked state
-                // TODO: 01.12.2017 убрать, из-за этого идет неправильная подсветка
-                if (menuItem.isChecked()) {
-                    menuItem.setChecked(false);
-                } else {
-                    menuItem.setChecked(true);
-                }
-                menuItem.setChecked(true);
+                                break;
+                            case R.id.nav_mylists:
+                                navItemIndex = 4;
+                                CURRENT_TAG = TAG_MYLISTS;
+                                break;
+                            case R.id.nav_search:
+                                navItemIndex = 5;
+                                CURRENT_TAG = TAG_SEARCH;
+                                break;
+                            case R.id.nav_statistics:
+                                navItemIndex = 6;
+                                CURRENT_TAG = TAG_STATISTICS;
+                                break;
+                            case R.id.nav_settings:
+                                navItemIndex = 7;
+                                CURRENT_TAG = TAG_SETTINGS;
+                                break;
+                            default:
+                                navItemIndex = 0;
+                                CURRENT_TAG = TAG_HOME;
+                        }
+                        //Checking if the item is in checked state or not, if not make it in checked state
+                        // TODO: 01.12.2017 убрать, из-за этого идет неправильная подсветка
+                        if (menuItem.isChecked()) {
+                            menuItem.setChecked(false);
+                        } else {
+                            menuItem.setChecked(true);
+                        }
+                        menuItem.setChecked(true);
 
-                loadHomeFragment(false);
+                        loadHomeFragment(false);
 
-                return true;
-            }
-        });
+                        return true;
+                    }
+                });
 
 
         ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawer,
@@ -377,8 +379,8 @@ public class MainActivity extends AppCompatActivity
 //                loadHomeFragment();
 ////                return;
 //            } else {
-                navItemIndex = 0;
-                CURRENT_TAG = TAG_HOME;
+            navItemIndex = 0;
+            CURRENT_TAG = TAG_HOME;
             loadHomeFragment(false);
 //                return;
 
@@ -443,8 +445,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private android.support.v4.app.Fragment getHomeFragment() {
-        Fragment fragment = new KitsFragment();
-        Bundle bundle = new Bundle();
+
         switch (navItemIndex) {
             case 0:
                 // Home fragment
@@ -452,13 +453,17 @@ public class MainActivity extends AppCompatActivity
             case 1:
                 return new AddFragment();
             case 2:
+                Fragment kitFragment = new KitsFragment();
+                Bundle bundle = new Bundle();
                 bundle.putBoolean(MyConstants.AFTERMARKET_MODE, false);
-                fragment.setArguments(bundle);
-                return fragment;
+                kitFragment.setArguments(bundle);
+                return kitFragment;
 //                return new KitsFragment();
             case 3:
-                bundle.putBoolean(MyConstants.AFTERMARKET_MODE, true);
-                fragment.setArguments(bundle);
+                Fragment fragment = new KitsFragment();
+                Bundle aBundle = new Bundle();
+                aBundle.putBoolean(MyConstants.AFTERMARKET_MODE, true);
+                fragment.setArguments(aBundle);
                 return fragment;
 //                return new AftermarketFragment();
             case 4:
@@ -476,7 +481,7 @@ public class MainActivity extends AppCompatActivity
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks.
         int id = item.getItemId();
 
@@ -531,7 +536,8 @@ public class MainActivity extends AppCompatActivity
             boolean was_deleted = data.getExtras().getBoolean("was_deleted");
             ///
             int position = data.getExtras().getInt(MyConstants.LIST_POSITION);
-            int categoryTab = data.getExtras().getInt(MyConstants.LIST_CATEGORY);
+            int categoryTab = data.getExtras().getInt(MyConstants.CATEGORY_TAB);
+            String category = data.getExtras().getString(MyConstants.CATEGORY);
 
 
             String scaleFilter = data.getExtras().getString(MyConstants.SCALE_FILTER);
@@ -543,8 +549,9 @@ public class MainActivity extends AppCompatActivity
 
 
             Bundle bundle = new Bundle();
-            bundle.putInt(MyConstants.LIST_POSITION, position);
-            bundle.putInt(MyConstants.LIST_CATEGORY, categoryTab);
+            bundle.putInt(MyConstants.POSITION, position);
+            bundle.putInt(MyConstants.CATEGORY_TAB, categoryTab);
+            bundle.putString(MyConstants.CATEGORY, category);
             bundle.putChar(MyConstants.WORK_MODE, workMode);
 
             bundle.putString(MyConstants.SCALE_FILTER, scaleFilter);
@@ -554,26 +561,38 @@ public class MainActivity extends AppCompatActivity
             bundle.putString(MyConstants.STATUS_FILTER, statusFilter);
             bundle.putString(MyConstants.MEDIA_FILTER, mediaFilter);
 
+            KitsFragment fragment = new KitsFragment();
             if (workMode == MyConstants.MODE_KIT) {
+                bundle.putBoolean(MyConstants.AFTERMARKET_MODE, false);
                 //Возвращаемся в таблицу китов
-                KitsFragment fragment = new KitsFragment();
+//                KitsFragment fragment = new KitsFragment();
                 fragment.setArguments(bundle);
                 android.support.v4.app.FragmentTransaction fragmentTransaction =
                         getSupportFragmentManager().beginTransaction();
                 fragmentTransaction.replace(R.id.mainactivityContainer, fragment);
                 fragmentTransaction.commit();
+
+                KitsFragment.refreshPages(); //???
+
                 ViewPager viewPager = findViewById(R.id.viewpagerViewStash);
+
+//                viewPager.getAdapter().notifyDataSetChanged();
+
                 viewPager.setCurrentItem(categoryTab);
             } else if (workMode == MyConstants.MODE_AFTERMARKET) {
                 //Возвоащаемся в пейджер SortAll
-                AftermarketFragment fragment = new AftermarketFragment();
+//                AftermarketFragment fragment = new AftermarketFragment();
 
+                bundle.putBoolean(MyConstants.AFTERMARKET_MODE, true);
                 fragment.setArguments(bundle);
                 android.support.v4.app.FragmentTransaction fragmentTransaction =
                         getSupportFragmentManager().beginTransaction();
                 fragmentTransaction.replace(R.id.mainactivityContainer, fragment);
                 fragmentTransaction.commit();
                 ViewPager viewPager = findViewById(R.id.viewpagerViewStash);
+
+//                viewPager.getAdapter().notifyDataSetChanged();
+
                 viewPager.setCurrentItem(categoryTab);
 //            }else if (workMode == MyConstants.MODE_AFTER_KIT){
 //
@@ -598,40 +617,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void checkDeleted() {
-        if (getIntent().hasExtra("was_deleted")
-                && getIntent().getExtras().getBoolean("was_deleted")) {
-            int position = getIntent().getExtras().getInt(MyConstants.LIST_POSITION);
-            int categoryTab = getIntent().getExtras().getInt(MyConstants.LIST_CATEGORY);
-            String scaleFilter = getIntent().getExtras().getString(MyConstants.SCALE_FILTER);
-            String brandFilter = getIntent().getExtras().getString(MyConstants.BRAND_FILTER);
-            String kitnameFilter = getIntent().getExtras().getString(MyConstants.KITNAME_FILTER);
-
-            String statusFilter = getIntent().getExtras().getString(MyConstants.STATUS_FILTER);
-            String mediaFilter = getIntent().getExtras().getString(MyConstants.MEDIA_FILTER);
-
-
-            Bundle bundle = new Bundle();
-            bundle.putInt(MyConstants.LIST_POSITION, position);
-            bundle.putInt(MyConstants.LIST_CATEGORY, categoryTab);
-
-            bundle.putString(MyConstants.SCALE_FILTER, scaleFilter);
-            bundle.putString(MyConstants.BRAND_FILTER, brandFilter);
-            bundle.putString(MyConstants.KITNAME_FILTER, kitnameFilter);
-
-            bundle.putString(MyConstants.STATUS_FILTER, statusFilter);
-            bundle.putString(MyConstants.MEDIA_FILTER, mediaFilter);
-
-            KitsFragment fragment = new KitsFragment();
-            fragment.setArguments(bundle);
-            android.support.v4.app.FragmentTransaction fragmentTransaction =
-                    getSupportFragmentManager().beginTransaction();
-            fragmentTransaction.replace(R.id.mainactivityContainer, fragment);
-            fragmentTransaction.commit();
-            ViewPager viewPager = (ViewPager) findViewById(R.id.viewpagerViewStash);//!null
-            viewPager.setCurrentItem(categoryTab);
-        }
-    }
 
     /////////////////////////
 
@@ -700,7 +685,6 @@ public class MainActivity extends AppCompatActivity
                     Toast.makeText(MainActivity.this,
                             R.string.permission_denied_to_write, Toast.LENGTH_SHORT).show();
                 }
-//                return;
         }
     }
 }

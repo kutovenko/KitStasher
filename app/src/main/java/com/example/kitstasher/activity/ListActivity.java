@@ -4,8 +4,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.widget.LinearLayout;
 
 import com.example.kitstasher.R;
 import com.example.kitstasher.fragment.ListViewFragment;
@@ -15,41 +13,32 @@ import com.example.kitstasher.other.MyConstants;
 import static com.example.kitstasher.activity.MainActivity.REQUEST_CODE_VIEW;
 
 public class ListActivity extends AppCompatActivity{
-    private LinearLayout llListsContainer;
-    private Cursor cursor;
-    private DbConnector dbConnector;
-    private String title;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarList);
-        setSupportActionBar(toolbar);
-        llListsContainer = (LinearLayout) findViewById(R.id.llListsContainer);
-        dbConnector = new DbConnector(this);
+        DbConnector dbConnector = new DbConnector(this);
         dbConnector.open();
-        cursor = dbConnector.getListById(getIntent().getExtras().getLong(MyConstants.LISTNAME));
+        long listId = getIntent().getExtras().getLong(MyConstants.LISTID);
+        Cursor cursor = dbConnector.getListById(listId);
         cursor.moveToFirst();
-        title = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.MYLISTS_COLUMN_LIST_NAME));
-        setTitle(title);
-
-        //Loading fragment with kit list
+        String listName = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.MYLISTS_COLUMN_LIST_NAME));
+        setTitle(listName);
         Bundle bundle = new Bundle(2);
-        bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_LIST); //??
-        bundle.putString(MyConstants.LISTNAME, title);
+        bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_LIST);
+        bundle.putString(MyConstants.LISTNAME, listName);
+        bundle.putLong(MyConstants.LISTID, listId);
         ListViewFragment listViewFragment = new ListViewFragment();
         listViewFragment.setArguments(bundle);
         android.support.v4.app.FragmentTransaction fragmentTransaction =
                 getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.llListsContainer, listViewFragment);
-
         fragmentTransaction.commit();
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // Check which request we're responding to
         if (requestCode == REQUEST_CODE_VIEW) {
             if (resultCode == RESULT_OK) {
                     ListViewFragment listViewFragment = new ListViewFragment();

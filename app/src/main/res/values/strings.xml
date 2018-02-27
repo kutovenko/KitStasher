@@ -397,6 +397,7 @@
     <string name="Restored">Restored</string>
     <string name="cannot_create_file">Cannot create file</string>
     <string name="online_backup_is_off">Online backup is off</string>
+    <string name="youve_already_scanned">You have already scanned this barcode</string>
 
 
 </resources>

@@ -102,7 +102,8 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             etKitNoengName,
             etNotes,
             etPrice;
-    private Button btnCheckOnlineDatabase;
+    private Button btnCheckOnlineDatabase,
+            btnAdd;
     private AppCompatSpinner spYear,
             spDescription,
             spQuantity,
@@ -161,11 +162,11 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             wasSearchedOnline;
     private Context context;
     private DbConnector dbConnector;
-    private ArrayAdapter<String> currencyAdapter;
     private List<String> myBrands;
     private ArrayAdapter<String> acAdapterMybrands,
             acAdapterMyshops,
             descriptionAdapter,
+            currencyAdapter,
             yearsAdapter;
     private AutoCompleteTextView acTvBrand,
             acPurchasedFrom;
@@ -187,6 +188,8 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         onAttachToParentFragment(getParentFragment());
+
+
     }
 
     @Override
@@ -203,7 +206,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putString("imagePath", mCurrentPhotoPath);
+//        outState.putString("imagePath", mCurrentPhotoPath);
         if (boxartPic != null){
             outState.putParcelable(MyConstants.BOXART_IMAGE, boxartPic);
             outState.putString("imagePath", mCurrentPhotoPath);
@@ -212,6 +215,9 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             outState.putString(MyConstants.BOXART_URL, kit.getBoxart_url());
         }
         outState.putString(MyConstants.CATEGORY, category);
+        if (barcode != null) {
+            outState.putString(MyConstants.BARCODE, barcode);
+        }
     }
 
     @Override
@@ -255,6 +261,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                 boxartPic = savedInstanceState.getParcelable(MyConstants.BOXART_IMAGE);
                 ivGetBoxart.setImageBitmap(boxartPic);
             }
+            barcode = savedInstanceState.getString(MyConstants.BARCODE);
         }
 
         acAdapterMybrands = new ArrayAdapter<>(getActivity(),
@@ -337,13 +344,26 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         spKitMedia.setAdapter(mediaAdapter);
         spKitMedia.setSelection(1);
 
-        String[] categories = new String[]{getString(R.string.other), getString(R.string.Air), getString(R.string.Ground),
-                getString(R.string.Sea), getString(R.string.Space), getString(R.string.Auto_moto),
-                getString(R.string.Figures), getString(R.string.Fantasy)};
-        int[] icons = new int[]{R.drawable.ic_check_box_outline_blank_black_24dp, R.drawable.ic_tag_air_black_24dp, R.drawable.ic_tag_afv_black_24dp,
-                R.drawable.ic_tag_ship_black_24dp, R.drawable.ic_tag_space_black_24dp,
-                R.drawable.ic_directions_car_black_24dp, R.drawable.ic_wc_black_24dp,
-                R.drawable.ic_android_black_24dp};
+        String[] categories = new String[]{
+                getString(R.string.other),
+                getString(R.string.Air),
+                getString(R.string.Ground),
+                getString(R.string.Sea),
+                getString(R.string.Space),
+                getString(R.string.Auto_moto),
+                getString(R.string.Figures),
+                getString(R.string.Fantasy)
+        };
+        int[] icons = new int[]{
+                R.drawable.ic_check_box_outline_blank_black_24dp,
+                R.drawable.ic_tag_air_black_24dp,
+                R.drawable.ic_tag_afv_black_24dp,
+                R.drawable.ic_tag_ship_black_24dp,
+                R.drawable.ic_tag_space_black_24dp,
+                R.drawable.ic_directions_car_black_24dp,
+                R.drawable.ic_wc_black_24dp,
+                R.drawable.ic_android_black_24dp
+        };
         AdapterSpinner adapterSpinner = new AdapterSpinner(context, icons, categories);
         spCategory.setAdapter(adapterSpinner);
         spCategory.setSelection(Integer.parseInt(category));
@@ -352,6 +372,13 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     }
 
     private void initVariables() {
+//        if (barcode == null){
+//        barcode = MyConstants.EMPTY;
+//        }
+        if (getArguments() != null && getArguments().getChar(MyConstants.WORK_MODE) == MyConstants.MODE_LIST
+                && getArguments().getString(MyConstants.BARCODE) != null) {
+            barcode = getArguments().getString(MyConstants.BARCODE);
+        }
         context = getActivity();
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         cloudModeOn = sharedPreferences.getBoolean(MyConstants.CLOUD_MODE, true);
@@ -394,11 +421,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             boxartUri = getArguments().getString(MyConstants.BOXART_URI);
         }
         dateAdded = df.format(c.getTime());
-        barcode = MyConstants.EMPTY;
-        if (getArguments() != null && getArguments().getChar(MyConstants.WORK_MODE) == MyConstants.MODE_LIST
-                && getArguments().getString(MyConstants.BARCODE) != null) {
-            barcode = getArguments().getString(MyConstants.BARCODE);
-        }
+
         description = MyConstants.EMPTY;
         year = "0";
         category = MyConstants.CODE_OTHER;
@@ -416,33 +439,33 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         placePurchased = MyConstants.EMPTY;
         status = MyConstants.STATUS_NEW;
         media = MyConstants.M_CODE_INJECTED;
-
-        kit = new Kit.KitBuilder()
-                .hasBrand(brand)
-                .hasBrand_catno(brandCatno)
-                .hasKit_name(kitName)
-                .hasScale(scale)
-                .hasCategory(category)
-                .hasBarcode(barcode)
-                .hasKit_noeng_name(kitNoengname)
-                .hasDescription(description)
-                .hasPrototype(MyConstants.EMPTY)//not in use
-                .hasSendStatus(sendStatus)
-                .hasBoxart_url(boxartUrl)
-                .hasBoxart_uri(boxartUri)
-                .hasScalemates_url(MyConstants.EMPTY)
-                .hasYear(year)
-                .hasOnlineId(onlineId)
-                .hasDateAdded(dateAdded)
-                .hasDatePurchased(datePurchased)
-                .hasQuantity(quantity)
-                .hasNotes(notes)
-                .hasPrice(price)
-                .hasCurrency(currency)
-                .hasPlacePurchased(placePurchased)
-                .hasStatus(status)
-                .hasMedia(media)
-                .build();
+//
+//        kit = new Kit.KitBuilder()
+//                .hasBrand(brand)
+//                .hasBrand_catno(brandCatno)
+//                .hasKit_name(kitName)
+//                .hasScale(scale)
+//                .hasCategory(category)
+//                .hasBarcode(barcode)
+//                .hasKit_noeng_name(kitNoengname)
+//                .hasDescription(description)
+//                .hasPrototype(MyConstants.EMPTY)//not in use
+//                .hasSendStatus(sendStatus)
+//                .hasBoxart_url(boxartUrl)
+//                .hasBoxart_uri(boxartUri)
+//                .hasScalemates_url(MyConstants.EMPTY)
+//                .hasYear(year)
+//                .hasOnlineId(onlineId)
+//                .hasDateAdded(dateAdded)
+//                .hasDatePurchased(datePurchased)
+//                .hasQuantity(quantity)
+//                .hasNotes(notes)
+//                .hasPrice(price)
+//                .hasCurrency(currency)
+//                .hasPlacePurchased(placePurchased)
+//                .hasStatus(status)
+//                .hasMedia(media)
+//                .build();
         aftermarketName = MyConstants.EMPTY;
         aftemarketOriginalName = MyConstants.EMPTY;
         compilanceWith = MyConstants.EMPTY;
@@ -480,7 +503,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         btnCheckOnlineDatabase.setOnClickListener(this);
         progressBar = view.findViewById(R.id.pbManualAdd);
         progressBar.setVisibility(View.GONE);
-        Button btnAdd = view.findViewById(R.id.btnMAdd);
+        btnAdd = view.findViewById(R.id.btnMAdd);
         btnAdd.setOnClickListener(this);
         Button btnCancel = view.findViewById(R.id.btnMCancel);
         btnCancel.setOnClickListener(this);
@@ -567,7 +590,6 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         switch (v.getId()) {
             case (R.id.btnMCancel):
                 clearFields();
-                returnToScan();
 
             case (R.id.btnCheckOnlineDb):
                 if (checkSearchFields()) {
@@ -631,44 +653,40 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                         case 'm': //MODE_KIT
                             if (!isInLocalBase(kit.getBrand(), kit.getBrandCatno())) {
                                 if (isOnline()) {
-                                    currentId = dbConnector.addKitRec(kit);
+
+                                    currentId = dbConnector.addKitRec(kit); //kit has been saved in local base
                                     if (wasSearchedOnline && !isFoundOnline) { //todo проверка в mystash на дубли
                                         if (!TextUtils.isEmpty(mCurrentPhotoPath)) {
                                             saveWithBoxartToParse(mCurrentPhotoPath, kit);
                                         }
-                                    } else {
-                                        saveToOnlineStash(kit);
+
                                     }
-                                } else {
-                                    String sendStatus = "n";//Надо потом записать в облако
-                                    kit.setSendStatus(sendStatus);
-                                    dbConnector.addKitRec(kit);
-
-                                    dbConnector.updateCategories();
-
-                                    if (cloudModeOn && isOnline()) {
+                                    if (cloudModeOn) {
                                         saveToOnlineStash(kit);
                                     } else {
                                         Toast.makeText(context, R.string.online_backup_is_off, Toast.LENGTH_SHORT).show();
                                     }
+                                } else {
+                                    String sendStatus = "n";//Надо потом записать в облако
+                                    kit.setSendStatus(sendStatus);
+
+                                    currentId = dbConnector.addKitRec(kit);
+
                                 }
                                 Toast.makeText(getActivity(), R.string.kit_added, Toast.LENGTH_SHORT).show();
                                 clearFields();
-                                returnToScan();
+                                break;
                             } else {
                                 Toast.makeText(getActivity(), R.string.entry_already_exist,
                                         Toast.LENGTH_SHORT).show();
                                 break;
                             }
-                            break;
 
                         case 'l': //MODE_LIST из списков
                             dbConnector.addListItem(kit, listname);
                             Toast.makeText(getActivity(), R.string.Kit_added_to_list, Toast.LENGTH_SHORT)
                                     .show();
                             clearFields();
-                            returnToScan();
-
                             ListViewFragment listViewFragment = new ListViewFragment();
                             Bundle bundle = new Bundle(1);
                             bundle.putString(MyConstants.LISTNAME, listname);
@@ -688,9 +706,8 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                             }
                             Toast.makeText(getActivity(), R.string.aftermarket_added,
                                     Toast.LENGTH_SHORT).show();
-                            sendStatus = MyConstants.EMPTY;
-                            clearFields();
 
+                            clearFields();
                             if (getArguments() != null) {
                                 int position = getArguments().getInt(MyConstants.LIST_POSITION);
                                 int categoryToReturn = getArguments()
@@ -840,109 +857,269 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     }
 
     private void getFieldsValues() {
-        if (workMode == MyConstants.MODE_AFTERMARKET || workMode == MyConstants.MODE_AFTER_KIT) {
-            aftermarket.setBrand(acTvBrand.getText().toString().trim());
-            aftermarket.setBrandCatno(etBrandCat_no.getText().toString().trim());
-            aftermarket.setScale(Integer.parseInt(etScale.getText().toString()));
-            aftermarket.setAftermarketName(etKitName.getText().toString().trim());
-            aftermarket.setAftemarketOriginalName(etKitNoengName.getText().toString().trim());
-            aftermarket.setBarcode(barcode);
-
-            String cat = String.valueOf(spCategory.getSelectedItemPosition());
-            aftermarket.setCategory(cat);
-            String y = spYear.getSelectedItem().toString();
-            if (!y.equals(getString(R.string.unknown))) {
-                aftermarket.setYear(y);
-            }else{
-                aftermarket.setYear(MyConstants.EMPTY);
-            }
-
-            aftermarket.setMedia(spKitMedia.getSelectedItemPosition());
-
-            String d = spDescription.getSelectedItem().toString();
-            if (!d.equals(getString(R.string.kittype))){
-                aftermarket.setDescription(descToCode(d));
-            }else{
-                aftermarket.setDescription(MyConstants.CODE_OTHER);
-            }
-            currency = spCurrency.getSelectedItem().toString();
-            aftermarket.setCurrency(currency);
-            quantity = spQuantity.getSelectedItemPosition() + 1;
-            aftermarket.setQuantity(quantity);
-            notes = etNotes.getText().toString();
-            aftermarket.setNotes(notes);
-            if (!etPrice.getText().toString().equals(MyConstants.EMPTY)) {
-                price = Integer.parseInt(etPrice.getText().toString()) * 100;
-            }else{
-                price = 0;
-            }
-            aftermarket.setPrice(price);
-            if (!tvPurchaseDate.getText().toString().equals(MyConstants.EMPTY)
-                    || tvPurchaseDate.getText().toString().equals(getResources()
-                    .getString(R.string.Date_not_set))) {
-                datePurchased = tvPurchaseDate.getText().toString();
-            }else{
-                datePurchased = MyConstants.EMPTY;
-            }
-
-            placePurchased = acPurchasedFrom.getText().toString().trim();
-            aftermarket.setPlacePurchased(placePurchased);
-
-            aftermarket.setDatePurchased(datePurchased);
-            aftermarket.setBoxartUri(boxartUri);
-            aftermarket.setBoxartUrl(boxartUrl);
-            aftermarket.setListname(listname);
-
-        }else{
-            kit.setBrand(acTvBrand.getText().toString().trim());
-            kit.setBrandCatno(etBrandCat_no.getText().toString().trim());
-            kit.setScale(Integer.parseInt(etScale.getText().toString()));
-            kit.setKit_name(etKitName.getText().toString().trim());
-            kit.setKit_noeng_name(etKitNoengName.getText().toString().trim());
-            kit.setBarcode(barcode);
-            String cat = String.valueOf(spCategory.getSelectedItemPosition());
-            kit.setCategory(cat);
-            String y = spYear.getSelectedItem().toString();
-            if (!y.equals(getResources().getString(R.string.unknown))
-                    || y.equals(MyConstants.EMPTY)) {
-                kit.setYear(y);
-            }else{
-                kit.setYear(MyConstants.EMPTY);
-            }
-            kit.setScalemates_url(scalematesUrl);
-
-            kit.setMedia(spKitMedia.getSelectedItemPosition());
-
-            String d = spDescription.getSelectedItem().toString();
-            if (!d.equals(getString(R.string.kittype))){
-                kit.setDescription(descToCode(d));
-            }else{
-                kit.setDescription(MyConstants.CODE_OTHER);
-            }
-            currency = spCurrency.getSelectedItem().toString();
-            kit.setCurrency(currency);
-            quantity = spQuantity.getSelectedItemPosition() + 1;
-            kit.setQuantity(quantity);
-            notes = etNotes.getText().toString();
-            kit.setNotes(notes);
-            if (!etPrice.getText().toString().equals(MyConstants.EMPTY)) {
-                price = Integer.parseInt(etPrice.getText().toString()) * 100;
-            }else{
-                price = 0;
-            }
-            kit.setPrice(price);
-            if (!tvPurchaseDate.getText().toString().equals(MyConstants.EMPTY)
-                    && tvPurchaseDate.getText().toString().equals(getString(R.string.Date_not_set))) {
-                datePurchased = tvPurchaseDate.getText().toString();
-            }else{
-                datePurchased = MyConstants.EMPTY;
-            }
-            placePurchased = acPurchasedFrom.getText().toString().trim();
-            kit.setPlacePurchased(placePurchased);
-            kit.setDatePurchased(datePurchased);
-            kit.setBoxart_uri(boxartUri);
-            kit.setBoxart_url(boxartUrl);
+        if (barcode == null) {
+            barcode = MyConstants.EMPTY;
         }
+        category = String.valueOf(spCategory.getSelectedItemPosition());
+        String y = spYear.getSelectedItem().toString();
+        if (!y.equals(getResources().getString(R.string.unknown))
+                || y.equals(MyConstants.EMPTY)) {
+            year = y;
+        }
+
+        brand = acTvBrand.getText().toString().trim();
+        brandCatno = etBrandCat_no.getText().toString().trim();
+        scale = Integer.parseInt(etScale.getText().toString());
+        kitName = etKitName.getText().toString().trim();
+        kitNoengname = etKitNoengName.getText().toString().trim();
+        media = spKitMedia.getSelectedItemPosition();
+        String d = spDescription.getSelectedItem().toString(); //todo
+        description = (descToCode(d));
+        currency = spCurrency.getSelectedItem().toString();
+        quantity = spQuantity.getSelectedItemPosition() + 1;
+        notes = etNotes.getText().toString();
+        if (!etPrice.getText().toString().equals(MyConstants.EMPTY)) {
+            price = Integer.parseInt(etPrice.getText().toString()) * 100;
+        } else {
+            price = 0;
+        }
+        if (!tvPurchaseDate.getText().toString().equals(MyConstants.EMPTY)
+                && tvPurchaseDate.getText().toString().equals(getString(R.string.Date_not_set))) {
+            datePurchased = tvPurchaseDate.getText().toString();
+        } else {
+            datePurchased = MyConstants.EMPTY;
+        }
+        placePurchased = acPurchasedFrom.getText().toString().trim();
+
+        if (workMode == MyConstants.MODE_AFTERMARKET || workMode == MyConstants.MODE_AFTER_KIT) {
+            aftermarket = buildAftermarket();
+//            aftermarket.setBrand(acTvBrand.getText().toString().trim());
+//            aftermarket.setBrandCatno(etBrandCat_no.getText().toString().trim());
+//            aftermarket.setScale(Integer.parseInt(etScale.getText().toString()));
+//            aftermarket.setAftermarketName(etKitName.getText().toString().trim());
+//            aftermarket.setAftemarketOriginalName(etKitNoengName.getText().toString().trim());
+//            aftermarket.setBarcode(barcode);
+//
+//            String cat = String.valueOf(spCategory.getSelectedItemPosition());
+//            aftermarket.setCategory(cat);
+//            String y = spYear.getSelectedItem().toString();
+//            if (!y.equals(getString(R.string.unknown))) {
+//                aftermarket.setYear(y);
+//            }else{
+//                aftermarket.setYear(MyConstants.EMPTY);
+//            }
+//
+//            aftermarket.setMedia(spKitMedia.getSelectedItemPosition());
+//
+//            String d = spDescription.getSelectedItem().toString();
+//            if (!d.equals(getString(R.string.kittype))){
+//                aftermarket.setDescription(descToCode(d));
+//            }else{
+//                aftermarket.setDescription(MyConstants.CODE_OTHER);
+//            }
+//            currency = spCurrency.getSelectedItem().toString();
+//            aftermarket.setCurrency(currency);
+//            quantity = spQuantity.getSelectedItemPosition() + 1;
+//            aftermarket.setQuantity(quantity);
+//            notes = etNotes.getText().toString();
+//            aftermarket.setNotes(notes);
+//            if (!etPrice.getText().toString().equals(MyConstants.EMPTY)) {
+//                price = Integer.parseInt(etPrice.getText().toString()) * 100;
+//            }else{
+//                price = 0;
+//            }
+//            aftermarket.setPrice(price);
+//            if (!tvPurchaseDate.getText().toString().equals(MyConstants.EMPTY)
+//                    || tvPurchaseDate.getText().toString().equals(getResources()
+//                    .getString(R.string.Date_not_set))) {
+//                datePurchased = tvPurchaseDate.getText().toString();
+//            }else{
+//                datePurchased = MyConstants.EMPTY;
+//            }
+//
+//            placePurchased = acPurchasedFrom.getText().toString().trim();
+//            aftermarket.setPlacePurchased(placePurchased);
+//
+//            aftermarket.setDatePurchased(datePurchased);
+//            aftermarket.setBoxartUri(boxartUri);
+//            aftermarket.setBoxartUrl(boxartUrl);
+//            aftermarket.setListname(listname);
+
+        } else {
+//            if (barcode == null){
+//                barcode = MyConstants.EMPTY;
+//            }
+//            category = String.valueOf(spCategory.getSelectedItemPosition());
+//            String y = spYear.getSelectedItem().toString();
+//            if (!y.equals(getResources().getString(R.string.unknown))
+//                    || y.equals(MyConstants.EMPTY)) {
+//                year = y;
+//            }
+//
+//            brand = acTvBrand.getText().toString().trim();
+//            brandCatno = etBrandCat_no.getText().toString().trim();
+//            scale = Integer.parseInt(etScale.getText().toString());
+//            kitName = etKitName.getText().toString().trim();
+//            kitNoengname = etKitNoengName.getText().toString().trim();
+//
+//
+//            media = spKitMedia.getSelectedItemPosition();
+//            String d = spDescription.getSelectedItem().toString(); //todo
+//            description = (descToCode(d));
+//            currency = spCurrency.getSelectedItem().toString();
+//            quantity = spQuantity.getSelectedItemPosition() + 1;
+//            notes = etNotes.getText().toString();
+//            if (!etPrice.getText().toString().equals(MyConstants.EMPTY)) {
+//                price = Integer.parseInt(etPrice.getText().toString()) * 100;
+//            }else{
+//                price = 0;
+//            }
+//            if (!tvPurchaseDate.getText().toString().equals(MyConstants.EMPTY)
+//                    && tvPurchaseDate.getText().toString().equals(getString(R.string.Date_not_set))) {
+//                datePurchased = tvPurchaseDate.getText().toString();
+//            }else{
+//                datePurchased = MyConstants.EMPTY;
+//            }
+//            placePurchased = acPurchasedFrom.getText().toString().trim();
+
+            kit = buildKit();
+
+//                    new Kit.KitBuilder()
+//                    .hasBrand(brand)
+//                    .hasBrand_catno(brandCatno)
+//                    .hasKit_name(kitName)
+//                    .hasScale(scale)
+//                    .hasCategory(category)
+//                    .hasBarcode(barcode)
+//                    .hasKit_noeng_name(kitNoengname)
+//                    .hasDescription(description)
+//                    .hasPrototype(MyConstants.EMPTY)//not in use
+//                    .hasSendStatus(sendStatus)
+//                    .hasBoxart_url(boxartUrl)
+//                    .hasBoxart_uri(boxartUri)
+//                    .hasScalemates_url(scalematesUrl)
+//                    .hasYear(year)
+//                    .hasOnlineId(onlineId)
+//                    .hasDateAdded(dateAdded)
+//                    .hasDatePurchased(datePurchased)
+//                    .hasQuantity(quantity)
+//                    .hasNotes(notes)
+//                    .hasPrice(price)
+//                    .hasCurrency(currency)
+//                    .hasPlacePurchased(placePurchased)
+//                    .hasStatus(status)
+//                    .hasMedia(media)
+//                    .build();
+
+
+//            kit.setBrand(acTvBrand.getText().toString().trim());
+//            kit.setBrandCatno(etBrandCat_no.getText().toString().trim());
+//            kit.setScale(Integer.parseInt(etScale.getText().toString()));
+//            kit.setKit_name(etKitName.getText().toString().trim());
+//            kit.setKit_noeng_name(etKitNoengName.getText().toString().trim());
+//            kit.setBarcode(barcode);
+//            String cat = String.valueOf(spCategory.getSelectedItemPosition());
+//            kit.setCategory(cat);
+//            String y = spYear.getSelectedItem().toString();
+//            if (!y.equals(getResources().getString(R.string.unknown))
+//                    || y.equals(MyConstants.EMPTY)) {
+//                kit.setYear(y);
+//            }else{
+//                kit.setYear(MyConstants.EMPTY);
+//            }
+//            kit.setScalemates_url(scalematesUrl);
+//
+//            kit.setMedia(spKitMedia.getSelectedItemPosition());
+//
+//            String d = spDescription.getSelectedItem().toString();
+//            if (!d.equals(getString(R.string.kittype))){
+//                kit.setDescription(descToCode(d));
+//            }else{
+//                kit.setDescription(MyConstants.CODE_OTHER);
+//            }
+//            currency = spCurrency.getSelectedItem().toString();
+//            kit.setCurrency(currency);
+//            quantity = spQuantity.getSelectedItemPosition() + 1;
+//            kit.setQuantity(quantity);
+//            notes = etNotes.getText().toString();
+//            kit.setNotes(notes);
+//            if (!etPrice.getText().toString().equals(MyConstants.EMPTY)) {
+//                price = Integer.parseInt(etPrice.getText().toString()) * 100;
+//            }else{
+//                price = 0;
+//            }
+//            kit.setPrice(price);
+//            if (!tvPurchaseDate.getText().toString().equals(MyConstants.EMPTY)
+//                    && tvPurchaseDate.getText().toString().equals(getString(R.string.Date_not_set))) {
+//                datePurchased = tvPurchaseDate.getText().toString();
+//            }else{
+//                datePurchased = MyConstants.EMPTY;
+//            }
+//            placePurchased = acPurchasedFrom.getText().toString().trim();
+//            kit.setPlacePurchased(placePurchased);
+//            kit.setDatePurchased(datePurchased);
+//            kit.setBoxart_uri(boxartUri);
+//            kit.setBoxart_url(boxartUrl);
+        }
+    }
+
+    private Kit buildKit() {
+        return new Kit.KitBuilder()
+                .hasBrand(brand)
+                .hasBrand_catno(brandCatno)
+                .hasKit_name(kitName)
+                .hasScale(scale)
+                .hasCategory(category)
+                .hasBarcode(barcode)
+                .hasKit_noeng_name(kitNoengname)
+                .hasDescription(description)
+                .hasPrototype(MyConstants.EMPTY)//not in use
+                .hasSendStatus(sendStatus)
+                .hasBoxart_url(boxartUrl)
+                .hasBoxart_uri(boxartUri)
+                .hasScalemates_url(scalematesUrl)
+                .hasYear(year)
+                .hasOnlineId(onlineId)
+                .hasDateAdded(dateAdded)
+                .hasDatePurchased(datePurchased)
+                .hasQuantity(quantity)
+                .hasNotes(notes)
+                .hasPrice(price)
+                .hasCurrency(currency)
+                .hasPlacePurchased(placePurchased)
+                .hasStatus(status)
+                .hasMedia(media)
+                .build();
+    }
+
+    private Aftermarket buildAftermarket() {
+        return new Aftermarket.AftermarketBuilder()
+                .hasListname(listname)
+                .hasBrand(brand)
+                .hasBrandCatno(brandCatno)
+                .hasAftermarketName(kitName)
+                .hasScale(scale)
+                .hasCategory(category)
+                .hasBarcode(barcode)
+                .hasAftermarketOriginalName(kitNoengname)
+                .hasDescription(description)
+//                .hasPrototype(MyConstants.EMPTY)//not in use
+                .hasSendStatus(sendStatus)
+                .hasBoxartUrl(boxartUrl)
+                .hasBoxartUri(boxartUri)
+                .hasScalematesUrl(scalematesUrl)
+                .hasYear(year)
+                .hasOnlineId(onlineId)
+                .hasDateAdded(dateAdded)
+                .hasDatePurchased(datePurchased)
+                .hasQuantity(quantity)
+                .hasNotes(notes)
+                .hasPrice(price)
+                .hasCurrency(currency)
+                .hasPlacePurchased(placePurchased)
+                .hasStatus(status)
+                .hasMedia(media)
+                .build();
     }
 
     private String descToCode(String d) {
@@ -1015,67 +1192,72 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         status = MyConstants.STATUS_NEW;
         media = MyConstants.M_CODE_INJECTED;
         currentId = 0;
-        kit.setBrand(brand);
-        kit.setBrandCatno(brandCatno);
-        kit.setKit_name(kitName);
-        kit.setScale(scale);
-        kit.setCategory(category);
-        //Optional
-        kit.setBarcode(barcode);
-        kit.setKit_noeng_name(kitNoengname);
-        kit.setDescription(description);
-        kit.setPrototype(prototype);
-        kit.setBoxart_url(boxartUrl);
-        kit.setScalemates_url(scalematesUrl);
-        kit.setBoxart_uri(boxartUri);
-        kit.setYear(year);
-        kit.setOnlineId(onlineId);
+        sendStatus = MyConstants.EMPTY;
 
-        kit.setDate_added(dateAdded);
-        kit.setDatePurchased(datePurchased);
-        kit.setQuantity(quantity);
-        kit.setNotes(notes);
-        kit.setPrice(price);
-        kit.setCurrency(currency);
-        kit.setSendStatus(sendStatus);
-        kit.setPlacePurchased(placePurchased);
-        kit.setStatus(status);
-        kit.setMedia(media);
+        kit = new Kit.KitBuilder().build();
+//        kit.setBrand(brand);
+//        kit.setBrandCatno(brandCatno);
+//        kit.setKit_name(kitName);
+//        kit.setScale(scale);
+//        kit.setCategory(category);
+//        //Optional
+//        kit.setBarcode(barcode);
+//        kit.setKit_noeng_name(kitNoengname);
+//        kit.setDescription(description);
+//        kit.setPrototype(prototype);
+//        kit.setBoxart_url(boxartUrl);
+//        kit.setScalemates_url(scalematesUrl);
+//        kit.setBoxart_uri(boxartUri);
+//        kit.setYear(year);
+//        kit.setOnlineId(onlineId);
+//
+//        kit.setDate_added(dateAdded);
+//        kit.setDatePurchased(datePurchased);
+//        kit.setQuantity(quantity);
+//        kit.setNotes(notes);
+//        kit.setPrice(price);
+//        kit.setCurrency(currency);
+//        kit.setSendStatus(sendStatus);
+//        kit.setPlacePurchased(placePurchased);
+//        kit.setStatus(status);
+//        kit.setMedia(media);
 
         aftermarketName = MyConstants.EMPTY;
         aftemarketOriginalName = MyConstants.EMPTY;
         compilanceWith = MyConstants.EMPTY;
         listname = MyConstants.EMPTY;
 
-        aftermarket.setBrand(brand);
-        aftermarket.setBrandCatno(brandCatno);
-        aftermarket.setAftermarketName(aftermarketName);
-        aftermarket.setScale(scale);
-        aftermarket.setCategory(category);
-        aftermarket.setBarcode(barcode);
-        aftermarket.setAftemarketOriginalName(aftemarketOriginalName);
-        aftermarket.setDescription(description);
-        aftermarket.setCompilanceWith(compilanceWith);
-        aftermarket.setBoxartUrl(boxartUrl);
-        aftermarket.setScalematesUrl(scalematesUrl);
-        aftermarket.setBoxartUri(boxartUri);
-        aftermarket.setYear(year);
-        aftermarket.setOnlineId(onlineId);
-        aftermarket.setDateAdded(dateAdded);
-        aftermarket.setDatePurchased(datePurchased);
-        aftermarket.setQuantity(quantity);
-        aftermarket.setNotes(notes);
-        aftermarket.setPrice(price);
-        aftermarket.setCurrency(currency);
-        aftermarket.setSendStatus(sendStatus);
-        aftermarket.setPlacePurchased(placePurchased);
-        aftermarket.setListname(listname);
-        aftermarket.setStatus(status);
-        aftermarket.setMedia(media);
+        aftermarket = new Aftermarket.AftermarketBuilder().build();
+//        aftermarket.setBrand(brand);
+//        aftermarket.setBrandCatno(brandCatno);
+//        aftermarket.setAftermarketName(aftermarketName);
+//        aftermarket.setScale(scale);
+//        aftermarket.setCategory(category);
+//        aftermarket.setBarcode(barcode);
+//        aftermarket.setAftemarketOriginalName(aftemarketOriginalName);
+//        aftermarket.setDescription(description);
+//        aftermarket.setCompilanceWith(compilanceWith);
+//        aftermarket.setBoxartUrl(boxartUrl);
+//        aftermarket.setScalematesUrl(scalematesUrl);
+//        aftermarket.setBoxartUri(boxartUri);
+//        aftermarket.setYear(year);
+//        aftermarket.setOnlineId(onlineId);
+//        aftermarket.setDateAdded(dateAdded);
+//        aftermarket.setDatePurchased(datePurchased);
+//        aftermarket.setQuantity(quantity);
+//        aftermarket.setNotes(notes);
+//        aftermarket.setPrice(price);
+//        aftermarket.setCurrency(currency);
+//        aftermarket.setSendStatus(sendStatus);
+//        aftermarket.setPlacePurchased(placePurchased);
+//        aftermarket.setListname(listname);
+//        aftermarket.setStatus(status);
+//        aftermarket.setMedia(media);
 
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.remove(MyConstants.BARCODE).commit();
+        tvModeAftermarket.setClickable(true);
     }
 
     private void returnToScan() {
@@ -1096,18 +1278,18 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                     case "2":
                         desc = getString(R.string.rebox);
                         break;
-                    case "3":
-                        desc = getString(R.string.rebox);
-                        break;
-                    case "4":
-                        desc = getString(R.string.rebox);
-                        break;
-                    case "5":
-                        desc = getString(R.string.rebox);
-                        break;
-                    case "6":
-                        desc = getString(R.string.rebox);
-                        break;
+//                    case "3":
+//                        desc = getString(R.string.rebox);
+//                        break;
+//                    case "4":
+//                        desc = getString(R.string.rebox);
+//                        break;
+//                    case "5":
+//                        desc = getString(R.string.rebox);
+//                        break;
+//                    case "6":
+//                        desc = getString(R.string.rebox);
+//                        break;
                 }
             }else{
                 desc = getString(R.string.unknown);
@@ -1126,6 +1308,10 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         }else{
             spYear.setSelection(0);
         }
+    }
+
+    private void setKitCategory(String cat) {
+        spCategory.setSelection(Integer.valueOf(cat));
     }
 
     @Override
@@ -1174,6 +1360,8 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         wasSearchedOnline = true;
         isFoundOnline = false;
         workMode = mode;
+        setKitUI();
+        tvModeAftermarket.setClickable(false);
     }
 
     @Override
@@ -1338,6 +1526,16 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         categoryContainer = new ValueContainer<>();
         final ValueContainer<String> barcodeContainer = new ValueContainer<>();
 
+        String inBrand = "";
+        String inBrandCatno = "";
+        int inScale = 0;
+        String inKitName = "";
+        String inKitNoengname = "";
+        String inBarcode = "";
+        String inDescription = "";
+        String inYear = "";
+        String inScalematesUrl = "";
+
         ArrayList<Storage.JSONDocument> jsonDocList = response.getJsonDocList();
         for (int i = 0; i < jsonDocList.size(); i++) {
             String in = jsonDocList.get(i).getJsonDoc();
@@ -1346,37 +1544,38 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                 urlContainer.setVal(reader.getString(MyConstants.TAG_BOXART_URL));
                 categoryContainer.setVal(String.valueOf(reader.getInt(MyConstants.TAG_CATEGORY)));
                 barcodeContainer.setVal(reader.getString(MyConstants.TAG_BARCODE));
-                brand = reader.getString(MyConstants.TAG_BRAND);
-                brandCatno = reader.getString(MyConstants.TAG_BRAND_CATNO);
-                scale = reader.getInt(MyConstants.TAG_SCALE);
-                kitName = reader.getString(MyConstants.TAG_KIT_NAME);
-                kitNoengname = reader.getString(MyConstants.TAG_NOENG_NAME);
-                barcode = reader.getString(MyConstants.TAG_BARCODE);
-                description = reader.getString(MyConstants.TAG_DESCRIPTION);
-                year = reader.getString(MyConstants.TAG_YEAR);
-                scalematesUrl = reader.getString(MyConstants.TAG_SCALEMATES_PAGE);
+                inBrand = reader.getString(MyConstants.TAG_BRAND);
+                inBrandCatno = reader.getString(MyConstants.TAG_BRAND_CATNO);
+                inScale = reader.getInt(MyConstants.TAG_SCALE);
+                inKitName = reader.getString(MyConstants.TAG_KIT_NAME);
+                inKitNoengname = reader.getString(MyConstants.TAG_NOENG_NAME);
+//                inBarcode = reader.getString(MyConstants.TAG_BARCODE);
+                inDescription = reader.getString(MyConstants.TAG_DESCRIPTION);
+                inYear = reader.getString(MyConstants.TAG_YEAR);
+                inScalematesUrl = reader.getString(MyConstants.TAG_SCALEMATES_PAGE);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            showKit = kitName + ", " + brand
-                    + ", " + brandCatno + ", "
-                    + "1/" + String.valueOf(scale);
+            showKit = inKitName + ", " + inBrand
+                    + ", " + inBrandCatno + ", "
+                    + "1/" + String.valueOf(inScale);
 
             Item item = new Item(urlContainer.getVal(), showKit);
             itemList.add(item);
 
             Kit kitToShow = new Kit.KitBuilder()
-                    .hasBrand(brand)
-                    .hasBrand_catno(brandCatno)
-                    .hasKit_name(kitName)
-                    .hasScale(scale)
-                    .hasDescription(description)
+//                    .hasBarcode(inBarcode) //?
+                    .hasBrand(inBrand)
+                    .hasBrand_catno(inBrandCatno)
+                    .hasKit_name(inKitName)
+                    .hasScale(inScale)
+                    .hasDescription(inDescription)
                     .hasCategory(categoryContainer.getVal())
-                    .hasKit_noeng_name(kitNoengname)
+                    .hasKit_noeng_name(inKitNoengname)
                     .hasBoxart_url(urlContainer.getVal())
                     .hasBarcode(barcodeContainer.getVal())
-                    .hasScalemates_url(scalematesUrl)
-                    .hasYear(year)
+                    .hasScalemates_url(inScalematesUrl)
+                    .hasYear(inYear)
                     .build();
             itemsToShow.add(kitToShow);
         }
@@ -1396,14 +1595,18 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                 setKitYear(kitToAdd.getYear());
                 setDescription(kitToAdd.getDescription());
 
-                barcode = kitToAdd.getBarcode();
+                String vv = kitToAdd.getBarcode();
+                if (!vv.isEmpty()) {
+                    barcode = vv;
+                }
                 category = kitToAdd.getCategory();
-
+                setKitCategory(category);
                 if (wasSearchedOnline && isFoundOnline) {
                     boxartUrl = kitToAdd.getBoxart_url();
-                    kit.setBoxart_url(kitToAdd.getBoxart_url());
+//                    kit.setBoxart_url(kitToAdd.getBoxart_url());
                 } else {
-                    kit.setBoxart_url(MyConstants.EMPTY);
+                    boxartUrl = MyConstants.EMPTY;
+//                    kit.setBoxart_url(MyConstants.EMPTY);
                 }
                 Glide
                         .with(context)

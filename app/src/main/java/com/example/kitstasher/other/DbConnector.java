@@ -1223,7 +1223,7 @@ public Cursor filteredKits(String tableName, String[] filters, String sortBy,
     public boolean searchListForDoubles(String listname, String bcode){
         boolean found = false;
             if (mDB.query(TABLE_MYLISTSITEMS, new String[] {"listname", "barcode"},"listname = ? " +
-                    "AND barcode = ?", new String[] {listname, bcode}, null, null, null)
+                    "AND barcode LIKE ?", new String[]{listname, bcode}, null, null, null)
                     .getCount() != 0){
                 found = true;
         }
@@ -1491,7 +1491,7 @@ public Cursor filteredKits(String tableName, String[] filters, String sortBy,
     //Для проверки из сканирования ScanActivity
     public boolean searchForDoubles(String bcode){
         boolean found = false;
-        if (mDB.query(TABLE_KITS,null,"barcode = ?", new String[] {bcode}, null, null, null)
+        if (mDB.query(TABLE_KITS, null, "barcode LIKE ?", new String[]{bcode}, null, null, null)
                 .getCount() != 0){
             found = true;
         }

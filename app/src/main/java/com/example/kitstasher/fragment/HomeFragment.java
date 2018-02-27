@@ -65,6 +65,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
                 break;
             case R.id.btnViewStashAction:
                 KitsFragment kitsFragment = new KitsFragment();
+                bundle.putBoolean(MyConstants.AFTERMARKET_MODE, false);
                 bundle.putInt(MyConstants.LIST_CATEGORY, 0);
                 bundle.putBoolean(MyConstants.AFTERMARKET_MODE, false);
                 bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_KIT);
@@ -73,7 +74,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
                 fragmentTransaction.commit();
                 break;
             case R.id.btnAftermarketAction:
-                AftermarketFragment aftermarketFragment = new AftermarketFragment();
+                KitsFragment aftermarketFragment = new KitsFragment();
+//                AftermarketFragment aftermarketFragment = new AftermarketFragment();
+                bundle.putBoolean(MyConstants.AFTERMARKET_MODE, true);
                 bundle.putInt(MyConstants.LIST_CATEGORY, 0);
                 bundle.putBoolean(MyConstants.AFTERMARKET_MODE, true);
                 bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_AFTERMARKET);

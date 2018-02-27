@@ -2,6 +2,7 @@ package com.example.kitstasher.fragment;
 
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -20,9 +21,16 @@ import com.example.kitstasher.other.MyConstants;
 
 public class KitsFragment extends Fragment {
     private static CustomKitsViewPager viewPager;
-
+    DbConnector dbConnector;
+    Cursor cursor;
+    AdapterViewStash adapter;
     public KitsFragment() {
 
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
     }
 
     @Override
@@ -31,9 +39,9 @@ public class KitsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_viewstash, container, false);
         TabLayout tabLayout = view.findViewById(R.id.tabsViewStash);
         tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
-        DbConnector dbConnector = new DbConnector(getActivity());
+        dbConnector = new DbConnector(getActivity());
         dbConnector.open();
-        Cursor cursor;
+//        Cursor cursor;
         boolean aftermarketMode = getArguments().getBoolean(MyConstants.AFTERMARKET_MODE);
         if (aftermarketMode) {
             cursor = dbConnector.getAfterActiveCategories();
@@ -41,7 +49,7 @@ public class KitsFragment extends Fragment {
             cursor = dbConnector.getActiveCategories();
         }
         viewPager = view.findViewById(R.id.viewpagerViewStash);
-        AdapterViewStash adapter = new AdapterViewStash(getChildFragmentManager(), getActivity(), aftermarketMode, cursor);
+        adapter = new AdapterViewStash(getChildFragmentManager(), getActivity(), aftermarketMode, cursor);
         viewPager.setAdapter(adapter);
         Bundle bundle = getArguments();
         if (!bundle.isEmpty()) {
@@ -50,11 +58,40 @@ public class KitsFragment extends Fragment {
                 viewPager.setCurrentItem(currentTab);
             }
         }else{
-            int currentTab = 0;
-            viewPager.setCurrentItem(currentTab);
+            viewPager.setCurrentItem(0);
         }
         tabLayout.setupWithViewPager(viewPager);
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+//        viewPager.refresh();
+        boolean aftermarketMode = getArguments().getBoolean(MyConstants.AFTERMARKET_MODE);
+        if (aftermarketMode) {
+            cursor = dbConnector.getAfterActiveCategories();
+        } else {
+            cursor = dbConnector.getActiveCategories();
+        }
+        adapter = new AdapterViewStash(getChildFragmentManager(), getActivity(), aftermarketMode, cursor);
+        viewPager.setAdapter(adapter);
+        Bundle bundle = getArguments(); //todo тут проблема возврата все время в прошлую категорию
+        if (!bundle.isEmpty()) {
+            int currentTab = getArguments().getInt(MyConstants.CATEGORY_TAB);
+            if (currentTab != 0) {
+                viewPager.setCurrentItem(currentTab);
+            }
+        } else {
+            int currentTab = 0;
+            viewPager.setCurrentItem(currentTab);
+        }
+
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
     }
 
     public static void refreshPages() {

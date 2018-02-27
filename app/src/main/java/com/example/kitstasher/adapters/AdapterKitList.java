@@ -19,7 +19,6 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.kitstasher.R;
 import com.example.kitstasher.activity.ViewActivity;
-import com.example.kitstasher.fragment.AftermarketFragment;
 import com.example.kitstasher.fragment.KitsFragment;
 import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.Helper;
@@ -34,6 +33,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 import static android.R.drawable.ic_menu_camera;
+
+//import com.example.kitstasher.fragment.AftermarketFragment;
 
 /**
  * Created by Алексей on 18.01.2018.
@@ -113,6 +114,8 @@ public class AdapterKitList extends CursorRecyclerViewAdapter<AdapterKitList.Vie
         String scale = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_SCALE));
         final String onlneId = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_ID_ONLINE));
         category = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_CATEGORY));
+
+//        String b = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BARCODE));
 
         String fullBrand = brand + " " + cat_no;
         holder.tvFullBrand.setText(fullBrand);
@@ -207,11 +210,12 @@ public class AdapterKitList extends CursorRecyclerViewAdapter<AdapterKitList.Vie
                 Cursor newcursor = dbConnector.filteredKits(activeTable, filters, sortBy, category, MyConstants.EMPTY);
                 notifyItemRemoved(currentPosition);
                 changeCursor(newcursor);
-                if (workMode == MyConstants.MODE_KIT) {
-                    KitsFragment.refreshPages();
-                } else if (workMode == MyConstants.MODE_AFTERMARKET) {
-                    AftermarketFragment.refreshPages();
-                }
+                KitsFragment.refreshPages();
+//                if (workMode == MyConstants.MODE_KIT) {
+//                    KitsFragment.refreshPages();
+//                } else if (workMode == MyConstants.MODE_AFTERMARKET) {
+//                    AftermarketFragment.refreshPages();
+//                }
             }
         });
         dialogBuilder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {

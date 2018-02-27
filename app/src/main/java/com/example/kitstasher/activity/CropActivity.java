@@ -11,7 +11,6 @@ import com.yalantis.ucrop.UCrop;
 
 
 public class CropActivity extends AppCompatActivity {
-    String brand, brandCatno, description, year;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,12 +20,6 @@ public class CropActivity extends AppCompatActivity {
 
         String u = "file:///" + intent.getExtras().getString(MyConstants.FILE_URI);
         Uri uri = Uri.parse(u);
-
-//        brand = intent.getExtras().getString(MyConstants.BRAND);
-//        brandCatno = intent.getExtras().getString(MyConstants.CATNO);
-//        description = intent.getExtras().getString(MyConstants.DESCRIPTION);
-//        year = intent.getExtras().getString(MyConstants.YEAR);
-
         UCrop.Options options = new UCrop.Options();
         options.setToolbarTitle(getResources().getString(R.string.edit_image));
         options.setToolbarColor(getResources().getColor(R.color.colorPrimary));

@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.view.ViewGroup;
 
 import com.example.kitstasher.R;
 import com.example.kitstasher.fragment.SortAllFragment;
@@ -24,11 +25,13 @@ public class AdapterViewStash extends FragmentStatePagerAdapter {
     private Cursor cursor;
     private int activeCategoriesCount;
     private List<Fragment> fragments;
+    boolean aftermarketMode;
 
     public AdapterViewStash(FragmentManager fm, Context context, boolean aftermarketMode, Cursor cursor) {
         super(fm);
         this.context = context;
         this.cursor = cursor;
+        this.aftermarketMode = aftermarketMode;
         this.activeCategoriesCount = cursor.getCount();
         fragments = new ArrayList<>();
         Bundle bundle = new Bundle();
@@ -50,9 +53,12 @@ public class AdapterViewStash extends FragmentStatePagerAdapter {
 
     @Override
     public Fragment getItem(int position) {
-
         return fragments.get(position);
+    }
 
+    @Override
+    public Object instantiateItem(ViewGroup container, int position) {
+        return super.instantiateItem(container, position);
     }
 
     @Override
@@ -80,7 +86,7 @@ public class AdapterViewStash extends FragmentStatePagerAdapter {
     private int getTitleName(String cat) {
         switch (cat) {
             case "0":
-                return R.string.unknown;
+                return R.string.Other;
             case "1":
                 return R.string.Air;
             case "2":
@@ -96,7 +102,7 @@ public class AdapterViewStash extends FragmentStatePagerAdapter {
             case "7":
                 return R.string.Fantasy;
             case "8":
-                return R.string.Other;
+                return R.string.Other; //todo
         }
         return 0;
     }

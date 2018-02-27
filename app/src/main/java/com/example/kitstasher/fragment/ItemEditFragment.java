@@ -216,6 +216,9 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
                     } else if (workMode == MyConstants.MODE_AFTERMARKET) {
                         dbConnector.editAftermarketById(id, cv);
                     }
+
+                    KitsFragment.refreshPages();
+
                     String ret = String.valueOf(spCategory.getSelectedItemPosition());
                     Intent intent3 = new Intent();
                     intent3.putExtra(MyConstants.POSITION, position);
@@ -315,14 +318,23 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
         etPurchasedFrom.setText(cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_PURCHASE_PLACE)));
 
         int categoryToSet = Integer.valueOf(cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_CATEGORY))); //беру категогию из записи
-        String[] categories = new String[]{getString(R.string.other), getString(R.string.air), getString(R.string.ground),
-                getString(R.string.sea), getString(R.string.space), getString(R.string.auto_moto),
-                getString(R.string.Figures), getString(R.string.Fantasy)};
+        String[] categories = new String[]{
+                getString(R.string.other),
+                getString(R.string.air),
+                getString(R.string.ground),
+                getString(R.string.sea),
+                getString(R.string.space),
+                getString(R.string.auto_moto),
+                getString(R.string.Figures),
+                getString(R.string.Fantasy)};
         int[] icons = new int[]{
                 R.drawable.ic_check_box_outline_blank_black_24dp,
-                R.drawable.ic_tag_air_black_24dp, R.drawable.ic_tag_afv_black_24dp,
-                R.drawable.ic_tag_ship_black_24dp, R.drawable.ic_tag_space_black_24dp,
-                R.drawable.ic_directions_car_black_24dp, R.drawable.ic_wc_black_24dp,
+                R.drawable.ic_tag_air_black_24dp,
+                R.drawable.ic_tag_afv_black_24dp,
+                R.drawable.ic_tag_ship_black_24dp,
+                R.drawable.ic_tag_space_black_24dp,
+                R.drawable.ic_directions_car_black_24dp,
+                R.drawable.ic_wc_black_24dp,
                 R.drawable.ic_android_black_24dp
         };
         AdapterSpinner adapterSpinner = new AdapterSpinner(context, icons, categories);

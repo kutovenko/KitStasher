@@ -34,30 +34,29 @@ import com.shephertz.app42.paas.sdk.android.social.SocialService;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+//import com.parse.ParseFacebookUtils;
+
 /**
  * Created by Alexey on 21.04.2017.
  * Log in Facebook account and then in cloud services for interacting with online kits database
  * and Top users service. Currently there are AppHQ for kits and Parse on Buddy for Top users.
- * @param
+ *
  */
 
 public class LoginActivity extends AppCompatActivity {
-    private LoginButton loginButton;
     private TextView tvInfo;
     private CallbackManager callbackManager;
     private AccessToken accessToken;
     public static AsyncApp42ServiceApi asyncService;
     private SharedPreferences sharedPreferences;
     private KsUser ksUser;
-//    private SharedPreferences.Editor editor;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+//        ParseFacebookUtils.initialize(this);
         Parse.initialize(new Parse.Configuration.Builder(this)
                 .applicationId(getString(R.string.parse_application_id))
                 .clientKey(getString(R.string.parse_client_key))
@@ -70,7 +69,7 @@ public class LoginActivity extends AppCompatActivity {
         tvInfo.setText(R.string.Please_log_in);
 
         //Facebook LoginButton and Callback
-        loginButton = findViewById(R.id.login_button);
+        LoginButton loginButton = findViewById(R.id.login_button);
         callbackManager = CallbackManager.Factory.create();
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
 
@@ -105,13 +104,12 @@ public class LoginActivity extends AppCompatActivity {
                             } catch (JSONException e) {
                                 e.printStackTrace(); //TODO catch
                             }
-                            //If there are Facebook credentials, register in clouds
                             registerInClouds(fbID, fbName.getVal()); //todo try-catch
                         }
-                        tvInfo.setText(getString(R.string.Welcome) + fbName.getVal());
+                        String greeting = getString(R.string.Welcome) + fbName.getVal();
+                        tvInfo.setText(greeting);
                     }
                 });
-                //Requested fields to be returned from the JSONObject
                 Bundle parameters = new Bundle();
                 parameters.putString("fields", "id,name,email,gender,cover,picture.type(large)");
                 request.setParameters(parameters);
@@ -139,24 +137,14 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Register in any Parse-based cloud service. Checks Top_users by Facebook ID
-     * @param id Facebook ID
-     * @param name Facebook name
-     */
     private void registerInParse(final String id, final String name) {
-        // Checking for doubles
         ParseQuery<ParseObject> query = ParseQuery.getQuery(MyConstants.PARSE_C_TOPUSERS);
         query.whereContains(MyConstants.PARSE_TU_OWNERID, id.trim());
         query.getFirstInBackground(new GetCallback<ParseObject>() {
             public void done(ParseObject object, ParseException e) {
                 if (e == null) {
-                    //Saving Parse user ID
                     setSprefData(MyConstants.USER_ID_PARSE, object.getObjectId());
-                }
-
-                else {
-                    //Creating new ParseUser
+                } else {
                     ParseObject newParseObject = new ParseObject("Top_users");
                     newParseObject.put("ownerId", id);
                     newParseObject.put("ownerName", name);
@@ -166,7 +154,6 @@ public class LoginActivity extends AppCompatActivity {
                     } catch (ParseException e1) {
                         e1.printStackTrace();
                     }
-                    //Saving Parse user ID
                     setSprefData(MyConstants.USER_ID_PARSE, newParseObject.getObjectId());
                 }
             }
@@ -174,18 +161,13 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Register in AppHQ service. No need to check for doubles, it is done by cloud service.
-     */
     private void registerInAppHq() {
-        //Register in AppHq
         asyncService = AsyncApp42ServiceApi.instance(LoginActivity.this);
         SocialService socialService = App42API.buildSocialService();
         socialService.linkUserFacebookAccount(accessToken.getUserId().toString(),
                 accessToken.toString(), new App42CallBack() {
                     public void onSuccess(Object response)
                     {
-                        //Saving AppHq user ID in Shared Preferences
                         Social social  = (Social)response;
                         setSprefData(MyConstants.USER_ID_APPHQ, social.getUserName());
                     }
@@ -195,12 +177,9 @@ public class LoginActivity extends AppCompatActivity {
                 });
     }
 
-    /**
-     * Writing data to sharedPreferences
-     * @param key name of the preference
-     * @param value value of the preference
-     */
     private void setSprefData(String key, String value){
+//        ksUser.setAppHqId();
+//        ksUser.setParseId();
         SharedPreferences settings;
         SharedPreferences.Editor editor;
         settings = getApplicationContext().getSharedPreferences(MyConstants.ACCOUNT_PREFS,
@@ -210,12 +189,6 @@ public class LoginActivity extends AppCompatActivity {
         editor.commit();
     }
 
-    /**
-     * Method for LoginButton
-     * @param requestCode
-     * @param resultCode
-     * @param data
-     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         callbackManager.onActivityResult(requestCode, resultCode, data);

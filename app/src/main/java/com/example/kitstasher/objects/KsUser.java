@@ -1,5 +1,15 @@
 package com.example.kitstasher.objects;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+
+import com.example.kitstasher.other.MyConstants;
+import com.facebook.AccessToken;
+import com.shephertz.app42.paas.sdk.android.App42API;
+import com.shephertz.app42.paas.sdk.android.App42CallBack;
+import com.shephertz.app42.paas.sdk.android.social.Social;
+import com.shephertz.app42.paas.sdk.android.social.SocialService;
+
 /**
  * Created by Алексей on 14.05.2017.
  */
@@ -8,7 +18,7 @@ public class KsUser {
     private String name,
             accountType,
             loggedBy,
-            socialId,
+            socialNetwork,
             appHqId,
             parseId,
             userpicUrl;
@@ -41,12 +51,12 @@ public class KsUser {
         this.loggedBy = loggedBy;
     }
 
-    public String getSocialId() {
-        return socialId;
+    public String getSocialNetwork() {
+        return socialNetwork;
     }
 
-    public void setSocialId(String socialId) {
-        this.socialId = socialId;
+    public void setSocialNetwork(String socialNetwork) {
+        this.socialNetwork = socialNetwork;
     }
 
     public String getAppHqId() {
@@ -77,7 +87,25 @@ public class KsUser {
         return false;
     }
 
-    public boolean registerInAppHq() {
+    public boolean registerInAppHq(AccessToken accessToken, final Context context) {
+        SocialService socialService = App42API.buildSocialService();
+        socialService.linkUserFacebookAccount(accessToken.getUserId().toString(),
+                accessToken.toString(), new App42CallBack() {
+                    public void onSuccess(Object response) {
+                        Social social = (Social) response;
+                        SharedPreferences settings;
+                        SharedPreferences.Editor editor;
+                        settings = context.getSharedPreferences(MyConstants.ACCOUNT_PREFS,
+                                Context.MODE_PRIVATE);
+                        editor = settings.edit();
+                        editor.putString(MyConstants.USER_ID_APPHQ, social.getUserName());
+                        editor.commit();
+                    }
+
+                    public void onException(Exception ex) {
+
+                    }
+                });
         return false;
     }
 
@@ -85,11 +113,19 @@ public class KsUser {
         return false;
     }
 
+    public void getLocalUserData() {
+
+    }
+
+    public void saveLocalUserData() {
+
+    }
+
     public static class KsUserBuilder {
         private String name,
                 accountType,
                 loggedBy,
-                socialId,
+                socialNetwork,
                 appHqId,
                 parseId,
                 userpicUrl;
@@ -109,8 +145,8 @@ public class KsUser {
             return this;
         }
 
-        public KsUserBuilder hasSocialId(String socialId) {
-            this.socialId = socialId;
+        public KsUserBuilder hasSocialId(String socialNetwork) {
+            this.socialNetwork = socialNetwork;
             return this;
         }
 

@@ -8,7 +8,6 @@ import android.support.v7.app.AppCompatActivity;
 
 import com.example.kitstasher.R;
 import com.example.kitstasher.adapters.AdapterViewCards;
-import com.example.kitstasher.fragment.AftermarketFragment;
 import com.example.kitstasher.fragment.ItemCardFragment;
 import com.example.kitstasher.fragment.KitsFragment;
 import com.example.kitstasher.objects.CustomKitsViewPager;
@@ -170,23 +169,9 @@ public class ViewActivity extends AppCompatActivity {
             intent.putExtra(MyConstants.MEDIA_FILTER, mediaFilter);
             intent.putExtra("was_deleted", true);
             setResult(RESULT_OK, intent);
+
             KitsFragment.refreshPages();
-            finish();
-        } else if (workMode == MyConstants.MODE_AFTERMARKET) {
-            Intent intent = new Intent(ViewActivity.this, MainActivity.class);
-            intent.putExtra(MyConstants.SORT_BY, sortBy);
-            intent.putExtra(MyConstants.WORK_MODE, workMode);
-            intent.putExtra(MyConstants.CATEGORY_TAB, tabToReturn);
-            intent.putExtra(MyConstants.LIST_POSITION, position);
-            intent.putExtra(MyConstants.CATEGORY, category);
-            intent.putExtra(MyConstants.SCALE_FILTER, scaleFilter);
-            intent.putExtra(MyConstants.BRAND_FILTER, brandFilter);
-            intent.putExtra(MyConstants.KITNAME_FILTER, kitnameFilter);
-            intent.putExtra(MyConstants.STATUS_FILTER, statusFilter);
-            intent.putExtra(MyConstants.MEDIA_FILTER, mediaFilter);
-            intent.putExtra("was_deleted", true);
-            setResult(RESULT_OK, intent);
-            AftermarketFragment.refreshPages();
+
             finish();
         } else if (workMode == MyConstants.MODE_LIST) {
             super.onBackPressed(); //todo обработать LIST

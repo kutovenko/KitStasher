@@ -12,15 +12,13 @@ import com.example.kitstasher.fragment.ScanFragment;
 import com.example.kitstasher.other.MyConstants;
 
 /**
- * Created by Алексей on 21.04.2017.
+ * Created by Алексей on 21.04.2017. Dispatch between scan and manual add
  */
 
 public class AdapterAddFragment extends FragmentPagerAdapter {
-//    private static final String TAG = AdapterAddFragment.class.getSimpleName();
     private static final int FRAGMENT_COUNT = 2;
     private Context mContext;
     private boolean aftermarketMode;
-
 
     public AdapterAddFragment(FragmentManager fm, Context context, boolean aftermarketMode) {
         super(fm);
@@ -37,13 +35,11 @@ public class AdapterAddFragment extends FragmentPagerAdapter {
                 ScanFragment scanFragment = new ScanFragment();
                 scanFragment.setArguments(bundle);
                 return scanFragment;
-//                return new ScanFragment();
             case 1:
                 ManualAddFragment manualAddFragment = new ManualAddFragment();
                 bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_KIT);
                 manualAddFragment.setArguments(bundle);
                 return manualAddFragment;
-//                return new ManualAddFragment();
         }
         return null;
     }

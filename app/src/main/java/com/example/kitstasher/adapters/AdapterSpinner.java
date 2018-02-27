@@ -25,6 +25,7 @@ public class AdapterSpinner extends BaseAdapter {
         this.icons = icons;
         this.categories = categories;
         inflater = (LayoutInflater.from(applicationContext));
+
     }
 
     @Override
@@ -44,9 +45,9 @@ public class AdapterSpinner extends BaseAdapter {
 
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
-        view = View.inflate(context, R.layout.item_spinner, null);
-        ImageView icon = (ImageView) view.findViewById(R.id.ivItemCat);
-        TextView category = (TextView) view.findViewById(R.id.tvItemName);
+        view = inflater.inflate(R.layout.item_spinner, null);
+        ImageView icon = view.findViewById(R.id.ivItemCat);
+        TextView category = view.findViewById(R.id.tvItemName);
         icon.setImageResource(icons[i]);
         category.setText(categories[i]);
         return view;

@@ -2,6 +2,7 @@ package com.example.kitstasher;
 
 import android.app.Application;
 import android.content.Context;
+import android.support.multidex.MultiDex;
 
 import com.parse.Parse;
 
@@ -29,7 +30,13 @@ public class MyApplication extends Application {
                 .server(getString(R.string.parse_server_url)).build());
     }
 
-    public static Context getContext(){
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
+        MultiDex.install(this);
+    }
+
+    public static Context getContext() {
         return mContext;
     }
 

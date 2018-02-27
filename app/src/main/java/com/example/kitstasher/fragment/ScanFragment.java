@@ -135,6 +135,7 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
         progressBar.setVisibility(View.GONE);
         dbConnector = new DbConnector(getActivity());
         dbConnector.open();
+        barcode = MyConstants.EMPTY;
         checkMode();
         isReported = false;
         scanTag = this.getTag();
@@ -167,12 +168,16 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
     }
 
     private void checkMode() {
-        if (getArguments() != null){
-            workMode = getArguments().getChar(MyConstants.WORK_MODE);
-            listname = getArguments().getString(MyConstants.LISTNAME);
-        }else{
+        if (workMode == '\u0000') {
             workMode = MyConstants.MODE_KIT;
-            listname = MyConstants.EMPTY;
+        } else {
+            if (getArguments() != null) {
+                workMode = getArguments().getChar(MyConstants.WORK_MODE);
+                listname = getArguments().getString(MyConstants.LISTNAME);
+            } else {
+                workMode = MyConstants.MODE_KIT;
+                listname = MyConstants.EMPTY;
+            }
         }
     }
 
@@ -180,18 +185,31 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
         if (workMode == MyConstants.MODE_LIST) {
             ManualAddFragment fragment = new ManualAddFragment();
             Bundle bundle = new Bundle(3);
-            bundle.putChar("workMode", MyConstants.MODE_LIST);
+            bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_LIST);
             bundle.putString(MyConstants.LISTNAME, listname);
-            bundle.putString(MyConstants.PARSE_BARCODE, barcode);
+            bundle.putString(MyConstants.BARCODE, barcode);
             fragment.setArguments(bundle);
             android.support.v4.app.FragmentTransaction fragmentTransaction =
                     getFragmentManager().beginTransaction();
             fragmentTransaction.replace(R.id.llListsContainer, fragment);
             fragmentTransaction.commit();
         } else {
-            if (mListener != null) {
-                mListener.onFragmentInteraction(barcode, workMode);
-            }
+//
+//            ManualAddFragment fragment = new ManualAddFragment();
+//            Bundle bundle = new Bundle(3);
+//            bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_KIT);
+//            bundle.putString(MyConstants.LISTNAME, listname);
+//            bundle.putString(MyConstants.BARCODE, barcode);
+//            fragment.setArguments(bundle);
+//            android.support.v4.app.FragmentTransaction fragmentTransaction =
+//                    getFragmentManager().beginTransaction();
+//            fragmentTransaction.replace(R.id.llListsContainer, fragment);
+//            fragmentTransaction.commit();
+
+//            if (mListener != null) {
+//                mListener.onFragmentInteraction(barcode, workMode);
+//            }
+            mListener.onFragmentInteraction(barcode, workMode);
             ViewPager viewPager = getActivity().findViewById(R.id.viewpagerAdd);
             viewPager.setCurrentItem(1);
         }
@@ -206,7 +224,7 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
         return workMode;
     }
 
-    private String setDescription(String description) {
+    private String setDescription(String description) { // TODO: 22.02.2018 new kit & rebox
         String desc = MyConstants.EMPTY;
         if (!description.equals(MyConstants.EMPTY)) {
             switch (description) {
@@ -236,12 +254,13 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
     }
 
     private boolean isInLocalBase(String barcode) {
+        String bc = barcode.substring(0, barcode.length() - 1);
         if (workMode == MyConstants.MODE_LIST) {
-            if (dbConnector.searchListForDoubles(listname, barcode)) {
+            if (dbConnector.searchListForDoubles(listname, bc)) {
                 return true;
             }
         } else {
-            if (dbConnector.searchForDoubles(barcode)) {
+            if (dbConnector.searchForDoubles(bc)) {
                 return true;
             }
         }
@@ -267,19 +286,22 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
         return new BarcodeCallback() {
             @Override
             public void barcodeResult(BarcodeResult result) {
-                if (result.getText() != null && !result.getText().equals(barcode)) {
-                    barcode = result.getResult().toString();
-                    if (isInLocalBase(barcode)) {
-                        Toast.makeText(getActivity(), getString(R.string.entry_already_exist),
-                                Toast.LENGTH_SHORT).show();
-                        initiateScanner(getCallback());
-                    } else {
-                        searchCloud(barcode);
-                    }
+                if (result.getText() != null)
+                    if (!result.getText().equals(barcode)) {
+                        barcode = result.getResult().toString();
+                        if (isInLocalBase(barcode)) {
+                            Toast.makeText(getActivity(), getString(R.string.entry_already_exist),
+                                    Toast.LENGTH_SHORT).show();
+                            initiateScanner(getCallback());
+                        } else {
+                            searchCloud(barcode);
+                        }
 
-                } else {
-                    initiateScanner(getCallback());
-                }
+                    } else {
+//                        Toast.makeText(getActivity(), getString(R.string.youve_already_scanned),
+//                                Toast.LENGTH_SHORT).show();
+                        initiateScanner(getCallback());
+                    }
             }
 
             @Override
@@ -412,6 +434,7 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
                     kitToAdd.setBoxart_uri(MyConstants.EMPTY);
                     kitToAdd.setPlacePurchased(MyConstants.EMPTY);
                     kitToAdd.setScalemates_url(scalemates_page);
+                    kitToAdd.setBarcode(barcode);
 
                     kitToAdd.setStatus(status);
                     kitToAdd.setMedia(media);
@@ -431,7 +454,7 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
                     }else {
                         currentId = dbConnector.addKitRec(kitToAdd);
 
-                        dbConnector.updateCategories();
+//                        dbConnector.updateCategories();
 
                         if (cloudModeOn && isOnline()) {
                             saveToOnlineStash(kitToAdd);
@@ -451,6 +474,7 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
     @Override
     public void onFindDocFailed(App42Exception ex) {
         progressBar.setVisibility(View.GONE);
+
         openManualAdd();
     }
 

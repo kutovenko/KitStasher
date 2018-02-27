@@ -238,7 +238,7 @@ public class MyListCursorAdapter extends CursorRecyclerViewAdapter<MyListCursorA
 
                 if (mode == MyConstants.MODE_A_LIST) {
                     Intent intent = new Intent(context, ListActivity.class);
-                    intent.putExtra(MyConstants.LISTNAME, itemId);
+                    intent.putExtra(MyConstants.LISTID, itemId);
                     context.startActivity(intent);
                 } else if (mode == MyConstants.MODE_A_KIT) {
                     int size = cursor.getCount();

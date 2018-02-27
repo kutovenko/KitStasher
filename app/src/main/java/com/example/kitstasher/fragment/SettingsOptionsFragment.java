@@ -112,8 +112,6 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
                              Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_options, container, false);
 
-//        Calendar c = Calendar.getInstance();
-//        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());
         dbConnector = new DbConnector(getActivity());
         dbConnector.open();
         initUI();
@@ -158,21 +156,25 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
     }
 
     private void restoreFromCloud() {
+
+        dbConnector.clearTable(DbConnector.TABLE_KITS);
+        dbConnector.clearTable(DbConnector.TABLE_KIT_AFTER_CONNECTIONS);
+
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         String ownerId = sharedPreferences.getString(MyConstants.USER_ID_PARSE, "");//todo
         ParseQuery<ParseObject> ownerIds = ParseQuery.getQuery("Stash");
         ownerIds.whereEqualTo(MyConstants.PARSE_OWNERID, ownerId);
 
-//        String idType = sharedPreferences.getString(MyConstants.USER_IDTYPE, "");//todo
-//        ParseQuery<ParseObject> idTypes = ParseQuery.getQuery("Stash");
-//        idTypes.whereEqualTo(MyConstants.PARSE_IDTYPE, idType);
+        String idType = sharedPreferences.getString(MyConstants.USER_IDTYPE, "");//todo
+        ParseQuery<ParseObject> idSelect = ParseQuery.getQuery("Stash");
+        idSelect.whereEqualTo(MyConstants.PARSE_IDTYPE, idType);
 
         ParseQuery<ParseObject> notDeleted = ParseQuery.getQuery("Stash");
         notDeleted.whereNotEqualTo(MyConstants.PARSE_DELETED, true);
 
         List<ParseQuery<ParseObject>> queries = new ArrayList<ParseQuery<ParseObject>>();
         queries.add(ownerIds);
-//        queries.add(idTypes);
+        queries.add(idSelect);
         queries.add(notDeleted);
 
         ParseQuery<ParseObject> mainQuery = ParseQuery.or(queries);
