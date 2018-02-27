@@ -286,4 +286,7 @@ Prefixes and postfixes for links
 
     public static final String CATEGORY_TAB = "category_tab";
     public static final java.lang.String LISTID = "list_id";
+    public static final String PARSE_TU_STASH = "stash";
+    public static final String PARSE_TU_USERID = "userId";
+    public static final String PARSE_TU_OWNERNAME = "ownerName";
 }

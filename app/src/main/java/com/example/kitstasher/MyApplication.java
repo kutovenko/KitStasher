@@ -5,6 +5,7 @@ import android.content.Context;
 import android.support.multidex.MultiDex;
 
 import com.parse.Parse;
+import com.parse.ParseFacebookUtils;
 
 /**
  * Created by Алексей on 23.02.2017.
@@ -28,6 +29,7 @@ public class MyApplication extends Application {
                 .applicationId(getString(R.string.parse_application_id))
                 .clientKey(getString(R.string.parse_client_key))
                 .server(getString(R.string.parse_server_url)).build());
+        ParseFacebookUtils.initialize(this);
     }
 
     @Override

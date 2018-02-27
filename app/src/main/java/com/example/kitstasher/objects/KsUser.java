@@ -164,5 +164,9 @@ public class KsUser {
             this.userpicUrl = userpicUrl;
             return this;
         }
+
+        public KsUser build() {
+            return new KsUser(this);
+        }
     }
 }

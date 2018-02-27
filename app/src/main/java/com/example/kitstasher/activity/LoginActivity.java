@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.kitstasher.R;
 import com.example.kitstasher.objects.KsUser;
@@ -21,11 +22,10 @@ import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
-import com.parse.GetCallback;
-import com.parse.Parse;
+import com.parse.LogInCallback;
 import com.parse.ParseException;
-import com.parse.ParseObject;
-import com.parse.ParseQuery;
+import com.parse.ParseFacebookUtils;
+import com.parse.ParseUser;
 import com.shephertz.app42.paas.sdk.android.App42API;
 import com.shephertz.app42.paas.sdk.android.App42CallBack;
 import com.shephertz.app42.paas.sdk.android.social.Social;
@@ -33,6 +33,8 @@ import com.shephertz.app42.paas.sdk.android.social.SocialService;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.Collection;
 
 //import com.parse.ParseFacebookUtils;
 
@@ -50,6 +52,7 @@ public class LoginActivity extends AppCompatActivity {
     public static AsyncApp42ServiceApi asyncService;
     private SharedPreferences sharedPreferences;
     private KsUser ksUser;
+    Collection<String> permissions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,16 +60,18 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
 //        ParseFacebookUtils.initialize(this);
-        Parse.initialize(new Parse.Configuration.Builder(this)
-                .applicationId(getString(R.string.parse_application_id))
-                .clientKey(getString(R.string.parse_client_key))
-                .server(getString(R.string.parse_server_url))
-                .build());
+
+//        Parse.initialize(new Parse.Configuration.Builder(this)
+//                .applicationId(getString(R.string.parse_application_id))
+//                .clientKey(getString(R.string.parse_client_key))
+//                .server(getString(R.string.parse_server_url))
+//                .build());
 
         sharedPreferences = getApplicationContext().getSharedPreferences(MyConstants.ACCOUNT_PREFS,
                 Context.MODE_PRIVATE);
         tvInfo = findViewById(R.id.textView);
         tvInfo.setText(R.string.Please_log_in);
+        ksUser = new KsUser.KsUserBuilder().build();
 
         //Facebook LoginButton and Callback
         LoginButton loginButton = findViewById(R.id.login_button);
@@ -78,6 +83,7 @@ public class LoginActivity extends AppCompatActivity {
                 accessToken = loginResult.getAccessToken();
                 final String fbID = loginResult.getAccessToken().getUserId();
                 setSprefData(MyConstants.USER_ID_FACEBOOK, fbID);
+                permissions = loginResult.getRecentlyGrantedPermissions();
                 final ValueContainer<String> fbName;
                 fbName = new ValueContainer<>();
                 fbName.setVal("fbName");
@@ -92,6 +98,7 @@ public class LoginActivity extends AppCompatActivity {
 
                                     setSprefData(MyConstants.USER_NAME_FACEBOOK, profileName);
                                     fbName.setVal(profileName);
+                                    ksUser.setName(profileName);
                                 }
 
                                 if (object.has("picture")) {
@@ -102,9 +109,12 @@ public class LoginActivity extends AppCompatActivity {
                                     setSprefData(MyConstants.PROFILE_PICTURE_URL_FACEBOOK, profilePicUrl);
                                 }
                             } catch (JSONException e) {
-                                e.printStackTrace(); //TODO catch
+                                e.printStackTrace();
                             }
-                            registerInClouds(fbID, fbName.getVal()); //todo try-catch
+                            registerInClouds(fbID, fbName.getVal());
+
+
+
                         }
                         String greeting = getString(R.string.Welcome) + fbName.getVal();
                         tvInfo.setText(greeting);
@@ -126,40 +136,75 @@ public class LoginActivity extends AppCompatActivity {
                 tvInfo.setText(R.string.Facebook_error);
             }
         });
+
+        ParseFacebookUtils.logInWithReadPermissionsInBackground(this, null, new LogInCallback() {
+            @Override
+            public void done(ParseUser user, ParseException e) {
+
+                if (user == null) {
+                    Toast.makeText(LoginActivity.this, "Uh oh. The user cancelled the Facebook login.", Toast.LENGTH_LONG).show();
+
+                } else {
+                    Toast.makeText(LoginActivity.this, "User logged in through Facebook!", Toast.LENGTH_LONG).show();
+                    final String userId = user.getUsername();
+                    setSprefData(MyConstants.USER_ID_PARSE, userId);
+
+                }
+            }
+        });
     }
 
     private void registerInClouds(String id, String name) {
         if (Helper.isBlank(sharedPreferences.getString(MyConstants.USER_ID_APPHQ, null))) {
             registerInAppHq();
         }
-        if (Helper.isBlank(sharedPreferences.getString(MyConstants.USER_ID_PARSE, null))) {
-            registerInParse(id, name);
-        }
+
+
+//        if (Helper.isBlank(sharedPreferences.getString(MyConstants.USER_ID_PARSE, null))) {
+//            registerInParse(id, name);
+//        }
     }
 
-    private void registerInParse(final String id, final String name) {
-        ParseQuery<ParseObject> query = ParseQuery.getQuery(MyConstants.PARSE_C_TOPUSERS);
-        query.whereContains(MyConstants.PARSE_TU_OWNERID, id.trim());
-        query.getFirstInBackground(new GetCallback<ParseObject>() {
-            public void done(ParseObject object, ParseException e) {
-                if (e == null) {
-                    setSprefData(MyConstants.USER_ID_PARSE, object.getObjectId());
-                } else {
-                    ParseObject newParseObject = new ParseObject("Top_users");
-                    newParseObject.put("ownerId", id);
-                    newParseObject.put("ownerName", name);
-                    newParseObject.put("stash", 0);
-                    try {
-                        newParseObject.save();
-                    } catch (ParseException e1) {
-                        e1.printStackTrace();
-                    }
-                    setSprefData(MyConstants.USER_ID_PARSE, newParseObject.getObjectId());
-                }
-            }
+//    private void registerInParse(final String id, final String name) {
+//        ParseFacebookUtils.logInWithReadPermissionsInBackground(this, permissions, new LogInCallback() {
+//            @Override
+//            public void done(ParseUser user, ParseException e) {
+//                if (user == null) {
+//                    Toast.makeText(LoginActivity.this, "Uh oh. The user cancelled the Facebook login.", Toast.LENGTH_SHORT).show();
+//                } else if (user.isNew()) {
+//                    Toast.makeText(LoginActivity.this, "User signed up and logged in through Facebook!", Toast.LENGTH_SHORT).show();
+//
+//                } else {
+//                    Toast.makeText(LoginActivity.this, "User logged in through Facebook!", Toast.LENGTH_SHORT).show();
+//
+//                }
+//
+//            }
+//        });
+//
+////        ParseQuery<ParseObject> query = ParseQuery.getQuery(MyConstants.PARSE_C_TOPUSERS);
+////        query.whereContains(MyConstants.PARSE_TU_OWNERID, id.trim());
+////        query.getFirstInBackground(new GetCallback<ParseObject>() {
+////            public void done(ParseObject object, ParseException e) {
+////                if (e == null) {
+////                    setSprefData(MyConstants.USER_ID_PARSE, object.getObjectId());
+////                } else {
+////                    ParseObject newParseObject = new ParseObject("Top_users");
+////                    newParseObject.put("ownerId", id);
+////                    newParseObject.put("ownerName", name);
+////                    newParseObject.put("stash", 0);
+////                    try {
+////                        newParseObject.save();
+////                    } catch (ParseException e1) {
+////                        e1.printStackTrace();
+////                    }
+////                    setSprefData(MyConstants.USER_ID_PARSE, newParseObject.getObjectId());
+////                }
+////            }
+////
+////        });
+//    }
 
-        });
-    }
 
     private void registerInAppHq() {
         asyncService = AsyncApp42ServiceApi.instance(LoginActivity.this);
@@ -178,20 +223,22 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void setSprefData(String key, String value){
-//        ksUser.setAppHqId();
-//        ksUser.setParseId();
         SharedPreferences settings;
         SharedPreferences.Editor editor;
         settings = getApplicationContext().getSharedPreferences(MyConstants.ACCOUNT_PREFS,
                 Context.MODE_PRIVATE);
         editor = settings.edit();
         editor.putString(key, value);
-        editor.commit();
+        editor.apply();
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         callbackManager.onActivityResult(requestCode, resultCode, data);
+        ParseFacebookUtils.onActivityResult(requestCode, resultCode, data);
+
+
     }
 }
 

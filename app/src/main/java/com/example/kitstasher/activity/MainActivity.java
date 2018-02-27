@@ -38,7 +38,6 @@ import com.example.kitstasher.other.AsyncApp42ServiceApi;
 import com.example.kitstasher.other.CircleTransform;
 import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.MyConstants;
-import com.parse.Parse;
 //import com.parse.ParseFacebookUtils;
 
 
@@ -116,10 +115,10 @@ public class MainActivity extends AppCompatActivity
         //Setting up cloud connections
         asyncService = AsyncApp42ServiceApi.instance(this);
 //        ParseFacebookUtils.initialize(this);
-        Parse.initialize(new Parse.Configuration.Builder(this)
-                .applicationId(getString(R.string.parse_application_id))
-                .clientKey(getString(R.string.parse_client_key))
-                .server(getString(R.string.parse_server_url)).build());
+//        Parse.initialize(new Parse.Configuration.Builder(this)
+//                .applicationId(getString(R.string.parse_application_id))
+//                .clientKey(getString(R.string.parse_client_key))
+//                .server(getString(R.string.parse_server_url)).build());
         //Setting up Sqlite connection
         dbConnector = new DbConnector(this);
         dbConnector.open();
