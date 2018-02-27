@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.kitstasher.R;
 import com.example.kitstasher.objects.KsUser;
@@ -22,9 +21,12 @@ import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
+import com.parse.GetCallback;
 import com.parse.LogInCallback;
 import com.parse.ParseException;
 import com.parse.ParseFacebookUtils;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.shephertz.app42.paas.sdk.android.App42API;
 import com.shephertz.app42.paas.sdk.android.App42CallBack;
@@ -36,7 +38,6 @@ import org.json.JSONObject;
 
 import java.util.Collection;
 
-//import com.parse.ParseFacebookUtils;
 
 /**
  * Created by Alexey on 21.04.2017.
@@ -58,22 +59,12 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
-//        ParseFacebookUtils.initialize(this);
-
-//        Parse.initialize(new Parse.Configuration.Builder(this)
-//                .applicationId(getString(R.string.parse_application_id))
-//                .clientKey(getString(R.string.parse_client_key))
-//                .server(getString(R.string.parse_server_url))
-//                .build());
-
         sharedPreferences = getApplicationContext().getSharedPreferences(MyConstants.ACCOUNT_PREFS,
                 Context.MODE_PRIVATE);
         tvInfo = findViewById(R.id.textView);
         tvInfo.setText(R.string.Please_log_in);
         ksUser = new KsUser.KsUserBuilder().build();
 
-        //Facebook LoginButton and Callback
         LoginButton loginButton = findViewById(R.id.login_button);
         callbackManager = CallbackManager.Factory.create();
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
@@ -111,10 +102,10 @@ public class LoginActivity extends AppCompatActivity {
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
-                            registerInClouds(fbID, fbName.getVal());
 
-
-
+                            if (Helper.isBlank(sharedPreferences.getString(MyConstants.USER_ID_APPHQ, null))) {
+                                registerInAppHq();
+                            }
                         }
                         String greeting = getString(R.string.Welcome) + fbName.getVal();
                         tvInfo.setText(greeting);
@@ -139,77 +130,36 @@ public class LoginActivity extends AppCompatActivity {
 
         ParseFacebookUtils.logInWithReadPermissionsInBackground(this, null, new LogInCallback() {
             @Override
-            public void done(ParseUser user, ParseException e) {
+            public void done(final ParseUser user, ParseException e) {
 
-                if (user == null) {
-                    Toast.makeText(LoginActivity.this, "Uh oh. The user cancelled the Facebook login.", Toast.LENGTH_LONG).show();
+                if (user != null && user.isNew()) {
 
-                } else {
-                    Toast.makeText(LoginActivity.this, "User logged in through Facebook!", Toast.LENGTH_LONG).show();
-                    final String userId = user.getUsername();
-                    setSprefData(MyConstants.USER_ID_PARSE, userId);
-
+                    ParseQuery<ParseObject> query = ParseQuery.getQuery(MyConstants.PARSE_C_TOPUSERS);
+                    query.whereContains(MyConstants.PARSE_TU_USERID, user.getUsername());
+                    query.getFirstInBackground(new GetCallback<ParseObject>() {
+                        public void done(ParseObject object, ParseException e) {
+                            if (e != null) {
+                                ParseObject newParseObject = new ParseObject(MyConstants.PARSE_C_TOPUSERS);
+                                newParseObject.put(MyConstants.PARSE_TU_USERID, user.getUsername());
+                                newParseObject.put(MyConstants.PARSE_TU_OWNERNAME, ksUser.getName());
+                                newParseObject.put(MyConstants.PARSE_TU_STASH, 0);
+                                try {
+                                    newParseObject.save();
+                                } catch (ParseException ex) {
+                                    ex.printStackTrace();
+                                }
+                            }
+                        }
+                    });
                 }
             }
         });
     }
 
-    private void registerInClouds(String id, String name) {
-        if (Helper.isBlank(sharedPreferences.getString(MyConstants.USER_ID_APPHQ, null))) {
-            registerInAppHq();
-        }
-
-
-//        if (Helper.isBlank(sharedPreferences.getString(MyConstants.USER_ID_PARSE, null))) {
-//            registerInParse(id, name);
-//        }
-    }
-
-//    private void registerInParse(final String id, final String name) {
-//        ParseFacebookUtils.logInWithReadPermissionsInBackground(this, permissions, new LogInCallback() {
-//            @Override
-//            public void done(ParseUser user, ParseException e) {
-//                if (user == null) {
-//                    Toast.makeText(LoginActivity.this, "Uh oh. The user cancelled the Facebook login.", Toast.LENGTH_SHORT).show();
-//                } else if (user.isNew()) {
-//                    Toast.makeText(LoginActivity.this, "User signed up and logged in through Facebook!", Toast.LENGTH_SHORT).show();
-//
-//                } else {
-//                    Toast.makeText(LoginActivity.this, "User logged in through Facebook!", Toast.LENGTH_SHORT).show();
-//
-//                }
-//
-//            }
-//        });
-//
-////        ParseQuery<ParseObject> query = ParseQuery.getQuery(MyConstants.PARSE_C_TOPUSERS);
-////        query.whereContains(MyConstants.PARSE_TU_OWNERID, id.trim());
-////        query.getFirstInBackground(new GetCallback<ParseObject>() {
-////            public void done(ParseObject object, ParseException e) {
-////                if (e == null) {
-////                    setSprefData(MyConstants.USER_ID_PARSE, object.getObjectId());
-////                } else {
-////                    ParseObject newParseObject = new ParseObject("Top_users");
-////                    newParseObject.put("ownerId", id);
-////                    newParseObject.put("ownerName", name);
-////                    newParseObject.put("stash", 0);
-////                    try {
-////                        newParseObject.save();
-////                    } catch (ParseException e1) {
-////                        e1.printStackTrace();
-////                    }
-////                    setSprefData(MyConstants.USER_ID_PARSE, newParseObject.getObjectId());
-////                }
-////            }
-////
-////        });
-//    }
-
-
     private void registerInAppHq() {
         asyncService = AsyncApp42ServiceApi.instance(LoginActivity.this);
         SocialService socialService = App42API.buildSocialService();
-        socialService.linkUserFacebookAccount(accessToken.getUserId().toString(),
+        socialService.linkUserFacebookAccount(accessToken.getUserId(),
                 accessToken.toString(), new App42CallBack() {
                     public void onSuccess(Object response)
                     {
@@ -237,8 +187,6 @@ public class LoginActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         callbackManager.onActivityResult(requestCode, resultCode, data);
         ParseFacebookUtils.onActivityResult(requestCode, resultCode, data);
-
-
     }
 }
 
