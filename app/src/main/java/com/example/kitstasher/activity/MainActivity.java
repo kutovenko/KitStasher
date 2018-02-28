@@ -2,6 +2,7 @@ package com.example.kitstasher.activity;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -16,6 +17,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
@@ -38,8 +40,6 @@ import com.example.kitstasher.other.AsyncApp42ServiceApi;
 import com.example.kitstasher.other.CircleTransform;
 import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.MyConstants;
-//import com.parse.ParseFacebookUtils;
-
 
 /**
  * Created by Alexey on 10.04.2017.
@@ -48,21 +48,6 @@ import com.example.kitstasher.other.MyConstants;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
-
-
-    private DrawerLayout drawer;
-    private ImageView imgProfile;
-    private TextView txtName, txtWebsite;
-    private View navHeader;
-    private NavigationView navigationView;
-    private Toolbar toolbar;
-    private String title;
-    private char workMode;
-
-    // Index to identify current nav menu item
-    public static int navItemIndex = 0;
-
-    // Tags used to attach the fragments
     public static final String TAG_HOME = "home";
     public static final String TAG_ADDSTASH = "addstash";
     public static final String TAG_VIEWSTASH = "viewstash";
@@ -71,39 +56,25 @@ public class MainActivity extends AppCompatActivity
     public static final String TAG_MYLISTS = "mylists";
     public static final String TAG_SEARCH = "search";
     public static final String TAG_STATISTICS = "statistics";
-
-
     public static String CURRENT_TAG = TAG_HOME;
-
-    // Toolbar titles respected to selected nav menu item
-    private String[] activityTitles;
-
-    //Tag for replacing inner fragments in Pager
     public static final int REQUEST_CODE_VIEW = 1;
     public static final int REQUEST_CODE_CAMERA = 2;
     public static final int REQUEST_CODE_CROP = 3;
-
     public static final int MY_PERMISSIONS_REQUEST_CAMERA = 10;
     public static final int MY_PERMISSIONS_REQUEST_WRITE = 20;
-
-
+    public static int navItemIndex = 0;
+    private NavigationView navigationView;
+    private Toolbar toolbar;
+    private DrawerLayout drawer;
+    private ImageView imgProfile;
+    private TextView txtName;
+    private Handler mHandler;
+    private SharedPreferences sharedPreferences;
+    public static AsyncApp42ServiceApi asyncService;
+    private String title;
+    private boolean aftermarketMode;
     // Flag to load home fragment when user presses back key
     private boolean shouldLoadHomeFragOnBackPress = true;
-    private Handler mHandler;
-
-    private SharedPreferences sharedPreferences;
-    private SharedPreferences.Editor editor;
-
-    public static AsyncApp42ServiceApi asyncService;
-    private DbConnector dbConnector;
-//    private int permissionCheck;
-
-//    private Uri picUri;
-//    private Bitmap bmBoxartPic;
-
-//    public String getTabManualAdd(String t) {
-//        return t;
-//    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,38 +83,22 @@ public class MainActivity extends AppCompatActivity
             title = savedInstanceState.getString("title");
         }
         setContentView(R.layout.activity_main);
-        //Setting up cloud connections
         asyncService = AsyncApp42ServiceApi.instance(this);
-//        ParseFacebookUtils.initialize(this);
-//        Parse.initialize(new Parse.Configuration.Builder(this)
-//                .applicationId(getString(R.string.parse_application_id))
-//                .clientKey(getString(R.string.parse_client_key))
-//                .server(getString(R.string.parse_server_url)).build());
-        //Setting up Sqlite connection
-        dbConnector = new DbConnector(this);
+
+        DbConnector dbConnector = new DbConnector(this);
         dbConnector.open();
 
-
-
-
-        //Loading SharedPreferences
+        aftermarketMode = false;
         sharedPreferences = this.getSharedPreferences(MyConstants.ACCOUNT_PREFS,
                 Context.MODE_PRIVATE);
-
-        //Setting up UI
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle(title);
-
         setSupportActionBar(toolbar);
-        // Navigation view header
-        navigationView = findViewById(R.id.nav_view);
 
-        navHeader = navigationView.getHeaderView(0);
+        navigationView = findViewById(R.id.nav_view);
+        View navHeader = navigationView.getHeaderView(0);
         txtName = navHeader.findViewById(R.id.name);
-//        txtWebsite = navHeader.findViewById(R.id.website);
-//        imgNavHeaderBg = navHeader.findViewById(R.id.img_header_bg);
         imgProfile = navHeader.findViewById(R.id.img_profile);
-//        header = (RelativeLayout)navHeader.findViewById(R.id.rlAppBarHeader);
         imgProfile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -152,7 +107,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
@@ -164,18 +119,18 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         setUpNavigationView();
+
         loadNavHeader();
 
-        //Loading home fragment on start
         if (savedInstanceState == null) {
             navItemIndex = 0;
             CURRENT_TAG = TAG_HOME;
-            loadHomeFragment(false);
+            loadHomeFragment(aftermarketMode);
         }
 
         checkCameraPermissions();
+
         checkWritePermissions();
-//        checkDeleted();
     }
 
     @Override
@@ -184,16 +139,8 @@ public class MainActivity extends AppCompatActivity
         outState.putString("title", title);
     }
 
-
-    /***
-     * Loads navigation menu header information. Image is Facebook profile picture, name is Facebook
-     * profile name.
-     */
     private void loadNavHeader() {
-        // Setting Username
         txtName.setText(sharedPreferences.getString(MyConstants.USER_NAME_FACEBOOK, ""));
-//        txtWebsite.setText("www.kitstashers.com");
-        // Loading profile image
         String accountPictureUrl = sharedPreferences.getString(MyConstants.PROFILE_PICTURE_URL_FACEBOOK, null);
         Glide.with(this).load(accountPictureUrl)
                 .crossFade()
@@ -203,123 +150,59 @@ public class MainActivity extends AppCompatActivity
                 .into(imgProfile);
     }
 
-//    /**
-//     * Sets image based on favorite stash category
-//     *
-//     * @return background image resource
-//     */
-//    public int setHeaderImage() {
-//        //Default image
-//        int result = R.drawable.default_texture;
-//        //Choosing background image
-//        int air = dbConnector.getByTag(MyConstants.CAT_AIR).getCount();
-//        int ground = dbConnector.getByTag(MyConstants.CAT_GROUND).getCount();
-//        int sea = dbConnector.getByTag(MyConstants.CAT_SEA).getCount();
-//        int space = dbConnector.getByTag(MyConstants.CAT_SPACE).getCount();
-//        int car = dbConnector.getByTag(MyConstants.CAT_AUTOMOTO).getCount();
-//        int other = dbConnector.getByTag(MyConstants.CAT_OTHER).getCount();
-//
-//        int max = (int)Helper.findMax(air, ground, sea, space, car, other);
-//        if (max == air)
-//            result = R.drawable.texture_air;
-//        if (max == ground)
-//            result = R.drawable.texture_stone;
-//        if (max == sea)
-//            result = R.drawable.texture_sea;
-//        if (max == space)
-//            result = R.drawable.texture_space;
-//        if (max == car)
-//            result = R.drawable.texture_car;
-//        if (max == other)
-//            result = R.drawable.texture_other;
-//
-//
-//        return result;
-//    }
-//
-//    public int setHeaderBackground(){
-//        int result = Helper.getColor(this, R.color.colorPrimary);
-//        //Choosing background color
-//        int air = dbConnector.getByTag(MyConstants.CAT_AIR).getCount();
-//        int ground = dbConnector.getByTag(MyConstants.CAT_GROUND).getCount();
-//        int sea = dbConnector.getByTag(MyConstants.CAT_SEA).getCount();
-//        int space = dbConnector.getByTag(MyConstants.CAT_SPACE).getCount();
-//        int car = dbConnector.getByTag(MyConstants.CAT_AUTOMOTO).getCount();
-//        int other = dbConnector.getByTag(MyConstants.CAT_OTHER).getCount();
-//
-//        int max = (int)Helper.findMax(air, ground, sea, space, car, other);
-//        if (max == air)
-//            result = R.color.air;
-//        if (max == ground)
-//            result = R.color.ground;
-//        if (max == sea)
-//            result = R.color.sea;
-//        if (max == space)
-//            result = R.color.space;
-//        if (max == car)
-//            result = R.color.car;
-//        if (max == other)
-//            result = R.color.other;
-//
-//        return result;
-//    }
-
-    /**
-     * Sets up Navigation View
-     */
     private void setUpNavigationView() {
-        //Setting Navigation View Item Selected Listener to handle the item click
-        // of the navigation menu
         navigationView.setNavigationItemSelectedListener
                 (new NavigationView.OnNavigationItemSelectedListener() {
 
                     // This method will trigger on item Click of navigation menu
                     @Override
-                    public boolean onNavigationItemSelected(MenuItem menuItem) {
-
-                        //Check to see which item was being clicked and perform appropriate action
+                    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
                         switch (menuItem.getItemId()) {
-                            //Replacing the main content with ContentFragment Which is our Inbox View;
                             case R.id.nav_home:
                                 navItemIndex = 0;
                                 CURRENT_TAG = TAG_HOME;
+                                aftermarketMode = false;
                                 break;
                             case R.id.nav_addstash:
                                 navItemIndex = 1;
                                 CURRENT_TAG = TAG_ADDSTASH;
+                                aftermarketMode = false;
                                 break;
                             case R.id.nav_viewstash:
                                 navItemIndex = 2;
                                 CURRENT_TAG = TAG_VIEWSTASH;
-//                        toolbar.setTitle(title);
+                                aftermarketMode = false;
                                 break;
                             case R.id.nav_aftermarket:
                                 navItemIndex = 3;
                                 CURRENT_TAG = TAG_AFTERMARKET;
-//                        toolbar.setTitle(title);
+                                aftermarketMode = true;
                                 break;
                             case R.id.nav_mylists:
                                 navItemIndex = 4;
                                 CURRENT_TAG = TAG_MYLISTS;
+                                aftermarketMode = false;
                                 break;
                             case R.id.nav_search:
                                 navItemIndex = 5;
                                 CURRENT_TAG = TAG_SEARCH;
+                                aftermarketMode = false;
                                 break;
                             case R.id.nav_statistics:
                                 navItemIndex = 6;
                                 CURRENT_TAG = TAG_STATISTICS;
+                                aftermarketMode = false;
                                 break;
                             case R.id.nav_settings:
                                 navItemIndex = 7;
                                 CURRENT_TAG = TAG_SETTINGS;
+                                aftermarketMode = false;
                                 break;
                             default:
                                 navItemIndex = 0;
                                 CURRENT_TAG = TAG_HOME;
+                                aftermarketMode = false;
                         }
-                        //Checking if the item is in checked state or not, if not make it in checked state
-                        // TODO: 01.12.2017 убрать, из-за этого идет неправильная подсветка
                         if (menuItem.isChecked()) {
                             menuItem.setChecked(false);
                         } else {
@@ -327,7 +210,7 @@ public class MainActivity extends AppCompatActivity
                         }
                         menuItem.setChecked(true);
 
-                        loadHomeFragment(false);
+                        loadHomeFragment(aftermarketMode);
 
                         return true;
                     }
@@ -339,22 +222,16 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onDrawerClosed(View drawerView) {
-                // Code here will be triggered once the drawer closes as we dont want anything
-                // to happen so we leave this blank
                 super.onDrawerClosed(drawerView);
             }
 
             @Override
             public void onDrawerOpened(View drawerView) {
-                // Code here will be triggered once the drawer open as we dont want anything
-                // to happen so we leave this blank
                 super.onDrawerOpened(drawerView);
             }
         };
 
-        //Setting the actionbarToggle to drawer layout
         drawer.addDrawerListener(actionBarDrawerToggle);
-        //calling sync state is necessary or else hamburger icon won't show up
         actionBarDrawerToggle.syncState();
     }
 
@@ -364,31 +241,33 @@ public class MainActivity extends AppCompatActivity
             drawer.closeDrawers();
             return;
         }
-        // This code loads home fragment when back key is pressed
-        // when user is in other fragment than home
         if (shouldLoadHomeFragOnBackPress) {
-//            if (navItemIndex == 5) {
-//                navItemIndex = 2;
-//                CURRENT_TAG = TAG_VIEWSTASH;
-//                loadHomeFragment();
-////                return;
-//            } else if (navItemIndex == 6 || navItemIndex == 7) {
-//                navItemIndex = 5;
-//                CURRENT_TAG = TAG_SETTINGS;
-//                loadHomeFragment();
-////                return;
-//            } else {
+            if (navItemIndex == 0) {
+                promptExit();
+            }
             navItemIndex = 0;
             CURRENT_TAG = TAG_HOME;
-            loadHomeFragment(false);
-//                return;
-
-//            }
-
+            loadHomeFragment(aftermarketMode);
         } else {
             super.onBackPressed();
         }
+    }
 
+    private void promptExit() {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        dialogBuilder.setTitle(R.string.Do_you_wish_to_exit);
+
+        dialogBuilder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                finish();
+            }
+        });
+        dialogBuilder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+            }
+        });
+        AlertDialog d = dialogBuilder.create();
+        d.show();
     }
 
     public void setActionBarTitle(String t) {
@@ -396,34 +275,16 @@ public class MainActivity extends AppCompatActivity
         toolbar.setTitle(title);
     }
 
-    /***
-     * Returns fragment that was selected from navigation menu
-     */
     public void loadHomeFragment(final boolean aftermarketMode) {
-        // Selecting appropriate nav menu item
-        // if user select the current navigation menu again, don't do anything
-        // just close the navigation drawer
         if (getSupportFragmentManager().findFragmentByTag(CURRENT_TAG) != null) {
             drawer.closeDrawers();
             return;
         }
-        // Sometimes, when fragment has huge data, screen seems hanging
-        // when switching between navigation menus
-        // So using runnable, the fragment is loaded with cross fade effect
-        // This effect can be seen in GMail app
         Runnable mPendingRunnable = new Runnable() {
             @Override
             public void run() {
                 Bundle bundle = new Bundle();
-                if (aftermarketMode) {
-                    bundle.putBoolean(MyConstants.AFTERMARKET_MODE, aftermarketMode);
-                }
-//                if (workMode != '\u0000'){
-//                    bundle.putChar(MyConstants.WORK_MODE, workMode);
-//                }else {
-//                    bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_KIT);
-//                }
-                // update the main content by replacing fragments
+                bundle.putBoolean(MyConstants.AFTERMARKET_MODE, aftermarketMode);
                 android.support.v4.app.Fragment fragment = getHomeFragment();
                 fragment.setArguments(bundle);//
                 android.support.v4.app.FragmentTransaction fragmentTransaction =
@@ -432,14 +293,8 @@ public class MainActivity extends AppCompatActivity
                 fragmentTransaction.commitAllowingStateLoss();
             }
         };
-
-        // If mPendingRunnable is not null, then add to the message queue
-        if (mPendingRunnable != null) {
-            mHandler.post(mPendingRunnable);
-        }
-        //Closing drawer on item click
+        mHandler.post(mPendingRunnable);
         drawer.closeDrawers();
-        // Refresh toolbar menu
         invalidateOptionsMenu();
     }
 
@@ -447,7 +302,6 @@ public class MainActivity extends AppCompatActivity
 
         switch (navItemIndex) {
             case 0:
-                // Home fragment
                 return new HomeFragment();
             case 1:
                 return new AddFragment();
@@ -457,14 +311,12 @@ public class MainActivity extends AppCompatActivity
                 bundle.putBoolean(MyConstants.AFTERMARKET_MODE, false);
                 kitFragment.setArguments(bundle);
                 return kitFragment;
-//                return new KitsFragment();
             case 3:
                 Fragment fragment = new KitsFragment();
                 Bundle aBundle = new Bundle();
                 aBundle.putBoolean(MyConstants.AFTERMARKET_MODE, true);
                 fragment.setArguments(aBundle);
                 return fragment;
-//                return new AftermarketFragment();
             case 4:
                 return new MyListsFragment();
             case 5:
@@ -481,33 +333,31 @@ public class MainActivity extends AppCompatActivity
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        // Handle navigation view item clicks.
         int id = item.getItemId();
-
         if (id == R.id.nav_home) {
             navItemIndex = 0;
-            loadHomeFragment(false);
+            loadHomeFragment(aftermarketMode);
         } else if (id == R.id.nav_addstash) {
             navItemIndex = 1;
-            loadHomeFragment(false);
+            loadHomeFragment(aftermarketMode);
         } else if (id == R.id.nav_viewstash) {
             navItemIndex = 2;
-            loadHomeFragment(false);
+            loadHomeFragment(aftermarketMode);
         } else if (id == R.id.nav_aftermarket) {
             navItemIndex = 3;
-            loadHomeFragment(true);
+            loadHomeFragment(aftermarketMode);
         } else if (id == R.id.nav_mylists) {
             navItemIndex = 4;
-            loadHomeFragment(false);
+            loadHomeFragment(aftermarketMode);
         } else if (id == R.id.nav_search) {
             navItemIndex = 5;
-            loadHomeFragment(false);
+            loadHomeFragment(aftermarketMode);
         } else if (id == R.id.nav_statistics) {
             navItemIndex = 6;
-            loadHomeFragment(false);
+            loadHomeFragment(aftermarketMode);
         } else if (id == R.id.nav_settings) {
             navItemIndex = 7;
-            loadHomeFragment(false);
+            loadHomeFragment(aftermarketMode);
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -515,56 +365,42 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////
     /**
      * Request to KitEdit Activity if user edit kit. Return user to proper position in kits list.
+     *             //Если вернулись напрямую из афтермаркетЭдит, workMode будет MODE_AFTERMARKET
+     //Если из карточки KitCard - MODE_KIT
+     //Если из KitEdit - MODE_KIT AFTER
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        //super call required for work with onActivityResult from nested fragments
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_VIEW) {
             super.onActivityResult(requestCode, resultCode, data);
-            workMode = data.getExtras().getChar(MyConstants.WORK_MODE);
-            //Если вернулись напрямую из афтермаркетЭдит, будет MODE_AFTERMARKET
-            //Если из карточки KitCard - MODE_KIT
-            //Если из KitEdit - MODE_KIT AFTER
-            ///
-            boolean was_deleted = data.getExtras().getBoolean("was_deleted");
-            ///
+            char workMode = data.getExtras().getChar(MyConstants.WORK_MODE);
             int position = data.getExtras().getInt(MyConstants.LIST_POSITION);
             int categoryTab = data.getExtras().getInt(MyConstants.CATEGORY_TAB);
             String category = data.getExtras().getString(MyConstants.CATEGORY);
-
-
             String scaleFilter = data.getExtras().getString(MyConstants.SCALE_FILTER);
             String brandFilter = data.getExtras().getString(MyConstants.BRAND_FILTER);
             String kitnameFilter = data.getExtras().getString(MyConstants.KITNAME_FILTER);
-
             String statusFilter = data.getExtras().getString(MyConstants.STATUS_FILTER);
             String mediaFilter = data.getExtras().getString(MyConstants.MEDIA_FILTER);
-
 
             Bundle bundle = new Bundle();
             bundle.putInt(MyConstants.POSITION, position);
             bundle.putInt(MyConstants.CATEGORY_TAB, categoryTab);
             bundle.putString(MyConstants.CATEGORY, category);
             bundle.putChar(MyConstants.WORK_MODE, workMode);
-
             bundle.putString(MyConstants.SCALE_FILTER, scaleFilter);
             bundle.putString(MyConstants.BRAND_FILTER, brandFilter);
             bundle.putString(MyConstants.KITNAME_FILTER, kitnameFilter);
-
             bundle.putString(MyConstants.STATUS_FILTER, statusFilter);
             bundle.putString(MyConstants.MEDIA_FILTER, mediaFilter);
 
             KitsFragment fragment = new KitsFragment();
             if (workMode == MyConstants.MODE_KIT) {
                 bundle.putBoolean(MyConstants.AFTERMARKET_MODE, false);
-                //Возвращаемся в таблицу китов
-//                KitsFragment fragment = new KitsFragment();
                 fragment.setArguments(bundle);
                 android.support.v4.app.FragmentTransaction fragmentTransaction =
                         getSupportFragmentManager().beginTransaction();
@@ -574,27 +410,19 @@ public class MainActivity extends AppCompatActivity
                 KitsFragment.refreshPages(); //???
 
                 ViewPager viewPager = findViewById(R.id.viewpagerViewStash);
-
-//                viewPager.getAdapter().notifyDataSetChanged();
-
                 viewPager.setCurrentItem(categoryTab);
             } else if (workMode == MyConstants.MODE_AFTERMARKET) {
-                //Возвоащаемся в пейджер SortAll
-//                AftermarketFragment fragment = new AftermarketFragment();
-
                 bundle.putBoolean(MyConstants.AFTERMARKET_MODE, true);
                 fragment.setArguments(bundle);
                 android.support.v4.app.FragmentTransaction fragmentTransaction =
                         getSupportFragmentManager().beginTransaction();
                 fragmentTransaction.replace(R.id.mainactivityContainer, fragment);
                 fragmentTransaction.commit();
+
+                KitsFragment.refreshPages();
+
                 ViewPager viewPager = findViewById(R.id.viewpagerViewStash);
-
-//                viewPager.getAdapter().notifyDataSetChanged();
-
                 viewPager.setCurrentItem(categoryTab);
-//            }else if (workMode == MyConstants.MODE_AFTER_KIT){
-//
 
             } else if (workMode == MyConstants.MODE_VIEW_FROM_KIT) {
                 //Возвращаемся в просмотр кита
@@ -611,29 +439,16 @@ public class MainActivity extends AppCompatActivity
         if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_CROP) {
             super.onActivityResult(requestCode, resultCode, data);
         }
-
-        if (resultCode != RESULT_OK){
-        }
     }
 
-
-    /////////////////////////
-
     private void checkCameraPermissions() {
-        //checking for permissions on Marshmallow+
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
-            // Should we show an explanation?
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     Manifest.permission.CAMERA)) {
                 Toast.makeText(this, "Without permission to use camera we can't read barcodes",
                         Toast.LENGTH_LONG).show();
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-
             } else {
-                // No explanation needed, we can request the permission.
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.CAMERA},
                         MY_PERMISSIONS_REQUEST_CAMERA);
@@ -642,20 +457,13 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void checkWritePermissions() {
-        //Permissions for write
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
-            // Should we show an explanation?
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                 Toast.makeText(this, "Without permission to write file we can't save boxart",
                         Toast.LENGTH_LONG).show();
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-
             } else {
-                // No explanation needed, we can request the permission.
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                         MY_PERMISSIONS_REQUEST_WRITE);
@@ -663,24 +471,19 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-
     @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
         switch (requestCode) {
             case MY_PERMISSIONS_REQUEST_CAMERA:
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                } else {
+                if (grantResults.length <= 0
+                        || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(MainActivity.this,
                             R.string.permission_denied_to_use_camera, Toast.LENGTH_SHORT).show();
                 }
                 return;
             case MY_PERMISSIONS_REQUEST_WRITE:
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                } else {
+                if (grantResults.length <= 0
+                        || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(MainActivity.this,
                             R.string.permission_denied_to_write, Toast.LENGTH_SHORT).show();
                 }

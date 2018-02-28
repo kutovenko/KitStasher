@@ -57,7 +57,7 @@ public class ViewActivity extends AppCompatActivity {
         tabToReturn = getIntent().getExtras().getInt(MyConstants.CATEGORY_TAB);
 
         listIds = (ArrayList<Long>) getIntent().getSerializableExtra(MyConstants.IDS);
-        ArrayList<Integer> listPositions = (ArrayList<Integer>) getIntent().getSerializableExtra("positions");
+        ArrayList<Integer> listPositions = (ArrayList<Integer>) getIntent().getSerializableExtra(MyConstants.POSITIONS);
 
         workMode = getIntent().getExtras().getChar(MyConstants.WORK_MODE);
         sortBy = getIntent().getExtras().getString(MyConstants.SORT_BY);

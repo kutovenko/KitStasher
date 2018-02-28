@@ -398,6 +398,9 @@
     <string name="cannot_create_file">Cannot create file</string>
     <string name="online_backup_is_off">Online backup is off</string>
     <string name="youve_already_scanned">You have already scanned this barcode</string>
+    <string name="Do_you_wish_to_exit">Do you wish to exit KitStasher?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 
 
 </resources>
