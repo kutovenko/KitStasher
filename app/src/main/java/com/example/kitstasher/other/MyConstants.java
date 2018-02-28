@@ -289,4 +289,9 @@ Prefixes and postfixes for links
     public static final String PARSE_TU_STASH = "stash";
     public static final String PARSE_TU_USERID = "userId";
     public static final String PARSE_TU_OWNERNAME = "ownerName";
+
+
+    public static final String DAILYMAX = "dailyMax";
+    public static final String DAILYMAXDATE = "dailyMaxDate";
+    public static final String WORLDRANK = "world_rank";
 }

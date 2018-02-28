@@ -131,6 +131,9 @@ public class LoginActivity extends AppCompatActivity {
         ParseFacebookUtils.logInWithReadPermissionsInBackground(this, null, new LogInCallback() {
             @Override
             public void done(final ParseUser user, ParseException e) {
+                if (user != null) {
+                    setSprefData(MyConstants.USER_ID_PARSE, user.getUsername());
+                }
 
                 if (user != null && user.isNew()) {
 

@@ -2,6 +2,7 @@ package com.example.kitstasher.fragment;
 
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -21,9 +22,10 @@ import com.example.kitstasher.other.MyConstants;
 
 public class KitsFragment extends Fragment {
     private static CustomKitsViewPager viewPager;
-    DbConnector dbConnector;
-    Cursor cursor;
-    AdapterViewStash adapter;
+    private DbConnector dbConnector;
+    private Cursor cursor;
+    private AdapterViewStash adapter;
+
     public KitsFragment() {
 
     }
@@ -34,14 +36,13 @@ public class KitsFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_viewstash, container, false);
         TabLayout tabLayout = view.findViewById(R.id.tabsViewStash);
         tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
         dbConnector = new DbConnector(getActivity());
         dbConnector.open();
-//        Cursor cursor;
         boolean aftermarketMode = getArguments().getBoolean(MyConstants.AFTERMARKET_MODE);
         if (aftermarketMode) {
             cursor = dbConnector.getAfterActiveCategories();
@@ -67,7 +68,6 @@ public class KitsFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-//        viewPager.refresh();
         boolean aftermarketMode = getArguments().getBoolean(MyConstants.AFTERMARKET_MODE);
         if (aftermarketMode) {
             cursor = dbConnector.getAfterActiveCategories();
@@ -76,7 +76,7 @@ public class KitsFragment extends Fragment {
         }
         adapter = new AdapterViewStash(getChildFragmentManager(), getActivity(), aftermarketMode, cursor);
         viewPager.setAdapter(adapter);
-        Bundle bundle = getArguments(); //todo тут проблема возврата все время в прошлую категорию
+        Bundle bundle = getArguments(); //todo тут проблема возврата все время в прошлую категорию?
         if (!bundle.isEmpty()) {
             int currentTab = getArguments().getInt(MyConstants.CATEGORY_TAB);
             if (currentTab != 0) {

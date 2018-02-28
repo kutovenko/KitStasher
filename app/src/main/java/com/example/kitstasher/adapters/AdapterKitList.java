@@ -71,7 +71,7 @@ public class AdapterKitList extends CursorRecyclerViewAdapter<AdapterKitList.Vie
         positions = new ArrayList<>();
 
         for (int i = 0; i < getItemCount(); i++) {
-            ids.add(getItemId(i)); //заполняем список идентификаторов
+            ids.add(getItemId(i));
             positions.add(i);
         }
     }
@@ -115,9 +115,8 @@ public class AdapterKitList extends CursorRecyclerViewAdapter<AdapterKitList.Vie
         final String onlneId = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_ID_ONLINE));
         category = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_CATEGORY));
 
-//        String b = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BARCODE));
-
         String fullBrand = brand + " " + cat_no;
+
         holder.tvFullBrand.setText(fullBrand);
         holder.tvFullScale.setText(scale);
         holder.tvFullKitname.setText(name);
