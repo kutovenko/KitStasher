@@ -44,8 +44,6 @@ public class MyListCursorAdapter extends CursorRecyclerViewAdapter<MyListCursorA
         super(context, cursor);
         this.mode = mode;
         this.context = context;
-
-//        this.cursor = cursor;
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
@@ -65,30 +63,10 @@ public class MyListCursorAdapter extends CursorRecyclerViewAdapter<MyListCursorA
         }
     }
 
-//    public static class ViewHolderAftermarket extends RecyclerView.ViewHolder {
-//        TextView tvEditBrandListItem;
-//        TextView tvListItemDate;
-//        ImageButton ibListItemEdit;
-//        ImageButton ibListItemDelete;
-//        LinearLayoutCompat llitemBody;
-//
-//        ViewHolderAftermarket(View view) {
-//            super(view);
-//            tvEditBrandListItem = view.findViewById(R.id.tvMylistName);
-//            tvListItemDate = view.findViewById(R.id.tvListDateAdded);
-//            ibListItemEdit = view.findViewById(R.id.ibtnEditMyList);
-//            ibListItemDelete = view.findViewById(R.id.ibtnDeleteMyList);
-//            llitemBody = view.findViewById(R.id.llitemBody);
-//        }
-//    }
-
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_with_edit, parent, false);
-
-        //размет
-
         return new ViewHolder(itemView);
     }
 
@@ -108,7 +86,6 @@ public class MyListCursorAdapter extends CursorRecyclerViewAdapter<MyListCursorA
             itemName = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.MYLISTS_COLUMN_LIST_NAME));
 
         } else if (mode == MyConstants.MODE_A_KIT) { //сокращенная
-//            category = cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_CATEGORY));
             holder.tvListItemDate.setVisibility(View.GONE); //works
             holder.ibListItemDelete.setVisibility(View.GONE);
             holder.ibListItemEdit.setVisibility(View.GONE);
@@ -197,7 +174,6 @@ public class MyListCursorAdapter extends CursorRecyclerViewAdapter<MyListCursorA
                 DbConnector dbConnector = new DbConnector(context);
                 dbConnector.open();
                 int currentPosition = holder.getAdapterPosition();
-//                long currentId = holder.getItemId();
                 long currentId = getItemId(currentPosition);
 
                 if (mode == MyConstants.MODE_A_BRAND) {
@@ -234,8 +210,6 @@ public class MyListCursorAdapter extends CursorRecyclerViewAdapter<MyListCursorA
             @Override
             public void onClick(View view) {
                 int currentPosition = holder.getAdapterPosition();
-//                long currentId = getItemId(currentPosition);
-
                 if (mode == MyConstants.MODE_A_LIST) {
                     Intent intent = new Intent(context, ListActivity.class);
                     intent.putExtra(MyConstants.LISTID, itemId);
@@ -280,93 +254,4 @@ public class MyListCursorAdapter extends CursorRecyclerViewAdapter<MyListCursorA
             }
         });
     }
-
-
-    //After for Kit MODE_AFTER_KIT
-
-//    rvAftermarket.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//        @Override
-//        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-//            int size = aCursor.getCount();
-//            final ArrayList<Long> ids = new ArrayList<>(size);
-//            final ArrayList<Integer> positions = new ArrayList<>(size);
-//            aCursor.moveToFirst();
-//            for (int y = 0; y < aCursor.getCount(); y++) {
-//                ids.add(afterAdapter.getItemId(y));
-//                positions.add(y);
-//                aCursor.moveToNext();
-//            }
-//            Intent intent;
-//            intent = new Intent(context, ViewActivity.class);
-//            intent.putExtra(MyConstants.ID, id);//ид кита, на котором должен открыться пейджер
-//            intent.putExtra(MyConstants.WORK_MODE, MyConstants.MODE_AFTER_KIT);
-//            intent.putExtra(MyConstants.POSITION, i);//ид открытия пейджера
-//            intent.putExtra(MyConstants.SORT_BY, MyConstants._ID);
-//            intent.putExtra(MyConstants.CATEGORY, category);
-//            String[] filters = new String[5];
-//            filters[0] = MyConstants.EMPTY;
-//            filters[1] = MyConstants.EMPTY;
-//            filters[2] = MyConstants.EMPTY;
-//            filters[3] = MyConstants.EMPTY;
-//            filters[4] = MyConstants.EMPTY;
-//            intent.putExtra(MyConstants.SCALE_FILTER, filters[0]);
-//            intent.putExtra(MyConstants.BRAND_FILTER, filters[1]);
-//            intent.putExtra(MyConstants.KITNAME_FILTER, filters[2]);
-//            intent.putExtra(MyConstants.STATUS_FILTER, filters[3]);
-//            intent.putExtra(MyConstants.MEDIA_FILTER, filters[4]);
-//            intent.putExtra(MyConstants.IDS, ids);
-//            intent.putExtra(MyConstants.POSITIONS, positions);
-//            intent.putExtra(MyConstants.SORT_BY, MyConstants._ID);
-//            intent.putExtra(MyConstants.FILTERS, (Serializable) filters);
-//            intent.putExtra(MyConstants.WORK_MODE, MyConstants.MODE_AFTER_KIT);
-//            intent.putExtra(MyConstants.LISTNAME, MyConstants.EMPTY); //мы идем из карточки кита, не из списка
-//            intent.putExtra(MyConstants.CATEGORY, category);
-//            startActivity(intent);
-//        }
-//    });
-//
-//
-//    TextView tvAftermarketTitle = view.findViewById(R.id.tvAftermarketTitle);
-//        btnEdit.setOnClickListener(new View.OnClickListener() {
-//        @Override
-//        public void onClick(View view) {
-//            Intent intent = new Intent(getActivity(), EditActivity.class);
-//            intent.putExtra(MyConstants.POSITION, position);
-//            intent.putExtra(MyConstants.WORK_MODE, workMode);
-//            intent.putExtra(MyConstants.ID, id);
-//            intent.putExtra(MyConstants.LIST_CATEGORY, category);
-//            intent.putExtra(MyConstants.KITNAME, kitname);
-//            intent.putExtra(MyConstants.BRAND, brand);
-//            intent.putExtra(MyConstants.CATNO, catno);
-//            intent.putExtra(MyConstants.URL, url);
-//            intent.putExtra(MyConstants.URI, uri);
-//            intent.putExtra(MyConstants.SCALE, scale);
-//            intent.putExtra(MyConstants.CATEGORY, category);
-//            intent.putExtra(MyConstants.YEAR, year);
-//            intent.putExtra(MyConstants.DESCRIPTION, description);
-//            intent.putExtra(MyConstants.ORIGINAL_NAME, origName);
-//            intent.putExtra(MyConstants.NOTES, notes);
-//            intent.putExtra(MyConstants.MEDIA, media);
-//            intent.putExtra(MyConstants.QUANTITY, quantity);
-//            intent.putExtra(MyConstants.STATUS, status);
-//            intent.putExtra(MyConstants.SHOP, shop);
-//            intent.putExtra(MyConstants.PURCHASE_DATE, purchaseDate);
-//            intent.putExtra(MyConstants.PRICE, price);
-//            intent.putExtra(MyConstants.CURRENCY, currency);
-//            getActivity().startActivityForResult(intent, EDIT_ACTIVITY_CODE);
-//        }
-//    });
-//
-//    //Если пришли сюда из карточек кита, отключаем редактирование
-//        if (workMode == MyConstants.MODE_AFTER_KIT) {
-//        tvAftermarketTitle.setVisibility(View.GONE);
-//        btnEdit.setVisibility(View.GONE);
-//        rvAftermarket.setVisibility(View.GONE);
-//    }
-//    //Если из афтемаркета, вложенный афтер отключаем
-//        if (workMode == MyConstants.MODE_AFTERMARKET) {
-//        tvAftermarketTitle.setVisibility(View.GONE);
-//        rvAftermarket.setVisibility(View.GONE);
-//    }
-
 }

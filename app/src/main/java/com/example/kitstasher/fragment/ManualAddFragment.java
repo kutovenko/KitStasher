@@ -17,6 +17,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.FileProvider;
@@ -204,7 +205,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
 //        outState.putString("imagePath", mCurrentPhotoPath);
         if (boxartPic != null){
@@ -221,7 +222,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_tabbed_manualadd, container, false);
         dbConnector = new DbConnector(getActivity());
@@ -264,12 +265,12 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             barcode = savedInstanceState.getString(MyConstants.BARCODE);
         }
 
-        acAdapterMybrands = new ArrayAdapter<>(getActivity(),
+        acAdapterMybrands = new ArrayAdapter<>(context,
                 android.R.layout.simple_dropdown_item_1line, myBrands);
         acTvBrand.addTextChangedListener(this);
         acTvBrand.setAdapter(acAdapterMybrands);
 
-        acAdapterMyshops = new ArrayAdapter<>(getActivity(),
+        acAdapterMyshops = new ArrayAdapter<>(context,
                 android.R.layout.simple_dropdown_item_1line, myShops);
         acPurchasedFrom.addTextChangedListener(this);
         acPurchasedFrom.setAdapter(acAdapterMyshops);
@@ -288,7 +289,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 
         String[] descriptionItems = new String[]{getString(R.string.unknown),
                 getString(R.string.newkit), getString(R.string.rebox)};
-        descriptionAdapter = new ArrayAdapter<>(getActivity(),
+        descriptionAdapter = new ArrayAdapter<>(context,
                 R.layout.simple_spinner_item, descriptionItems);
         spDescription.setAdapter(descriptionAdapter);
 
@@ -439,33 +440,6 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         placePurchased = MyConstants.EMPTY;
         status = MyConstants.STATUS_NEW;
         media = MyConstants.M_CODE_INJECTED;
-//
-//        kit = new Kit.KitBuilder()
-//                .hasBrand(brand)
-//                .hasBrand_catno(brandCatno)
-//                .hasKit_name(kitName)
-//                .hasScale(scale)
-//                .hasCategory(category)
-//                .hasBarcode(barcode)
-//                .hasKit_noeng_name(kitNoengname)
-//                .hasDescription(description)
-//                .hasPrototype(MyConstants.EMPTY)//not in use
-//                .hasSendStatus(sendStatus)
-//                .hasBoxart_url(boxartUrl)
-//                .hasBoxart_uri(boxartUri)
-//                .hasScalemates_url(MyConstants.EMPTY)
-//                .hasYear(year)
-//                .hasOnlineId(onlineId)
-//                .hasDateAdded(dateAdded)
-//                .hasDatePurchased(datePurchased)
-//                .hasQuantity(quantity)
-//                .hasNotes(notes)
-//                .hasPrice(price)
-//                .hasCurrency(currency)
-//                .hasPlacePurchased(placePurchased)
-//                .hasStatus(status)
-//                .hasMedia(media)
-//                .build();
         aftermarketName = MyConstants.EMPTY;
         aftemarketOriginalName = MyConstants.EMPTY;
         compilanceWith = MyConstants.EMPTY;
@@ -629,7 +603,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                         dbConnector.addBrand(newBrand);
                     }
                     acAdapterMybrands = new ArrayAdapter<>(
-                            getActivity(),
+                            context,
                             android.R.layout.simple_dropdown_item_1line, myBrands);
                     acTvBrand.setAdapter(acAdapterMybrands);
                 }
@@ -641,7 +615,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                         dbConnector.addShop(newShop);
                     }
                     acAdapterMyshops = new ArrayAdapter<>(
-                            getActivity(),
+                            context,
                             android.R.layout.simple_dropdown_item_1line, myShops);
                     acPurchasedFrom.setAdapter(acAdapterMyshops);
                 }

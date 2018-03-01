@@ -1,11 +1,11 @@
 package com.example.kitstasher.fragment;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -27,17 +27,14 @@ import com.example.kitstasher.other.Helper;
 import com.example.kitstasher.other.MyConstants;
 import com.example.kitstasher.other.SortKits;
 
-import java.util.ArrayList;
-
 /**
  * Created by Алексей on 14.08.2017. Просмотр списка
  */
 
 public class ListViewFragment extends Fragment implements View.OnClickListener, SortKits {
-    //    private ListView lvListAllItems;
     private RecyclerView rvListAllItems;
     private LinearLayoutManager rvKitsManager;
-    private ArrayList<Long> ids;
+    //    private ArrayList<Long> ids;
     private Cursor cursor;
     private DbConnector dbConnector;
     private boolean sortDate, sortName, sortScale, sortBrand;
@@ -55,7 +52,7 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_listview, container, false);
         context = getActivity();
@@ -71,7 +68,7 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
         });
 
         Bundle bundle = getArguments();
-        listname = bundle.getString(MyConstants.LISTNAME);
+        listname = bundle != null ? bundle.getString(MyConstants.LISTNAME) : "";
 
 
         cursor = dbConnector.getListItems(listname, "_id DESC");
@@ -96,30 +93,10 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
         return view;
     }
 
-
-    private void showDeleteDialog(final long l) {
-        final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
-        dialogBuilder.setTitle(R.string.Do_you_wish_to_delete_from_list);
-        dialogBuilder.setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                dbConnector.delItemById(DbConnector.TABLE_MYLISTSITEMS, l);
-                cursor = dbConnector.getListItems(listname, "_id DESC");
-                prepareListAndAdapter(cursor);
-            }
-        });
-        dialogBuilder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-            }
-        });
-        AlertDialog d = dialogBuilder.create();
-        d.show();
-    }
-
     public void returnToList(){
         Bundle bundle = getArguments();
         if (bundle != null) {
             String listname = bundle.getString("listname");
-//            long returnItemId = bundle.getLong("id");
             int returnItem = bundle.getInt("position");
             cursor = dbConnector.getListItems(listname, "_id DESC"); //влияет на сортировку списка после возврата
             prepareListAndAdapter(cursor);
@@ -182,18 +159,11 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
                 alertDialog.dismiss();
             }
         });
-//        final Button getFromImport = dialogView.findViewById(R.id.btnListModeImport);
     }
 
     public void prepareListAndAdapter(Cursor cursor){
-
         rvAdapter.changeCursor(cursor);
         rvAdapter.notifyDataSetChanged();
-
-//        MyListCursorAdapter rvAdapter = new MyListCursorAdapter(cursor, context, MyConstants.MODE_LISTITEMS);
-//
-
-
     }
 
 
@@ -238,7 +208,6 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
             case R.id.btnAddListItem:
                 showChooseAddMethodDialog();
                 break;
-            //Кнопки сортировки списка
             case R.id.linLayoutListSortBrand:
                 setActive(R.id.linLayoutListSortBrand, ivListSortBrand);
 

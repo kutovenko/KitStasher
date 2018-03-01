@@ -3,6 +3,7 @@ package com.example.kitstasher.fragment;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -30,7 +31,7 @@ public class SettingsBrandsFragment extends Fragment {
         super.onCreate(savedInstanceState);
     }
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_list_with_edit, container, false);
         Context context = getActivity();
@@ -40,7 +41,7 @@ public class SettingsBrandsFragment extends Fragment {
         rvBrands.setLayoutManager(rvBrandsManager);
         DefaultItemAnimator animator = new DefaultItemAnimator() {
             @Override
-            public boolean canReuseUpdatedViewHolder(RecyclerView.ViewHolder viewHolder) {
+            public boolean canReuseUpdatedViewHolder(@NonNull RecyclerView.ViewHolder viewHolder) {
                 return true;
             }
         };

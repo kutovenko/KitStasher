@@ -1,6 +1,7 @@
 package com.example.kitstasher.adapters;
 
 import android.app.Activity;
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,13 +35,15 @@ public class AdapterAlertDialog extends ArrayAdapter<Item> {
         this.context = context;
         this.list = list;
     }
+
+    @NonNull
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
         View view;
 
         if (convertView == null) {
             LayoutInflater inflater = context.getLayoutInflater();
-            view = inflater.inflate(R.layout.item_alertdialog, null);
+            view = inflater.inflate(R.layout.item_alertdialog, parent, false);
             final ViewHolder viewHolder = new ViewHolder();
             viewHolder.name = view.findViewById(R.id.tvItemTitle);
             viewHolder.ivItemBoxart = view.findViewById(R.id.ivItemBoxart);

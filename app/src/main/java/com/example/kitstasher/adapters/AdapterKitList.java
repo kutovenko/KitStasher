@@ -208,13 +208,9 @@ public class AdapterKitList extends CursorRecyclerViewAdapter<AdapterKitList.Vie
                 dbConnector.delRec(activeTable, itemId);
                 Cursor newcursor = dbConnector.filteredKits(activeTable, filters, sortBy, category, MyConstants.EMPTY);
                 notifyItemRemoved(currentPosition);
-                changeCursor(newcursor);
+                swapCursor(newcursor);
+//                changeCursor(newcursor);
                 KitsFragment.refreshPages();
-//                if (workMode == MyConstants.MODE_KIT) {
-//                    KitsFragment.refreshPages();
-//                } else if (workMode == MyConstants.MODE_AFTERMARKET) {
-//                    AftermarketFragment.refreshPages();
-//                }
             }
         });
         dialogBuilder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {

@@ -1,6 +1,7 @@
 package com.example.kitstasher.fragment;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -16,16 +17,12 @@ import com.example.kitstasher.other.MyConstants;
 import com.example.kitstasher.other.OnFragmentInteractionListener;
 
 /**
- * Created by Алексей on 21.04.2017.
+ * Created by Алексей on 21.04.2017. Fragment with scan and manual add
  */
 
 public class AddFragment extends Fragment implements OnFragmentInteractionListener {
-    private TabLayout tabLayout;
-    private ViewPager viewPager;
     public String passBarcode;
     public char passWorkMode;
-    private boolean aftermarketMode;
-//    private OnFragmentInteractionListener mListener;
     public AddFragment(){
 
     }
@@ -36,13 +33,11 @@ public class AddFragment extends Fragment implements OnFragmentInteractionListen
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_add, container, false);
-
-
-        tabLayout = view.findViewById(R.id.tabsAdd);
-        viewPager = view.findViewById(R.id.viewpagerAdd);
+        TabLayout tabLayout = view.findViewById(R.id.tabsAdd);
+        ViewPager viewPager = view.findViewById(R.id.viewpagerAdd);
         boolean aftermarketMode = getArguments().getBoolean(MyConstants.AFTERMARKET_MODE);
         viewPager.setAdapter(new AdapterAddFragment(getChildFragmentManager(), getActivity(), aftermarketMode));
         tabLayout.setupWithViewPager(viewPager);
@@ -58,11 +53,8 @@ public class AddFragment extends Fragment implements OnFragmentInteractionListen
         FragmentManager fragmentManager = getChildFragmentManager();
         ScanFragment scanFragment = (ScanFragment) fragmentManager.findFragmentByTag(ScanFragment.scanTag);
         ManualAddFragment manualAddFragment = (ManualAddFragment)fragmentManager.findFragmentByTag(ManualAddFragment.manualTag);
-        //Tag of your fragment which you should use when you add
-
         if(scanFragment != null)
         {
-            // your some other frag need to provide some data back based on views.
             passBarcode = scanFragment.getBarcode();
             passWorkMode = scanFragment.getWorkMode();
             manualAddFragment.onFragmentInteraction(passBarcode, passWorkMode);

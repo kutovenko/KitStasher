@@ -393,7 +393,7 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
     }
 
     private void showFilterDialog() {
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
         LayoutInflater inflater = LayoutInflater.from(getActivity());
         final View dialogView = inflater.inflate(R.layout.alertdialog_filter, null);
         dialogBuilder.setView(dialogView);
@@ -441,25 +441,25 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
 
         final Spinner spFilterStatus = dialogView.findViewById(R.id.spStatus);
         ArrayList<String> statusArray = dbConnector.getFilterFromIntData(activeTable, DbConnector.COLUMN_STATUS);
-        ArrayAdapter statusAdapter = new ArrayAdapter<>(getActivity(),
+        ArrayAdapter statusAdapter = new ArrayAdapter<>(context,
                 R.layout.simple_spinner_item, statusArray);
         spFilterStatus.setAdapter(statusAdapter);
 
         final Spinner spFilterMedia = dialogView.findViewById(R.id.spMedia);
         ArrayList<String> mediaArray = dbConnector.getFilterFromIntData(activeTable, DbConnector.COLUMN_MEDIA);
-        ArrayAdapter mediaAdapter = new ArrayAdapter<>(getActivity(),
+        ArrayAdapter mediaAdapter = new ArrayAdapter<>(context,
                 R.layout.simple_spinner_item, mediaArray);
         spFilterMedia.setAdapter(mediaAdapter);
 
         final Spinner spFilterScale = dialogView.findViewById(R.id.spFilterScale);
         ArrayList<String> scalesArray = dbConnector.getFilterData(activeTable, DbConnector.COLUMN_SCALE);
-        ArrayAdapter scalesAdapter = new ArrayAdapter<>(getActivity(),
+        ArrayAdapter scalesAdapter = new ArrayAdapter<>(context,
                 R.layout.simple_spinner_item, scalesArray);
         spFilterScale.setAdapter(scalesAdapter);
 
         final Spinner spFilterBrand = dialogView.findViewById(R.id.spFilterBrands);
         ArrayList<String> brandsArray = dbConnector.getFilterData(activeTable, DbConnector.COLUMN_BRAND);
-        ArrayAdapter brandsAdapter = new ArrayAdapter<>(getActivity(),
+        ArrayAdapter brandsAdapter = new ArrayAdapter<>(context,
                 R.layout.simple_spinner_item, brandsArray);
         spFilterBrand.setAdapter(brandsAdapter);
 
@@ -468,7 +468,7 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
 
         final AutoCompleteTextView acFilterKitname = dialogView
                 .findViewById(R.id.acFilterKitname);
-        ArrayAdapter acFilterKitnameAdapter = new ArrayAdapter<>(getActivity(),
+        ArrayAdapter acFilterKitnameAdapter = new ArrayAdapter<>(context,
                 android.R.layout.simple_dropdown_item_1line, kitnamesArray);
         acFilterKitname.addTextChangedListener(this);
         acFilterKitname.setAdapter(acFilterKitnameAdapter);

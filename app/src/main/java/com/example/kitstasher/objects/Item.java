@@ -1,7 +1,7 @@
 package com.example.kitstasher.objects;
 
 /**
- * Created by Алексей on 07.07.2017.
+ * Created by Алексей on 07.07.2017. For AlertDialogs
  */
 
 public class Item {

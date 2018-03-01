@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -67,7 +68,6 @@ public class ItemCardFragment extends Fragment {
             tableName;
     private final int EDIT_ACTIVITY_CODE = 21;
     private int tabToReturn;
-    private boolean demoMode;
 
 
     public ItemCardFragment() {
@@ -130,7 +130,7 @@ public class ItemCardFragment extends Fragment {
         rvAftermarket.setLayoutManager(afterManager);
         DefaultItemAnimator animator = new DefaultItemAnimator() {
             @Override
-            public boolean canReuseUpdatedViewHolder(RecyclerView.ViewHolder viewHolder) {
+            public boolean canReuseUpdatedViewHolder(@NonNull RecyclerView.ViewHolder viewHolder) {
                 return true;
             }
         };
@@ -196,14 +196,14 @@ public class ItemCardFragment extends Fragment {
         final String currency = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_CURRENCY));
 
         final String listname = "";
-        demoMode = true; //для адаптера, убирает блок афтермаркета not needed
 
         tvKitname = view.findViewById(R.id.tvKitname);
         tvKitname.setText(kitname);
         tvOriginalKitName.setText(origName);
         tvBrand.setText(brand);
         tvBrandcatno.setText(catno);
-        tvScale.setText("1/" + String.valueOf(scale));
+        String scaleText = "1/" + String.valueOf(scale);
+        tvScale.setText(scaleText);
         ivCategory = view.findViewById(R.id.ivCategory);
 
         tvStatus.setText(codeToStatus(status));
@@ -267,7 +267,6 @@ public class ItemCardFragment extends Fragment {
                 intent.putExtra(MyConstants.POSITION, position);
                 intent.putExtra(MyConstants.WORK_MODE, workMode);
                 intent.putExtra(MyConstants.ID, id);
-//                intent.putExtra(MyConstants.LIST_CATEGORY, category);
                 intent.putExtra(MyConstants.KITNAME, kitname);
                 intent.putExtra(MyConstants.BRAND, brand);
                 intent.putExtra(MyConstants.CATNO, catno);
@@ -307,7 +306,8 @@ public class ItemCardFragment extends Fragment {
         tvBrandcatno.setText(catno);
 
         int scale = getArguments().getInt(MyConstants.SCALE);
-        tvScale.setText("1/" + String.valueOf(scale));
+        String scaleText = "1/" + String.valueOf(scale);
+        tvScale.setText(scaleText);
 
         tvStatus.setVisibility(View.GONE);
         tvMedia.setText(codeToMedia(getArguments().getInt(MyConstants.MEDIA)));
@@ -390,31 +390,7 @@ public class ItemCardFragment extends Fragment {
         }
     }
 
-    /**** Method for Setting the Height of the ListView dynamically.
-     **** Hack to fix the issue of not showing all the items of the ListView
-     **** when placed inside a ScrollView
-     * @param listView****/
-    private void setListViewHeightBasedOnChildren(RecyclerView listView) { //todo helper
-//        ListAdapter listAdapter = listView.getAdapter();
-        MyListCursorAdapter listAdapter = (MyListCursorAdapter) listView.getAdapter();
-        if (listAdapter == null)
-            return;
 
-        int desiredWidth = View.MeasureSpec.makeMeasureSpec(listView.getWidth(), View.MeasureSpec.UNSPECIFIED);
-        int totalHeight = 0;
-        View view = null;
-        for (int i = 0; i < listAdapter.getItemCount(); i++) {
-            view = listView;
-            if (i == 0)
-                view.setLayoutParams(new ViewGroup.LayoutParams(desiredWidth, ViewGroup.LayoutParams.WRAP_CONTENT));
-
-            view.measure(desiredWidth, View.MeasureSpec.UNSPECIFIED);
-            totalHeight += view.getHeight();
-        }
-        ViewGroup.LayoutParams params = listView.getLayoutParams();
-        params.height = totalHeight + (listView.getChildAt(0).getHeight() * (listAdapter.getItemCount() - 1));
-        listView.setLayoutParams(params);
-    }
 
     private String codeToDescription(String code) {
         String desc = "";

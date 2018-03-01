@@ -11,9 +11,10 @@ import android.widget.TextView;
 import com.example.kitstasher.R;
 
 /**
- * Created by Алексей on 04.10.2017.
+ * Created by Алексей on 04.10.2017. Adapter for spinners
  */
 
+// TODO: 28.02.2018 RecyclerViewAdapter
 public class AdapterSpinner extends BaseAdapter {
     private Context context;
     private int icons[];
@@ -45,7 +46,7 @@ public class AdapterSpinner extends BaseAdapter {
 
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
-        view = inflater.inflate(R.layout.item_spinner, null);
+        view = inflater.inflate(R.layout.item_spinner, viewGroup, false);
         ImageView icon = view.findViewById(R.id.ivItemCat);
         TextView category = view.findViewById(R.id.tvItemName);
         icon.setImageResource(icons[i]);

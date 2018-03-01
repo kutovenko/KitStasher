@@ -37,11 +37,7 @@ import java.util.Calendar;
 public class MyListsFragment extends Fragment implements View.OnClickListener {
     private DbConnector dbConnector;
     private Cursor cursor;
-    //    public AdapterMyLists adapterMyLists;
     private Context mContext;
-    //    private ListView lvMyLists;
-    private RecyclerView rvMyLists;
-    private LinearLayoutManager rvListsManager;
     private View view;
     private LinearLayout linLayoutDate, linLayoutListName;
     private ImageView ivSortDate, ivSortListName;
@@ -75,8 +71,8 @@ public class MyListsFragment extends Fragment implements View.OnClickListener {
         ((MainActivity) getActivity())
                 .setActionBarTitle(getActivity().getResources().getString(R.string.Wishlists));
 
-        rvMyLists = view.findViewById(R.id.rvMyLists);
-        rvListsManager = new LinearLayoutManager(mContext);
+        RecyclerView rvMyLists = view.findViewById(R.id.rvMyLists);
+        LinearLayoutManager rvListsManager = new LinearLayoutManager(mContext);
         rvMyLists.setHasFixedSize(true);
         rvMyLists.setLayoutManager(rvListsManager);
         rvMyLists.setItemAnimator(new DefaultItemAnimator());
@@ -168,7 +164,7 @@ public class MyListsFragment extends Fragment implements View.OnClickListener {
     }
 
     public void showAddNewListDialog() {
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(mContext);
         LayoutInflater inflater = LayoutInflater.from(getActivity());
         final View dialogView = inflater.inflate(R.layout.list_alertdialog, null);
         dialogBuilder.setView(dialogView);

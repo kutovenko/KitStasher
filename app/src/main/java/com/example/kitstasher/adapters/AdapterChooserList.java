@@ -26,6 +26,8 @@ import java.util.List;
  * Created by Алексей on 14.08.2017.
  */
 
+// TODO: 28.02.2018 RecyclerViewAdapter
+
 public class AdapterChooserList extends CursorAdapter {
     private final Context context;
     private List<Integer> selectedItemsPositions;//to store all selected items position
@@ -40,7 +42,7 @@ public class AdapterChooserList extends CursorAdapter {
         this.workMode = workMode;
     }
 
-    static class ViewHolder {
+    private static class ViewHolder {
         private TextView tvChooseKitName, tvChooseKitBrand, tvScale;
         private ImageView ivChooseKitBoxart, ivChooseKitCategory;
         private CheckBox cbChoose;

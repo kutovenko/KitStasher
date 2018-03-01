@@ -8,7 +8,7 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import java.util.List;
 
 /**
- * Created by Алексей on 20.09.2017.
+ * Created by Алексей on 20.09.2017. Viev cards adapter
  */
 
 public class AdapterViewCards extends FragmentStatePagerAdapter {
@@ -35,11 +35,6 @@ public class AdapterViewCards extends FragmentStatePagerAdapter {
     public static int getPos() {
         return pos;
     }
-
-//    public void add(Class<Fragment> c, String title, Bundle b) {
-//        myFragments.add(Fragment.instantiate(context,c.getName(),b));
-//        categories.add(title);
-//    }
 
     public static void setPos(int pos) {
         AdapterViewCards.pos = pos;

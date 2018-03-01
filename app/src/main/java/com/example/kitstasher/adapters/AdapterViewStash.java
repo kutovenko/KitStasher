@@ -3,6 +3,7 @@ package com.example.kitstasher.adapters;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -25,13 +26,11 @@ public class AdapterViewStash extends FragmentStatePagerAdapter {
     private Cursor cursor;
     private int activeCategoriesCount;
     private List<Fragment> fragments;
-    boolean aftermarketMode;
 
     public AdapterViewStash(FragmentManager fm, Context context, boolean aftermarketMode, Cursor cursor) {
         super(fm);
         this.context = context;
         this.cursor = cursor;
-        this.aftermarketMode = aftermarketMode;
         this.activeCategoriesCount = cursor.getCount();
         fragments = new ArrayList<>();
         Bundle bundle = new Bundle();
@@ -56,6 +55,7 @@ public class AdapterViewStash extends FragmentStatePagerAdapter {
         return fragments.get(position);
     }
 
+    @NonNull
     @Override
     public Object instantiateItem(ViewGroup container, int position) {
         return super.instantiateItem(container, position);
@@ -102,13 +102,13 @@ public class AdapterViewStash extends FragmentStatePagerAdapter {
             case "7":
                 return R.string.Fantasy;
             case "8":
-                return R.string.Other; //todo
+                return R.string.Other;
         }
         return 0;
     }
 
     @Override
-    public int getItemPosition(Object object) {
+    public int getItemPosition(@NonNull Object object) {
         return POSITION_NONE;
     }
 }

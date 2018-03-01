@@ -1,6 +1,7 @@
 package com.example.kitstasher.adapters;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -11,7 +12,7 @@ import com.example.kitstasher.fragment.SettingsMyShopsFragment;
 import com.example.kitstasher.fragment.SettingsOptionsFragment;
 
 /**
- * Created by Алексей on 03.05.2017.
+ * Created by Алексей on 03.05.2017. Adapter for Settings Fragment
  */
 
 public class AdapterSettings extends FragmentPagerAdapter {
@@ -37,7 +38,7 @@ public class AdapterSettings extends FragmentPagerAdapter {
     }
 
     @Override
-    public int getItemPosition(Object object) {
+    public int getItemPosition(@NonNull Object object) {
         return POSITION_NONE;
     }
 
@@ -58,18 +59,4 @@ public class AdapterSettings extends FragmentPagerAdapter {
         }
         return null;
     }
-
-    public static Fragment openOptions(){
-        return new SettingsOptionsFragment();
-    }
-    public static Fragment openBrands(){
-        return new SettingsBrandsFragment();
-    }
-    public static Fragment openShops(){
-        return new SettingsMyShopsFragment();
-    }
-//    public static Fragment openTrash(){
-//        return new SettingsTrashFragment();
-//    }
-
 }

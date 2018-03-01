@@ -1,6 +1,7 @@
 package com.example.kitstasher.fragment;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,17 +13,16 @@ import com.example.kitstasher.activity.MainActivity;
 import com.example.kitstasher.other.MyConstants;
 
 /**
- * Created by Алексей on 03.09.2017.
+ * Created by Алексей on 03.09.2017. Home Fragment
  */
 
 public class HomeFragment extends Fragment implements View.OnClickListener {
-//    Button btnAddAction, btnSearchAction, btnViewStashAction, btnStatisticsAction, btnMylistsAction;
 
     public HomeFragment(){
 
     }
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
         Button btnAddAction = view.findViewById(R.id.btnAddKitAction);
@@ -38,6 +38,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
         Button btnAftermarketAction = view.findViewById(R.id.btnAftermarketAction);
         btnAftermarketAction.setOnClickListener(this);
 
+        assert (getActivity()) != null;
         ((MainActivity) getActivity())
                 .setActionBarTitle(getActivity().getResources().getString(R.string.nav_home));
 
@@ -75,7 +76,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
                 break;
             case R.id.btnAftermarketAction:
                 KitsFragment aftermarketFragment = new KitsFragment();
-//                AftermarketFragment aftermarketFragment = new AftermarketFragment();
                 bundle.putBoolean(MyConstants.AFTERMARKET_MODE, true);
                 bundle.putInt(MyConstants.LIST_CATEGORY, 0);
                 bundle.putBoolean(MyConstants.AFTERMARKET_MODE, true);

@@ -194,21 +194,6 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
             fragmentTransaction.replace(R.id.llListsContainer, fragment);
             fragmentTransaction.commit();
         } else {
-//
-//            ManualAddFragment fragment = new ManualAddFragment();
-//            Bundle bundle = new Bundle(3);
-//            bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_KIT);
-//            bundle.putString(MyConstants.LISTNAME, listname);
-//            bundle.putString(MyConstants.BARCODE, barcode);
-//            fragment.setArguments(bundle);
-//            android.support.v4.app.FragmentTransaction fragmentTransaction =
-//                    getFragmentManager().beginTransaction();
-//            fragmentTransaction.replace(R.id.llListsContainer, fragment);
-//            fragmentTransaction.commit();
-
-//            if (mListener != null) {
-//                mListener.onFragmentInteraction(barcode, workMode);
-//            }
             mListener.onFragmentInteraction(barcode, workMode);
             ViewPager viewPager = getActivity().findViewById(R.id.viewpagerAdd);
             viewPager.setCurrentItem(1);
@@ -344,6 +329,7 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
             kitTowrite.put(MyConstants.BOXART_URL, kitSave.getBoxart_url());
         }
         kitTowrite.put(MyConstants.PARSE_DESCRIPTION, kitSave.getDescription());
+        // TODO: 28.02.2018 проверить запись и поля
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences(MyConstants.ACCOUNT_PREFS,
                 Context.MODE_PRIVATE);
         kitTowrite.put(MyConstants.PARSE_OWNERID, sharedPreferences.getString(MyConstants.USER_ID_FACEBOOK, MyConstants.EMPTY));
@@ -499,7 +485,7 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
 
     public void createAlertDialog(String msg) {
         AlertDialog.Builder alertbox = new AlertDialog.Builder(
-                getActivity());
+                mContext);
         alertbox.setTitle("Response Message");
         alertbox.setMessage(msg);
         alertbox.setPositiveButton("Ok", new DialogInterface.OnClickListener() {

@@ -191,22 +191,6 @@ public class SearchFragment extends Fragment implements AsyncApp42ServiceApi.App
                 case "2":
                     desc = getString(R.string.repack);
                     break;
-
-//                case "2":
-//                    desc = getString(R.string.changed_parts);
-//                    break;
-//                case "3":
-//                    desc = getString(R.string.new_decal);
-//                    break;
-//                case "4":
-//                    desc = getString(R.string.changed_box);
-//                    break;
-//                case "5":
-//                    desc = getString(R.string.repack);
-//                    break;
-//                case "6":
-//                    desc = MyConstants.EMPTY
-//;
             }
         }
         return desc;

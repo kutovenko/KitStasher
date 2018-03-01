@@ -306,19 +306,18 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
 
     private void copyKit(Cursor c) {
         c.moveToFirst();
-            String boxart_url = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_BOXART_URL));
-            String boxart_uri = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_BOXART_URI));
-            String brand = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_BRAND));
-            String cat_no = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_BRAND_CATNO));
-            String name = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_KIT_NAME));
-            int scale = c.getInt(c.getColumnIndexOrThrow(DbConnector.COLUMN_SCALE));
-            String category = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_CATEGORY));
-            String year = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_YEAR));
-            String description = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_DESCRIPTION));
+        String boxart_url = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_BOXART_URL));
+        String boxart_uri = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_BOXART_URI));
+        String brand = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_BRAND));
+        String cat_no = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_BRAND_CATNO));
+        String name = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_KIT_NAME));
+        int scale = c.getInt(c.getColumnIndexOrThrow(DbConnector.COLUMN_SCALE));
+        String category = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_CATEGORY));
+        String year = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_YEAR));
+        String description = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_DESCRIPTION));
         String kit_noengname = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_ORIGINAL_NAME));
-            String barcode = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_BARCODE));
-            String status = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_SEND_STATUS));
-            String date = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_DATE));
+        String barcode = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_BARCODE));
+        String date = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_DATE));
 
         String onlineId = c.getString(c.getColumnIndexOrThrow(DbConnector.COLUMN_ID_ONLINE));
 
