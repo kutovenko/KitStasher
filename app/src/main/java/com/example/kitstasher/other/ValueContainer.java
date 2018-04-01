@@ -1,7 +1,7 @@
 package com.example.kitstasher.other;
 
 /**
- * Created by Алексей on 16.05.2017.
+ * Created by Алексей on 16.05.2017. Container for values
  */
 
 public class ValueContainer<T> {

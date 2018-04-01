@@ -887,11 +887,11 @@ public class DbConnector {
 
 // Список с фильтрацией и сортировкой
 public Cursor filteredKits(String tableName, String[] filters, String sortBy,
-                           String categoryTab, String listname) {
+                           String category, String listname) {
         String groupBy = "_id";
         String having;
     if (listname.equals(MyConstants.EMPTY)) {
-        switch (categoryTab) {
+        switch (category) {
             case "1":
                 having = DbConnector.COLUMN_CATEGORY + " = '" + MyConstants.CODE_AIR + "'"; //"category = 'air'"
                 break;

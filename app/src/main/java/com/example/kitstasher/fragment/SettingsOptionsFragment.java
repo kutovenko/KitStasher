@@ -161,7 +161,7 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
         dbConnector.clearTable(DbConnector.TABLE_KIT_AFTER_CONNECTIONS);
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        String ownerId = sharedPreferences.getString(MyConstants.USER_ID_PARSE, "");//todo
+        String ownerId = sharedPreferences.getString(MyConstants.USER_ID_PARSE, "");
         ParseQuery<ParseObject> ownerIds = ParseQuery.getQuery("Stash");
         ownerIds.whereEqualTo(MyConstants.PARSE_OWNERID, ownerId);
 

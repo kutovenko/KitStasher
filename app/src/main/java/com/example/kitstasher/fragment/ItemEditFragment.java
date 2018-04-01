@@ -41,6 +41,7 @@ import com.example.kitstasher.R;
 import com.example.kitstasher.activity.ChooserActivity;
 import com.example.kitstasher.activity.CropActivity;
 import com.example.kitstasher.activity.MainActivity;
+import com.example.kitstasher.activity.ViewActivity;
 import com.example.kitstasher.adapters.AdapterSpinner;
 import com.example.kitstasher.adapters.MyListCursorAdapter;
 import com.example.kitstasher.other.DbConnector;
@@ -115,7 +116,8 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
             mediaFilter,
             category;
     private char workMode;
-    private boolean isBoxartTemporary;
+    private boolean isBoxartTemporary,
+            aftermarketMode;
     private Bitmap bmBoxartPic;
     private Uri photoPath;
     private ArrayAdapter<String> descriptionAdapter, yearsAdapter, currencyAdapter;
@@ -161,23 +163,27 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
             case 'a': //MyConstants.MODE_AFTERMARKET
                 linLayoutEditAftermarket.setVisibility(GONE);
                 cursor = dbConnector.getAftermarketByID(id);
+                aftermarketMode = true;
                 showEditForm(cursor);
                 break;
             case 'k': //MyConstants.MODE_AFTER_KIT
                 cursor = dbConnector.getKitById(id);
                 aftermarketCursor = dbConnector.getAftermarketForKit(id, listname);
                 aMode = MyConstants.MODE_A_EDIT;
+                aftermarketMode = false;
                 break;
             case 'm': //MyConstants.MODE_KIT
                 cursor = dbConnector.getKitById(id);
                 aftermarketCursor = dbConnector.getAftermarketForKit(id, listname);
                 aMode = MyConstants.MODE_A_EDIT;
+                aftermarketMode = false;
                 break;
             case 'l': //MyConstants.MODE_LIST
                 cursor = dbConnector.getListItemById(id);
                 listname = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.MYLISTSITEMS_LISTNAME));
                 aftermarketCursor = dbConnector.getAftermarketForKit(id, listname);
                 aMode = MyConstants.MODE_A_KIT;
+                aftermarketMode = false;
                 break;
         }
         cursor.moveToFirst();
@@ -220,8 +226,22 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
 
                     KitsFragment.refreshPages();
 
+                    Cursor catCursor;
+                    if (aftermarketMode) {
+                        catCursor = dbConnector.getAfterActiveCategories();
+                    } else {
+                        catCursor = dbConnector.getActiveCategories();
+                    }
+                    catCursor.moveToFirst();
+                    while (!catCursor.isAfterLast()) {
+                        if (catCursor.getString(catCursor.getColumnIndexOrThrow("category")).equals(category)) {
+                            tabToReturn = catCursor.getPosition();
+                        }
+                        catCursor.moveToNext();
+                    }
+
                     String ret = String.valueOf(spCategory.getSelectedItemPosition());
-                    Intent intent3 = new Intent();
+                    Intent intent3 = new Intent(context, ViewActivity.class);
                     intent3.putExtra(MyConstants.POSITION, position);
                     intent3.putExtra(MyConstants.LIST_ID, id);
                     intent3.putExtra(MyConstants.CATEGORY, ret);

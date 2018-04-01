@@ -7,6 +7,8 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -90,7 +92,6 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
         if (savedInstanceState != null) {
             aftermarketMode = savedInstanceState.getBoolean(MyConstants.AFTERMARKET_MODE);
         }
-//        dbConnector.updateCategories();
     }
 
     @Override
@@ -165,11 +166,27 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
             }
         });
 
+        final FloatingActionButton fab = getParentFragment().getView().findViewById(R.id.fab);
+
+
+        rvKits.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if (dy > 0 && fab.getVisibility() == View.VISIBLE) {
+                    fab.hide();
+                } else if (dy < 0 && fab.getVisibility() != View.VISIBLE) {
+//                    fab.show();
+                    fab.show();
+                }
+            }
+        });
+
         return view;
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putBoolean(MyConstants.AFTERMARKET_MODE, aftermarketMode);
     }
@@ -197,7 +214,7 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
 
     private void prepareListAndAdapter(Cursor cursor) {
         AdapterKitList rvAdapter = new AdapterKitList(cursor, context, filters, activeTable,
-                categoryTab, workMode, sortBy, allTag, listname);
+                categoryTab, workMode, sortBy, allTag, listname, category);
         rvAdapter.setHasStableIds(true);
         rvKits.setAdapter(rvAdapter);
 

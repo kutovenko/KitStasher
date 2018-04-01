@@ -401,6 +401,7 @@
     <string name="Do_you_wish_to_exit">Do you wish to exit KitStasher?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="new_name">New name</string>
 
 
 </resources>

@@ -50,6 +50,38 @@ public class Kit {
     private int media;
     private int status;
 
+    private String itemType; //1 - kit, 2 - aftermarket
+    private int localId;
+    private int parentId;
+
+    private String listname;
+
+
+    public String getItemType() {
+        return itemType;
+    }
+
+    public void setItemType(String itemType) {
+        this.itemType = itemType;
+    }
+
+    public int getLocalId() {
+        return localId;
+    }
+
+    public void setLocalId(int localId) {
+        this.localId = localId;
+    }
+
+    public int getParentId() {
+        return parentId;
+    }
+
+    public void setParentId(int parentId) {
+        this.parentId = parentId;
+    }
+
+
 
     public int getMedia() {
         return media;
@@ -217,6 +249,30 @@ public class Kit {
         return datePurchased;
     }
 
+    public String getSendStatus() {
+        return sendStatus;
+    }
+
+    public void setSendStatus(String sendStatus) {
+        this.sendStatus = sendStatus;
+    }
+
+    public String getPlacePurchased() {
+        return placePurchased;
+    }
+
+    public void setPlacePurchased(String placePurchased) {
+        this.placePurchased = placePurchased;
+    }
+
+    public String getListname() {
+        return listname;
+    }
+
+    public void setListname(String listname) {
+        this.listname = listname;
+    }
+
 
     public String saveToOnlineStash(final Context context) {
         final String[] parseId = new String[1];
@@ -236,6 +292,11 @@ public class Kit {
                 Context.MODE_PRIVATE);
         kitTowrite.put(MyConstants.PARSE_OWNERID, sharedPreferences.getString(MyConstants.USER_ID_FACEBOOK, MyConstants.EMPTY));
         kitTowrite.put(MyConstants.YEAR, this.getYear());
+
+        kitTowrite.put(MyConstants.PARSE_LOCALID, this.getLocalId());
+        kitTowrite.put(MyConstants.PARSE_PARENTID, this.getParentId());
+        kitTowrite.put(MyConstants.PARSE_ITEMTYPE, this.getItemType());
+
         kitTowrite.saveInBackground(new SaveCallback() {
             @Override
             public void done(ParseException e) {
@@ -245,7 +306,7 @@ public class Kit {
         return parseId[0];
     }
 
-    public void saveToNewKit(String parseId) {
+    public void saveToNewKit(String ownerId) {
         ParseObject kitTowrite = new ParseObject(MyConstants.PARSE_C_NEWKIT);
         kitTowrite.put(MyConstants.PARSE_BARCODE, this.getBarcode());
         kitTowrite.put(MyConstants.BRAND, this.getBrand());
@@ -258,8 +319,11 @@ public class Kit {
             kitTowrite.put(MyConstants.BOXART_URL, Helper.trimUrl(this.getBoxart_url())); //Убираем обозначение размера картинки
         }
         kitTowrite.put(MyConstants.DESCRIPTION, this.getDescription());
-        kitTowrite.put(MyConstants.PARSE_OWNERID, parseId);
+        kitTowrite.put(MyConstants.PARSE_OWNERID, ownerId);
         kitTowrite.put(MyConstants.YEAR, this.getYear());
+
+        kitTowrite.put(MyConstants.PARSE_ITEMTYPE, this.getItemType());
+
         kitTowrite.saveInBackground();
     }
 
@@ -281,7 +345,13 @@ public class Kit {
         return false;
     }
 
+    public boolean makeLocalBackup() {
+        return false;
+    }
 
+    public boolean addToKit(Kit kit, Kit aftermarket) {
+        return false;
+    }
 
 
 
@@ -313,23 +383,15 @@ public class Kit {
         this.placePurchased = kitBuilder.placePurchased;
         this.status = kitBuilder.status;
         this.media = kitBuilder.media;
+
+        this.itemType = kitBuilder.itemType;
+        this.localId = kitBuilder.localId;
+        this.parentId = kitBuilder.parentId;
+
+        this.listname = kitBuilder.listname;
     }
 
-    public String getSendStatus() {
-        return sendStatus;
-    }
 
-    public void setSendStatus(String sendStatus) {
-        this.sendStatus = sendStatus;
-    }
-
-    public String getPlacePurchased() {
-        return placePurchased;
-    }
-
-    public void setPlacePurchased(String placePurchased) {
-        this.placePurchased = placePurchased;
-    }
 
 
     public static class KitBuilder{
@@ -360,6 +422,12 @@ public class Kit {
         private String placePurchased;
         private int status;
         private int media;
+
+        private String itemType; //kit or aftermarket
+        private int localId; //id in local db
+        private int parentId; // id of parent kit for aftermarket
+
+        private String listname;
 
         public KitBuilder(){
 //            this.barcode = "";
@@ -463,6 +531,11 @@ public class Kit {
             return this;
         }
 
+        public KitBuilder hasPlacePurchased(String placePurchased) {
+            this.placePurchased = placePurchased;
+            return this;
+        }
+
         public KitBuilder hasStatus(int status){
             this.status = status;
             return this;
@@ -473,8 +546,24 @@ public class Kit {
             return this;
         }
 
-        public KitBuilder hasPlacePurchased(String placePurchased){
-            this.placePurchased = placePurchased;
+
+        public KitBuilder hasItemType(String itemType) {
+            this.itemType = itemType;
+            return this;
+        }
+
+        public KitBuilder hasLocalId(int localId) {
+            this.localId = localId;
+            return this;
+        }
+
+        public KitBuilder hasParentId(int parentId) {
+            this.parentId = parentId;
+            return this;
+        }
+
+        public KitBuilder hasListname(String listname) {
+            this.listname = listname;
             return this;
         }
 

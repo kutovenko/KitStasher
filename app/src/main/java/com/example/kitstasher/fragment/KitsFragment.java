@@ -4,6 +4,7 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -25,6 +26,7 @@ public class KitsFragment extends Fragment {
     private DbConnector dbConnector;
     private Cursor cursor;
     private AdapterViewStash adapter;
+//    static CustomFloatingActionButton fab;
 
     public KitsFragment() {
 
@@ -43,7 +45,7 @@ public class KitsFragment extends Fragment {
         tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
         dbConnector = new DbConnector(getActivity());
         dbConnector.open();
-        boolean aftermarketMode = getArguments().getBoolean(MyConstants.AFTERMARKET_MODE);
+        final boolean aftermarketMode = getArguments().getBoolean(MyConstants.AFTERMARKET_MODE);
         if (aftermarketMode) {
             cursor = dbConnector.getAfterActiveCategories();
         } else {
@@ -58,12 +60,30 @@ public class KitsFragment extends Fragment {
             if (currentTab != 0) {
                 viewPager.setCurrentItem(currentTab);
             }
-        }else{
+        } else {
             viewPager.setCurrentItem(0);
         }
         tabLayout.setupWithViewPager(viewPager);
+
+        FloatingActionButton fab = view.findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                android.support.v4.app.FragmentTransaction fragmentTransaction =
+                        getFragmentManager().beginTransaction();
+                Bundle bundle = new Bundle();
+                AddFragment addFragment = new AddFragment();
+                bundle.putBoolean(MyConstants.AFTERMARKET_MODE, aftermarketMode);
+                bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_KIT);
+                addFragment.setArguments(bundle);
+                fragmentTransaction.replace(R.id.mainactivityContainer, addFragment);
+                fragmentTransaction.commit();
+            }
+        });
+
         return view;
     }
+
 
     @Override
     public void onResume() {
@@ -97,4 +117,17 @@ public class KitsFragment extends Fragment {
     public static void refreshPages() {
         viewPager.refresh();
     }
+
+//    public static void showFab(){
+//        fab.show();
+//    }
+//
+//    public static void hideFab(){
+//        fab.hide();
+//    }
+
+//    public static int getCategoryTab(String category){
+//
+//        return 0;
+//    }
 }

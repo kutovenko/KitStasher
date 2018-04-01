@@ -3,6 +3,4 @@
     <external-files-path
         name="boxart"
         path="/boxart" />
-    <!--<external-path name="boxart" path="Android/data/com.example.kitstasher/boxart" />-->
-    <!--<external-files-path name="boxart" path="boxart/" />-->
 </paths>

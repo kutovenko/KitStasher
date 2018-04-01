@@ -260,8 +260,13 @@ Prefixes and postfixes for links
     public static final String PARSE_SCALEMATES = "scalemates_url";
     public static final String PARSE_DELETED = "isDeleted";
     public static final String PARSE_THUMBNAIL_URL = "thumbnail_url";
-
+    public static final String PARSE_ITEMTYPE = "itemType";
+    public static final String PARSE_LOCALID = "localId";
+    public static final String PARSE_PARENTID = "parentId";
     public static final String PARSE_IMAGE = "image";
+    public static final String PARSE_TU_STASH = "stash";
+    public static final String PARSE_TU_USERID = "userId";
+    public static final String PARSE_TU_OWNERNAME = "ownerName";
 
 
     public static final String POSITIONS = "positions";
@@ -286,12 +291,14 @@ Prefixes and postfixes for links
 
     public static final String CATEGORY_TAB = "category_tab";
     public static final java.lang.String LISTID = "list_id";
-    public static final String PARSE_TU_STASH = "stash";
-    public static final String PARSE_TU_USERID = "userId";
-    public static final String PARSE_TU_OWNERNAME = "ownerName";
+
 
 
     public static final String DAILYMAX = "dailyMax";
     public static final String DAILYMAXDATE = "dailyMaxDate";
     public static final String WORLDRANK = "world_rank";
+
+
+    public static final String TYPE_KIT = "1"; // тип - набор
+    public static final String TYPE_AFTERMARKET = "2"; // тип - афтермаркет
 }

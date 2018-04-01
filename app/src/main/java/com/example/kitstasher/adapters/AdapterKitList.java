@@ -1,5 +1,6 @@
 package com.example.kitstasher.adapters;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -18,6 +19,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.kitstasher.R;
+import com.example.kitstasher.activity.MainActivity;
 import com.example.kitstasher.activity.ViewActivity;
 import com.example.kitstasher.fragment.KitsFragment;
 import com.example.kitstasher.other.DbConnector;
@@ -56,8 +58,7 @@ public class AdapterKitList extends CursorRecyclerViewAdapter<AdapterKitList.Vie
 
     public AdapterKitList(Cursor cursor, Context context, String[] filters, String activeTable,
                           int tabToReturn, char workMode, String sortBy,
-                          String allTag, String listname
-    ) {
+                          String allTag, String listname, String category) {
         super(context, cursor);
         this.context = context;
         this.filters = filters;
@@ -67,13 +68,8 @@ public class AdapterKitList extends CursorRecyclerViewAdapter<AdapterKitList.Vie
         this.sortBy = sortBy;
         this.allTag = allTag;
         this.listname = listname;
-        ids = new ArrayList<>();
-        positions = new ArrayList<>();
-
-        for (int i = 0; i < getItemCount(); i++) {
-            ids.add(getItemId(i));
-            positions.add(i);
-        }
+        this.category = category;
+        rebuildIdsAndPositions();
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
@@ -113,9 +109,11 @@ public class AdapterKitList extends CursorRecyclerViewAdapter<AdapterKitList.Vie
         String name = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_KIT_NAME));
         String scale = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_SCALE));
         final String onlneId = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_ID_ONLINE));
-        category = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_CATEGORY));
+//        category = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_CATEGORY));
 
-        String fullBrand = brand + " " + cat_no;
+        String fullBrand = brand + " " + cat_no
+                + String.valueOf(tabToReturn);
+//                + " p: " + String.valueOf(holder.getAdapterPosition()) + " id: " + String.valueOf(getItemId(holder.getAdapterPosition()));
 
         holder.tvFullBrand.setText(fullBrand);
         holder.tvFullScale.setText(scale);
@@ -143,6 +141,15 @@ public class AdapterKitList extends CursorRecyclerViewAdapter<AdapterKitList.Vie
                 Intent intent;
                 intent = new Intent(context, ViewActivity.class);
                 int idd = holder.getAdapterPosition();
+                // здесь нужно получить категорию из записи конкретного кита!!!!!!!!!!!!!!!!!!!
+
+//                cursor.moveToPosition(holder.getAdapterPosition());
+//                category = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_CATEGORY));
+
+//                Toast.makeText(context, "size " + String.valueOf(getItemCount()) +
+//                                " p: " + String.valueOf(holder.getAdapterPosition()) + " id: " + String.valueOf(getItemId(holder.getAdapterPosition())),
+//                        Toast.LENGTH_LONG).show();
+
                 intent.putExtra(MyConstants.AFTER_ID, id);//ид афтемаркета, на котором должен открыться пейджер!
                 intent.putExtra(MyConstants.ID, id);//ид кита, на котором должен открыться пейджер
                 // отправляем режим редактирования - кит (таблица кита), афтер, если смотрим таблицу афтера - излишне, мы в афтермоде
@@ -167,8 +174,10 @@ public class AdapterKitList extends CursorRecyclerViewAdapter<AdapterKitList.Vie
                 intent.putExtra(MyConstants.POSITIONS, positions);
                 intent.putExtra(MyConstants.SORT_BY, sortBy);
                 intent.putExtra(MyConstants.FILTERS, (Serializable) filters);
-                context.startActivity(intent); //интент на просмотр в пейджере
+//                context.startActivity(intent);
+//интент на просмотр в пейджере
                 // пойдет или в китакт или в афтерактивити
+                ((Activity) context).startActivityForResult(intent, MainActivity.REQUEST_CODE_VIEW);
             }
         });
 
@@ -206,11 +215,16 @@ public class AdapterKitList extends CursorRecyclerViewAdapter<AdapterKitList.Vie
                 dbConnector.deleteAllAftermarketForKit(itemId);
                 deleteFromOnlineStash(onlineId);
                 dbConnector.delRec(activeTable, itemId);
+
+                rebuildIdsAndPositions();
+
                 Cursor newcursor = dbConnector.filteredKits(activeTable, filters, sortBy, category, MyConstants.EMPTY);
                 notifyItemRemoved(currentPosition);
-                swapCursor(newcursor);
-//                changeCursor(newcursor);
-                KitsFragment.refreshPages();
+//                swapCursor(newcursor);
+                changeCursor(newcursor);
+                if (getItemCount() <= 0) {
+                    KitsFragment.refreshPages();
+                }
             }
         });
         dialogBuilder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
@@ -219,6 +233,16 @@ public class AdapterKitList extends CursorRecyclerViewAdapter<AdapterKitList.Vie
         });
         AlertDialog d = dialogBuilder.create();
         d.show();
+    }
+
+    private void rebuildIdsAndPositions() {
+        ids = new ArrayList<>();
+        positions = new ArrayList<>();
+
+        for (int i = 0; i < getItemCount(); i++) {
+            ids.add(getItemId(i));
+            positions.add(i);
+        }
     }
 
     private void deleteFromOnlineStash(String onlineId) {

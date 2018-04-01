@@ -1,7 +1,6 @@
 package com.example.kitstasher.fragment;
 
 import android.content.ActivityNotFoundException;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -103,8 +102,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             etKitNoengName,
             etNotes,
             etPrice;
-    private Button btnCheckOnlineDatabase,
-            btnAdd;
+    private Button btnCheckOnlineDatabase;
     private AppCompatSpinner spYear,
             spDescription,
             spQuantity,
@@ -137,7 +135,6 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             boxartUrl,
             category,
             boxartUri,
-            fbId, //for future use
             description,
             year,
             onlineId,
@@ -157,9 +154,9 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     private long currentId;
     private char workMode;
     private boolean isFoundOnline,
+            isReported,
             cloudModeOn,
             isBoxartTemporary,
-            isReported,//for future use
             wasSearchedOnline;
     private Context context;
     private DbConnector dbConnector;
@@ -173,7 +170,6 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             acPurchasedFrom;
     private List<String> myShops;
     private OnFragmentInteractionListener mListener;
-    private Bitmap boxartPic;
     private Kit kit;
     private Aftermarket aftermarket;
 
@@ -189,8 +185,6 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         onAttachToParentFragment(getParentFragment());
-
-
     }
 
     @Override
@@ -207,11 +201,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-//        outState.putString("imagePath", mCurrentPhotoPath);
-        if (boxartPic != null){
-            outState.putParcelable(MyConstants.BOXART_IMAGE, boxartPic);
             outState.putString("imagePath", mCurrentPhotoPath);
-        }
         if (kit != null){
             outState.putString(MyConstants.BOXART_URL, kit.getBoxart_url());
         }
@@ -258,9 +248,6 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                             .diskCacheStrategy(DiskCacheStrategy.ALL)
                             .into(ivGetBoxart);
                 }
-            } else if (savedInstanceState.getParcelable(MyConstants.BOXART_IMAGE) != null) {
-                boxartPic = savedInstanceState.getParcelable(MyConstants.BOXART_IMAGE);
-                ivGetBoxart.setImageBitmap(boxartPic);
             }
             barcode = savedInstanceState.getString(MyConstants.BARCODE);
         }
@@ -299,7 +286,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         for (int i = thisYear; i >= 1930; i--) {
             years.add(Integer.toString(i));
         }
-        yearsAdapter = new ArrayAdapter<>(getActivity(),
+        yearsAdapter = new ArrayAdapter<>(context,
                 R.layout.simple_spinner_item, years);
         spYear.setAdapter(yearsAdapter);
 
@@ -373,9 +360,6 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     }
 
     private void initVariables() {
-//        if (barcode == null){
-//        barcode = MyConstants.EMPTY;
-//        }
         if (getArguments() != null && getArguments().getChar(MyConstants.WORK_MODE) == MyConstants.MODE_LIST
                 && getArguments().getString(MyConstants.BARCODE) != null) {
             barcode = getArguments().getString(MyConstants.BARCODE);
@@ -432,7 +416,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         datePurchased = MyConstants.EMPTY;
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
         currency = sharedPref.getString(MyConstants.DEFAULT_CURRENCY, MyConstants.EMPTY);
-        ownerId = sharedPref.getString(MyConstants.USER_ID_FACEBOOK, MyConstants.EMPTY);
+        ownerId = sharedPref.getString(MyConstants.USER_ID_PARSE, MyConstants.EMPTY);
         defCurrency = sharedPref.getString(MyConstants.DEFAULT_CURRENCY, MyConstants.EMPTY);
         quantity = 1;
         prototype = MyConstants.EMPTY;
@@ -477,7 +461,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         btnCheckOnlineDatabase.setOnClickListener(this);
         progressBar = view.findViewById(R.id.pbManualAdd);
         progressBar.setVisibility(View.GONE);
-        btnAdd = view.findViewById(R.id.btnMAdd);
+        Button btnAdd = view.findViewById(R.id.btnMAdd);
         btnAdd.setOnClickListener(this);
         Button btnCancel = view.findViewById(R.id.btnMCancel);
         btnCancel.setOnClickListener(this);
@@ -552,10 +536,6 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         if (TextUtils.isEmpty(etKitName.getText())) {
             check = false;
         }
-        if (boxartPic == null && !wasSearchedOnline){
-            Toast.makeText(getActivity(), R.string.please_add_boxart_picture, Toast.LENGTH_SHORT).show();
-            check = false;
-        }
         return check;
     }
 
@@ -626,9 +606,11 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                     switch (workMode) {
                         case 'm': //MODE_KIT
                             if (!isInLocalBase(kit.getBrand(), kit.getBrandCatno())) {
+                                currentId = dbConnector.addKitRec(kit); //kit has been saved in local base
+                                kit.setLocalId((int) currentId);
                                 if (isOnline()) {
 
-                                    currentId = dbConnector.addKitRec(kit); //kit has been saved in local base
+//                                    currentId = dbConnector.addKitRec(kit); //kit has been saved in local base
                                     if (wasSearchedOnline && !isFoundOnline) { //todo проверка в mystash на дубли
                                         if (!TextUtils.isEmpty(mCurrentPhotoPath)) {
                                             saveWithBoxartToParse(mCurrentPhotoPath, kit);
@@ -636,7 +618,8 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 
                                     }
                                     if (cloudModeOn) {
-                                        saveToOnlineStash(kit);
+//                                        saveToOnlineStash(kit);
+                                        kit.saveToOnlineStash(context);
                                     } else {
                                         Toast.makeText(context, R.string.online_backup_is_off, Toast.LENGTH_SHORT).show();
                                     }
@@ -644,7 +627,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                                     String sendStatus = "n";//Надо потом записать в облако
                                     kit.setSendStatus(sendStatus);
 
-                                    currentId = dbConnector.addKitRec(kit);
+//                                    currentId = dbConnector.addKitRec(kit);
 
                                 }
                                 Toast.makeText(getActivity(), R.string.kit_added, Toast.LENGTH_SHORT).show();
@@ -801,7 +784,15 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         } catch (IOException e) {
             Toast.makeText(context, "Нельзя создать файл", Toast.LENGTH_LONG).show();
         }
-        mCurrentPhotoPath = image != null ? image.getAbsolutePath() : null;
+        if (image != null) {
+            mCurrentPhotoPath = image.getAbsolutePath();
+            SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putString(MyConstants.FILE_URI, mCurrentPhotoPath);
+            editor.apply();
+        } else {
+            Toast.makeText(context, "Нельзя создать файл", Toast.LENGTH_LONG).show();
+        }
         return image;
     }
 
@@ -1054,6 +1045,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                 .hasScalemates_url(scalematesUrl)
                 .hasYear(year)
                 .hasOnlineId(onlineId)
+
                 .hasDateAdded(dateAdded)
                 .hasDatePurchased(datePurchased)
                 .hasQuantity(quantity)
@@ -1063,6 +1055,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                 .hasPlacePurchased(placePurchased)
                 .hasStatus(status)
                 .hasMedia(media)
+                .hasItemType(MyConstants.TYPE_KIT)
                 .build();
     }
 
@@ -1202,35 +1195,10 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         listname = MyConstants.EMPTY;
 
         aftermarket = new Aftermarket.AftermarketBuilder().build();
-//        aftermarket.setBrand(brand);
-//        aftermarket.setBrandCatno(brandCatno);
-//        aftermarket.setAftermarketName(aftermarketName);
-//        aftermarket.setScale(scale);
-//        aftermarket.setCategory(category);
-//        aftermarket.setBarcode(barcode);
-//        aftermarket.setAftemarketOriginalName(aftemarketOriginalName);
-//        aftermarket.setDescription(description);
-//        aftermarket.setCompilanceWith(compilanceWith);
-//        aftermarket.setBoxartUrl(boxartUrl);
-//        aftermarket.setScalematesUrl(scalematesUrl);
-//        aftermarket.setBoxartUri(boxartUri);
-//        aftermarket.setYear(year);
-//        aftermarket.setOnlineId(onlineId);
-//        aftermarket.setDateAdded(dateAdded);
-//        aftermarket.setDatePurchased(datePurchased);
-//        aftermarket.setQuantity(quantity);
-//        aftermarket.setNotes(notes);
-//        aftermarket.setPrice(price);
-//        aftermarket.setCurrency(currency);
-//        aftermarket.setSendStatus(sendStatus);
-//        aftermarket.setPlacePurchased(placePurchased);
-//        aftermarket.setListname(listname);
-//        aftermarket.setStatus(status);
-//        aftermarket.setMedia(media);
 
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
-        editor.remove(MyConstants.BARCODE).commit();
+        editor.remove(MyConstants.BARCODE).apply();
         tvModeAftermarket.setClickable(true);
     }
 
@@ -1340,6 +1308,8 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        mCurrentPhotoPath = sharedPref.getString(MyConstants.FILE_URI, "");
         if (resultCode == RESULT_OK && requestCode == MainActivity.REQUEST_CODE_CAMERA) {
             Intent cropIntent = new Intent(getActivity(), CropActivity.class);
             cropIntent.putExtra(MyConstants.FILE_URI, mCurrentPhotoPath);
@@ -1350,9 +1320,15 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         }
 
         if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_CROP) {
-            boxartPic = BitmapFactory.decodeFile(mCurrentPhotoPath);
+            File image = new File(mCurrentPhotoPath);
+            Glide
+                    .with(context)
+                    .load(image)
+                    .placeholder(ic_menu_camera)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .into(ivGetBoxart);
             boxartUri = mCurrentPhotoPath;
-            ivGetBoxart.setImageBitmap(boxartPic);
+
         } else if (resultCode == UCrop.RESULT_ERROR) {
             Toast.makeText(getActivity(), R.string.crop_error, Toast.LENGTH_SHORT).show();
         }
@@ -1413,54 +1389,8 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     }
 
     private void saveOnline(Kit kitSave) {
-        saveToNewKit(kitSave);
-        saveToOnlineStash(kitSave);
-    }
-
-    private void saveToOnlineStash(Kit kitSave) {
-        final ParseObject kitTowrite = new ParseObject(MyConstants.PARSE_C_STASH);
-        kitTowrite.put(MyConstants.PARSE_BARCODE, kitSave.getBarcode());
-        kitTowrite.put(MyConstants.PARSE_BRAND, kitSave.getBrand());
-        kitTowrite.put(MyConstants.PARSE_BRAND_CATNO, kitSave.getBrandCatno());
-        kitTowrite.put(MyConstants.PARSE_SCALE, kitSave.getScale());
-        kitTowrite.put(MyConstants.PARSE_KITNAME, kitSave.getKit_name());
-        kitTowrite.put(MyConstants.PARSE_NOENGNAME, kitSave.getKit_noeng_name());
-        kitTowrite.put(MyConstants.CATEGORY, kitSave.getCategory());
-        if (!TextUtils.isEmpty(kitSave.getBoxart_url())) {
-            kitTowrite.put(MyConstants.BOXART_URL, kitSave.getBoxart_url());
-        }
-        kitTowrite.put(MyConstants.PARSE_DESCRIPTION, kitSave.getDescription());
-        SharedPreferences sharedPreferences = getActivity().getSharedPreferences(MyConstants.ACCOUNT_PREFS,
-                Context.MODE_PRIVATE);
-        kitTowrite.put(MyConstants.PARSE_OWNERID, sharedPreferences.getString(MyConstants.USER_ID_FACEBOOK, MyConstants.EMPTY));
-        kitTowrite.put(MyConstants.YEAR, kitSave.getYear());
-        kitTowrite.saveInBackground(new SaveCallback() {
-            @Override
-            public void done(ParseException e) {
-                onlineId = kitTowrite.getObjectId();
-                ContentValues cv = new ContentValues(1);
-                cv.put(DbConnector.COLUMN_ID_ONLINE, onlineId);
-                dbConnector.editItemById(DbConnector.TABLE_KITS, currentId, cv);
-            }
-        });
-    }
-
-    private void saveToNewKit(Kit kitSave){
-        ParseObject kitTowrite = new ParseObject(MyConstants.PARSE_C_NEWKIT);
-        kitTowrite.put(MyConstants.PARSE_BARCODE, kitSave.getBarcode());
-        kitTowrite.put(MyConstants.BRAND, kitSave.getBrand());
-        kitTowrite.put(MyConstants.PARSE_BRAND_CATNO, kitSave.getBrandCatno());
-        kitTowrite.put(MyConstants.SCALE, kitSave.getScale());
-        kitTowrite.put(MyConstants.PARSE_KITNAME, kitSave.getKit_name());
-        kitTowrite.put(MyConstants.PARSE_NOENGNAME, kitSave.getKit_noeng_name());
-        kitTowrite.put(MyConstants.CATEGORY, kitSave.getCategory());
-        if (!TextUtils.isEmpty(kitSave.getBoxart_url())) {
-            kitTowrite.put(MyConstants.BOXART_URL, Helper.trimUrl(kitSave.getBoxart_url())); //Убираем обозначение размера картинки
-        }
-        kitTowrite.put(MyConstants.DESCRIPTION, kitSave.getDescription());
-        kitTowrite.put(MyConstants.PARSE_OWNERID, ownerId);
-        kitTowrite.put(MyConstants.YEAR, kitSave.getYear());
-        kitTowrite.saveInBackground();
+        kitSave.saveToNewKit(ownerId);
+        kitSave.saveToOnlineStash(context);
     }
 
     private void setKitUI() {
@@ -1554,7 +1484,8 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             itemsToShow.add(kitToShow);
         }
 
-        final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+//        final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        final AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(R.string.Found);
         AdapterAlertDialog adapterAlertDialog = new AdapterAlertDialog(getActivity(), itemList);
 
@@ -1577,10 +1508,8 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                 setKitCategory(category);
                 if (wasSearchedOnline && isFoundOnline) {
                     boxartUrl = kitToAdd.getBoxart_url();
-//                    kit.setBoxart_url(kitToAdd.getBoxart_url());
                 } else {
                     boxartUrl = MyConstants.EMPTY;
-//                    kit.setBoxart_url(MyConstants.EMPTY);
                 }
                 Glide
                         .with(context)

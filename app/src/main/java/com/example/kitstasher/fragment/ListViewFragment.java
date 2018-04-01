@@ -25,16 +25,14 @@ import com.example.kitstasher.adapters.AdapterKitList;
 import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.Helper;
 import com.example.kitstasher.other.MyConstants;
-import com.example.kitstasher.other.SortKits;
 
 /**
  * Created by Алексей on 14.08.2017. Просмотр списка
  */
 
-public class ListViewFragment extends Fragment implements View.OnClickListener, SortKits {
+public class ListViewFragment extends Fragment implements View.OnClickListener {
     private RecyclerView rvListAllItems;
     private LinearLayoutManager rvKitsManager;
-    //    private ArrayList<Long> ids;
     private Cursor cursor;
     private DbConnector dbConnector;
     private boolean sortDate, sortName, sortScale, sortBrand;
@@ -76,7 +74,7 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
 
         rvAdapter = new AdapterKitList(cursor, context, new String[]{},
                 DbConnector.TABLE_MYLISTSITEMS,
-                0, MyConstants.MODE_LIST, DbConnector.COLUMN_ID, MyConstants.EMPTY, listname);
+                0, MyConstants.MODE_LIST, DbConnector.COLUMN_ID, MyConstants.EMPTY, listname, ""); //todo!!!!!!!!!!!!!!!!!!!
         rvAdapter.setHasStableIds(true);
 
         rvListAllItems.setAdapter(rvAdapter);
@@ -293,16 +291,14 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
         ivListSortKitname.setVisibility(View.INVISIBLE);
     }
 
-    @Override
-    public void SortByBrandAsc() {
+    private void SortByBrandAsc() {
         cursor = dbConnector.getListItems(listname, "brand");
         prepareListAndAdapter(cursor);
         ivListSortBrand.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
         sortBrand = true;
     }
 
-    @Override
-    public void SortByBrandDesc() {
+    private void SortByBrandDesc() {
         cursor = dbConnector.getListItems(listname, "brand DESC");
         prepareListAndAdapter(cursor);
         ivListSortBrand.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
@@ -310,48 +306,42 @@ public class ListViewFragment extends Fragment implements View.OnClickListener, 
 
     }
 
-    @Override
-    public void SortByScaleAsc() {
+    private void SortByScaleAsc() {
         cursor = dbConnector.getListItems(listname, "scale");
         prepareListAndAdapter(cursor);
         ivListSortScale.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
         sortScale = true;
     }
 
-    @Override
-    public void SortByScaleDesc() {
+    private void SortByScaleDesc() {
         cursor = dbConnector.getListItems(listname, "scale DESC");
         prepareListAndAdapter(cursor);
         ivListSortScale.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
         sortScale = false;
     }
 
-    @Override
-    public void SortByDateAcs() {
+    private void SortByDateAcs() {
         cursor = dbConnector.getListItems(listname, "_id");
         prepareListAndAdapter(cursor);
         ivListSortDate.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
         sortDate = true;
     }
 
-    @Override
-    public void SortByDateDesc() {
+    private void SortByDateDesc() {
         cursor = dbConnector.getListItems(listname, "_id DESC");
         prepareListAndAdapter(cursor);
         ivListSortDate.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
         sortDate = false;
     }
 
-    @Override
-    public void SortByNameAsc() {
+    private void SortByNameAsc() {
         cursor = dbConnector.getListItems(listname, "kit_name");
         prepareListAndAdapter(cursor);
         ivListSortKitname.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
         sortName = true;
     }
 
-    @Override
-    public void SortByNameDesc() {
+    private void SortByNameDesc() {
         cursor = dbConnector.getListItems(listname, "kit_name DESC");
         prepareListAndAdapter(cursor);
         ivListSortKitname.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);

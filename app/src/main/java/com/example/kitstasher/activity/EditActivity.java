@@ -17,7 +17,8 @@ public class EditActivity extends AppCompatActivity {
         int position = getIntent().getExtras().getInt(MyConstants.POSITION);
         long id = getIntent().getExtras().getLong(MyConstants.ID);
         char workMode = getIntent().getExtras().getChar(MyConstants.WORK_MODE);
-        String category = getIntent().getExtras().getString(MyConstants.LIST_CATEGORY);
+        String category = getIntent().getExtras().getString(MyConstants.CATEGORY);
+        int categoryTab = getIntent().getExtras().getInt(MyConstants.CATEGORY_TAB);
         String kitname = getIntent().getExtras().getString(MyConstants.KITNAME);
         String brand = getIntent().getExtras().getString(MyConstants.BRAND);
         String catno = getIntent().getExtras().getString(MyConstants.CATNO);
@@ -49,6 +50,7 @@ public class EditActivity extends AppCompatActivity {
         bundleKit.putString(MyConstants.URI, uri);
         bundleKit.putInt(MyConstants.SCALE, scale);
         bundleKit.putString(MyConstants.CATEGORY, category);
+        bundleKit.putInt(MyConstants.CATEGORY_TAB, categoryTab);
         bundleKit.putString(MyConstants.YEAR, year);
         bundleKit.putString(MyConstants.DESCRIPTION, description);
         bundleKit.putString(MyConstants.ORIGINAL_NAME, origName);

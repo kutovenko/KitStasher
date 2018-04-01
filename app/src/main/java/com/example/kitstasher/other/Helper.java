@@ -358,7 +358,7 @@ public class Helper {
 
     private static String getScreenOrientation(Context context) {
         Display display = null;
-        if (((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)) != null) {
+        if ((context.getSystemService(Context.WINDOW_SERVICE)) != null) {
             display = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
         }
         int rotation = display.getRotation();

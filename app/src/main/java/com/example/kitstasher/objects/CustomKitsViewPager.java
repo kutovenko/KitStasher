@@ -16,4 +16,5 @@ public class CustomKitsViewPager extends ViewPager {
     public void refresh() {
         getAdapter().notifyDataSetChanged();
     }
+
 }

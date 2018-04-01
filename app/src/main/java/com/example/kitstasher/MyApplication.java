@@ -14,17 +14,15 @@ import com.parse.ParseFacebookUtils;
 public class MyApplication extends Application {
     private static Context mContext;
 
+//    private static Context mContext;
+
     @Override
     public void onCreate() {
         super.onCreate();
         mContext = this;
 
 
-//        //This will only be called once in your app's entire lifecycle.
-//        Parse.initialize(this,
-//                getResources().getString(R.string.parse_application_id),
-//                getResources().getString(R.string.parse_client_key));
-
+        //This will only be called once in app's entire lifecycle.
         Parse.initialize(new Parse.Configuration.Builder(this)
                 .applicationId(getString(R.string.parse_application_id))
                 .clientKey(getString(R.string.parse_client_key))

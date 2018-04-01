@@ -27,8 +27,8 @@ public class ViewActivity extends AppCompatActivity {
     private DbConnector dbConnector;
     private final int EDIT_ACTIVITY_CODE = 21;
     private long kitId;
-    private Long[] ids;
-    private Integer[] positions;
+    //    private Long[] ids;
+    private ArrayList<Integer> positions;
     private ArrayList<Long> listIds;
     private String[] filters;
     private String tableName,
@@ -40,9 +40,10 @@ public class ViewActivity extends AppCompatActivity {
             statusFilter,
             mediaFilter,
             category;
-    private int tabToReturn,
+    private int categoryTab,
             position;
     private char workMode;
+    private boolean aftermarketMode;
 
 
     @Override
@@ -53,20 +54,20 @@ public class ViewActivity extends AppCompatActivity {
         dbConnector = new DbConnector(this);
         dbConnector.open();
 
-        category = getIntent().getExtras().getString(MyConstants.CATEGORY);
-        tabToReturn = getIntent().getExtras().getInt(MyConstants.CATEGORY_TAB);
+        category = getIntent().getStringExtra(MyConstants.CATEGORY);
+        categoryTab = getIntent().getIntExtra(MyConstants.CATEGORY_TAB, 0);
 
         listIds = (ArrayList<Long>) getIntent().getSerializableExtra(MyConstants.IDS);
-        ArrayList<Integer> listPositions = (ArrayList<Integer>) getIntent().getSerializableExtra(MyConstants.POSITIONS);
+        positions = (ArrayList<Integer>) getIntent().getSerializableExtra(MyConstants.POSITIONS);
 
-        workMode = getIntent().getExtras().getChar(MyConstants.WORK_MODE);
-        sortBy = getIntent().getExtras().getString(MyConstants.SORT_BY);
+        workMode = getIntent().getCharExtra(MyConstants.WORK_MODE, MyConstants.MODE_KIT);
+        sortBy = getIntent().getStringExtra(MyConstants.SORT_BY);
 
-        position = getIntent().getExtras().getInt(MyConstants.POSITION);
+        position = getIntent().getIntExtra(MyConstants.POSITION, 0);
 
 
         listname = getIntent().getStringExtra(MyConstants.LISTNAME);
-        kitId = getIntent().getExtras().getLong(MyConstants.ID);
+        kitId = getIntent().getLongExtra(MyConstants.ID, 0);
         scaleFilter = getIntent().getExtras().getString(MyConstants.SCALE_FILTER);
         brandFilter = getIntent().getExtras().getString(MyConstants.BRAND_FILTER);
         kitnameFilter = getIntent().getExtras().getString(MyConstants.KITNAME_FILTER);
@@ -80,11 +81,6 @@ public class ViewActivity extends AppCompatActivity {
         filters[3] = statusFilter;
         filters[4] = mediaFilter;
 
-        ids = new Long[listIds.size()];
-        listIds.toArray(ids);
-        positions = new Integer[listPositions.size()];
-        listPositions.toArray(positions);
-
         List<Fragment> fragments = buildFragments();
         viewPager = findViewById(R.id.viewpagerViewKits);
         AdapterViewCards adapterViewCards = new AdapterViewCards(this, getSupportFragmentManager(), fragments);
@@ -97,8 +93,8 @@ public class ViewActivity extends AppCompatActivity {
         chooseCursor();
         cursor.moveToFirst();
         for (int i = 0; i < cursor.getCount(); i++) {
-            Long id = ids[i];
-            int newPosition = positions[i];
+            Long id = listIds.get(i);
+            int newPosition = positions.get(i);
 
             Bundle bundle = new Bundle();
             bundle.putLong(MyConstants.ID, id); //id записи, по которой кликнули в списке
@@ -107,7 +103,7 @@ public class ViewActivity extends AppCompatActivity {
             bundle.putString(MyConstants.TABLE, tableName);
             bundle.putChar(MyConstants.WORK_MODE, workMode);
             bundle.putString(MyConstants.SORT_BY, sortBy);
-            bundle.putInt(MyConstants.CATEGORY_TAB, tabToReturn);
+            bundle.putInt(MyConstants.CATEGORY_TAB, categoryTab);
             bundle.putInt(MyConstants.POSITION, newPosition);
             bundle.putString(MyConstants.CATEGORY, category);
             bundle.putString(MyConstants.SCALE_FILTER, scaleFilter);
@@ -126,17 +122,41 @@ public class ViewActivity extends AppCompatActivity {
         if (workMode == MyConstants.MODE_KIT) {
             tableName = DbConnector.TABLE_KITS;
             cursor = dbConnector.filteredKits(tableName, filters, sortBy, category, listname);
+            if (cursor.getCount() == 0) {
+                cursor = dbConnector.filteredKits(tableName, filters, sortBy, "", listname);
+            }
+            rebuildIdsAndPositions(cursor);
+            aftermarketMode = false;
 
         } else if (workMode == MyConstants.MODE_LIST) {
             tableName = DbConnector.TABLE_MYLISTSITEMS;
             cursor = dbConnector.filteredKits(tableName, filters, sortBy, category, listname);
+            aftermarketMode = false;
 
         } else if (workMode == MyConstants.MODE_AFTERMARKET) {
             tableName = DbConnector.TABLE_AFTERMARKET;
             cursor = dbConnector.filteredKits(tableName, filters, sortBy, category, listname);
+            if (cursor.getCount() == 0) {
+                cursor = dbConnector.filteredKits(tableName, filters, sortBy, "", listname);
+            }
+            rebuildIdsAndPositions(cursor);
+            aftermarketMode = true;
 
         } else if (workMode == MyConstants.MODE_AFTER_KIT) {
             cursor = dbConnector.getAftermarketForKit(kitId, MyConstants.EMPTY);
+        }
+        aftermarketMode = false; //todo ????????
+    }
+
+    private void rebuildIdsAndPositions(Cursor cursor) {
+        int count = cursor.getCount();
+        listIds = new ArrayList<>(count);
+        positions = new ArrayList<>(count);
+
+        for (int i = 0; i < count; i++) {
+            cursor.moveToPosition(i);
+            listIds.add(i, cursor.getLong(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_ID)));
+            positions.add(i);
         }
     }
 
@@ -144,7 +164,10 @@ public class ViewActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK && requestCode == EDIT_ACTIVITY_CODE) {
             super.onActivityResult(requestCode, resultCode, data);
-            position = data.getExtras().getInt(MyConstants.POSITION);
+
+            category = data.getStringExtra(MyConstants.CATEGORY);
+            chooseCursor();
+            position = positions.get(listIds.indexOf(data.getLongExtra(MyConstants.ID, 0))); //work
             List<Fragment> fragments = buildFragments();
             AdapterViewCards adapterViewCards = new AdapterViewCards(this, getSupportFragmentManager(), fragments);
             viewPager.setAdapter(adapterViewCards);
@@ -154,12 +177,30 @@ public class ViewActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+//        super.onBackPressed();
+
+
         //1. Возврат в майн активити во всех случаях, кроме MODE_LIST
-        if (workMode == MyConstants.MODE_KIT) {
+        //нужно узнать категориттаб для текущей категори
+//        Cursor catCursor;
+//        if (aftermarketMode) {
+//            catCursor = dbConnector.getAfterActiveCategories();
+//        } else {
+//            catCursor = dbConnector.getActiveCategories();
+//        }
+//        catCursor.moveToFirst();
+//        while (!catCursor.isAfterLast()) {
+//            if (catCursor.getString(catCursor.getColumnIndexOrThrow("category")).equals(category)) {
+//                categoryTab = catCursor.getPosition();
+//            }
+//            catCursor.moveToNext();
+//        }
+
+//        if (workMode == MyConstants.MODE_KIT) {
             Intent intent = new Intent(ViewActivity.this, MainActivity.class);
             intent.putExtra(MyConstants.SORT_BY, sortBy);
             intent.putExtra(MyConstants.WORK_MODE, workMode);
-            intent.putExtra(MyConstants.CATEGORY_TAB, tabToReturn);
+        intent.putExtra(MyConstants.CATEGORY_TAB, categoryTab);
             intent.putExtra(MyConstants.LIST_POSITION, position);
             intent.putExtra(MyConstants.CATEGORY, category);
             intent.putExtra(MyConstants.SCALE_FILTER, scaleFilter);
@@ -173,11 +214,11 @@ public class ViewActivity extends AppCompatActivity {
             KitsFragment.refreshPages();
 
             finish();
-        } else if (workMode == MyConstants.MODE_LIST) {
-            super.onBackPressed(); //todo обработать LIST
-        } else if (workMode == MyConstants.MODE_AFTER_KIT) {
-            super.onBackPressed();
-        }
+//        } else if (workMode == MyConstants.MODE_LIST) {
+//            super.onBackPressed(); //todo обработать LIST
+//        } else if (workMode == MyConstants.MODE_AFTER_KIT) {
+//            super.onBackPressed();
+//        }
     }
 
     public static void refreshPages() {

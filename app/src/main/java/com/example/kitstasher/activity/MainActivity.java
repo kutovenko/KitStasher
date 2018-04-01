@@ -242,9 +242,9 @@ public class MainActivity extends AppCompatActivity
             return;
         }
         if (shouldLoadHomeFragOnBackPress) {
-            if (navItemIndex == 0) {
-                promptExit();
-            }
+//            if () {
+//                promptExit();
+//            }
             navItemIndex = 0;
             CURRENT_TAG = TAG_HOME;
             loadHomeFragment(aftermarketMode);
@@ -375,70 +375,136 @@ public class MainActivity extends AppCompatActivity
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_VIEW) {
-            super.onActivityResult(requestCode, resultCode, data);
-            char workMode = data.getExtras().getChar(MyConstants.WORK_MODE);
-            int position = data.getExtras().getInt(MyConstants.LIST_POSITION);
-            int categoryTab = data.getExtras().getInt(MyConstants.CATEGORY_TAB);
-            String category = data.getExtras().getString(MyConstants.CATEGORY);
-            String scaleFilter = data.getExtras().getString(MyConstants.SCALE_FILTER);
-            String brandFilter = data.getExtras().getString(MyConstants.BRAND_FILTER);
-            String kitnameFilter = data.getExtras().getString(MyConstants.KITNAME_FILTER);
-            String statusFilter = data.getExtras().getString(MyConstants.STATUS_FILTER);
-            String mediaFilter = data.getExtras().getString(MyConstants.MEDIA_FILTER);
+        if (resultCode == RESULT_OK) {
+            if (requestCode == REQUEST_CODE_VIEW) {
+                super.onActivityResult(requestCode, resultCode, data);
+                char workMode = data.getCharExtra(MyConstants.WORK_MODE, MyConstants.MODE_KIT);
+                int position = data.getIntExtra(MyConstants.LIST_POSITION, 0);
+                int categoryTab = data.getIntExtra(MyConstants.CATEGORY_TAB, 0);
+                String category = data.getStringExtra(MyConstants.CATEGORY);
+                String scaleFilter = data.getStringExtra(MyConstants.SCALE_FILTER);
+                String brandFilter = data.getStringExtra(MyConstants.BRAND_FILTER);
+                String kitnameFilter = data.getStringExtra(MyConstants.KITNAME_FILTER);
+                String statusFilter = data.getStringExtra(MyConstants.STATUS_FILTER);
+                String mediaFilter = data.getStringExtra(MyConstants.MEDIA_FILTER);
 
-            Bundle bundle = new Bundle();
-            bundle.putInt(MyConstants.POSITION, position);
-            bundle.putInt(MyConstants.CATEGORY_TAB, categoryTab);
-            bundle.putString(MyConstants.CATEGORY, category);
-            bundle.putChar(MyConstants.WORK_MODE, workMode);
-            bundle.putString(MyConstants.SCALE_FILTER, scaleFilter);
-            bundle.putString(MyConstants.BRAND_FILTER, brandFilter);
-            bundle.putString(MyConstants.KITNAME_FILTER, kitnameFilter);
-            bundle.putString(MyConstants.STATUS_FILTER, statusFilter);
-            bundle.putString(MyConstants.MEDIA_FILTER, mediaFilter);
+                Bundle bundle = new Bundle();
+                bundle.putInt(MyConstants.POSITION, position);
+                bundle.putInt(MyConstants.CATEGORY_TAB, categoryTab);
+                bundle.putString(MyConstants.CATEGORY, category);
+                bundle.putChar(MyConstants.WORK_MODE, workMode);
+                bundle.putString(MyConstants.SCALE_FILTER, scaleFilter);
+                bundle.putString(MyConstants.BRAND_FILTER, brandFilter);
+                bundle.putString(MyConstants.KITNAME_FILTER, kitnameFilter);
+                bundle.putString(MyConstants.STATUS_FILTER, statusFilter);
+                bundle.putString(MyConstants.MEDIA_FILTER, mediaFilter);
 
-            KitsFragment fragment = new KitsFragment();
-            if (workMode == MyConstants.MODE_KIT) {
-                bundle.putBoolean(MyConstants.AFTERMARKET_MODE, false);
-                fragment.setArguments(bundle);
-                android.support.v4.app.FragmentTransaction fragmentTransaction =
-                        getSupportFragmentManager().beginTransaction();
-                fragmentTransaction.replace(R.id.mainactivityContainer, fragment);
-                fragmentTransaction.commit();
+                KitsFragment fragment = new KitsFragment();
+                if (workMode == MyConstants.MODE_KIT) {
+                    bundle.putBoolean(MyConstants.AFTERMARKET_MODE, false);
+                    fragment.setArguments(bundle);
+                    android.support.v4.app.FragmentTransaction fragmentTransaction =
+                            getSupportFragmentManager().beginTransaction();
+                    fragmentTransaction.replace(R.id.mainactivityContainer, fragment);
+                    fragmentTransaction.commit();
 
-                KitsFragment.refreshPages(); //???
+                    KitsFragment.refreshPages(); //???
 
-                ViewPager viewPager = findViewById(R.id.viewpagerViewStash);
-                viewPager.setCurrentItem(categoryTab);
-            } else if (workMode == MyConstants.MODE_AFTERMARKET) {
-                bundle.putBoolean(MyConstants.AFTERMARKET_MODE, true);
-                fragment.setArguments(bundle);
-                android.support.v4.app.FragmentTransaction fragmentTransaction =
-                        getSupportFragmentManager().beginTransaction();
-                fragmentTransaction.replace(R.id.mainactivityContainer, fragment);
-                fragmentTransaction.commit();
+                    ViewPager viewPager = findViewById(R.id.viewpagerViewStash);
+                    viewPager.setCurrentItem(categoryTab);
+                } else if (workMode == MyConstants.MODE_AFTERMARKET) {
+                    bundle.putBoolean(MyConstants.AFTERMARKET_MODE, true);
+                    fragment.setArguments(bundle);
+                    android.support.v4.app.FragmentTransaction fragmentTransaction =
+                            getSupportFragmentManager().beginTransaction();
+                    fragmentTransaction.replace(R.id.mainactivityContainer, fragment);
+                    fragmentTransaction.commit();
 
-                KitsFragment.refreshPages();
+                    KitsFragment.refreshPages();
 
-                ViewPager viewPager = findViewById(R.id.viewpagerViewStash);
-                viewPager.setCurrentItem(categoryTab);
+                    ViewPager viewPager = findViewById(R.id.viewpagerViewStash);
+                    viewPager.setCurrentItem(categoryTab);
 
-            } else if (workMode == MyConstants.MODE_VIEW_FROM_KIT) {
-                //Возвращаемся в просмотр кита
+                } else if (workMode == MyConstants.MODE_VIEW_FROM_KIT) {
+                    //Возвращаемся в просмотр кита
 
-            } else if (workMode == MyConstants.MODE_EDIT_FROM_KIT) {
-                //Возвращаемся в КитЕдит
+                } else if (workMode == MyConstants.MODE_EDIT_FROM_KIT) {
+                    //Возвращаемся в КитЕдит
+                }
             }
+//            if (requestCode == REQUEST_CODE_CAMERA){
+//                super.onActivityResult(requestCode, resultCode, data);
+//            }
+//            if (requestCode == REQUEST_CODE_CROP) {
+//                super.onActivityResult(requestCode, resultCode, data);
+//            }
         }
 
-        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_CAMERA) {
-            super.onActivityResult(requestCode, resultCode, data);
-        }
-
-        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_CROP) {
-            super.onActivityResult(requestCode, resultCode, data);
-        }
+        //НЕ вызывается!!!
+//        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_VIEW) {
+//            super.onActivityResult(requestCode, resultCode, data);
+//            char workMode = data.getExtras().getChar(MyConstants.WORK_MODE);
+//            int position = data.getExtras().getInt(MyConstants.LIST_POSITION);
+//            int categoryTab = data.getExtras().getInt(MyConstants.CATEGORY_TAB);
+//            String category = data.getExtras().getString(MyConstants.CATEGORY);
+//            String scaleFilter = data.getExtras().getString(MyConstants.SCALE_FILTER);
+//            String brandFilter = data.getExtras().getString(MyConstants.BRAND_FILTER);
+//            String kitnameFilter = data.getExtras().getString(MyConstants.KITNAME_FILTER);
+//            String statusFilter = data.getExtras().getString(MyConstants.STATUS_FILTER);
+//            String mediaFilter = data.getExtras().getString(MyConstants.MEDIA_FILTER);
+//
+//            Bundle bundle = new Bundle();
+//            bundle.putInt(MyConstants.POSITION, position);
+//            bundle.putInt(MyConstants.CATEGORY_TAB, categoryTab);
+//            bundle.putString(MyConstants.CATEGORY, category);
+//            bundle.putChar(MyConstants.WORK_MODE, workMode);
+//            bundle.putString(MyConstants.SCALE_FILTER, scaleFilter);
+//            bundle.putString(MyConstants.BRAND_FILTER, brandFilter);
+//            bundle.putString(MyConstants.KITNAME_FILTER, kitnameFilter);
+//            bundle.putString(MyConstants.STATUS_FILTER, statusFilter);
+//            bundle.putString(MyConstants.MEDIA_FILTER, mediaFilter);
+//
+//            KitsFragment fragment = new KitsFragment();
+//            if (workMode == MyConstants.MODE_KIT) {
+//                bundle.putBoolean(MyConstants.AFTERMARKET_MODE, false);
+//                fragment.setArguments(bundle);
+//                android.support.v4.app.FragmentTransaction fragmentTransaction =
+//                        getSupportFragmentManager().beginTransaction();
+//                fragmentTransaction.replace(R.id.mainactivityContainer, fragment);
+//                fragmentTransaction.commit();
+//
+//                KitsFragment.refreshPages(); //???
+//
+//                ViewPager viewPager = findViewById(R.id.viewpagerViewStash);
+//                viewPager.setCurrentItem(categoryTab);
+//            } else if (workMode == MyConstants.MODE_AFTERMARKET) {
+//                bundle.putBoolean(MyConstants.AFTERMARKET_MODE, true);
+//                fragment.setArguments(bundle);
+//                android.support.v4.app.FragmentTransaction fragmentTransaction =
+//                        getSupportFragmentManager().beginTransaction();
+//                fragmentTransaction.replace(R.id.mainactivityContainer, fragment);
+//                fragmentTransaction.commit();
+//
+//                KitsFragment.refreshPages();
+//
+//                ViewPager viewPager = findViewById(R.id.viewpagerViewStash);
+//                viewPager.setCurrentItem(categoryTab);
+//
+//            } else if (workMode == MyConstants.MODE_VIEW_FROM_KIT) {
+//                //Возвращаемся в просмотр кита
+//
+//            } else if (workMode == MyConstants.MODE_EDIT_FROM_KIT) {
+//                //Возвращаемся в КитЕдит
+//            }
+//        }
+//
+//        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_CAMERA) {
+//            super.onActivityResult(requestCode, resultCode, data);
+//        }
+//
+//        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_CROP) {
+//            super.onActivityResult(requestCode, resultCode, data);
+//        }
     }
 
     private void checkCameraPermissions() {
