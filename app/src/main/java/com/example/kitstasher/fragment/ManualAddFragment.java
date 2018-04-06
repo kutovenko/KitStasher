@@ -110,9 +110,9 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             spKitMedia,
             spCategory;
     private ImageView ivGetBoxart;
-    private TextView tvPurchaseDate,
-            tvModeKit,
-            tvModeAftermarket;
+    private TextView tvPurchaseDate;
+    //            tvModeKit,
+//            tvModeAftermarket;
     private VerticalStepperItemView stepper_0,
             stepper_1,
             stepper_2,
@@ -191,7 +191,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     public void onResume() {
         super.onResume();
         if (!isOnline()) {
-            btnCheckOnlineDatabase.setClickable(false);
+            btnCheckOnlineDatabase.setVisibility(View.GONE);
             stepper_0.setTitle(R.string.brand_and_name);
             setAllStepsState(1);
         }
@@ -373,22 +373,31 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             workMode = getArguments().getChar(MyConstants.WORK_MODE);
             if (workMode == MyConstants.MODE_AFTERMARKET) {
                 setAftermarketUI();
-                listname = MyConstants.EMPTY;
-            } else if (workMode == MyConstants.MODE_KIT) {
+            } else if (workMode == MyConstants.MODE_KIT && isOnline()) {
                 setKitUI();
-                listname = MyConstants.EMPTY;
-            } else if (workMode == MyConstants.MODE_LIST) {
-                setKitUI();
-                tvModeAftermarket.setClickable(false);
-                listname = getArguments().getString(MyConstants.LISTNAME);
+            } else if (workMode == MyConstants.MODE_KIT && !isOnline()) {
+                setAftermarketUI();
             } else if (workMode == MyConstants.MODE_AFTER_KIT) {
                 setAftermarketUI();
-                tvModeKit.setClickable(false);
-                listname = MyConstants.EMPTY;
             }
+//            if (workMode == MyConstants.MODE_AFTERMARKET) {
+//                setAftermarketUI();
+//                listname = MyConstants.EMPTY;
+//            } else if (workMode == MyConstants.MODE_KIT) {
+//                setKitUI();
+//                listname = MyConstants.EMPTY;
+//            } else if (workMode == MyConstants.MODE_LIST) {
+//                setKitUI();
+////                tvModeAftermarket.setClickable(false);
+//                listname = getArguments().getString(MyConstants.LISTNAME);
+//            } else if (workMode == MyConstants.MODE_AFTER_KIT) {
+//                setAftermarketUI();
+////                tvModeKit.setClickable(false);
+//                listname = MyConstants.EMPTY;
+//            }
         } else {
             workMode = MyConstants.MODE_KIT;
-            listname = MyConstants.EMPTY;
+//            listname = MyConstants.EMPTY;
         }
         wasSearchedOnline = false;
         isFoundOnline = false;
@@ -408,7 +417,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         dateAdded = df.format(c.getTime());
 
         description = MyConstants.EMPTY;
-        year = "0";
+        year = "";
         category = MyConstants.CODE_OTHER;
         onlineId = MyConstants.EMPTY;
         price = 0;
@@ -493,10 +502,11 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         stepper_3 = view.findViewById(R.id.stepper_3);
         stepper_4 = view.findViewById(R.id.stepper_4);
         stepper_4.setIsLastStep(true);
-        tvModeKit = view.findViewById(R.id.tvModeKit);
-        tvModeKit.setOnClickListener(this);
-        tvModeAftermarket = view.findViewById(R.id.tvModeAftermarket);
-        tvModeAftermarket.setOnClickListener(this);
+
+//        tvModeKit = view.findViewById(R.id.tvModeKit);
+//        tvModeKit.setOnClickListener(this);
+//        tvModeAftermarket = view.findViewById(R.id.tvModeAftermarket);
+//        tvModeAftermarket.setOnClickListener(this);
     }
 
     private void prepareBrandsList() {
@@ -590,7 +600,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                 String newShop = acPurchasedFrom.getText().toString().trim();
 
                 if (!myShops.contains(newShop)) {
-                    if (newShop.length() > 1) {
+                    if (!Helper.isBlank(newShop) && newShop.length() > 1) {
                         myShops.add(newShop);
                         dbConnector.addShop(newShop);
                     }
@@ -734,14 +744,14 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                 tvPurchaseDate.setText(R.string.Date_not_set);
                 break;
 
-            case R.id.tvModeKit:
-                workMode = MyConstants.MODE_KIT;
-                setKitUI();
-                break;
-            case R.id.tvModeAftermarket:
-                workMode = MyConstants.MODE_AFTERMARKET;
-                setAftermarketUI();
-                break;
+//            case R.id.tvModeKit:
+//                workMode = MyConstants.MODE_KIT;
+//                setKitUI();
+//                break;
+//            case R.id.tvModeAftermarket:
+//                workMode = MyConstants.MODE_AFTERMARKET;
+//                setAftermarketUI();
+//                break;
         }
     }
 
@@ -1127,6 +1137,10 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         acPurchasedFrom.setText(MyConstants.EMPTY);
         setAllStepsState(0);
         stepper_0.setState(1);
+        if (!isOnline()) {
+            setAllStepsState(1);
+            btnCheckOnlineDatabase.setVisibility(View.GONE);
+        }
         kit = new Kit.KitBuilder().build();
         wasSearchedOnline = false;
         isFoundOnline = false;
@@ -1161,7 +1175,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         currentId = 0;
         sendStatus = MyConstants.EMPTY;
 
-        kit = new Kit.KitBuilder().build();
+//        kit = new Kit.KitBuilder().build();
 //        kit.setBrand(brand);
 //        kit.setBrandCatno(brandCatno);
 //        kit.setKit_name(kitName);
@@ -1199,7 +1213,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.remove(MyConstants.BARCODE).apply();
-        tvModeAftermarket.setClickable(true);
+//        tvModeAftermarket.setClickable(true);
     }
 
     private void returnToScan() {
@@ -1303,7 +1317,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         isFoundOnline = false;
         workMode = mode;
         setKitUI();
-        tvModeAftermarket.setClickable(false);
+//        tvModeAftermarket.setClickable(false);
     }
 
     @Override
@@ -1346,7 +1360,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     private void saveThumbnail(final Kit kitSave, String imagePath, final int height, final int width) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         Bitmap bmp = BitmapFactory.decodeFile(imagePath);
-        getResizedBitmap(bmp, height, width).compress(Bitmap.CompressFormat.JPEG, 100, stream);
+        getResizedBitmap(bmp, height, width).compress(Bitmap.CompressFormat.JPEG, 70, stream);
         byte[] data = stream.toByteArray();
         String name = imageFileName;
         String fullName;
@@ -1395,10 +1409,10 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 
     private void setKitUI() {
         stepper_0.setTitle(R.string.search_by_code);
-        tvModeKit.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
-        tvModeKit.setTextColor(Helper.getColor(context, R.color.colorItem));
-        tvModeAftermarket.setBackgroundColor(Helper.getColor(context, R.color.colorPassive));
-        tvModeAftermarket.setTextColor(Helper.getColor(context, R.color.colorText));
+//        tvModeKit.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
+//        tvModeKit.setTextColor(Helper.getColor(context, R.color.colorItem));
+//        tvModeAftermarket.setBackgroundColor(Helper.getColor(context, R.color.colorPassive));
+//        tvModeAftermarket.setTextColor(Helper.getColor(context, R.color.colorText));
         btnCheckOnlineDatabase.setVisibility(View.VISIBLE);
         setAllStepsState(0);
         stepper_0.setState(1);
@@ -1406,10 +1420,10 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 
     private void setAftermarketUI() {
         stepper_0.setTitle(R.string.brand_and_name);
-        tvModeAftermarket.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
-        tvModeAftermarket.setTextColor(Helper.getColor(context, R.color.colorItem));
-        tvModeKit.setBackgroundColor(Helper.getColor(context, R.color.colorPassive));
-        tvModeKit.setTextColor(Helper.getColor(context, R.color.colorText));
+//        tvModeAftermarket.setBackgroundColor(Helper.getColor(context, R.color.colorAccent));
+//        tvModeAftermarket.setTextColor(Helper.getColor(context, R.color.colorItem));
+//        tvModeKit.setBackgroundColor(Helper.getColor(context, R.color.colorPassive));
+//        tvModeKit.setTextColor(Helper.getColor(context, R.color.colorText));
         btnCheckOnlineDatabase.setVisibility(View.GONE);
         setAllStepsState(1);
     }

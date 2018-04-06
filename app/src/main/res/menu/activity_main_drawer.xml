@@ -3,14 +3,14 @@
 
     <group android:checkableBehavior="single">
 
-        <item
-            android:id="@+id/nav_home"
-            android:icon="@drawable/ic_home_black_24dp"
-            android:title="@string/nav_home" />
-        <item
-            android:id="@+id/nav_addstash"
-            android:icon="@drawable/ic_library_add_black_24dp"
-            android:title="@string/nav_manual" />
+        <!--<item-->
+        <!--android:id="@+id/nav_home"-->
+        <!--android:icon="@drawable/ic_home_black_24dp"-->
+        <!--android:title="@string/nav_home" />-->
+        <!--<item-->
+        <!--android:id="@+id/nav_addstash"-->
+        <!--android:icon="@drawable/ic_library_add_black_24dp"-->
+        <!--android:title="@string/nav_manual" />-->
         <item
             android:id="@+id/nav_viewstash"
             android:icon="@drawable/ic_library_books_black_24dp"
@@ -19,10 +19,10 @@
             android:id="@+id/nav_aftermarket"
             android:icon="@drawable/ic_build_black_24dp"
             android:title="@string/nav_aftermarket" />
-        <item
-            android:id="@+id/nav_mylists"
-            android:icon="@drawable/ic_list_black_24dp"
-            android:title="@string/Wishlists" />
+        <!--<item-->
+        <!--android:id="@+id/nav_mylists"-->
+        <!--android:icon="@drawable/ic_list_black_24dp"-->
+        <!--android:title="@string/Wishlists" />-->
         <item
             android:id="@+id/nav_search"
             android:icon="@drawable/ic_search_black_24dp"

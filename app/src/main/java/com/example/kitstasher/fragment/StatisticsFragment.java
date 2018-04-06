@@ -52,8 +52,6 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Locale;
 
-import static com.facebook.FacebookSdk.getApplicationContext;
-
 /**
  * Created by Алексей on 21.04.2017.
  * Demonstrates personal statistics. Uses charts to show data. Shows user's world statistics
@@ -67,8 +65,8 @@ public class StatisticsFragment extends Fragment implements View.OnClickListener
             tvDailyRecord;
     private ProgressDialog progressDialog;
     private DbConnector dbConnector;
-    SharedPreferences sharedPreferences;
-    SharedPreferences.Editor statEditor;
+    private SharedPreferences sharedPreferences;
+    private SharedPreferences.Editor statEditor;
     private int totalStash;
     private String cloudId;
     private PieChart categoryChart;
@@ -106,8 +104,8 @@ public class StatisticsFragment extends Fragment implements View.OnClickListener
         ((MainActivity) getActivity())
                 .setActionBarTitle(getActivity().getResources().getString(R.string.nav_statistics));
 
-        sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
-
+        sharedPreferences = getActivity().getSharedPreferences(MyConstants.ACCOUNT_PREFS,
+                Context.MODE_PRIVATE);
 
         cloudId = sharedPreferences.getString(MyConstants.USER_ID_PARSE, "");
         tvUserName.setText(sharedPreferences.getString(MyConstants.USER_NAME_FACEBOOK, null));
@@ -115,14 +113,22 @@ public class StatisticsFragment extends Fragment implements View.OnClickListener
         getAndSetStats();
 
         String accountPictureUrl = sharedPreferences.getString(MyConstants.PROFILE_PICTURE_URL_FACEBOOK, null);
-        Glide.with(getApplicationContext())
+        Glide.with(getActivity())
                 .load(accountPictureUrl)
                 .crossFade()
                 .thumbnail(0.5f)
-                .bitmapTransform(new CircleTransform(getApplicationContext()))
+                .bitmapTransform(new CircleTransform(getActivity()))
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .placeholder(R.drawable.com_facebook_profile_picture_blank_square)
                 .into(ivProfilePic);
+
+//        String accountPictureUrl = sharedPreferences.getString(MyConstants.PROFILE_PICTURE_URL_FACEBOOK, null);
+//        Glide.with(this).load(accountPictureUrl)
+//                .crossFade()
+//                .thumbnail(0.5f)
+//                .bitmapTransform(new CircleTransform(getActivity()))
+//                .diskCacheStrategy(DiskCacheStrategy.ALL)
+//                .into(ivProfilePic);
 
         if (dbConnector.getAllData("_id").getCount() > 0) {
             int brandsChartHeight = (dbConnector.getBrandsStat().getCount() * 40) + 16;
@@ -197,6 +203,12 @@ public class StatisticsFragment extends Fragment implements View.OnClickListener
         return view;
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        dbConnector.close();
+    }
+
     public void getAndSetStats(){
         Calendar c = Calendar.getInstance();
         SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());
@@ -207,6 +219,7 @@ public class StatisticsFragment extends Fragment implements View.OnClickListener
 
         if (sharedPreferences != null) {
             int savedMax = sharedPreferences.getInt(MyConstants.DAILYMAX, 0);
+            statEditor = sharedPreferences.edit();
 
             if (savedMax < dailyMax) {
                 statEditor.putInt(MyConstants.DAILYMAX, dailyMax);

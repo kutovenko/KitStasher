@@ -294,7 +294,7 @@ public class Kit {
         kitTowrite.put(MyConstants.YEAR, this.getYear());
 
         kitTowrite.put(MyConstants.PARSE_LOCALID, this.getLocalId());
-        kitTowrite.put(MyConstants.PARSE_PARENTID, this.getParentId());
+//        kitTowrite.put(MyConstants.PARSE_PARENTID, this.getParentId());
         kitTowrite.put(MyConstants.PARSE_ITEMTYPE, this.getItemType());
 
         kitTowrite.saveInBackground(new SaveCallback() {

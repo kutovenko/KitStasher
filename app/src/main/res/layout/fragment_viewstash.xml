@@ -6,18 +6,24 @@
     android:fitsSystemWindows="true"
     tools:context="com.example.kitstasher.activity.MainActivity">
 
-    <android.support.design.widget.TabLayout
-        android:id="@+id/tabsViewStash"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/com_facebook_button_background_color_selected"
-        android:padding="@dimen/dp4" />
+        android:orientation="vertical">
 
-    <com.example.kitstasher.objects.CustomKitsViewPager
-        android:id="@+id/viewpagerViewStash"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+        <android.support.design.widget.TabLayout
+            android:id="@+id/tabsViewStash"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/com_facebook_button_background_color_selected"
+            android:padding="@dimen/dp4" />
+
+        <com.example.kitstasher.objects.CustomKitsViewPager
+            android:id="@+id/viewpagerViewStash"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+    </LinearLayout>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"

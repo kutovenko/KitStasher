@@ -6,8 +6,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -137,6 +135,7 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
         }
     }
 
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -196,12 +195,38 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
 
         showEditForm(cursor);
 
-        if (savedInstanceState != null) {//todo glide
-            bmBoxartPic = savedInstanceState.getParcelable(MyConstants.BOXART_IMAGE);
-            Drawable drawable = new BitmapDrawable(getResources(), bmBoxartPic);
-            ivEditorBoxart.setImageDrawable(drawable);
-            tvMPurchaseDate.setText(savedInstanceState.getString("outDate"));
+//        if (savedInstanceState != null) {//todo glide
+//            bmBoxartPic = savedInstanceState.getParcelable(MyConstants.BOXART_IMAGE);
+////            Drawable drawable = new BitmapDrawable(getResources(), bmBoxartPic);
+////            ivEditorBoxart.setImageDrawable(drawable);
+//            tvMPurchaseDate.setText(savedInstanceState.getString("outDate"));
+//            mCurrentPhotoPath = savedInstanceState.getString("imagePath");
+//        }
+
+
+        if (savedInstanceState != null) {
+            if (savedInstanceState.getString(MyConstants.BOXART_URL) != null) {
+                mCurrentPhotoPath = savedInstanceState.getString("imagePath");
+                Glide
+                        .with(context)
+                        .load(
+                                savedInstanceState.getString(MyConstants.BOXART_URL)
+                                        + MyConstants.BOXART_URL_LARGE
+                                        + MyConstants.JPG)
+                        .placeholder(ic_menu_camera)
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .into(ivEditorBoxart);
+                if (mCurrentPhotoPath != null && !mCurrentPhotoPath.equals(MyConstants.EMPTY)) {
+                    Glide
+                            .with(context)
+                            .load(new File(Uri.parse(mCurrentPhotoPath).getPath()))
+                            .placeholder(ic_menu_camera)
+                            .diskCacheStrategy(DiskCacheStrategy.ALL)
+                            .into(ivEditorBoxart);
+                }
+            }
         }
+
         return view;
     }
 
@@ -234,7 +259,7 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
                     }
                     catCursor.moveToFirst();
                     while (!catCursor.isAfterLast()) {
-                        if (catCursor.getString(catCursor.getColumnIndexOrThrow("category")).equals(category)) {
+                        if (catCursor.getString(catCursor.getColumnIndexOrThrow(MyConstants.CATEGORY)).equals(category)) {
                             tabToReturn = catCursor.getPosition();
                         }
                         catCursor.moveToNext();
@@ -277,8 +302,38 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
         }
     }
 
+//    @Override
+//    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+//        mCurrentPhotoPath = sharedPref.getString(MyConstants.FILE_URI, "");
+//        if (resultCode == RESULT_OK && requestCode == MainActivity.REQUEST_CODE_CAMERA) {
+//            Intent cropIntent = new Intent(getActivity(), CropActivity.class);
+//            cropIntent.putExtra(MyConstants.FILE_URI, mCurrentPhotoPath);
+//            startActivityForResult(cropIntent, REQUEST_CODE_CROP);
+//        }
+//        if (resultCode != RESULT_OK) {
+//            Toast.makeText(getActivity(), R.string.camera_failure, Toast.LENGTH_LONG).show();
+//        }
+//
+//        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_CROP) {
+//            File image = new File(mCurrentPhotoPath);
+//            Glide
+//                    .with(context)
+//                    .load(image)
+//                    .placeholder(ic_menu_camera)
+//                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+//                    .into(ivEditorBoxart);
+//            boxartUri = mCurrentPhotoPath;
+//        } else if (resultCode == UCrop.RESULT_ERROR) {
+//            Toast.makeText(getActivity(), R.string.crop_error, Toast.LENGTH_SHORT).show();
+//        }
+//    }
+
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        mCurrentPhotoPath = sharedPref.getString(MyConstants.FILE_URI, "");
         if (resultCode == RESULT_OK && requestCode == MainActivity.REQUEST_CODE_CAMERA) {
             Intent cropIntent = new Intent(getActivity(), CropActivity.class);
             cropIntent.putExtra(MyConstants.FILE_URI, mCurrentPhotoPath);
@@ -297,20 +352,31 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(ivEditorBoxart);
             boxartUri = mCurrentPhotoPath;
+
         } else if (resultCode == UCrop.RESULT_ERROR) {
             Toast.makeText(getActivity(), R.string.crop_error, Toast.LENGTH_SHORT).show();
         }
     }
 
+//    @Override
+//    public void onSaveInstanceState(Bundle outState) {
+//        super.onSaveInstanceState(outState);
+//        outState.putStringArrayList();
+//        if (bmBoxartPic != null) {
+//            outState.putParcelable(MyConstants.BOXART_IMAGE, bmBoxartPic);
+//            String outDate = tvMPurchaseDate.getText().toString();
+//            outState.putString("outDate", outDate);
+//        }
+//    }
+
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (bmBoxartPic != null) {
-            outState.putParcelable(MyConstants.BOXART_IMAGE, bmBoxartPic);
-            String outDate = tvMPurchaseDate.getText().toString();
-            outState.putString("outDate", outDate);
-        }
+        outState.putString("imagePath", mCurrentPhotoPath);
+        String outDate = tvMPurchaseDate.getText().toString();
+        outState.putString("outDate", outDate);
     }
+
 
     @Override
     public void onDestroy() {
@@ -749,6 +815,7 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
     }
 
     private void dispatchTakePictureIntent() {
+        Uri photoPath;
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null) {
             if (Helper.getExternalStorageState() == Helper.StorageState.WRITEABLE) {
@@ -768,6 +835,7 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
         }
     }
 
+
     private File createImageFile() {
         isBoxartTemporary = true;
         String imageFileName = getTimestamp();
@@ -786,7 +854,20 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
         } catch (IOException e) {
             Toast.makeText(context, R.string.cannot_create_file, Toast.LENGTH_SHORT).show();
         }
-        mCurrentPhotoPath = image != null ? image.getAbsolutePath() : MyConstants.EMPTY;
+        if (image != null) {
+            mCurrentPhotoPath = image.getAbsolutePath();
+            SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putString(MyConstants.FILE_URI, mCurrentPhotoPath);
+            editor.apply();
+        } else {
+            Toast.makeText(context, "Нельзя создать файл", Toast.LENGTH_LONG).show();
+        }
+//        mCurrentPhotoPath = image != null ? image.getAbsolutePath() : MyConstants.EMPTY;
+//        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+//        SharedPreferences.Editor editor = sharedPref.edit();
+//        editor.putString(MyConstants.FILE_URI, mCurrentPhotoPath);
+//        editor.apply();
         return image;
     }
 
@@ -868,37 +949,37 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
         dialogBuilder.setView(dialogView);
 
         dialogBuilder.setTitle(R.string.Choose_mode);
-        Button scanButton = dialogView.findViewById(R.id.btnListModeScan);
-        scanButton.setVisibility(GONE);
+//        Button scanButton = dialogView.findViewById(R.id.btnListModeScan);
+//        scanButton.setVisibility(GONE);
         final AlertDialog alertDialog = dialogBuilder.create();
         alertDialog.show();
 
-        final Button getFromManualAdd = dialogView.findViewById(R.id.btnListModeManual);
-        //добавляем афтермаркет к киту
-        getFromManualAdd.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                ManualAddFragment fragment = new ManualAddFragment();
-
-                Bundle bundle = new Bundle();
-                bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_AFTER_KIT);
-                bundle.putString(MyConstants.LISTNAME, listname);
-                bundle.putString(MyConstants.BRAND, brand);
-                bundle.putString(MyConstants.CATNO, catno);
-                bundle.putInt(MyConstants.SCALE, scale);
-                bundle.putString(MyConstants.KITNAME, kitname);
-                bundle.putInt(MyConstants.POSITION, position);
-                bundle.putString(MyConstants.CATEGORY, category);
-                bundle.putLong(MyConstants.ID, id);
-                bundle.putString(MyConstants.BOXART_URI, boxartUri);
-                fragment.setArguments(bundle);
-                android.support.v4.app.FragmentTransaction fragmentTransaction =
-                        getFragmentManager().beginTransaction();
-                fragmentTransaction.replace(R.id.frameLayoutEditContainer, fragment);
-                fragmentTransaction.commit();
-                alertDialog.dismiss();
-            }
-        });
+//        final Button getFromManualAdd = dialogView.findViewById(R.id.btnListModeManual);
+//        //добавляем афтермаркет к киту
+//        getFromManualAdd.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                ManualAddFragment fragment = new ManualAddFragment();
+//
+//                Bundle bundle = new Bundle();
+//                bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_AFTER_KIT);
+//                bundle.putString(MyConstants.LISTNAME, listname);
+//                bundle.putString(MyConstants.BRAND, brand);
+//                bundle.putString(MyConstants.CATNO, catno);
+//                bundle.putInt(MyConstants.SCALE, scale);
+//                bundle.putString(MyConstants.KITNAME, kitname);
+//                bundle.putInt(MyConstants.POSITION, position);
+//                bundle.putString(MyConstants.CATEGORY, category);
+//                bundle.putLong(MyConstants.ID, id);
+//                bundle.putString(MyConstants.BOXART_URI, boxartUri);
+//                fragment.setArguments(bundle);
+//                android.support.v4.app.FragmentTransaction fragmentTransaction =
+//                        getFragmentManager().beginTransaction();
+//                fragmentTransaction.replace(R.id.frameLayoutEditContainer, fragment);
+//                fragmentTransaction.commit();
+//                alertDialog.dismiss();
+//            }
+//        });
 
         final Button getFromMyStash = dialogView.findViewById(R.id.btnListModeMyStash);
         getFromMyStash.setOnClickListener(new View.OnClickListener() {

@@ -53,6 +53,7 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
     private View view;
     private ImageButton ibtnFilter;
     private LinearLayout linLayoutViewAllContainer,
+            llSortToolbar,
             linLayoutBrand,
             linLayoutScale,
             linLayoutDate,
@@ -78,6 +79,7 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
     private ArrayList<Long> ids;
     private ArrayList<Integer> positions;
     String[] filters;
+    AdapterKitList rvAdapter;
 
     public SortAllFragment() {
     }
@@ -106,7 +108,7 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
     public View onCreateView(final LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         context = getActivity();
-        view = inflater.inflate(R.layout.fragment_sort_all2, container, false);
+        view = inflater.inflate(R.layout.fragment_sort_all, container, false);
         allTag = this.getTag();
         sortBy = "_id DESC";
         categoryTab = getArguments().getInt(MyConstants.CATEGORY_TAB);
@@ -168,7 +170,6 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
 
         final FloatingActionButton fab = getParentFragment().getView().findViewById(R.id.fab);
 
-
         rvKits.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
@@ -176,7 +177,6 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
                 if (dy > 0 && fab.getVisibility() == View.VISIBLE) {
                     fab.hide();
                 } else if (dy < 0 && fab.getVisibility() != View.VISIBLE) {
-//                    fab.show();
                     fab.show();
                 }
             }
@@ -213,9 +213,9 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
     }
 
     private void prepareListAndAdapter(Cursor cursor) {
-        AdapterKitList rvAdapter = new AdapterKitList(cursor, context, filters, activeTable,
+        rvAdapter = new AdapterKitList(cursor, context, filters, activeTable,
                 categoryTab, workMode, sortBy, allTag, listname, category);
-        rvAdapter.setHasStableIds(true);
+//        rvAdapter.setHasStableIds(true);
         rvKits.setAdapter(rvAdapter);
 
     }
@@ -319,6 +319,7 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
 
     private void initPortraitUi(){
         linLayoutViewAllContainer = view.findViewById(R.id.linLayoutViewAllContainer);
+        llSortToolbar = view.findViewById(R.id.llSortToolbar);
         linLayoutBrand = view.findViewById(R.id.linLayoutSortBrand);
         linLayoutBrand.setOnClickListener(this);
         linLayoutScale = view.findViewById(R.id.linLayoutSortScale);
@@ -351,6 +352,7 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
         ivSortBrand.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
         sortBrand = true;
         sortBy = "brand";
+        rvAdapter.notifyDataSetChanged();
     }
 
     private void SortByBrandDesc() {
@@ -359,6 +361,7 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
         ivSortBrand.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
         sortBrand = false;
         sortBy = "brand DESC";
+        rvAdapter.notifyDataSetChanged();
     }
 
     private void SortByScaleAsc() {

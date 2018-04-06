@@ -556,6 +556,12 @@ public class DbConnector {
         return mDB.query(tableName, null, null, null, null, null, sortBy);
     }
 
+    public ArrayList<Kit> getItemsFromTable(String tableName, String sortBy) {
+        Cursor cursor = mDB.query(tableName, null, null, null, null, null, sortBy);
+        ArrayList<Kit> kitList = new ArrayList<Kit>();
+        return kitList;
+    }
+
     public void addRec(Object item) {
         String tableName = TABLE_KITS;
         if (item.getClass().equals(Kit.class)) {

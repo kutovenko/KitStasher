@@ -262,7 +262,7 @@ Prefixes and postfixes for links
     public static final String PARSE_THUMBNAIL_URL = "thumbnail_url";
     public static final String PARSE_ITEMTYPE = "itemType";
     public static final String PARSE_LOCALID = "localId";
-    public static final String PARSE_PARENTID = "parentId";
+    //    public static final String PARSE_PARENTID = "parentId";
     public static final String PARSE_IMAGE = "image";
     public static final String PARSE_TU_STASH = "stash";
     public static final String PARSE_TU_USERID = "userId";

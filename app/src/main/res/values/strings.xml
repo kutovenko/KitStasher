@@ -369,7 +369,7 @@
     <string name="crop_error">Crop Error</string>
     <string name="Your_device_cannot_take_pictures">"Your device can not take pictures "</string>
     <string name="search_online">Let\'search online database!</string>
-    <string name="brand_and_name">Manufacturer and kit title</string>
+    <string name="brand_and_name">Manufacturer and title</string>
     <string name="nav_kits">Kits</string>
     <string name="search_by_code">Let\'s search by code</string>
     <string name="unknown">Unknown</string>
@@ -388,7 +388,7 @@
     <string name="media_decal">Decal</string>
     <string name="media_mask">Mask</string>
     <string name="please_add_boxart_picture">Please add boxart picture</string>
-    <string name="please_use_numbers">Please use only numbers in this field</string>
+    <string name="please_use_numbers">Please use only numbers in Scale field</string>
     <string name="media_unknown">Unknown</string>
     <string name="shop_name">Shop name</string>
     <string name="Brand_with_this_name_already_exists">Brand with this name already exists</string>

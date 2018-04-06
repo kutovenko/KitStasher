@@ -37,7 +37,7 @@ public class AdapterAddFragment extends FragmentPagerAdapter {
                 return scanFragment;
             case 1:
                 ManualAddFragment manualAddFragment = new ManualAddFragment();
-                bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_KIT);
+                bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_KIT); // TODO: 02.04.2018 обработать вызов из афтермаркета 
                 manualAddFragment.setArguments(bundle);
                 return manualAddFragment;
         }

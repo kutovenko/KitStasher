@@ -26,7 +26,6 @@ public class KitsFragment extends Fragment {
     private DbConnector dbConnector;
     private Cursor cursor;
     private AdapterViewStash adapter;
-//    static CustomFloatingActionButton fab;
 
     public KitsFragment() {
 
@@ -71,13 +70,23 @@ public class KitsFragment extends Fragment {
             public void onClick(View view) {
                 android.support.v4.app.FragmentTransaction fragmentTransaction =
                         getFragmentManager().beginTransaction();
-                Bundle bundle = new Bundle();
-                AddFragment addFragment = new AddFragment();
-                bundle.putBoolean(MyConstants.AFTERMARKET_MODE, aftermarketMode);
-                bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_KIT);
-                addFragment.setArguments(bundle);
-                fragmentTransaction.replace(R.id.mainactivityContainer, addFragment);
-                fragmentTransaction.commit();
+                if (!aftermarketMode) {
+                    Bundle bundle = new Bundle();
+                    AddFragment addFragment = new AddFragment();
+                    bundle.putBoolean(MyConstants.AFTERMARKET_MODE, false);
+                    bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_KIT);
+                    addFragment.setArguments(bundle);
+                    fragmentTransaction.replace(R.id.mainactivityContainer, addFragment);
+                    fragmentTransaction.commit();
+                } else {
+                    Bundle bundle = new Bundle();
+                    ManualAddFragment manualAddFragment = ManualAddFragment.newInstance();
+                    bundle.putBoolean(MyConstants.AFTERMARKET_MODE, true);
+                    bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_AFTERMARKET);
+                    manualAddFragment.setArguments(bundle);
+                    fragmentTransaction.replace(R.id.mainactivityContainer, manualAddFragment);
+                    fragmentTransaction.commit();
+                }
             }
         });
 

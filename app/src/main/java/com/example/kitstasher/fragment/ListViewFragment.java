@@ -111,40 +111,40 @@ public class ListViewFragment extends Fragment implements View.OnClickListener {
         final AlertDialog alertDialog = dialogBuilder.create();
         alertDialog.show();
 
-        final Button getFromScan = dialogView.findViewById(R.id.btnListModeScan);
-        getFromScan.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                ScanFragment fragment = new ScanFragment();
-                Bundle bundle = new Bundle(2);
-                bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_LIST);
-                bundle.putString(MyConstants.LISTNAME, listname);
-                fragment.setArguments(bundle);
-                android.support.v4.app.FragmentTransaction fragmentTransaction =
-                        getFragmentManager().beginTransaction();
-                fragmentTransaction.replace(R.id.llListsContainer, fragment);
-                fragmentTransaction.commit();
-                alertDialog.dismiss();
-
-            }
-        });
-        final Button getFromManualAdd = dialogView.findViewById(R.id.btnListModeManual);
-        getFromManualAdd.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                ManualAddFragment fragment = new ManualAddFragment();
-                Bundle bundle = new Bundle(2);
-                bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_LIST);
-                bundle.putString(MyConstants.LISTNAME, listname);
-                fragment.setArguments(bundle);
-                android.support.v4.app.FragmentTransaction fragmentTransaction =
-                        getFragmentManager().beginTransaction();
-                fragmentTransaction.replace(R.id.llListsContainer, fragment);
-                fragmentTransaction.commit();
-                alertDialog.dismiss();
-            }
-        });
+//        final Button getFromScan = dialogView.findViewById(R.id.btnListModeScan);
+//        getFromScan.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//
+//                ScanFragment fragment = new ScanFragment();
+//                Bundle bundle = new Bundle(2);
+//                bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_LIST);
+//                bundle.putString(MyConstants.LISTNAME, listname);
+//                fragment.setArguments(bundle);
+//                android.support.v4.app.FragmentTransaction fragmentTransaction =
+//                        getFragmentManager().beginTransaction();
+//                fragmentTransaction.replace(R.id.llListsContainer, fragment);
+//                fragmentTransaction.commit();
+//                alertDialog.dismiss();
+//
+//            }
+//        });
+//        final Button getFromManualAdd = dialogView.findViewById(R.id.btnListModeManual);
+//        getFromManualAdd.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                ManualAddFragment fragment = new ManualAddFragment();
+//                Bundle bundle = new Bundle(2);
+//                bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_LIST);
+//                bundle.putString(MyConstants.LISTNAME, listname);
+//                fragment.setArguments(bundle);
+//                android.support.v4.app.FragmentTransaction fragmentTransaction =
+//                        getFragmentManager().beginTransaction();
+//                fragmentTransaction.replace(R.id.llListsContainer, fragment);
+//                fragmentTransaction.commit();
+//                alertDialog.dismiss();
+//            }
+//        });
 
         final Button getFromMyStash = dialogView.findViewById(R.id.btnListModeMyStash);
         getFromMyStash.setOnClickListener(new View.OnClickListener() {

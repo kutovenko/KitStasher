@@ -29,10 +29,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.kitstasher.R;
-import com.example.kitstasher.fragment.AddFragment;
-import com.example.kitstasher.fragment.HomeFragment;
 import com.example.kitstasher.fragment.KitsFragment;
-import com.example.kitstasher.fragment.MyListsFragment;
 import com.example.kitstasher.fragment.SearchFragment;
 import com.example.kitstasher.fragment.SettingsFragment;
 import com.example.kitstasher.fragment.StatisticsFragment;
@@ -124,7 +121,8 @@ public class MainActivity extends AppCompatActivity
 
         if (savedInstanceState == null) {
             navItemIndex = 0;
-            CURRENT_TAG = TAG_HOME;
+//            CURRENT_TAG = TAG_HOME;
+            CURRENT_TAG = TAG_VIEWSTASH;
             loadHomeFragment(aftermarketMode);
         }
 
@@ -158,51 +156,82 @@ public class MainActivity extends AppCompatActivity
                     @Override
                     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
                         switch (menuItem.getItemId()) {
-                            case R.id.nav_home:
-                                navItemIndex = 0;
-                                CURRENT_TAG = TAG_HOME;
-                                aftermarketMode = false;
-                                break;
-                            case R.id.nav_addstash:
-                                navItemIndex = 1;
-                                CURRENT_TAG = TAG_ADDSTASH;
-                                aftermarketMode = false;
-                                break;
                             case R.id.nav_viewstash:
-                                navItemIndex = 2;
+                                navItemIndex = 0;
                                 CURRENT_TAG = TAG_VIEWSTASH;
                                 aftermarketMode = false;
                                 break;
                             case R.id.nav_aftermarket:
-                                navItemIndex = 3;
+                                navItemIndex = 1;
                                 CURRENT_TAG = TAG_AFTERMARKET;
                                 aftermarketMode = true;
                                 break;
-                            case R.id.nav_mylists:
-                                navItemIndex = 4;
-                                CURRENT_TAG = TAG_MYLISTS;
-                                aftermarketMode = false;
-                                break;
                             case R.id.nav_search:
-                                navItemIndex = 5;
+                                navItemIndex = 2;
                                 CURRENT_TAG = TAG_SEARCH;
                                 aftermarketMode = false;
                                 break;
                             case R.id.nav_statistics:
-                                navItemIndex = 6;
+                                navItemIndex = 3;
                                 CURRENT_TAG = TAG_STATISTICS;
                                 aftermarketMode = false;
                                 break;
                             case R.id.nav_settings:
-                                navItemIndex = 7;
+                                navItemIndex = 4;
                                 CURRENT_TAG = TAG_SETTINGS;
                                 aftermarketMode = false;
                                 break;
                             default:
                                 navItemIndex = 0;
-                                CURRENT_TAG = TAG_HOME;
+                                CURRENT_TAG = TAG_VIEWSTASH;
                                 aftermarketMode = false;
                         }
+//                        }
+//                            case R.id.nav_home:
+//                                navItemIndex = 0;
+//                                CURRENT_TAG = TAG_HOME;
+//                                aftermarketMode = false;
+//                                break;
+//                            case R.id.nav_addstash:
+//                                navItemIndex = 1;
+//                                CURRENT_TAG = TAG_ADDSTASH;
+//                                aftermarketMode = false;
+//                                break;
+//                            case R.id.nav_viewstash:
+//                                navItemIndex = 2;
+//                                CURRENT_TAG = TAG_VIEWSTASH;
+//                                aftermarketMode = false;
+//                                break;
+//                            case R.id.nav_aftermarket:
+//                                navItemIndex = 3;
+//                                CURRENT_TAG = TAG_AFTERMARKET;
+//                                aftermarketMode = true;
+//                                break;
+//                            case R.id.nav_mylists:
+//                                navItemIndex = 4;
+//                                CURRENT_TAG = TAG_MYLISTS;
+//                                aftermarketMode = false;
+//                                break;
+//                            case R.id.nav_search:
+//                                navItemIndex = 5;
+//                                CURRENT_TAG = TAG_SEARCH;
+//                                aftermarketMode = false;
+//                                break;
+//                            case R.id.nav_statistics:
+//                                navItemIndex = 6;
+//                                CURRENT_TAG = TAG_STATISTICS;
+//                                aftermarketMode = false;
+//                                break;
+//                            case R.id.nav_settings:
+//                                navItemIndex = 7;
+//                                CURRENT_TAG = TAG_SETTINGS;
+//                                aftermarketMode = false;
+//                                break;
+//                            default:
+//                                navItemIndex = 0;
+//                                CURRENT_TAG = TAG_HOME;
+//                                aftermarketMode = false;
+//                        }
                         if (menuItem.isChecked()) {
                             menuItem.setChecked(false);
                         } else {
@@ -246,7 +275,7 @@ public class MainActivity extends AppCompatActivity
 //                promptExit();
 //            }
             navItemIndex = 0;
-            CURRENT_TAG = TAG_HOME;
+            CURRENT_TAG = TAG_ADDSTASH;
             loadHomeFragment(aftermarketMode);
         } else {
             super.onBackPressed();
@@ -302,31 +331,55 @@ public class MainActivity extends AppCompatActivity
 
         switch (navItemIndex) {
             case 0:
-                return new HomeFragment();
-            case 1:
-                return new AddFragment();
-            case 2:
                 Fragment kitFragment = new KitsFragment();
                 Bundle bundle = new Bundle();
                 bundle.putBoolean(MyConstants.AFTERMARKET_MODE, false);
                 kitFragment.setArguments(bundle);
                 return kitFragment;
-            case 3:
+            case 1:
                 Fragment fragment = new KitsFragment();
                 Bundle aBundle = new Bundle();
                 aBundle.putBoolean(MyConstants.AFTERMARKET_MODE, true);
                 fragment.setArguments(aBundle);
                 return fragment;
-            case 4:
-                return new MyListsFragment();
-            case 5:
+            case 2:
                 return new SearchFragment();
-            case 6:
+            case 3:
                 return new StatisticsFragment();
-            case 7:
+            case 4:
                 return new SettingsFragment();
             default:
-                return new HomeFragment();
+                Fragment defFragment = new KitsFragment();
+                Bundle defBundle = new Bundle();
+                defBundle.putBoolean(MyConstants.AFTERMARKET_MODE, false);
+                defFragment.setArguments(defBundle);
+                return defFragment;
+//            case 0:
+//                return new HomeFragment();
+//            case 1:
+//                return new AddFragment();
+//            case 2:
+//                Fragment kitFragment = new KitsFragment();
+//                Bundle bundle = new Bundle();
+//                bundle.putBoolean(MyConstants.AFTERMARKET_MODE, false);
+//                kitFragment.setArguments(bundle);
+//                return kitFragment;
+//            case 3:
+//                Fragment fragment = new KitsFragment();
+//                Bundle aBundle = new Bundle();
+//                aBundle.putBoolean(MyConstants.AFTERMARKET_MODE, true);
+//                fragment.setArguments(aBundle);
+//                return fragment;
+//            case 4:
+//                return new MyListsFragment();
+//            case 5:
+//                return new SearchFragment();
+//            case 6:
+//                return new StatisticsFragment();
+//            case 7:
+//                return new SettingsFragment();
+//            default:
+//                return new HomeFragment();
         }
     }
 
@@ -334,31 +387,47 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.nav_home) {
+        if (id == R.id.nav_viewstash) {
             navItemIndex = 0;
             loadHomeFragment(aftermarketMode);
-        } else if (id == R.id.nav_addstash) {
+        } else if (id == R.id.nav_aftermarket) {
             navItemIndex = 1;
             loadHomeFragment(aftermarketMode);
-        } else if (id == R.id.nav_viewstash) {
+        } else if (id == R.id.nav_search) {
             navItemIndex = 2;
             loadHomeFragment(aftermarketMode);
-        } else if (id == R.id.nav_aftermarket) {
+        } else if (id == R.id.nav_statistics) {
             navItemIndex = 3;
             loadHomeFragment(aftermarketMode);
-        } else if (id == R.id.nav_mylists) {
+        } else if (id == R.id.nav_settings) {
             navItemIndex = 4;
             loadHomeFragment(aftermarketMode);
-        } else if (id == R.id.nav_search) {
-            navItemIndex = 5;
-            loadHomeFragment(aftermarketMode);
-        } else if (id == R.id.nav_statistics) {
-            navItemIndex = 6;
-            loadHomeFragment(aftermarketMode);
-        } else if (id == R.id.nav_settings) {
-            navItemIndex = 7;
-            loadHomeFragment(aftermarketMode);
         }
+//        if (id == R.id.nav_home) {
+//            navItemIndex = 0;
+//            loadHomeFragment(aftermarketMode);
+//        } else if (id == R.id.nav_addstash) {
+//            navItemIndex = 1;
+//            loadHomeFragment(aftermarketMode);
+//        } else if (id == R.id.nav_viewstash) {
+//            navItemIndex = 2;
+//            loadHomeFragment(aftermarketMode);
+//        } else if (id == R.id.nav_aftermarket) {
+//            navItemIndex = 3;
+//            loadHomeFragment(aftermarketMode);
+//        } else if (id == R.id.nav_mylists) {
+//            navItemIndex = 4;
+//            loadHomeFragment(aftermarketMode);
+//        } else if (id == R.id.nav_search) {
+//            navItemIndex = 5;
+//            loadHomeFragment(aftermarketMode);
+//        } else if (id == R.id.nav_statistics) {
+//            navItemIndex = 6;
+//            loadHomeFragment(aftermarketMode);
+//        } else if (id == R.id.nav_settings) {
+//            navItemIndex = 7;
+//            loadHomeFragment(aftermarketMode);
+//        }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
