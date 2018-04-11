@@ -5,9 +5,9 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v4.widget.CursorAdapter;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -20,13 +20,13 @@ import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.kitstasher.R;
-import com.example.kitstasher.adapters.AdapterChooserList;
+import com.example.kitstasher.adapters.NewAdapterChooserList;
+import com.example.kitstasher.objects.ChooserItem;
 import com.example.kitstasher.objects.Kit;
 import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.Helper;
@@ -40,7 +40,8 @@ import java.util.List;
 public class ChooserActivity extends AppCompatActivity implements View.OnClickListener, TextWatcher {
     private DbConnector dbConnector;
     private Cursor cursor;
-    private ListView stashList;
+    //    private ListView stashList;
+    private RecyclerView stashList;
     private ImageButton ibtnChooseFilter;
     private LinearLayout linLayoutBrand,
             linLayoutScale,
@@ -61,6 +62,8 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
             sortName,
             sortScale,
             sortBrand;
+    private ArrayList<ChooserItem> itemList;
+    private NewAdapterChooserList adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,7 +71,13 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
         setContentView(R.layout.activity_chooser);
         initVariables();
         initUI();
-        prepareListAndAdapter(cursor);
+        itemList = dbConnector.getAllAftermarket("_id DESC");
+        adapter = new NewAdapterChooserList(itemList, workMode, this);
+//        AdapterChooserList stashListAdapter =
+//                new AdapterChooserList(this, cursor,
+//                        CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER, workMode);
+        stashList.setAdapter(adapter);
+//        prepareListAndAdapter(cursor);
         setActive(R.id.linLayoutChooseSortDate, ivSortDate);
         sortDate = true;
         sortName = true;
@@ -87,8 +96,9 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
             public boolean onLongClick(View view) {
                 filters = new String[0];
                 ibtnChooseFilter.setBackgroundColor(Color.TRANSPARENT);
-                cursor = dbConnector.filteredKits(tableMode, filters, "_id DESC", category, listname);
-                prepareListAndAdapter(cursor);
+                itemList = dbConnector.filteredAftermarket(tableMode, filters, "_id DESC", category, listname);
+                adapter.notifyDataSetChanged();
+//                prepareListAndAdapter(cursor);
                 ibtnChooseFilter.setColorFilter(R.color.colorAccent);
                 Toast.makeText(ChooserActivity.this, R.string.Filters_disabled, Toast.LENGTH_SHORT).show();
                 return true;
@@ -173,31 +183,32 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
         ivSortScale = findViewById(R.id.ivChooseSortScale);
         ivSortDate = findViewById(R.id.ivChooseSortDate);
         ivSortKitname = findViewById(R.id.ivChooseSortKitname);
-        stashList = findViewById(R.id.lvChooser);
+        stashList = findViewById(R.id.rvChooser);
     }
 
     private void initVariables() {
 
-        workMode = getIntent().getExtras().getChar(MyConstants.WORK_MODE);
-
-
+        workMode = getIntent().getCharExtra(MyConstants.WORK_MODE, 'k');
         dbConnector = new DbConnector(this);
         dbConnector.open();
-        if (workMode == MyConstants.MODE_LIST || workMode == MyConstants.MODE_KIT) {
-            tableMode = DbConnector.TABLE_KITS;
-            cursor = dbConnector.getAllData("_id DESC");
-
-            listname = MyConstants.EMPTY;
-            category = MyConstants.EMPTY;
-
-        } else if (workMode == MyConstants.MODE_AFTER_KIT || workMode == MyConstants.MODE_AFTERMARKET) {
+        itemList = new ArrayList<>();
+//        if (workMode == MyConstants.MODE_LIST || workMode == MyConstants.MODE_KIT) {
+//            tableMode = DbConnector.TABLE_KITS;
+//            itemList =
+//            cursor = dbConnector.getAllData("_id DESC");
+//
+//            listname = MyConstants.EMPTY;
+//            category = MyConstants.EMPTY;
+//
+//        } else if (workMode == MyConstants.MODE_AFTER_KIT || workMode == MyConstants.MODE_AFTERMARKET) {
             tableMode = DbConnector.TABLE_AFTERMARKET;
-            kitId = getIntent().getExtras().getLong(MyConstants.KIT_ID);
-            cursor = dbConnector.getAllAftermarket("_id DESC");
+        kitId = getIntent().getLongExtra(MyConstants.KIT_ID, 0L);
 
-            listname = getIntent().getExtras().getString(MyConstants.LISTNAME);
-            category = getIntent().getExtras().getString(MyConstants.CATEGORY);
-        }
+//            cursor = dbConnector.getAllAftermarket("_id DESC");
+
+        listname = getIntent().getStringExtra(MyConstants.LISTNAME);
+        category = getIntent().getStringExtra(MyConstants.CATEGORY);
+//        }
         filters = new String[]{"", "", "", "", ""};
 
     }
@@ -297,12 +308,12 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
         }
     }
 
-    public void prepareListAndAdapter(Cursor cursor){
-        AdapterChooserList stashListAdapter =
-                new AdapterChooserList(this, cursor,
-                        CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER, workMode);
-        stashList.setAdapter(stashListAdapter);
-    }
+//    public void prepareListAndAdapter(Cursor cursor){
+//        AdapterChooserList stashListAdapter =
+//                new AdapterChooserList(this, cursor,
+//                        CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER, workMode);
+//        stashList.setAdapter(stashListAdapter);
+//    }
 
     private void copyKit(Cursor c) {
         c.moveToFirst();
@@ -355,57 +366,66 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     public void SortByBrandAsc() {
-        cursor = dbConnector.filteredKits(tableMode, filters, "brand", category, MyConstants.EMPTY);
-        prepareListAndAdapter(cursor);
+        itemList = dbConnector.filteredAftermarket(tableMode, filters, "brand", category, MyConstants.EMPTY);
+
+//        cursor = dbConnector.filteredKits(tableMode, filters, "brand", category, MyConstants.EMPTY);
+//        prepareListAndAdapter(cursor);
         ivSortBrand.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
         sortBrand = true;
     }
 
     public void SortByBrandDesc() {
-        cursor = dbConnector.filteredKits(tableMode, filters, "brand DESC", category, MyConstants.EMPTY);
-        prepareListAndAdapter(cursor);
+        itemList = dbConnector.filteredAftermarket(tableMode, filters, "brand DESC", category, MyConstants.EMPTY);
+        adapter.notifyDataSetChanged();
+//        prepareListAndAdapter(cursor);
         ivSortBrand.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
         sortBrand = false;
     }
 
     public void SortByScaleAsc() {
-        cursor = dbConnector.filteredKits(tableMode, filters, "scale", category, listname);
-        prepareListAndAdapter(cursor);
+        itemList = dbConnector.filteredAftermarket(tableMode, filters, "scale", category, listname);
+        adapter.notifyDataSetChanged();
+//        prepareListAndAdapter(cursor);
         ivSortScale.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
         sortScale = true;
     }
 
     public void SortByScaleDesc() {
-        cursor = dbConnector.filteredKits(tableMode, filters, "scale DESC", category, listname);
-        prepareListAndAdapter(cursor);
+        itemList = dbConnector.filteredAftermarket(tableMode, filters, "scale DESC", category, listname);
+        adapter.notifyDataSetChanged();
+//        prepareListAndAdapter(cursor);
         ivSortScale.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
         sortScale = false;
     }
 
     public void SortByDateAcs() {
-        cursor = dbConnector.filteredKits(tableMode, filters, "_id", category, listname);
-        prepareListAndAdapter(cursor);
+        itemList = dbConnector.filteredAftermarket(tableMode, filters, "_id", category, listname);
+        adapter.notifyDataSetChanged();
+//        prepareListAndAdapter(cursor);
         ivSortDate.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
         sortDate = true;
     }
 
     public void SortByDateDesc() {
-        cursor = dbConnector.filteredKits(tableMode, filters, "_id DESC", category, listname);
-        prepareListAndAdapter(cursor);
+        itemList = dbConnector.filteredAftermarket(tableMode, filters, "_id DESC", category, listname);
+        adapter.notifyDataSetChanged();
+//        prepareListAndAdapter(cursor);
         ivSortDate.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
         sortDate = false;
     }
 
     public void SortByNameAsc() {
-        cursor = dbConnector.filteredKits(tableMode, filters, "kit_name", category, listname);
-        prepareListAndAdapter(cursor);
+        itemList = dbConnector.filteredAftermarket(tableMode, filters, "kit_name", category, listname);
+        adapter.notifyDataSetChanged();
+//        prepareListAndAdapter(cursor);
         ivSortKitname.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
         sortName = true;
     }
 
     public void SortByNameDesc() {
-        cursor = dbConnector.filteredKits(tableMode, filters, "kit_name DESC", category, listname);
-        prepareListAndAdapter(cursor);
+        itemList = dbConnector.filteredAftermarket(tableMode, filters, "kit_name DESC", category, listname);
+        adapter.notifyDataSetChanged();
+//        prepareListAndAdapter(cursor);
         ivSortKitname.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
         sortName = false;
     }
@@ -526,8 +546,9 @@ public class ChooserActivity extends AppCompatActivity implements View.OnClickLi
                     filters[3] = statusFilter;
                     filters[4] = mediaFilter;
 
-                    cursor = dbConnector.filteredKits(tableMode, filters, "_id DESC", category, listname);
-                    prepareListAndAdapter(cursor);
+                    itemList = dbConnector.filteredAftermarket(tableMode, filters, "_id DESC", category, listname);
+                    adapter.notifyDataSetChanged();
+//                    prepareListAndAdapter(cursor);
 
                     ibtnChooseFilter.setBackgroundColor(Helper.getColor(ChooserActivity.this, R.color.colorAccent));
                     ibtnChooseFilter.setColorFilter(Color.WHITE);

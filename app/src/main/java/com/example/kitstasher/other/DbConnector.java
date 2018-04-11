@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import com.example.kitstasher.R;
 import com.example.kitstasher.objects.Aftermarket;
+import com.example.kitstasher.objects.ChooserItem;
 import com.example.kitstasher.objects.Kit;
 
 import java.util.ArrayList;
@@ -342,7 +343,7 @@ public class DbConnector {
                     COLUMN_KIT_NAME + " text," + //название набора - 5
                     COLUMN_DESCRIPTION + " text," + //описание, продолжение названия - 6
                     COLUMN_ORIGINAL_NAME + " text," + //название на оригинальном языке, - 7
-                                                            // если отличается
+                    // если отличается
                     COLUMN_CATEGORY + " text," + //тег (самолет, корабль, и тд - 8
                     COLUMN_COLLECTION  + " text," + //коллекция - для группировки и других функций - 9
                     COLUMN_SEND_STATUS + " text," + //для отслеживания офлайн отправок LOCAL - 10
@@ -369,7 +370,7 @@ public class DbConnector {
             "CREATE TABLE " + TABLE_BRANDS + "(" +
                     BRANDS_COLUMN_ID + " integer primary key autoincrement, " +
                     BRANDS_COLUMN_BRAND + " text" + //Список фирм-производителей для автодополнения
-                                                // в AddActivity
+                    // в AddActivity
                     ");";
 
     private static final String CREATE_TABLE_CATEGORY =
@@ -382,10 +383,10 @@ public class DbConnector {
     private static final String CREATE_TABLE_ACCOUNT =
             "create table " + TABLE_ACCOUNT + "(" +
                     ACCOUNT_COLUMN_ID + " integer primary key autoincrement, " + // Локальный ключ
-                    ACCOUNT_COLUMN_USER_NAME + " text" +
-                    ACCOUNT_COLUMN_USER_EMAIL + " text" +
-                    ACCOUNT_COLUMN_PROFILEPIC_URL + " text" +
-                    ACCOUNT_COLUMN_FACEBOOK_PROFILE_URL + " text" +
+                    ACCOUNT_COLUMN_USER_NAME + " text," +
+                    ACCOUNT_COLUMN_USER_EMAIL + " text," +
+                    ACCOUNT_COLUMN_PROFILEPIC_URL + " text," +
+                    ACCOUNT_COLUMN_FACEBOOK_PROFILE_URL + " text," +
                     ACCOUNT_COLUMN_NETWORK + " text" +
                     ");";
 
@@ -556,9 +557,36 @@ public class DbConnector {
         return mDB.query(tableName, null, null, null, null, null, sortBy);
     }
 
-    public ArrayList<Kit> getItemsFromTable(String tableName, String sortBy) {
+    //    ++++++++++++++++++++++++++
+    public ArrayList<Kit> getAllFromTableAsList(String tableName, String sortBy) {
         Cursor cursor = mDB.query(tableName, null, null, null, null, null, sortBy);
         ArrayList<Kit> kitList = new ArrayList<Kit>();
+        cursor.moveToFirst();
+
+
+        while (!cursor.isAfterLast()) {
+            final long id = cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_ID));
+            String url = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BOXART_URL));
+            final String uri = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BOXART_URI));
+            String brand = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BRAND));
+            String cat_no = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BRAND_CATNO));
+            String name = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_KIT_NAME));
+            String scale = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_SCALE));
+            final String onlneId = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_ID_ONLINE));
+            Kit kit = new Kit.KitBuilder()
+                    .hasLocalId(id)
+                    .hasBoxart_url(url)
+                    .hasBoxart_uri(uri)
+                    .hasBrand(brand)
+                    .hasBrand_catno(cat_no)
+                    .hasKit_name(name)
+                    .hasScale(Integer.valueOf(scale))
+                    .hasOnlineId(onlneId)
+                    .build();
+            kitList.add(kit);
+            cursor.moveToNext();
+        }
+//        cursor.close();
         return kitList;
     }
 
@@ -677,6 +705,10 @@ public class DbConnector {
         return mDB.query(TABLE_KITS, null, null, null, null, null, sortBy);
     }
 
+//    public ArrayList<Item> getAllData(String sortBy) {
+//        return mDB.query(TABLE_KITS, null, null, null, null, null, sortBy);
+//    }
+
     //Все без удаленных с сортировкой по категории
     public Cursor getByCategory(String category, String sortBy) {
         return mDB.query(TABLE_KITS, null, "category = ? and (is_deleted is null or is_deleted =?)",
@@ -764,7 +796,7 @@ public class DbConnector {
 //        cv.put(COLUMN_COLLECTION, kit.get  + " text," + //коллекция - для группировки и других функций - 9
 //        cv.put(COLUMN_SEND_STATUS, kit.getSe + " text," + //для отслеживания офлайн отправок LOCAL - 10
         cv.put(COLUMN_ID_ONLINE, kit.getOnlineId());
-                //заметки? LOCAL?
+        //заметки? LOCAL?
         cv.put(COLUMN_BOXART_URI, kit.getBoxart_uri());
         cv.put(COLUMN_BOXART_URL, kit.getBoxart_url());
 //        cv.put(COLUMN_IS_DELETED, kit.get + " int," + // - 14
@@ -793,7 +825,7 @@ public class DbConnector {
         mDB.delete(tableName, COLUMN_ID + " = " + id, null);
     }
 
-
+    //+++++++++++++++++++++++++
     public ArrayList<String> getFilterData(String tableName, String filter) {
         ArrayList<String> filterData = new ArrayList<>();
         String query = "select DISTINCT " + filter + " from "+ tableName +" ORDER BY " + filter + " ASC;";
@@ -805,6 +837,7 @@ public class DbConnector {
         return filterData;
     }
 
+    //+++++++++++++++++++++++++++
     public ArrayList<String> getFilterFromIntData(String tableName, String filter) {
         ArrayList<String> filterData = new ArrayList<>();
         String query = "select DISTINCT " + filter + " from " + tableName + " ORDER BY " + filter + " ASC;";
@@ -891,12 +924,11 @@ public class DbConnector {
         return media;
     }
 
-// Список с фильтрацией и сортировкой
-public Cursor filteredKits(String tableName, String[] filters, String sortBy,
-                           String category, String listname) {
+    // Список с фильтрацией и сортировкой
+    public ArrayList<Kit> filteredKits(String tableName, String sortBy, String category) {
+        ArrayList<Kit> itemList;
         String groupBy = "_id";
         String having;
-    if (listname.equals(MyConstants.EMPTY)) {
         switch (category) {
             case "1":
                 having = DbConnector.COLUMN_CATEGORY + " = '" + MyConstants.CODE_AIR + "'"; //"category = 'air'"
@@ -926,13 +958,77 @@ public Cursor filteredKits(String tableName, String[] filters, String sortBy,
                 having = null;
                 break;
         }
-    } else {
-        having = DbConnector.MYLISTSITEMS_LISTNAME + " = '" + listname + "'";
+        Cursor cursor = mDB.query(tableName, null, null, null, groupBy, having, sortBy);
+        itemList = prepareKit(cursor);
+        cursor.close();
+        return itemList;
+    }
+
+    public ArrayList<ChooserItem> filteredAftermarket(String tableName, String[] filters, String sortBy,
+                                                      String category, String listname) {
+        ArrayList<ChooserItem> itemList = new ArrayList<>();
+        String groupBy = "_id";
+        String having;
+        if (listname.equals(MyConstants.EMPTY)) {
+            switch (category) {
+                case "1":
+                    having = DbConnector.COLUMN_CATEGORY + " = '" + MyConstants.CODE_AIR + "'"; //"category = 'air'"
+                    break;
+                case "2":
+                    having = DbConnector.COLUMN_CATEGORY + " = '" + MyConstants.CODE_GROUND + "'";
+                    break;
+                case "3":
+                    having = DbConnector.COLUMN_CATEGORY + " = '" + MyConstants.CODE_SEA + "'";
+                    break;
+                case "4":
+                    having = DbConnector.COLUMN_CATEGORY + " = '" + MyConstants.CODE_SPACE + "'";
+                    break;
+                case "5":
+                    having = DbConnector.COLUMN_CATEGORY + " = '" + MyConstants.CODE_AUTOMOTO + "'";
+                    break;
+                case "6":
+                    having = DbConnector.COLUMN_CATEGORY + " = '" + MyConstants.CODE_FIGURES + "'";
+                    break;
+                case "7":
+                    having = DbConnector.COLUMN_CATEGORY + " = '" + MyConstants.CODE_FANTASY + "'";
+                    break;
+                case "8":
+                    having = DbConnector.COLUMN_CATEGORY + " = '" + MyConstants.CODE_OTHER + "'";
+                    break;
+                default:
+                    having = null;
+                    break;
+            }
+        } else {
+            having = DbConnector.MYLISTSITEMS_LISTNAME + " = '" + listname + "'";
         }
 
 
         if (filters.length == 0){
-            return mDB.query(tableName, null, null, null, groupBy, having, sortBy);
+            Cursor cursor = mDB.query(tableName, null, null, null, groupBy, having, sortBy);
+            cursor.moveToFirst();
+            while (!cursor.isAfterLast()) {
+                String url = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BOXART_URL));
+                ;
+                String uri = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BOXART_URI));
+                ;
+//                long id = cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_ID));
+                String brand = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BRAND));
+                String name = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_KIT_NAME));
+                int scale = cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_SCALE));
+
+                ChooserItem item = new ChooserItem();
+                item.setUrl(url);
+                item.setUri(uri);
+                item.setBrand(brand);
+                item.setName(name);
+                item.setScale(scale);
+
+                itemList.add(item);
+                cursor.moveToNext();
+            }
+            cursor.close();
+            return itemList;
         }else {
 
             ArrayList<String> clausesList = new ArrayList<>();
@@ -996,10 +1092,142 @@ public Cursor filteredKits(String tableName, String[] filters, String sortBy,
             }
             String query = builder.toString();
 
-            return mDB.query(tableName, null, query, argsStringArray, groupBy, having, sortBy);
+            Cursor cursor = mDB.query(tableName, null, query, argsStringArray, groupBy, having, sortBy);
+            cursor.moveToFirst();
+            while (!cursor.isAfterLast()) {
+                String url = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BOXART_URL));
+                ;
+                String uri = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BOXART_URI));
+                ;
+//                long id = cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_ID));
+                String brand = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BRAND));
+                String name = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_KIT_NAME));
+                int scale = cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_SCALE));
 
+                ChooserItem item = new ChooserItem();
+                item.setUrl(url);
+                item.setUri(uri);
+                item.setBrand(brand);
+                item.setName(name);
+                item.setScale(scale);
+
+                itemList.add(item);
+                cursor.moveToNext();
+            }
+            cursor.close();
+            return itemList;
         }
     }
+
+// Список с фильтрацией и сортировкой
+//public Cursor filteredKits(String tableName, String[] filters, String sortBy,
+//                           String category, String listname) {
+//        String groupBy = "_id";
+//        String having;
+//    if (listname.equals(MyConstants.EMPTY)) {
+//        switch (category) {
+//            case "1":
+//                having = DbConnector.COLUMN_CATEGORY + " = '" + MyConstants.CODE_AIR + "'"; //"category = 'air'"
+//                break;
+//            case "2":
+//                having = DbConnector.COLUMN_CATEGORY + " = '" + MyConstants.CODE_GROUND + "'";
+//                break;
+//            case "3":
+//                having = DbConnector.COLUMN_CATEGORY + " = '" + MyConstants.CODE_SEA + "'";
+//                break;
+//            case "4":
+//                having = DbConnector.COLUMN_CATEGORY + " = '" + MyConstants.CODE_SPACE + "'";
+//                break;
+//            case "5":
+//                having = DbConnector.COLUMN_CATEGORY + " = '" + MyConstants.CODE_AUTOMOTO + "'";
+//                break;
+//            case "6":
+//                having = DbConnector.COLUMN_CATEGORY + " = '" + MyConstants.CODE_FIGURES + "'";
+//                break;
+//            case "7":
+//                having = DbConnector.COLUMN_CATEGORY + " = '" + MyConstants.CODE_FANTASY + "'";
+//                break;
+//            case "8":
+//                having = DbConnector.COLUMN_CATEGORY + " = '" + MyConstants.CODE_OTHER + "'";
+//                break;
+//            default:
+//                having = null;
+//                break;
+//        }
+//    } else {
+//        having = DbConnector.MYLISTSITEMS_LISTNAME + " = '" + listname + "'";
+//        }
+//
+//
+//        if (filters.length == 0){
+//            return mDB.query(tableName, null, null, null, groupBy, having, sortBy);
+//        }else {
+//
+//            ArrayList<String> clausesList = new ArrayList<>();
+//            ArrayList<String> argsList = new ArrayList<>();
+//
+//            if (!filters[2].equals("")) {
+//                if (argsList.size() == 0) {
+//                    clausesList.add(COLUMN_KIT_NAME + " LIKE ?");
+//                    argsList.add("%" + filters[2] + "%");
+//                } else {
+//                    clausesList.add(" AND " + COLUMN_KIT_NAME + " LIKE ?");
+//                    argsList.add("%" + filters[2] + "%");
+//                }
+//            }
+//            if (!filters[0].equals("")) {
+//                if (argsList.size() == 0) {
+//                    clausesList.add(COLUMN_SCALE + " = ?");
+//                    argsList.add(filters[0]);
+//                }else {
+//                    clausesList.add(" AND " + COLUMN_SCALE + " = ?");
+//                    argsList.add(filters[0]);
+//                }
+//            }
+//            if (!filters[1].equals("")) {
+//                if (argsList.size() == 0) {
+//                    clausesList.add(COLUMN_BRAND + " = ?");
+//                    argsList.add(filters[1]);
+//                } else {
+//                    clausesList.add(" AND " + COLUMN_BRAND + " = ?");
+//                    argsList.add(filters[1]);
+//                }
+//            }
+//            if (!filters[3].equals("")) {
+//                if (argsList.size() == 0) {
+//                    clausesList.add(COLUMN_STATUS + " = ?");
+//                    argsList.add(filters[3]);
+//                } else {
+//                    clausesList.add(" AND " + COLUMN_STATUS + " = ?");
+//                    argsList.add(filters[3]);
+//                }
+//            }
+//            if (!filters[4].equals("")) {
+//                if (argsList.size() == 0) {
+//                    clausesList.add(COLUMN_MEDIA + " = ?");
+//                    argsList.add(filters[4]);
+//                } else {
+//                    clausesList.add(" AND " + COLUMN_MEDIA + " = ?");
+//                    argsList.add(filters[4]);
+//                }
+//            }
+//
+//            String[] argsStringArray = new String[argsList.size()];
+//            argsStringArray = argsList.toArray(argsStringArray);
+//
+//            String[] clausesStringArray = new String[clausesList.size()];
+//            clausesStringArray = clausesList.toArray(clausesStringArray);
+//
+//            StringBuilder builder = new StringBuilder();
+//            for (String s : clausesStringArray) {
+//                builder.append(s);
+//            }
+//            String query = builder.toString();
+//
+//            return mDB.query(tableName, null, query, argsStringArray, groupBy, having, sortBy);
+//
+//        }
+//    }
     ////////////////BRANDS/////////////////
 
     //ТАБЛИЦА BRANDS Все с сортировкой!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1082,10 +1310,10 @@ public Cursor filteredKits(String tableName, String[] filters, String sortBy,
     /////////////////MYLISTS//////////////////////
     // Добавить мой список
     public void addList (String listName, String date){
-            ContentValues cv = new ContentValues();
-            cv.put(MYLISTS_COLUMN_LIST_NAME, listName);
-            cv.put(MYLISTS_COLUMN_DATE, date);
-            mDB.insert(TABLE_MYLISTS, null, cv);
+        ContentValues cv = new ContentValues();
+        cv.put(MYLISTS_COLUMN_LIST_NAME, listName);
+        cv.put(MYLISTS_COLUMN_DATE, date);
+        mDB.insert(TABLE_MYLISTS, null, cv);
     }
 
     public void addList (ContentValues cv) {
@@ -1228,10 +1456,10 @@ public Cursor filteredKits(String tableName, String[] filters, String sortBy,
 
     public boolean searchListForDoubles(String listname, String bcode){
         boolean found = false;
-            if (mDB.query(TABLE_MYLISTSITEMS, new String[] {"listname", "barcode"},"listname = ? " +
-                    "AND barcode LIKE ?", new String[]{listname, bcode}, null, null, null)
-                    .getCount() != 0){
-                found = true;
+        if (mDB.query(TABLE_MYLISTSITEMS, new String[]{"listname", "barcode"}, "listname = ? " +
+                "AND barcode LIKE ?", new String[]{listname, bcode}, null, null, null)
+                .getCount() != 0) {
+            found = true;
         }
         return found;
     }
@@ -1240,8 +1468,8 @@ public Cursor filteredKits(String tableName, String[] filters, String sortBy,
         boolean found = false;
         if (mDB.query(TABLE_MYLISTSITEMS, new String[] {"listname", "brand", "brand_catno"},
                 "listname = ? "
-                + "AND brand = ? "
-                + "AND brand_catno = ?",
+                        + "AND brand = ? "
+                        + "AND brand_catno = ?",
                 new String[] {listname, brand, cat_no}, null, null, null)
                 .getCount() != 0){
             found = true;
@@ -1329,6 +1557,71 @@ public Cursor filteredKits(String tableName, String[] filters, String sortBy,
         return mDB.query(TABLE_MYSHOPS, null, "shop_name = ?", new String[] { shopName }, null, null, null);
     }
 
+    private ArrayList<Kit> prepareKit(Cursor cursor) {
+        ArrayList<Kit> itemList = new ArrayList<>();
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            int id = cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_ID));
+            String brand = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BRAND));
+            String name = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_KIT_NAME));
+            int scale = cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_SCALE));
+            String brandCatno = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BRAND_CATNO));
+            String kitNoengname = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_ORIGINAL_NAME));
+            String description = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_DESCRIPTION));
+            String sendStatus = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_SEND_STATUS));
+            String boxartUrl = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BOXART_URL));
+            String boxartUri = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BOXART_URI));
+            String scalematesUrl = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_SCALEMATES_URL));
+            String year = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_YEAR));
+            String onlineId = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_ID_ONLINE));
+            String dateAdded = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_DATE));
+            String datePurchased = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_PURCHASE_DATE));
+            int quantity = cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_QUANTITY));
+            String notes = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_NOTES));
+            int price = cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_PRICE));
+            String currency = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_CURRENCY));
+            String placePurchased = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_PURCHASE_PLACE));
+            int status = cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_STATUS));
+            int media = cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_MEDIA));
+            String barcode = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BARCODE));
+            String category = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_CATEGORY));
+            Kit kit = new Kit.KitBuilder()
+                    .hasLocalId(id)
+                    .hasBrand(brand)
+                    .hasBrand_catno(brandCatno)
+                    .hasKit_name(name)
+                    .hasScale(scale)
+                    .hasCategory(category)
+                    .hasBarcode(barcode)
+                    .hasKit_noeng_name(kitNoengname)
+                    .hasDescription(description)
+                    .hasPrototype(MyConstants.EMPTY)//not in use
+                    .hasSendStatus(sendStatus)
+                    .hasBoxart_url(boxartUrl)
+                    .hasBoxart_uri(boxartUri)
+                    .hasScalemates_url(scalematesUrl)
+                    .hasYear(year)
+                    .hasOnlineId(onlineId)
+
+                    .hasDateAdded(dateAdded)
+                    .hasDatePurchased(datePurchased)
+                    .hasQuantity(quantity)
+                    .hasNotes(notes)
+                    .hasPrice(price)
+                    .hasCurrency(currency)
+                    .hasPlacePurchased(placePurchased)
+                    .hasStatus(status)
+                    .hasMedia(media)
+                    .hasItemType(MyConstants.TYPE_KIT)
+                    .build();
+            itemList.add(kit);
+            cursor.moveToNext();
+        }
+        cursor.close();
+        return itemList;
+
+    }
+
 
     ////////// AFTERMARKET ////////////////
     public void addAfterToKit(long kitId, long aftermarketId){
@@ -1342,35 +1635,69 @@ public Cursor filteredKits(String tableName, String[] filters, String sortBy,
         mDB.insert(TABLE_KIT_AFTER_CONNECTIONS, null, cv);
     }
 
-    public Cursor getKitForAfterById(long id) {
-        return mDB.query(TABLE_KIT_AFTER_CONNECTIONS, null,
+    public ArrayList<Kit> getKitForAfterById(long id) {
+        Cursor cursor = mDB.query(TABLE_KIT_AFTER_CONNECTIONS, null,
                 "afterid = ?", new String[]{String.valueOf(id)}, null, null, null);
+        return prepareKit(cursor);
     }
+//    public Cursor getKitForAfterById(long id) {
+//        return mDB.query(TABLE_KIT_AFTER_CONNECTIONS, null,
+//                "afterid = ?", new String[]{String.valueOf(id)}, null, null, null);
+//    }
 
-    public Cursor getAftermarketForKit(long id, String listname){
+    public ArrayList<Kit> getAftermarketForKit(long id, String listname) {
+        ArrayList<Kit> itemList = new ArrayList<>();
         ArrayList <String> listAft = new ArrayList<>();
         Cursor cursor = mDB.query(TABLE_KIT_AFTER_CONNECTIONS, new String[]{KIT_AFTER_AFTERID},
                 KIT_AFTER_KITID + "="+ id, null, null, null, null);
         cursor.moveToFirst();
         while (!cursor.isAfterLast()){
             listAft.add(String.valueOf(cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.KIT_AFTER_AFTERID))));
-        cursor.moveToNext();
+            cursor.moveToNext();
         }
 
-            String[] aftid = new String[listAft.size()];
+        String[] aftid = new String[listAft.size()];
         if (listAft.size() > 0) {
             aftid = listAft.toArray(aftid);
             String query = "SELECT * FROM " + TABLE_AFTERMARKET + " WHERE listname = '"
                     + listname
                     + "' AND _id IN (" + makePlaceholders(aftid.length) + ")";
-            return mDB.rawQuery(query, aftid);
+            Cursor rawQuery = mDB.rawQuery(query, aftid);
+            return prepareKit(rawQuery);
+
         }else{
             String query = "SELECT * FROM " + TABLE_AFTERMARKET + " WHERE listname = '"
                     + listname
                     + "' AND _id IN (-1)";
-            return mDB.rawQuery(query, aftid);
+            Cursor rawQuery = mDB.rawQuery(query, aftid);
+            return prepareKit(rawQuery);
         }
     }
+
+//    public Cursor getAftermarketForKit(long id, String listname){
+//        ArrayList <String> listAft = new ArrayList<>();
+//        Cursor cursor = mDB.query(TABLE_KIT_AFTER_CONNECTIONS, new String[]{KIT_AFTER_AFTERID},
+//                KIT_AFTER_KITID + "="+ id, null, null, null, null);
+//        cursor.moveToFirst();
+//        while (!cursor.isAfterLast()){
+//            listAft.add(String.valueOf(cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.KIT_AFTER_AFTERID))));
+//            cursor.moveToNext();
+//        }
+//
+//        String[] aftid = new String[listAft.size()];
+//        if (listAft.size() > 0) {
+//            aftid = listAft.toArray(aftid);
+//            String query = "SELECT * FROM " + TABLE_AFTERMARKET + " WHERE listname = '"
+//                    + listname
+//                    + "' AND _id IN (" + makePlaceholders(aftid.length) + ")";
+//            return mDB.rawQuery(query, aftid);
+//        }else{
+//            String query = "SELECT * FROM " + TABLE_AFTERMARKET + " WHERE listname = '"
+//                    + listname
+//                    + "' AND _id IN (-1)";
+//            return mDB.rawQuery(query, aftid);
+//        }
+//    }
 
     public Cursor getKitAfterConnections(String sortBy){
         return mDB.query(TABLE_KIT_AFTER_CONNECTIONS, null, null, null, null, null, sortBy);
@@ -1443,10 +1770,28 @@ public Cursor filteredKits(String tableName, String[] filters, String sortBy,
         mDB.delete(TABLE_AFTERMARKET, COLUMN_ID + " = " + afterId, null);
     }
 
-    public Cursor getAllAftermarket(String sortBy){
-        return mDB.query(TABLE_AFTERMARKET, null, null, null, null, null, sortBy);
-
+    //++++++++++++++++++++
+    public ArrayList<ChooserItem> getAllAftermarket(String sortBy) {
+        Cursor cursor = mDB.query(TABLE_AFTERMARKET, null, null, null, null, null, sortBy);
+        ArrayList<ChooserItem> itemList = new ArrayList<>();
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            ChooserItem item = new ChooserItem();
+            item.setName(cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_KIT_NAME)));
+            item.setBrand(cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BRAND)));
+            item.setScale(cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_SCALE)));
+            item.setUri(cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BOXART_URI)));
+            item.setUrl(cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BOXART_URL)));
+            itemList.add(item);
+            cursor.moveToNext();
+        }
+        cursor.close();
+        return itemList;
     }
+//    public Cursor getAllAftermarket(String sortBy){
+//        return mDB.query(TABLE_AFTERMARKET, null, null, null, null, null, sortBy);
+//
+//    }
 
     /////////////CURRENCY//////////////////
 
@@ -1501,7 +1846,7 @@ public Cursor filteredKits(String tableName, String[] filters, String sortBy,
                 .getCount() != 0){
             found = true;
         }
-            return found;
+        return found;
     }
 
     //Для проверки из ручного добавления AddActivity //////!!!!!!!!!!!!!!!!!!!!!Univ

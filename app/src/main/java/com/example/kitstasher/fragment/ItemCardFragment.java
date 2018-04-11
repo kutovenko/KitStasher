@@ -2,7 +2,6 @@ package com.example.kitstasher.fragment;
 
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -24,12 +23,14 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.kitstasher.R;
 import com.example.kitstasher.activity.EditActivity;
-import com.example.kitstasher.adapters.MyListCursorAdapter;
+import com.example.kitstasher.adapters.NewMyListAdapter;
+import com.example.kitstasher.objects.Kit;
 import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.Helper;
 import com.example.kitstasher.other.MyConstants;
 
 import java.io.File;
+import java.util.ArrayList;
 
 
 /**
@@ -69,6 +70,8 @@ public class ItemCardFragment extends Fragment {
     private final int EDIT_ACTIVITY_CODE = 21;
     private int tabToReturn;
 
+    private Kit kit;
+
 
     public ItemCardFragment() {
         super();
@@ -93,6 +96,7 @@ public class ItemCardFragment extends Fragment {
     public View onCreateView(final LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_item_card, container, false);
         context = getActivity();
+
 
         initUi();
         final char workMode = getArguments().getChar(MyConstants.WORK_MODE);
@@ -148,54 +152,32 @@ public class ItemCardFragment extends Fragment {
     }
 
     private void showDbCard(final char workMode) {
-        if (workMode == MyConstants.MODE_AFTERMARKET) {
-            tableName = DbConnector.TABLE_AFTERMARKET;
-            tvAftermarketTitle.setVisibility(View.GONE);
-            rvAftermarket.setVisibility(View.GONE);
-        } else if (workMode == MyConstants.MODE_AFTER_KIT) {
-            tableName = DbConnector.TABLE_AFTERMARKET;
-            tvAftermarketTitle.setVisibility(View.GONE);
-            rvAftermarket.setVisibility(View.GONE);
-            btnEdit.setVisibility(View.GONE);
+        DbConnector dbConnector = new DbConnector(context);
 
-        } else if (workMode == MyConstants.MODE_KIT) {
-            tableName = DbConnector.TABLE_KITS;
-        } else if (workMode == MyConstants.MODE_LIST) {
-            tableName = DbConnector.TABLE_MYLISTSITEMS;
-        }
-
-        final DbConnector dbConnector = new DbConnector(context);
-        dbConnector.open();
-
-
-        final int position = getArguments().getInt(MyConstants.POSITION);
-        final long id = getArguments().getLong(MyConstants.ID);
+        kit = getArguments().getParcelable("kit");
 
         tabToReturn = getArguments().getInt(MyConstants.CATEGORY_TAB);
 
-        final Cursor cursor = dbConnector.getItemById(tableName, id);
-        cursor.moveToFirst();
-        final String kitname = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_KIT_NAME));
-        final String brand = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BRAND));
-        final String catno = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BRAND_CATNO));
-        final int scale = cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_SCALE));
-        final String url = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BOXART_URL));
-        final String uri = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BOXART_URI));
-        String scalematesUrl = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_SCALEMATES_URL));
-        category = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_CATEGORY));
-        final String year = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_YEAR));
-        final String description = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_DESCRIPTION));
-        final String origName = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_ORIGINAL_NAME));
-        final String notes = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_NOTES));
-        final int media = cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_MEDIA));
-        final int quantity = cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_QUANTITY));
-        final int status = cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_STATUS));
-        final String shop = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_PURCHASE_PLACE));
-        final String purchaseDate = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_PURCHASE_DATE));
-        final int price = cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_PRICE));
-        final String currency = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_CURRENCY));
-
-        final String listname = "";
+        final long id = kit.getLocalId();
+        final String kitname = kit.getKit_name();
+        final String brand = kit.getBrand();
+        final String catno = kit.getBrandCatno();
+        final int scale = kit.getScale();
+        final String url = kit.getBoxart_url();
+        final String uri = kit.getBoxart_uri();
+        final String scalematesUrl = kit.getScalemates_url();
+        category = kit.getCategory();
+        final String year = kit.getYear();
+        final String description = kit.getDescription();
+        final String origName = kit.getKit_noeng_name();
+        final String notes = kit.getNotes();
+        final int media = kit.getMedia();
+        final int quantity = kit.getQuantity();
+        final int status = kit.getStatus();
+        final String shop = kit.getPlacePurchased();
+        final String purchaseDate = kit.getDatePurchased();
+        final int price = kit.getPrice();
+        final String currency = kit.getCurrency();
 
         tvKitname = view.findViewById(R.id.tvKitname);
         tvKitname.setText(kitname);
@@ -255,43 +237,23 @@ public class ItemCardFragment extends Fragment {
 
         setCategoryImage(category);
 
-
-        final Cursor aCursor = dbConnector.getAftermarketForKit(id, listname);
-        MyListCursorAdapter afterAdapter = new MyListCursorAdapter(aCursor, context, MyConstants.MODE_A_KIT);
+        ArrayList<Kit> aCursor = dbConnector.getAftermarketForKit(id, "");
+//        final Cursor aCursor = dbConnector.getAftermarketForKit(id, listname);
+        NewMyListAdapter afterAdapter = new NewMyListAdapter(aCursor, context, MyConstants.MODE_A_KIT);
         rvAftermarket.setAdapter(afterAdapter);
 
         btnEdit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getActivity(), EditActivity.class);
-                intent.putExtra(MyConstants.POSITION, position);
-                intent.putExtra(MyConstants.WORK_MODE, workMode);
-                intent.putExtra(MyConstants.ID, id);
-                intent.putExtra(MyConstants.KITNAME, kitname);
-                intent.putExtra(MyConstants.BRAND, brand);
-                intent.putExtra(MyConstants.CATNO, catno);
-                intent.putExtra(MyConstants.URL, url);
-                intent.putExtra(MyConstants.URI, uri);
-                intent.putExtra(MyConstants.SCALE, scale);
-                intent.putExtra(MyConstants.CATEGORY, category);
+                intent.putExtra("kit", kit);
                 intent.putExtra(MyConstants.CATEGORY_TAB, tabToReturn);
-                intent.putExtra(MyConstants.YEAR, year);
-                intent.putExtra(MyConstants.DESCRIPTION, description);
-                intent.putExtra(MyConstants.ORIGINAL_NAME, origName);
-                intent.putExtra(MyConstants.NOTES, notes);
-                intent.putExtra(MyConstants.MEDIA, media);
-                intent.putExtra(MyConstants.QUANTITY, quantity);
-                intent.putExtra(MyConstants.STATUS, status);
-                intent.putExtra(MyConstants.SHOP, shop);
-                intent.putExtra(MyConstants.PURCHASE_DATE, purchaseDate);
-                intent.putExtra(MyConstants.PRICE, price);
-                intent.putExtra(MyConstants.CURRENCY, currency);
                 getActivity().startActivityForResult(intent, EDIT_ACTIVITY_CODE);
             }
         });
     }
 
-    private void showSearchCard() {
+    private void showSearchCard() { // TODO: 11.04.2018 переписать с kit
 
         String kitname = getArguments().getString(MyConstants.KITNAME);
         tvKitname.setText(kitname);

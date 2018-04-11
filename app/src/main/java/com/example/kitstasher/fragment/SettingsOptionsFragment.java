@@ -364,57 +364,58 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
 
     /////////// AFTERMARKET ////////////
     private void backupAftermarket(File exportDir) {
+        // TODO: 08.04.2018 реализовать с листом
         //сохраняем таблицу афтемаркета
-        File fileAfter = new File(exportDir, MyConstants.AFTER_FILE_NAME);
-        try {
-            fileAfter.createNewFile();
-            CSVWriter csvWrite = new CSVWriter(new FileWriter(fileAfter),
-                    CSVWriter.DEFAULT_SEPARATOR,
-                    CSVWriter.NO_QUOTE_CHARACTER);
-            Cursor curCSV = dbConnector.getAllAftermarket("_id");
-            curCSV.moveToFirst();
-            while(!curCSV.isAfterLast()) {
-                String arrStr[] = {
-                        curCSV.getString(0), //id
-                        curCSV.getString(1), //barcode
-                        curCSV.getString(2), //brand
-                        curCSV.getString(3), //brand_catno
-                        curCSV.getString(4), //scale
-                        curCSV.getString(5), //after_name
-                        curCSV.getString(6), //desc
-                        curCSV.getString(7), //after_original name
-                        curCSV.getString(8), //category - tag
-                        curCSV.getString(9), //collection
-                        curCSV.getString(10), //send status
-                        curCSV.getString(11), // online id
-                        curCSV.getString(12), // boxart uri
-                        curCSV.getString(13), //boxart url
-
-                        curCSV.getString(14), //is deleted !!
-                        curCSV.getString(15), //date !!
-
-                        curCSV.getString(16), //year !!
-                        curCSV.getString(17), //date !!
-                        curCSV.getString(18), //date !!
-                        curCSV.getString(19), //date !!
-                        curCSV.getString(20), //date !!
-                        curCSV.getString(21), //date !!
-                        curCSV.getString(22),
-                        curCSV.getString(23), //listname
-                        curCSV.getString(24),
-                        curCSV.getString(25),
-                        curCSV.getString(26),
-                        curCSV.getString(27)
-                };
-                csvWrite.writeNext(arrStr);
-                curCSV.moveToNext();
-            }
-            csvWrite.close();
-            curCSV.close();
-            Helper.encrypt(fileAfter);
-        } catch(Exception sqlEx) {
-            Log.e("Aftermarket Backup", sqlEx.getMessage(), sqlEx);
-        }
+//        File fileAfter = new File(exportDir, MyConstants.AFTER_FILE_NAME);
+//        try {
+//            fileAfter.createNewFile();
+//            CSVWriter csvWrite = new CSVWriter(new FileWriter(fileAfter),
+//                    CSVWriter.DEFAULT_SEPARATOR,
+//                    CSVWriter.NO_QUOTE_CHARACTER);
+//            Cursor curCSV = dbConnector.getAllAftermarket("_id");
+//            curCSV.moveToFirst();
+//            while(!curCSV.isAfterLast()) {
+//                String arrStr[] = {
+//                        curCSV.getString(0), //id
+//                        curCSV.getString(1), //barcode
+//                        curCSV.getString(2), //brand
+//                        curCSV.getString(3), //brand_catno
+//                        curCSV.getString(4), //scale
+//                        curCSV.getString(5), //after_name
+//                        curCSV.getString(6), //desc
+//                        curCSV.getString(7), //after_original name
+//                        curCSV.getString(8), //category - tag
+//                        curCSV.getString(9), //collection
+//                        curCSV.getString(10), //send status
+//                        curCSV.getString(11), // online id
+//                        curCSV.getString(12), // boxart uri
+//                        curCSV.getString(13), //boxart url
+//
+//                        curCSV.getString(14), //is deleted !!
+//                        curCSV.getString(15), //date !!
+//
+//                        curCSV.getString(16), //year !!
+//                        curCSV.getString(17), //date !!
+//                        curCSV.getString(18), //date !!
+//                        curCSV.getString(19), //date !!
+//                        curCSV.getString(20), //date !!
+//                        curCSV.getString(21), //date !!
+//                        curCSV.getString(22),
+//                        curCSV.getString(23), //listname
+//                        curCSV.getString(24),
+//                        curCSV.getString(25),
+//                        curCSV.getString(26),
+//                        curCSV.getString(27)
+//                };
+//                csvWrite.writeNext(arrStr);
+//                curCSV.moveToNext();
+//            }
+//            csvWrite.close();
+//            curCSV.close();
+//            Helper.encrypt(fileAfter);
+//        } catch(Exception sqlEx) {
+//            Log.e("Aftermarket Backup", sqlEx.getMessage(), sqlEx);
+//        }
     }
 
     private void restoreAftermarket(File sdPath) {

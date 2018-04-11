@@ -812,15 +812,10 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 
     private boolean isInLocalBase(String brand, String brand_catno) {
         if (workMode == MyConstants.MODE_LIST) {
-            if (dbConnector.searchListForDoubles(listname, brand, brand_catno)) {
-                return true;
-            }
+            return dbConnector.searchListForDoubles(listname, brand, brand_catno);
         } else {
-            if (dbConnector.searchForDoubles(workMode, brand, brand_catno)) {
-                return true;
-            }
+            return dbConnector.searchForDoubles(workMode, brand, brand_catno);
         }
-        return false;
     }
 
     private void setAllStepsState(int state) {

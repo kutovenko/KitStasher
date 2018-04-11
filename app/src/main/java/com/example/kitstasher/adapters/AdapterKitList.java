@@ -45,6 +45,7 @@ import static android.R.drawable.ic_menu_camera;
 
 public class AdapterKitList extends CursorRecyclerViewAdapter<AdapterKitList.ViewHolder> {
     private Context context;
+    //    private Cursor cursor;
     private String[] filters;
     private String activeTable,
             sortBy,
@@ -60,6 +61,7 @@ public class AdapterKitList extends CursorRecyclerViewAdapter<AdapterKitList.Vie
                           int tabToReturn, char workMode, String sortBy,
                           String allTag, String listname, String category) {
         super(context, cursor);
+//        this.cursor = cursor;
         this.context = context;
         this.filters = filters;
         this.activeTable = activeTable;
@@ -69,7 +71,7 @@ public class AdapterKitList extends CursorRecyclerViewAdapter<AdapterKitList.Vie
         this.allTag = allTag;
         this.listname = listname;
         this.category = category;
-        rebuildIdsAndPositions();
+//        rebuildIdsAndPositions();
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
@@ -218,10 +220,10 @@ public class AdapterKitList extends CursorRecyclerViewAdapter<AdapterKitList.Vie
 
                 rebuildIdsAndPositions();
 
-                Cursor newcursor = dbConnector.filteredKits(activeTable, filters, sortBy, category, MyConstants.EMPTY);
+//                Cursor newcursor = dbConnector.filteredKits(activeTable, filters, sortBy, category, MyConstants.EMPTY);
                 notifyItemRemoved(currentPosition);
 //                swapCursor(newcursor);
-                changeCursor(newcursor);
+//                changeCursor(newcursor);
                 if (getItemCount() <= 0) {
                     KitsFragment.refreshPages();
                 }
@@ -235,7 +237,7 @@ public class AdapterKitList extends CursorRecyclerViewAdapter<AdapterKitList.Vie
         d.show();
     }
 
-    private void rebuildIdsAndPositions() {
+    public void rebuildIdsAndPositions() {
         ids = new ArrayList<>();
         positions = new ArrayList<>();
 

@@ -341,6 +341,12 @@ public class Helper {
         listView.setLayoutParams(params);
     }
 
+    public static void clearArray(String[] filters) {
+        for (int i = 0; i < filters.length; i++) {
+            filters[i] = MyConstants.EMPTY;
+        }
+    }
+
     public enum StorageState {
         NOT_AVAILABLE, WRITEABLE, READ_ONLY
     }

@@ -402,6 +402,7 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="new_name">New name</string>
+    <string name="action_search">Search</string>
 
 
 </resources>

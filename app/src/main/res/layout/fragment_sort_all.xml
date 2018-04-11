@@ -111,15 +111,15 @@
 
         </LinearLayout>
 
-        <ImageButton
-            android:id="@+id/ibtnFilter"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_gravity="top"
-            android:background="@drawable/button"
-            android:paddingEnd="12dp"
-            android:paddingStart="12dp"
-            app:srcCompat="@drawable/ic_filter_list_black_24dp" />
+        <!--<ImageButton-->
+        <!--android:id="@+id/ibtnFilter"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:layout_gravity="top"-->
+        <!--android:background="@drawable/button"-->
+        <!--android:paddingEnd="12dp"-->
+        <!--android:paddingStart="12dp"-->
+        <!--app:srcCompat="@drawable/ic_filter_list_black_24dp" />-->
 
     </LinearLayout>
 

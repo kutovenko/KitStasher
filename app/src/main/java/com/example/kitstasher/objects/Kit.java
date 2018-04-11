@@ -2,6 +2,8 @@ package com.example.kitstasher.objects;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.text.TextUtils;
 
 import com.example.kitstasher.other.DbConnector;
@@ -15,7 +17,7 @@ import com.parse.SaveCallback;
  * Created by Алексей on 04.05.2017.
  */
 
-public class Kit {
+public class Kit implements Parcelable {
 
     //Required
 
@@ -51,8 +53,8 @@ public class Kit {
     private int status;
 
     private String itemType; //1 - kit, 2 - aftermarket
-    private int localId;
-    private int parentId;
+    private long localId;
+    private long parentId;
 
     private String listname;
 
@@ -65,7 +67,7 @@ public class Kit {
         this.itemType = itemType;
     }
 
-    public int getLocalId() {
+    public long getLocalId() {
         return localId;
     }
 
@@ -73,7 +75,7 @@ public class Kit {
         this.localId = localId;
     }
 
-    public int getParentId() {
+    public long getParentId() {
         return parentId;
     }
 
@@ -391,7 +393,110 @@ public class Kit {
         this.listname = kitBuilder.listname;
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
 
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(brand);
+        parcel.writeString(brandCatno);
+        parcel.writeString(kit_name);
+        parcel.writeInt(scale);
+        parcel.writeString(category);
+        //Optional
+        parcel.writeString(barcode);
+        parcel.writeString(kit_noeng_name);
+        parcel.writeString(description);
+        parcel.writeString(prototype);
+        parcel.writeString(boxart_url);
+        parcel.writeString(scalemates_url);
+        parcel.writeString(boxart_uri);
+
+        parcel.writeString(year);
+        parcel.writeString(onlineId);
+
+        parcel.writeString(date_added);
+
+
+        parcel.writeString(datePurchased);
+        parcel.writeInt(quantity);
+        parcel.writeString(notes);
+        parcel.writeInt(price);
+        parcel.writeString(currency);
+        parcel.writeString(sendStatus);
+        parcel.writeString(placePurchased);
+
+        parcel.writeInt(media);
+        parcel.writeInt(status);
+
+        parcel.writeString(itemType); //1 - kit, 2 - aftermarket
+        parcel.writeLong(localId);
+        parcel.writeLong(parentId);
+
+        parcel.writeString(listname);
+    }
+
+    public static final Parcelable.Creator<Kit> CREATOR = new Parcelable.Creator<Kit>() {
+        // распаковываем объект из Parcel
+        public Kit createFromParcel(Parcel in) {
+            return new Kit(in);
+        }
+
+        public Kit[] newArray(int size) {
+            return new Kit[size];
+        }
+    };
+
+    // конструктор, считывающий данные из Parcel
+    private Kit(Parcel parcel) {
+        brand = parcel.readString();
+        brandCatno = parcel.readString();
+        kit_name = parcel.readString();
+        scale = parcel.readInt();
+        category = parcel.readString();
+        //Optional
+        barcode = parcel.readString();
+        kit_noeng_name = parcel.readString();
+        description = parcel.readString();
+        prototype = parcel.readString();
+        boxart_url = parcel.readString();
+        scalemates_url = parcel.readString();
+        boxart_uri = parcel.readString();
+
+        year = parcel.readString();
+        onlineId = parcel.readString();
+
+        date_added = parcel.readString();
+
+
+        datePurchased = parcel.readString();
+        quantity = parcel.readInt();
+        notes = parcel.readString();
+        price = parcel.readInt();
+        currency = parcel.readString();
+        sendStatus = parcel.readString();
+        placePurchased = parcel.readString();
+
+        media = parcel.readInt();
+        status = parcel.readInt();
+
+        itemType = parcel.readString(); //1 - kit, 2 - aftermarket
+        localId = parcel.readLong();
+        parentId = parcel.readLong();
+        listname = parcel.readString();
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
 
 
     public static class KitBuilder{
@@ -424,7 +529,7 @@ public class Kit {
         private int media;
 
         private String itemType; //kit or aftermarket
-        private int localId; //id in local db
+        private long localId; //id in local db
         private int parentId; // id of parent kit for aftermarket
 
         private String listname;
@@ -552,7 +657,7 @@ public class Kit {
             return this;
         }
 
-        public KitBuilder hasLocalId(int localId) {
+        public KitBuilder hasLocalId(long localId) {
             this.localId = localId;
             return this;
         }

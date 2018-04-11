@@ -7,7 +7,11 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.SearchView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -42,6 +46,7 @@ public class KitsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_viewstash, container, false);
         TabLayout tabLayout = view.findViewById(R.id.tabsViewStash);
         tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
+        setHasOptionsMenu(true);
         dbConnector = new DbConnector(getActivity());
         dbConnector.open();
         final boolean aftermarketMode = getArguments().getBoolean(MyConstants.AFTERMARKET_MODE);
@@ -116,6 +121,37 @@ public class KitsFragment extends Fragment {
             viewPager.setCurrentItem(currentTab);
         }
 
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_main, menu);
+//        super.onCreateOptionsMenu(menu, inflater);
+        SearchView searchView = (SearchView) menu.findItem(R.id.action_search)
+                .getActionView();
+        searchView.setMaxWidth(Integer.MAX_VALUE);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+//                    FragmentManager fm = getFragmentManager();
+                SortAllFragment fr = (SortAllFragment) adapter.getItem(viewPager.getCurrentItem());
+                fr.search(query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String query) {
+                SortAllFragment fr = (SortAllFragment) adapter.getItem(viewPager.getCurrentItem());
+                fr.search(query);
+                return false;
+            }
+        });
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        return id == R.id.action_search || super.onOptionsItemSelected(item);
     }
 
     @Override

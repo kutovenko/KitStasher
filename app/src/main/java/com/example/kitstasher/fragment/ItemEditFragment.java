@@ -41,7 +41,8 @@ import com.example.kitstasher.activity.CropActivity;
 import com.example.kitstasher.activity.MainActivity;
 import com.example.kitstasher.activity.ViewActivity;
 import com.example.kitstasher.adapters.AdapterSpinner;
-import com.example.kitstasher.adapters.MyListCursorAdapter;
+import com.example.kitstasher.adapters.NewMyListAdapter;
+import com.example.kitstasher.objects.Kit;
 import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.Helper;
 import com.example.kitstasher.other.MyConstants;
@@ -119,25 +120,25 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
     private Bitmap bmBoxartPic;
     private Uri photoPath;
     private ArrayAdapter<String> descriptionAdapter, yearsAdapter, currencyAdapter;
-    private MyListCursorAdapter aftermarketAdapter;
+    private NewMyListAdapter aftermarketAdapter;
+    private ArrayList<Kit> aftermarketList;
 
 
     @Override
     public void onResume(){
         super.onResume();
-        aftermarketCursor = dbConnector.getAftermarketForKit(id, listname);
+        aftermarketList = dbConnector.getAftermarketForKit(id, listname);
         if (aftermarketAdapter == null) {
-            aftermarketAdapter = new MyListCursorAdapter(aftermarketCursor, context, aMode);
+            aftermarketAdapter = new NewMyListAdapter(aftermarketList, context, aMode);
             rvAftermarket.setAdapter(aftermarketAdapter);
         } else {
-            aftermarketAdapter.changeCursor(aftermarketCursor);
             aftermarketAdapter.notifyDataSetChanged();
         }
     }
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_item_edit, container, false);
         context = getActivity();
@@ -146,7 +147,7 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
 
         initUI();
 
-        position = getArguments().getInt(MyConstants.POSITION);
+        position = getArguments() != null ? getArguments().getInt(MyConstants.POSITION) : 0;
         id = getArguments().getLong(MyConstants.ID);
         listname = MyConstants.EMPTY;
 
@@ -167,20 +168,20 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
                 break;
             case 'k': //MyConstants.MODE_AFTER_KIT
                 cursor = dbConnector.getKitById(id);
-                aftermarketCursor = dbConnector.getAftermarketForKit(id, listname);
+                aftermarketList = dbConnector.getAftermarketForKit(id, listname);
                 aMode = MyConstants.MODE_A_EDIT;
                 aftermarketMode = false;
                 break;
             case 'm': //MyConstants.MODE_KIT
                 cursor = dbConnector.getKitById(id);
-                aftermarketCursor = dbConnector.getAftermarketForKit(id, listname);
+                aftermarketList = dbConnector.getAftermarketForKit(id, listname);
                 aMode = MyConstants.MODE_A_EDIT;
                 aftermarketMode = false;
                 break;
             case 'l': //MyConstants.MODE_LIST
                 cursor = dbConnector.getListItemById(id);
                 listname = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.MYLISTSITEMS_LISTNAME));
-                aftermarketCursor = dbConnector.getAftermarketForKit(id, listname);
+                aftermarketList = dbConnector.getAftermarketForKit(id, listname);
                 aMode = MyConstants.MODE_A_KIT;
                 aftermarketMode = false;
                 break;
@@ -190,7 +191,7 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
         if (path != null) {
             mCurrentPhotoPath = path;
         }
-        aftermarketAdapter = new MyListCursorAdapter(aftermarketCursor, context, aMode);
+        aftermarketAdapter = new NewMyListAdapter(aftermarketList, context, aMode);
         rvAftermarket.setAdapter(aftermarketAdapter);
 
         showEditForm(cursor);
