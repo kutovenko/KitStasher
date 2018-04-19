@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import com.example.kitstasher.R;
 import com.example.kitstasher.objects.Aftermarket;
@@ -162,13 +163,13 @@ public class DbConnector {
                     CAT_COUNT + " integer" + //
                     ");";
 
-    private static final String CREATE_TABLE_BRAND_BARCODE =
-            "create table " + TABLE_BRAND_BARCODE + "(" +
-                    COLUMN_ID + " integer primary key autoincrement, " + // Локальный ключ -0
-                    BB_COLUMN_BRAND + " text," + //
-                    BB_COLUMN_BARCODE + " text," + //
-                    BB_COLUMN_SOURCE + " text" + //место покупки - 22
-                    ");";
+//    private static final String CREATE_TABLE_BRAND_BARCODE =
+//            "create table " + TABLE_BRAND_BARCODE + "(" +
+//                    COLUMN_ID + " integer primary key autoincrement, " + // Локальный ключ -0
+//                    BB_COLUMN_BRAND + " text," + //
+//                    BB_COLUMN_BARCODE + " text," + //
+//                    BB_COLUMN_SOURCE + " text" + //место покупки - 22
+//                    ");";
 
     private static final String CREATE_TABLE_KIT_AFTER_CONNECTIONS =
             "create table " + TABLE_KIT_AFTER_CONNECTIONS + "(" +
@@ -226,41 +227,41 @@ public class DbConnector {
                     COLUMN_PURCHASE_PLACE + " text" + //место покупки - 26
                     ");";
 
-    private static final String CREATE_TABLE_AFTERMARKET_MYLISTITEMS =
-            "create table " + TABLE_AFTERMARKET_MYLIST_ITEMS + "(" +
-                    COLUMN_ID + " integer primary key autoincrement, " + // Локальный ключ -0
-                    COLUMN_BARCODE + " text," + // штрихкод NOBARCODE по умолчанию для garage kit? - 1
-                    COLUMN_BRAND + " text, " + // производитель - 2
-                    COLUMN_BRAND_CATNO + " text," + //каталожный номер набора - 3
-                    COLUMN_SCALE + " integer," + //масштаб - 4
-                    COLUMN_AFTERMARKET_NAME + " text," + //название набора - 5
-                    COLUMN_DESCRIPTION + " text," + //описание, продолжение названия - 6
-                    COLUMN_ORIGINAL_NAME + " text," + //название на оригинальном языке, - 7
-                    // если отличается
-                    COLUMN_CATEGORY + " text," + //тег (самолет, корабль, и тд - 8
-                    COLUMN_COLLECTION  + " text," + //коллекция - для группировки и других функций - 9
-                    COLUMN_SEND_STATUS + " text," + //для отслеживания офлайн отправок LOCAL - 10
-                    COLUMN_ID_ONLINE + " text," + //номер в онлайновой базе, может пригодится - 11
-                    //заметки? LOCAL?
-                    COLUMN_BOXART_URI + " text," + //локальная ссылка на файл боксарта LOCAL - 12
-                    COLUMN_BOXART_URL + " text," + //интернет-ссылка на боксарт для Glide LOCAL - 13
-                    COLUMN_IS_DELETED + " integer," + // - 14
-                    COLUMN_DATE + " text," +// дата добавления? LOCAL? - 15
-                    COLUMN_YEAR + " text," + // год выпуска набора - 16
-
-                    COLUMN_PURCHASE_DATE + " text," + //дата покупки -17
-                    COLUMN_PRICE + " text," + //цена -18
-                    COLUMN_QUANTITY + " integer," + //количество - 19
-                    COLUMN_NOTES + " text," + //заметки - 20
-                    COLUMN_CURRENCY + " text," + //валюта - 21
-                    COLUMN_SCALEMATES_URL + " text," + //материал
-
-
-                    COLUMN_STATUS + " text," + //начат/использован
-                    COLUMN_MEDIA  + " text," + //материал
-                    COLUMN_PURCHASE_PLACE + " text," + //место покупки - 22
-                    AFTERMARKET_MYLIST_NAME + " text" +
-                    ");";
+//    private static final String CREATE_TABLE_AFTERMARKET_MYLISTITEMS =
+//            "create table " + TABLE_AFTERMARKET_MYLIST_ITEMS + "(" +
+//                    COLUMN_ID + " integer primary key autoincrement, " + // Локальный ключ -0
+//                    COLUMN_BARCODE + " text," + // штрихкод NOBARCODE по умолчанию для garage kit? - 1
+//                    COLUMN_BRAND + " text, " + // производитель - 2
+//                    COLUMN_BRAND_CATNO + " text," + //каталожный номер набора - 3
+//                    COLUMN_SCALE + " integer," + //масштаб - 4
+//                    COLUMN_AFTERMARKET_NAME + " text," + //название набора - 5
+//                    COLUMN_DESCRIPTION + " text," + //описание, продолжение названия - 6
+//                    COLUMN_ORIGINAL_NAME + " text," + //название на оригинальном языке, - 7
+//                    // если отличается
+//                    COLUMN_CATEGORY + " text," + //тег (самолет, корабль, и тд - 8
+//                    COLUMN_COLLECTION  + " text," + //коллекция - для группировки и других функций - 9
+//                    COLUMN_SEND_STATUS + " text," + //для отслеживания офлайн отправок LOCAL - 10
+//                    COLUMN_ID_ONLINE + " text," + //номер в онлайновой базе, может пригодится - 11
+//                    //заметки? LOCAL?
+//                    COLUMN_BOXART_URI + " text," + //локальная ссылка на файл боксарта LOCAL - 12
+//                    COLUMN_BOXART_URL + " text," + //интернет-ссылка на боксарт для Glide LOCAL - 13
+//                    COLUMN_IS_DELETED + " integer," + // - 14
+//                    COLUMN_DATE + " text," +// дата добавления? LOCAL? - 15
+//                    COLUMN_YEAR + " text," + // год выпуска набора - 16
+//
+//                    COLUMN_PURCHASE_DATE + " text," + //дата покупки -17
+//                    COLUMN_PRICE + " text," + //цена -18
+//                    COLUMN_QUANTITY + " integer," + //количество - 19
+//                    COLUMN_NOTES + " text," + //заметки - 20
+//                    COLUMN_CURRENCY + " text," + //валюта - 21
+//                    COLUMN_SCALEMATES_URL + " text," + //материал
+//
+//
+//                    COLUMN_STATUS + " text," + //начат/использован
+//                    COLUMN_MEDIA  + " text," + //материал
+//                    COLUMN_PURCHASE_PLACE + " text," + //место покупки - 22
+//                    AFTERMARKET_MYLIST_NAME + " text" +
+//                    ");";
 
 
     private static final String CREATE_TABLE_CURRENCIES =
@@ -279,58 +280,58 @@ public class DbConnector {
                     MYSHOPS_COLUMN_SHOP_RATING + " integer" +
                     ");";
 
-    private static final String CREATE_TABLE_MYLISTSITEMS =
-            "create table " + TABLE_MYLISTSITEMS + "(" +
-                    COLUMN_ID + " integer primary key autoincrement, " + // Локальный ключ -0
-                    COLUMN_BARCODE + " text," + // штрихкод NOBARCODE по умолчанию для garage kit? - 1
-                    COLUMN_BRAND + " text, " + // производитель - 2
-                    COLUMN_BRAND_CATNO + " text," + //каталожный номер набора - 3
-                    COLUMN_SCALE + " integer," + //масштаб - 4
-                    COLUMN_KIT_NAME + " text," + //название набора - 5
-                    COLUMN_DESCRIPTION + " text," + //описание, продолжение названия - 6
-                    COLUMN_ORIGINAL_NAME + " text," + //название на оригинальном языке, - 7
-                    // если отличается
-                    COLUMN_CATEGORY + " text," + //тег (самолет, корабль, и тд - 8
-                    COLUMN_COLLECTION  + " text," + //коллекция - для группировки и других функций - 9
-                    COLUMN_SEND_STATUS + " text," + //для отслеживания офлайн отправок LOCAL - 10
-                    COLUMN_ID_ONLINE + " text," + //номер в онлайновой базе, может пригодится - 11
-                    //заметки? LOCAL?
-                    COLUMN_BOXART_URI + " text," + //локальная ссылка на файл боксарта LOCAL - 12
-                    COLUMN_BOXART_URL + " text," + //интернет-ссылка на боксарт для Glide LOCAL - 13
-                    COLUMN_IS_DELETED + " int," + // - 14
-                    COLUMN_DATE + " text," +// дата добавления в базу LOCAL? - 15
-                    COLUMN_YEAR + " text," + // год выпуска набора - 16
-
-                    COLUMN_PURCHASE_DATE + " text," + //дата покупки -17
-                    COLUMN_PRICE + " int," + //цена в копейках-18
-                    COLUMN_QUANTITY + " integer," + //количество - 19
-                    COLUMN_NOTES + " text," + //заметки - 20
-                    COLUMN_CURRENCY + " text," + //валюта - 21
-                    COLUMN_PURCHASE_PLACE + " text," + //место покупки - 22
-
-                    COLUMN_STATUS + " text," + //начат/использован - 23
-                    COLUMN_MEDIA + " text," + //материал - 24
-                    COLUMN_SCALEMATES_URL + " text," + //скейлмейтс -25
-
-                    MYLISTSITEMS_LISTNAME + " text" + // Локальный ключ -26
-
-                    ");";
-
-
-    private static final String CREATE_TABLE_MYLISTS =
-            "create table " + TABLE_MYLISTS + "(" +
-                    MYLISTS_COLUMN_ID + " integer primary key autoincrement, " + // Локальный ключ
-                    MYLISTS_COLUMN_LIST_NAME + " text," +// значение параметра
-                    MYLISTS_COLUMN_DATE + " text" +// значение параметра
-                    ");";
-
-
-    private static final String CREATE_TABLE_STATISTIC =
-            "create table " + TABLE_STATISTIC + "(" +
-                    STATISTIC_COLUNN_ID + " integer primary key autoincrement, " + // Локальный ключ
-                    STATISTICS_STATNAME + " text," + // имя параметра
-                    STATISTICS_STATVALUE + " text" +// значение параметра
-                    ");";
+//    private static final String CREATE_TABLE_MYLISTSITEMS =
+//            "create table " + TABLE_MYLISTSITEMS + "(" +
+//                    COLUMN_ID + " integer primary key autoincrement, " + // Локальный ключ -0
+//                    COLUMN_BARCODE + " text," + // штрихкод NOBARCODE по умолчанию для garage kit? - 1
+//                    COLUMN_BRAND + " text, " + // производитель - 2
+//                    COLUMN_BRAND_CATNO + " text," + //каталожный номер набора - 3
+//                    COLUMN_SCALE + " integer," + //масштаб - 4
+//                    COLUMN_KIT_NAME + " text," + //название набора - 5
+//                    COLUMN_DESCRIPTION + " text," + //описание, продолжение названия - 6
+//                    COLUMN_ORIGINAL_NAME + " text," + //название на оригинальном языке, - 7
+//                    // если отличается
+//                    COLUMN_CATEGORY + " text," + //тег (самолет, корабль, и тд - 8
+//                    COLUMN_COLLECTION  + " text," + //коллекция - для группировки и других функций - 9
+//                    COLUMN_SEND_STATUS + " text," + //для отслеживания офлайн отправок LOCAL - 10
+//                    COLUMN_ID_ONLINE + " text," + //номер в онлайновой базе, может пригодится - 11
+//                    //заметки? LOCAL?
+//                    COLUMN_BOXART_URI + " text," + //локальная ссылка на файл боксарта LOCAL - 12
+//                    COLUMN_BOXART_URL + " text," + //интернет-ссылка на боксарт для Glide LOCAL - 13
+//                    COLUMN_IS_DELETED + " int," + // - 14
+//                    COLUMN_DATE + " text," +// дата добавления в базу LOCAL? - 15
+//                    COLUMN_YEAR + " text," + // год выпуска набора - 16
+//
+//                    COLUMN_PURCHASE_DATE + " text," + //дата покупки -17
+//                    COLUMN_PRICE + " int," + //цена в копейках-18
+//                    COLUMN_QUANTITY + " integer," + //количество - 19
+//                    COLUMN_NOTES + " text," + //заметки - 20
+//                    COLUMN_CURRENCY + " text," + //валюта - 21
+//                    COLUMN_PURCHASE_PLACE + " text," + //место покупки - 22
+//
+//                    COLUMN_STATUS + " text," + //начат/использован - 23
+//                    COLUMN_MEDIA + " text," + //материал - 24
+//                    COLUMN_SCALEMATES_URL + " text," + //скейлмейтс -25
+//
+//                    MYLISTSITEMS_LISTNAME + " text" + // Локальный ключ -26
+//
+//                    ");";
+//
+//
+//    private static final String CREATE_TABLE_MYLISTS =
+//            "create table " + TABLE_MYLISTS + "(" +
+//                    MYLISTS_COLUMN_ID + " integer primary key autoincrement, " + // Локальный ключ
+//                    MYLISTS_COLUMN_LIST_NAME + " text," +// значение параметра
+//                    MYLISTS_COLUMN_DATE + " text" +// значение параметра
+//                    ");";
+//
+//
+//    private static final String CREATE_TABLE_STATISTIC =
+//            "create table " + TABLE_STATISTIC + "(" +
+//                    STATISTIC_COLUNN_ID + " integer primary key autoincrement, " + // Локальный ключ
+//                    STATISTICS_STATNAME + " text," + // имя параметра
+//                    STATISTICS_STATVALUE + " text" +// значение параметра
+//                    ");";
 
 
     private static final String CREATE_TABLE_KITS =
@@ -373,22 +374,22 @@ public class DbConnector {
                     // в AddActivity
                     ");";
 
-    private static final String CREATE_TABLE_CATEGORY =
-            "create table " + TABLE_TAGS + "(" +
-                    TAGS_COLUMN_ID + " integer primary key autoincrement, " + // Локальный ключ
-                    TAGS_COLUMN_TAG + " text" +
-                    ");";
+//    private static final String CREATE_TABLE_CATEGORY =
+//            "create table " + TABLE_TAGS + "(" +
+//                    TAGS_COLUMN_ID + " integer primary key autoincrement, " + // Локальный ключ
+//                    TAGS_COLUMN_TAG + " text" +
+//                    ");";
 
 
-    private static final String CREATE_TABLE_ACCOUNT =
-            "create table " + TABLE_ACCOUNT + "(" +
-                    ACCOUNT_COLUMN_ID + " integer primary key autoincrement, " + // Локальный ключ
-                    ACCOUNT_COLUMN_USER_NAME + " text," +
-                    ACCOUNT_COLUMN_USER_EMAIL + " text," +
-                    ACCOUNT_COLUMN_PROFILEPIC_URL + " text," +
-                    ACCOUNT_COLUMN_FACEBOOK_PROFILE_URL + " text," +
-                    ACCOUNT_COLUMN_NETWORK + " text" +
-                    ");";
+//    private static final String CREATE_TABLE_ACCOUNT =
+//            "create table " + TABLE_ACCOUNT + "(" +
+//                    ACCOUNT_COLUMN_ID + " integer primary key autoincrement, " + // Локальный ключ
+//                    ACCOUNT_COLUMN_USER_NAME + " text," +
+//                    ACCOUNT_COLUMN_USER_EMAIL + " text," +
+//                    ACCOUNT_COLUMN_PROFILEPIC_URL + " text," +
+//                    ACCOUNT_COLUMN_FACEBOOK_PROFILE_URL + " text," +
+//                    ACCOUNT_COLUMN_NETWORK + " text" +
+//                    ");";
 
     private static final String INIT_TABLE_BRANDS =
             "INSERT INTO " + TABLE_BRANDS + "(" + BRANDS_COLUMN_BRAND + ")" +
@@ -503,21 +504,21 @@ public class DbConnector {
                     " UNION SELECT 'USD'" +
                     " UNION SELECT 'UAH';";
 
-    private static final String INIT_TABLE_CATEGORIES =
-            "INSERT INTO " + TABLE_CATEGORIES + "(name, res_id) VALUES (1," + R.string.Air + ");"
-                    + "INSERT INTO " + TABLE_CATEGORIES + "(name, res_id, count) VALUES (2," + R.string.Ground + ");"
-                    + "INSERT INTO " + TABLE_CATEGORIES + "(name, res_id, count) VALUES (3," + R.string.Sea + ");"
-                    + "INSERT INTO " + TABLE_CATEGORIES + "(name, res_id, count) VALUES (4," + R.string.Space + ");"
-                    + "INSERT INTO " + TABLE_CATEGORIES + "(name, res_id, count) VALUES (5," + R.string.Auto_moto + ");"
-                    + "INSERT INTO " + TABLE_CATEGORIES + "(name, res_id, count) VALUES (6," + R.string.Figures + ");"
-                    + "INSERT INTO " + TABLE_CATEGORIES + "(name, res_id, count) VALUES (7," + R.string.Fantasy + ");"
-                    + "INSERT INTO " + TABLE_CATEGORIES + "(name, res_id, count) VALUES (8," + R.string.Other + ",0" + ");";
-
-    //todo delete?
-    private static final String INIT_TABLE_ACCOUNT =
-            "INSERT INTO " + TABLE_ACCOUNT + "(" + ACCOUNT_COLUMN_ID + ")" +
-                    " SELECT '1' AS " + ACCOUNT_COLUMN_ID +
-                    " ;";
+//    private static final String INIT_TABLE_CATEGORIES =
+//            "INSERT INTO " + TABLE_CATEGORIES + "(name, res_id) VALUES (1," + R.string.Air + ");"
+//                    + "INSERT INTO " + TABLE_CATEGORIES + "(name, res_id, count) VALUES (2," + R.string.Ground + ");"
+//                    + "INSERT INTO " + TABLE_CATEGORIES + "(name, res_id, count) VALUES (3," + R.string.Sea + ");"
+//                    + "INSERT INTO " + TABLE_CATEGORIES + "(name, res_id, count) VALUES (4," + R.string.Space + ");"
+//                    + "INSERT INTO " + TABLE_CATEGORIES + "(name, res_id, count) VALUES (5," + R.string.Auto_moto + ");"
+//                    + "INSERT INTO " + TABLE_CATEGORIES + "(name, res_id, count) VALUES (6," + R.string.Figures + ");"
+//                    + "INSERT INTO " + TABLE_CATEGORIES + "(name, res_id, count) VALUES (7," + R.string.Fantasy + ");"
+//                    + "INSERT INTO " + TABLE_CATEGORIES + "(name, res_id, count) VALUES (8," + R.string.Other + ",0" + ");";
+//
+//    //todo delete?
+//    private static final String INIT_TABLE_ACCOUNT =
+//            "INSERT INTO " + TABLE_ACCOUNT + "(" + ACCOUNT_COLUMN_ID + ")" +
+//                    " SELECT '1' AS " + ACCOUNT_COLUMN_ID +
+//                    " ;";
 
 
 
@@ -537,8 +538,22 @@ public class DbConnector {
     }
 
     // закрыть подключение
+//    public void close() {
+//        if (mDBHelper != null) mDBHelper.close();
+//    }
+
     public void close() {
-        if (mDBHelper != null) mDBHelper.close();
+        if (mDB != null && mDB.isOpen())
+            try {
+                mDB.close();
+                mDBHelper.close();
+            } catch (NullPointerException e) {
+                Log.e("Close", "Error: " + e + " " + e.getMessage());
+            }
+        else{
+            Log.e("Close", "Error! db is null.");
+            mDBHelper.close();
+        }
     }
 
     //вакуум - удаление и перестройка базы
@@ -779,6 +794,32 @@ public class DbConnector {
         mDB.update(TABLE_KITS, cv, "_id = ?", new String[] { String.valueOf(id) });
     }
 
+    public void editKit(String table, Kit kit){
+        ContentValues cv = new ContentValues();
+        String id = String.valueOf(kit.getLocalId());
+        cv.put(DbConnector.COLUMN_BRAND, kit.getBrand());
+        cv.put(DbConnector.COLUMN_KIT_NAME, kit.getKit_name());
+        cv.put(DbConnector.COLUMN_BRAND_CATNO, kit.getBrandCatno());
+        cv.put(DbConnector.COLUMN_SCALE, kit.getScale());
+        cv.put(DbConnector.COLUMN_PURCHASE_PLACE, kit.getPlacePurchased());
+        cv.put(DbConnector.COLUMN_PURCHASE_DATE, kit.getDatePurchased());
+        cv.put(DbConnector.COLUMN_ORIGINAL_NAME, kit.getKit_noeng_name());
+        cv.put(DbConnector.COLUMN_PRICE, kit.getPrice());
+        cv.put(DbConnector.COLUMN_NOTES, kit.getNotes());
+        cv.put(DbConnector.COLUMN_BOXART_URI, kit.getBoxart_uri());
+        cv.put(DbConnector.COLUMN_CATEGORY, kit.getCategory());
+        cv.put(DbConnector.COLUMN_YEAR, kit.getYear());
+        cv.put(DbConnector.COLUMN_DESCRIPTION, kit.getDescription());
+        cv.put(DbConnector.COLUMN_QUANTITY, kit.getQuantity());
+        cv.put(DbConnector.COLUMN_CURRENCY, kit.getCurrency());
+        cv.put(DbConnector.COLUMN_PURCHASE_PLACE, kit.getPlacePurchased());
+        cv.put (DbConnector.COLUMN_STATUS, kit.getStatus());
+        cv.put(DbConnector.COLUMN_MEDIA, kit.getMedia());
+        cv.put(DbConnector.COLUMN_BOXART_URL, kit.getBoxart_url());
+
+        mDB.update(table, cv, "_id = ?", new String[] { id });
+    }
+
     // Добавление записи в KITS
     public long addKitRec(Kit kit) {
 
@@ -960,7 +1001,6 @@ public class DbConnector {
         }
         Cursor cursor = mDB.query(tableName, null, null, null, groupBy, having, sortBy);
         itemList = prepareKit(cursor);
-        cursor.close();
         return itemList;
     }
 
@@ -1885,6 +1925,7 @@ public class DbConnector {
 
         @Override
         public void onCreate(SQLiteDatabase db) {
+            db.execSQL("PRAGMA auto_vacuum = 2;");
 
 
             // создаем таблицу с полями
@@ -1894,21 +1935,21 @@ public class DbConnector {
             db.execSQL(INIT_TABLE_BRANDS);
 //            db.execSQL(CREATE_TABLE_CATEGORY);
 //            db.execSQL(INIT_TABLE_CATEGORY);
-            db.execSQL(CREATE_TABLE_CATEGORIES);
-            db.execSQL(INIT_TABLE_CATEGORIES);
-            db.execSQL(CREATE_TABLE_STATISTIC);
-            db.execSQL(CREATE_TABLE_ACCOUNT);
-            db.execSQL(CREATE_TABLE_MYLISTS);
-            db.execSQL(CREATE_TABLE_MYLISTSITEMS);
+//            db.execSQL(CREATE_TABLE_CATEGORIES);
+//            db.execSQL(INIT_TABLE_CATEGORIES);
+//            db.execSQL(CREATE_TABLE_STATISTIC);
+//            db.execSQL(CREATE_TABLE_ACCOUNT);
+//            db.execSQL(CREATE_TABLE_MYLISTS);
+//            db.execSQL(CREATE_TABLE_MYLISTSITEMS);
 
             db.execSQL(CREATE_TABLE_CURRENCIES);
             db.execSQL(INIT_TABLE_CURRENCIES);
             db.execSQL(CREATE_TABLE_MYSHOPS);
 
             db.execSQL(CREATE_TABLE_AFTERMARKET);
-            db.execSQL(CREATE_TABLE_AFTERMARKET_MYLISTITEMS);
+//            db.execSQL(CREATE_TABLE_AFTERMARKET_MYLISTITEMS);
             db.execSQL(CREATE_TABLE_KIT_AFTER_CONNECTIONS);
-            db.execSQL(CREATE_TABLE_BRAND_BARCODE);
+//            db.execSQL(CREATE_TABLE_BRAND_BARCODE);
         }
 
         @Override

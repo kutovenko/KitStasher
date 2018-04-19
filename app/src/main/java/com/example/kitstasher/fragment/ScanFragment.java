@@ -283,8 +283,6 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
                         }
 
                     } else {
-//                        Toast.makeText(getActivity(), getString(R.string.youve_already_scanned),
-//                                Toast.LENGTH_SHORT).show();
                         initiateScanner(getCallback());
                     }
             }
@@ -324,16 +322,20 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
         kitTowrite.put(MyConstants.PARSE_SCALE, kitSave.getScale());
         kitTowrite.put(MyConstants.PARSE_KITNAME, kitSave.getKit_name());
         kitTowrite.put(MyConstants.PARSE_NOENGNAME, kitSave.getKit_noeng_name());
+        kitTowrite.put(MyConstants.PARSE_SCALEMATES, kitSave.getScalemates_url());
+
         kitTowrite.put(MyConstants.CATEGORY, kitSave.getCategory());
         if (!TextUtils.isEmpty(kitSave.getBoxart_url())) {
             kitTowrite.put(MyConstants.BOXART_URL, kitSave.getBoxart_url());
         }
         kitTowrite.put(MyConstants.PARSE_DESCRIPTION, kitSave.getDescription());
+        kitTowrite.put(MyConstants.PARSE_ITEMTYPE, kitSave.getItemType());
         // TODO: 28.02.2018 проверить запись и поля
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences(MyConstants.ACCOUNT_PREFS,
                 Context.MODE_PRIVATE);
-        kitTowrite.put(MyConstants.PARSE_OWNERID, sharedPreferences.getString(MyConstants.USER_ID_FACEBOOK, MyConstants.EMPTY));
+        kitTowrite.put(MyConstants.PARSE_OWNERID, sharedPreferences.getString(MyConstants.USER_ID_PARSE, MyConstants.EMPTY));
         kitTowrite.put(MyConstants.YEAR, kitSave.getYear());
+        kitTowrite.put(MyConstants.PARSE_LOCALID, kitSave.getLocalId());
         kitTowrite.saveInBackground(new SaveCallback() {
             @Override
             public void done(ParseException e) {
@@ -392,7 +394,7 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
                     .hasBoxart_url(boxart_url)
                     .hasBoxart_uri(boxart_uri)
                     .hasBarcode(barcode)
-                    .hasScalemates_url(scalemates_page)//not in use
+                    .hasScalemates_url(scalemates_page)
                     .hasYear(year)
                     .hasOnlineId(onlineId)
                     .build();
@@ -421,6 +423,7 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
                     kitToAdd.setPlacePurchased(MyConstants.EMPTY);
                     kitToAdd.setScalemates_url(scalemates_page);
                     kitToAdd.setBarcode(barcode);
+//                    kitToAdd.setBoxart_url(boxart_url);
 
                     kitToAdd.setStatus(status);
                     kitToAdd.setMedia(media);
@@ -439,10 +442,16 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
                         fragmentTransaction.commit();
                     }else {
                         currentId = dbConnector.addKitRec(kitToAdd);
+                        kitToAdd.setLocalId(currentId);
+                        kitToAdd.setItemType("1");
 
 //                        dbConnector.updateCategories();
 
                         if (cloudModeOn && isOnline()) {
+//                            onlineId = kitToAdd.saveToOnlineStash(getActivity());
+//                            ContentValues cv = new ContentValues(1);
+//                            cv.put(DbConnector.COLUMN_ID_ONLINE, onlineId);
+//                            dbConnector.editItemById(DbConnector.TABLE_KITS, currentId, cv);
                             saveToOnlineStash(kitToAdd);
                         } else {
                             Toast.makeText(mContext, R.string.online_backup_is_off, Toast.LENGTH_SHORT).show();

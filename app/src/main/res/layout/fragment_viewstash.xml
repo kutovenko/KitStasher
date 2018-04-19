@@ -22,7 +22,9 @@
             android:id="@+id/viewpagerViewStash"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+
             app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
     </LinearLayout>
 
     <android.support.design.widget.FloatingActionButton
@@ -35,4 +37,3 @@
         android:src="@android:drawable/ic_input_add" />
 
 </android.support.design.widget.CoordinatorLayout>
-

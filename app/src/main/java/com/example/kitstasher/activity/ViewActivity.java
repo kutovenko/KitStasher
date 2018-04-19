@@ -25,11 +25,13 @@ public class ViewActivity extends AppCompatActivity {
     private final int EDIT_ACTIVITY_CODE = 21;
     private long kitId;
     private ArrayList<Kit> itemList;
-    private String sortBy,
+    private String
+//            sortBy,
             category;
     private int categoryTab,
             position;
     private char workMode;
+    private List<Fragment> fragments;
 
 
     @Override
@@ -41,10 +43,10 @@ public class ViewActivity extends AppCompatActivity {
         categoryTab = getIntent().getIntExtra(MyConstants.CATEGORY_TAB, 0);
         itemList = getIntent().getParcelableArrayListExtra(MyConstants.LIST);
         workMode = getIntent().getCharExtra(MyConstants.WORK_MODE, MyConstants.MODE_KIT);
-        sortBy = getIntent().getStringExtra(MyConstants.SORT_BY);
+//        sortBy = getIntent().getStringExtra(MyConstants.SORT_BY);
         position = getIntent().getIntExtra(MyConstants.POSITION, 0);
         kitId = getIntent().getLongExtra(MyConstants.ID, 0);
-        List<Fragment> fragments = buildFragments();
+        fragments = buildFragments();
         viewPager = findViewById(R.id.viewpagerViewKits);
         AdapterViewCards adapterViewCards = new AdapterViewCards(this, getSupportFragmentManager(), fragments);
         viewPager.setAdapter(adapterViewCards);
@@ -70,6 +72,8 @@ public class ViewActivity extends AppCompatActivity {
         if (resultCode == RESULT_OK && requestCode == EDIT_ACTIVITY_CODE) {
             super.onActivityResult(requestCode, resultCode, data);
             category = data.getStringExtra(MyConstants.CATEGORY);
+            Kit editedKit = data.getParcelableExtra("kit");
+            itemList.set(data.getIntExtra("position", 0), editedKit);
             List<Fragment> fragments = buildFragments();
             AdapterViewCards adapterViewCards = new AdapterViewCards(this, getSupportFragmentManager(), fragments);
             viewPager.setAdapter(adapterViewCards);
@@ -80,7 +84,7 @@ public class ViewActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         Intent intent = new Intent(ViewActivity.this, MainActivity.class);
-        intent.putExtra(MyConstants.SORT_BY, sortBy);
+//        intent.putExtra(MyConstants.SORT_BY, sortBy);
         intent.putExtra(MyConstants.WORK_MODE, workMode);
         intent.putExtra(MyConstants.CATEGORY_TAB, categoryTab);
         intent.putExtra(MyConstants.LIST_POSITION, position);

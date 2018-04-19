@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.kitstasher.R;
 import com.example.kitstasher.objects.ChooserItem;
 import com.example.kitstasher.other.CheckableLinearLayout;
@@ -64,15 +65,15 @@ public class NewAdapterChooserList extends RecyclerView.Adapter<NewAdapterChoose
             Glide
                     .with(context)
                     .load(new File(Uri.parse(uri).getPath()))
-                    .placeholder(ic_menu_camera)
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .apply(new RequestOptions().placeholder(R.drawable.ic_menu_camera).error(R.drawable.ic_menu_camera))
+//                    .diskCacheStrategy(new DiskCacheStrategy(DiskCacheStrategy.AUTOMATIC))
                     .into(holder.ivChooseKitCategory);
         } else {
             Glide
                     .with(context)
                     .load(composeUrl(url))
-                    .placeholder(ic_menu_camera)
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .apply(new RequestOptions().placeholder(R.drawable.ic_menu_camera).error(R.drawable.ic_menu_camera))
+//                    .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(holder.ivChooseKitCategory);
         }
 

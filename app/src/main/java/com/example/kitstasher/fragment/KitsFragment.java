@@ -30,9 +30,9 @@ public class KitsFragment extends Fragment {
     private DbConnector dbConnector;
     private Cursor cursor;
     private AdapterViewStash adapter;
+    SearchView searchView;
 
     public KitsFragment() {
-
     }
 
     @Override
@@ -47,8 +47,10 @@ public class KitsFragment extends Fragment {
         TabLayout tabLayout = view.findViewById(R.id.tabsViewStash);
         tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
         setHasOptionsMenu(true);
+
         dbConnector = new DbConnector(getActivity());
         dbConnector.open();
+
         final boolean aftermarketMode = getArguments().getBoolean(MyConstants.AFTERMARKET_MODE);
         if (aftermarketMode) {
             cursor = dbConnector.getAfterActiveCategories();
@@ -58,6 +60,7 @@ public class KitsFragment extends Fragment {
         viewPager = view.findViewById(R.id.viewpagerViewStash);
         adapter = new AdapterViewStash(getChildFragmentManager(), getActivity(), aftermarketMode, cursor);
         viewPager.setAdapter(adapter);
+
         Bundle bundle = getArguments();
         if (!bundle.isEmpty()) {
             int currentTab = getArguments().getInt(MyConstants.CATEGORY_TAB);
@@ -94,7 +97,6 @@ public class KitsFragment extends Fragment {
                 }
             }
         });
-
         return view;
     }
 
@@ -120,33 +122,41 @@ public class KitsFragment extends Fragment {
             int currentTab = 0;
             viewPager.setCurrentItem(currentTab);
         }
-
     }
+
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_main, menu);
-//        super.onCreateOptionsMenu(menu, inflater);
-        SearchView searchView = (SearchView) menu.findItem(R.id.action_search)
+        searchView = (SearchView) menu.findItem(R.id.action_search)
                 .getActionView();
         searchView.setMaxWidth(Integer.MAX_VALUE);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-//                    FragmentManager fm = getFragmentManager();
                 SortAllFragment fr = (SortAllFragment) adapter.getItem(viewPager.getCurrentItem());
                 fr.search(query);
                 return false;
             }
-
             @Override
             public boolean onQueryTextChange(String query) {
                 SortAllFragment fr = (SortAllFragment) adapter.getItem(viewPager.getCurrentItem());
                 fr.search(query);
                 return false;
             }
+
+        });
+        searchView.setOnCloseListener(new SearchView.OnCloseListener() {
+            @Override
+            public boolean onClose() {
+                SortAllFragment fr = (SortAllFragment) adapter.getItem(viewPager.getCurrentItem());
+                fr.reloadList();
+                return false;
+            }
         });
     }
+
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -160,19 +170,6 @@ public class KitsFragment extends Fragment {
     }
 
     public static void refreshPages() {
-        viewPager.refresh();
+       viewPager.refresh();
     }
-
-//    public static void showFab(){
-//        fab.show();
-//    }
-//
-//    public static void hideFab(){
-//        fab.hide();
-//    }
-
-//    public static int getCategoryTab(String category){
-//
-//        return 0;
-//    }
 }

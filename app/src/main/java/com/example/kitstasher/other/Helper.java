@@ -175,6 +175,32 @@ public class Helper {
         }
     }
 
+//    private String getSuffix(){
+//        String suffix = MyConstants.BOXART_URL_LARGE;
+//        SharedPreferences preferences = context.getSharedPreferences(MyConstants.BOXART_SIZE,
+//                Context.MODE_PRIVATE);
+//        if (preferences != null) {
+//            String temp = preferences.getString("boxart_size","");
+//            switch (temp){
+//                case MyConstants.BOXART_URL_COMPANY_SUFFIX:
+//                    suffix = "";
+//                    break;
+//                case MyConstants.BOXART_URL_SMALL:
+//                    suffix = MyConstants.BOXART_URL_SMALL;
+//                    break;
+//                case MyConstants.BOXART_URL_MEDIUM:
+//                    suffix = MyConstants.BOXART_URL_MEDIUM;
+//                    break;
+//                case MyConstants.BOXART_URL_LARGE:
+//                    suffix = MyConstants.BOXART_URL_LARGE;
+//                    break;
+//                default:
+//                    break;
+//            }
+//        }
+//        return suffix;
+//    }
+
 //    public static String codeToDescription(String code) {
 //        String desc = "";
 //        switch (code) {

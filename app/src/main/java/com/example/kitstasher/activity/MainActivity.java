@@ -27,14 +27,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.kitstasher.R;
 import com.example.kitstasher.fragment.KitsFragment;
 import com.example.kitstasher.fragment.SearchFragment;
 import com.example.kitstasher.fragment.SettingsFragment;
 import com.example.kitstasher.fragment.StatisticsFragment;
 import com.example.kitstasher.other.AsyncApp42ServiceApi;
-import com.example.kitstasher.other.CircleTransform;
 import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.MyConstants;
 
@@ -121,7 +120,6 @@ public class MainActivity extends AppCompatActivity
 
         if (savedInstanceState == null) {
             navItemIndex = 0;
-//            CURRENT_TAG = TAG_HOME;
             CURRENT_TAG = TAG_VIEWSTASH;
             loadHomeFragment(aftermarketMode);
         }
@@ -141,11 +139,10 @@ public class MainActivity extends AppCompatActivity
         txtName.setText(sharedPreferences.getString(MyConstants.USER_NAME_FACEBOOK, ""));
         String accountPictureUrl = sharedPreferences.getString(MyConstants.PROFILE_PICTURE_URL_FACEBOOK, null);
         Glide.with(this).load(accountPictureUrl)
-                .crossFade()
                 .thumbnail(0.5f)
-                .bitmapTransform(new CircleTransform(this))
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .apply(new RequestOptions().centerCrop())
                 .into(imgProfile);
+
     }
 
     private void setUpNavigationView() {
@@ -186,52 +183,6 @@ public class MainActivity extends AppCompatActivity
                                 CURRENT_TAG = TAG_VIEWSTASH;
                                 aftermarketMode = false;
                         }
-//                        }
-//                            case R.id.nav_home:
-//                                navItemIndex = 0;
-//                                CURRENT_TAG = TAG_HOME;
-//                                aftermarketMode = false;
-//                                break;
-//                            case R.id.nav_addstash:
-//                                navItemIndex = 1;
-//                                CURRENT_TAG = TAG_ADDSTASH;
-//                                aftermarketMode = false;
-//                                break;
-//                            case R.id.nav_viewstash:
-//                                navItemIndex = 2;
-//                                CURRENT_TAG = TAG_VIEWSTASH;
-//                                aftermarketMode = false;
-//                                break;
-//                            case R.id.nav_aftermarket:
-//                                navItemIndex = 3;
-//                                CURRENT_TAG = TAG_AFTERMARKET;
-//                                aftermarketMode = true;
-//                                break;
-//                            case R.id.nav_mylists:
-//                                navItemIndex = 4;
-//                                CURRENT_TAG = TAG_MYLISTS;
-//                                aftermarketMode = false;
-//                                break;
-//                            case R.id.nav_search:
-//                                navItemIndex = 5;
-//                                CURRENT_TAG = TAG_SEARCH;
-//                                aftermarketMode = false;
-//                                break;
-//                            case R.id.nav_statistics:
-//                                navItemIndex = 6;
-//                                CURRENT_TAG = TAG_STATISTICS;
-//                                aftermarketMode = false;
-//                                break;
-//                            case R.id.nav_settings:
-//                                navItemIndex = 7;
-//                                CURRENT_TAG = TAG_SETTINGS;
-//                                aftermarketMode = false;
-//                                break;
-//                            default:
-//                                navItemIndex = 0;
-//                                CURRENT_TAG = TAG_HOME;
-//                                aftermarketMode = false;
-//                        }
                         if (menuItem.isChecked()) {
                             menuItem.setChecked(false);
                         } else {
@@ -271,9 +222,6 @@ public class MainActivity extends AppCompatActivity
             return;
         }
         if (shouldLoadHomeFragOnBackPress) {
-//            if () {
-//                promptExit();
-//            }
             navItemIndex = 0;
             CURRENT_TAG = TAG_ADDSTASH;
             loadHomeFragment(aftermarketMode);
@@ -354,32 +302,6 @@ public class MainActivity extends AppCompatActivity
                 defBundle.putBoolean(MyConstants.AFTERMARKET_MODE, false);
                 defFragment.setArguments(defBundle);
                 return defFragment;
-//            case 0:
-//                return new HomeFragment();
-//            case 1:
-//                return new AddFragment();
-//            case 2:
-//                Fragment kitFragment = new KitsFragment();
-//                Bundle bundle = new Bundle();
-//                bundle.putBoolean(MyConstants.AFTERMARKET_MODE, false);
-//                kitFragment.setArguments(bundle);
-//                return kitFragment;
-//            case 3:
-//                Fragment fragment = new KitsFragment();
-//                Bundle aBundle = new Bundle();
-//                aBundle.putBoolean(MyConstants.AFTERMARKET_MODE, true);
-//                fragment.setArguments(aBundle);
-//                return fragment;
-//            case 4:
-//                return new MyListsFragment();
-//            case 5:
-//                return new SearchFragment();
-//            case 6:
-//                return new StatisticsFragment();
-//            case 7:
-//                return new SettingsFragment();
-//            default:
-//                return new HomeFragment();
         }
     }
 
@@ -403,31 +325,6 @@ public class MainActivity extends AppCompatActivity
             navItemIndex = 4;
             loadHomeFragment(aftermarketMode);
         }
-//        if (id == R.id.nav_home) {
-//            navItemIndex = 0;
-//            loadHomeFragment(aftermarketMode);
-//        } else if (id == R.id.nav_addstash) {
-//            navItemIndex = 1;
-//            loadHomeFragment(aftermarketMode);
-//        } else if (id == R.id.nav_viewstash) {
-//            navItemIndex = 2;
-//            loadHomeFragment(aftermarketMode);
-//        } else if (id == R.id.nav_aftermarket) {
-//            navItemIndex = 3;
-//            loadHomeFragment(aftermarketMode);
-//        } else if (id == R.id.nav_mylists) {
-//            navItemIndex = 4;
-//            loadHomeFragment(aftermarketMode);
-//        } else if (id == R.id.nav_search) {
-//            navItemIndex = 5;
-//            loadHomeFragment(aftermarketMode);
-//        } else if (id == R.id.nav_statistics) {
-//            navItemIndex = 6;
-//            loadHomeFragment(aftermarketMode);
-//        } else if (id == R.id.nav_settings) {
-//            navItemIndex = 7;
-//            loadHomeFragment(aftermarketMode);
-//        }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -451,22 +348,22 @@ public class MainActivity extends AppCompatActivity
                 int position = data.getIntExtra(MyConstants.LIST_POSITION, 0);
                 int categoryTab = data.getIntExtra(MyConstants.CATEGORY_TAB, 0);
                 String category = data.getStringExtra(MyConstants.CATEGORY);
-                String scaleFilter = data.getStringExtra(MyConstants.SCALE_FILTER);
-                String brandFilter = data.getStringExtra(MyConstants.BRAND_FILTER);
-                String kitnameFilter = data.getStringExtra(MyConstants.KITNAME_FILTER);
-                String statusFilter = data.getStringExtra(MyConstants.STATUS_FILTER);
-                String mediaFilter = data.getStringExtra(MyConstants.MEDIA_FILTER);
+//                String scaleFilter = data.getStringExtra(MyConstants.SCALE_FILTER);
+//                String brandFilter = data.getStringExtra(MyConstants.BRAND_FILTER);
+//                String kitnameFilter = data.getStringExtra(MyConstants.KITNAME_FILTER);
+//                String statusFilter = data.getStringExtra(MyConstants.STATUS_FILTER);
+//                String mediaFilter = data.getStringExtra(MyConstants.MEDIA_FILTER);
 
                 Bundle bundle = new Bundle();
                 bundle.putInt(MyConstants.POSITION, position);
                 bundle.putInt(MyConstants.CATEGORY_TAB, categoryTab);
                 bundle.putString(MyConstants.CATEGORY, category);
                 bundle.putChar(MyConstants.WORK_MODE, workMode);
-                bundle.putString(MyConstants.SCALE_FILTER, scaleFilter);
-                bundle.putString(MyConstants.BRAND_FILTER, brandFilter);
-                bundle.putString(MyConstants.KITNAME_FILTER, kitnameFilter);
-                bundle.putString(MyConstants.STATUS_FILTER, statusFilter);
-                bundle.putString(MyConstants.MEDIA_FILTER, mediaFilter);
+//                bundle.putString(MyConstants.SCALE_FILTER, scaleFilter);
+//                bundle.putString(MyConstants.BRAND_FILTER, brandFilter);
+//                bundle.putString(MyConstants.KITNAME_FILTER, kitnameFilter);
+//                bundle.putString(MyConstants.STATUS_FILTER, statusFilter);
+//                bundle.putString(MyConstants.MEDIA_FILTER, mediaFilter);
 
                 KitsFragment fragment = new KitsFragment();
                 if (workMode == MyConstants.MODE_KIT) {
@@ -501,79 +398,7 @@ public class MainActivity extends AppCompatActivity
                     //Возвращаемся в КитЕдит
                 }
             }
-//            if (requestCode == REQUEST_CODE_CAMERA){
-//                super.onActivityResult(requestCode, resultCode, data);
-//            }
-//            if (requestCode == REQUEST_CODE_CROP) {
-//                super.onActivityResult(requestCode, resultCode, data);
-//            }
         }
-
-        //НЕ вызывается!!!
-//        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_VIEW) {
-//            super.onActivityResult(requestCode, resultCode, data);
-//            char workMode = data.getExtras().getChar(MyConstants.WORK_MODE);
-//            int position = data.getExtras().getInt(MyConstants.LIST_POSITION);
-//            int categoryTab = data.getExtras().getInt(MyConstants.CATEGORY_TAB);
-//            String category = data.getExtras().getString(MyConstants.CATEGORY);
-//            String scaleFilter = data.getExtras().getString(MyConstants.SCALE_FILTER);
-//            String brandFilter = data.getExtras().getString(MyConstants.BRAND_FILTER);
-//            String kitnameFilter = data.getExtras().getString(MyConstants.KITNAME_FILTER);
-//            String statusFilter = data.getExtras().getString(MyConstants.STATUS_FILTER);
-//            String mediaFilter = data.getExtras().getString(MyConstants.MEDIA_FILTER);
-//
-//            Bundle bundle = new Bundle();
-//            bundle.putInt(MyConstants.POSITION, position);
-//            bundle.putInt(MyConstants.CATEGORY_TAB, categoryTab);
-//            bundle.putString(MyConstants.CATEGORY, category);
-//            bundle.putChar(MyConstants.WORK_MODE, workMode);
-//            bundle.putString(MyConstants.SCALE_FILTER, scaleFilter);
-//            bundle.putString(MyConstants.BRAND_FILTER, brandFilter);
-//            bundle.putString(MyConstants.KITNAME_FILTER, kitnameFilter);
-//            bundle.putString(MyConstants.STATUS_FILTER, statusFilter);
-//            bundle.putString(MyConstants.MEDIA_FILTER, mediaFilter);
-//
-//            KitsFragment fragment = new KitsFragment();
-//            if (workMode == MyConstants.MODE_KIT) {
-//                bundle.putBoolean(MyConstants.AFTERMARKET_MODE, false);
-//                fragment.setArguments(bundle);
-//                android.support.v4.app.FragmentTransaction fragmentTransaction =
-//                        getSupportFragmentManager().beginTransaction();
-//                fragmentTransaction.replace(R.id.mainactivityContainer, fragment);
-//                fragmentTransaction.commit();
-//
-//                KitsFragment.refreshPages(); //???
-//
-//                ViewPager viewPager = findViewById(R.id.viewpagerViewStash);
-//                viewPager.setCurrentItem(categoryTab);
-//            } else if (workMode == MyConstants.MODE_AFTERMARKET) {
-//                bundle.putBoolean(MyConstants.AFTERMARKET_MODE, true);
-//                fragment.setArguments(bundle);
-//                android.support.v4.app.FragmentTransaction fragmentTransaction =
-//                        getSupportFragmentManager().beginTransaction();
-//                fragmentTransaction.replace(R.id.mainactivityContainer, fragment);
-//                fragmentTransaction.commit();
-//
-//                KitsFragment.refreshPages();
-//
-//                ViewPager viewPager = findViewById(R.id.viewpagerViewStash);
-//                viewPager.setCurrentItem(categoryTab);
-//
-//            } else if (workMode == MyConstants.MODE_VIEW_FROM_KIT) {
-//                //Возвращаемся в просмотр кита
-//
-//            } else if (workMode == MyConstants.MODE_EDIT_FROM_KIT) {
-//                //Возвращаемся в КитЕдит
-//            }
-//        }
-//
-//        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_CAMERA) {
-//            super.onActivityResult(requestCode, resultCode, data);
-//        }
-//
-//        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_CROP) {
-//            super.onActivityResult(requestCode, resultCode, data);
-//        }
     }
 
     private void checkCameraPermissions() {

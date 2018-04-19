@@ -302,4 +302,5 @@ Prefixes and postfixes for links
     public static final String TYPE_KIT = "1"; // тип - набор
     public static final String TYPE_AFTERMARKET = "2"; // тип - афтермаркет
     public static final String LIST = "list";
+    public static final String PARSE_PURCHASE_PLACE = "purchasePlace";
 }

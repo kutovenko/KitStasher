@@ -35,6 +35,8 @@ import com.example.kitstasher.other.Helper;
 import com.example.kitstasher.other.MyConstants;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 /**
  * Created by Алексей on 22.04.2017.
@@ -65,7 +67,7 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
     private char workMode;
     public static String allTag;
     private String category,
-            sortBy,
+//            sortBy,
             activeTable,
             listname;
     public int categoryTab;
@@ -75,7 +77,8 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
             sortName,
             aftermarketMode; //отвечает за просмотр таблицы афтемаркета, переключает курсор
     private ArrayList<Kit> itemList; //from DB
-    private ArrayList<Kit> filteredList; //return, filter, etc. used for adapter
+    private ArrayList<Kit> sortedList; //return, filter, etc. used for adapter
+    ArrayList<Kit> forSort;
     String[] filters;
     NewAdapterKitList rvAdapter;
 
@@ -87,12 +90,22 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
         return new SortAllFragment();
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+//    @Override
+//    public void onCreate(Bundle savedInstanceState) {
+//        super.onCreate(savedInstanceState);
+//
+//
+//    }
 
+    @Override
+    public View onCreateView(@NonNull final LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        view = inflater.inflate(R.layout.fragment_sort_all, container, false);
+        allTag = this.getTag();
+//setRetainInstance(true);
         context = getActivity();
-        sortBy = "_id DESC";
+//        sortBy = "_id DESC";
+        forSort = new ArrayList<>();
         categoryTab = getArguments().getInt(MyConstants.CATEGORY_TAB);
         category = getArguments().getString(MyConstants.CATEGORY);
         aftermarketMode = getArguments().getBoolean(MyConstants.AFTERMARKET_MODE);
@@ -110,18 +123,12 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
 
         if (savedInstanceState != null) {
             aftermarketMode = savedInstanceState.getBoolean(MyConstants.AFTERMARKET_MODE);
-            itemList = savedInstanceState.getParcelableArrayList("itemList");
+            sortedList = savedInstanceState.getParcelableArrayList("itemList");
         } else {
-            itemList = dbConnector.filteredKits(activeTable, sortBy, category);
+            itemList = dbConnector.filteredKits(activeTable, "_id DESC", category);
+            sortedList = itemList;
         }
-    }
 
-    @Override
-    public View onCreateView(@NonNull final LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.fragment_sort_all, container, false);
-        allTag = this.getTag();
-//setRetainInstance(true);
         if (aftermarketMode) {
             ((MainActivity) getActivity())
                     .setActionBarTitle(getActivity().getResources().getString(R.string.aftermarket));
@@ -132,7 +139,7 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
 
         initPortraitUi();
 
-        rvAdapter = new NewAdapterKitList(itemList, context, activeTable, this);
+        rvAdapter = new NewAdapterKitList(sortedList, context, activeTable, this, categoryTab);
         rvKits.setAdapter(rvAdapter);
         returnToList();
 
@@ -159,8 +166,23 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        DbConnector dbConnector = new DbConnector(getActivity());
+        dbConnector.open();
+    }
+
     public void search(String query) {
         rvAdapter.getFilter().filter(query);
+    }
+
+    public void reloadList(){
+        sortedList.clear();
+        itemList = dbConnector.filteredKits(activeTable, "_id DESC", category);
+        sortedList.addAll(itemList);
+        rvAdapter.notifyItemRangeChanged(0, sortedList.size());
+        sortByDateDesc();
     }
 
 
@@ -211,10 +233,10 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
                 setActive(R.id.linLayoutSortBrand, ivSortBrand);
 
                 if (sortBrand) {
-                    SortByBrandAsc();
+                    sortByBrandAsc();
                     sortBrand = false;
                 } else {
-                    SortByBrandDesc();
+                    sortByBrandDesc();
                     sortBrand = true;
                 }
                 sortDate = true;
@@ -226,10 +248,10 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
                 setActive(R.id.linLayoutSortScale, ivSortScale);
 
                 if (sortScale) {
-                    SortByScaleAsc();
+                    sortByScaleAsc();
                     sortScale = false;
                 } else {
-                    SortByScaleDesc();
+                    sortByScaleDesc();
                     sortScale = true;
                 }
                 sortBrand = true;
@@ -240,10 +262,10 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
             case R.id.linLayoutSortDate:
                 setActive(R.id.linLayoutSortDate, ivSortDate);
                 if (sortDate) {
-                    SortByDateAcs();
+                    sortByDateAcs();
                     sortDate = false;
                 } else {
-                    SortByDateDesc();
+                    sortByDateDesc();
                     sortDate = true;
                 }
                 sortBrand = true;
@@ -254,10 +276,10 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
             case R.id.linLayoutSortKitname:
                 setActive(R.id.linLayoutSortKitname, ivSortKitname);
                 if (sortName) {
-                    SortByNameAsc();
+                    sortByNameAsc();
                     sortName = false;
                 } else {
-                    SortByNameDesc();
+                    sortByNameDesc();
                     sortName = true;
                 }
                 sortBrand = true;
@@ -293,79 +315,142 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
         rvKits.setItemAnimator(new DefaultItemAnimator());
     }
 
-    private void SortByBrandAsc() {
-        itemList.clear();
-        itemList.addAll(dbConnector.filteredKits(activeTable, "brand", category));
-        rvAdapter.notifyItemRangeChanged(0, itemList.size());
-
+    private void sortByBrandAsc() {
+        forSort.clear();
+        forSort = rvAdapter.getItemsList();
+        Collections.sort(forSort, new Comparator<Kit>() {
+            @Override public int compare(Kit k1, Kit k2) {
+                return k1.getBrand().compareToIgnoreCase(k2.getBrand());
+            }
+        });
+        sortedList.clear();
+        sortedList.addAll(forSort);
+        rvAdapter.setSortedItemList(sortedList);
         ivSortBrand.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
         sortBrand = true;
-        sortBy = "brand";
-
+//        sortBy = "brand";
     }
 
-    private void SortByBrandDesc() {
-        itemList.clear();
-        itemList.addAll(dbConnector.filteredKits(activeTable, "brand DESC", category));
-        rvAdapter.notifyItemRangeChanged(0, itemList.size());
+    private void sortByBrandDesc() {
+        forSort.clear();
+        forSort = rvAdapter.getItemsList();
+        Collections.sort(forSort, new Comparator<Kit>() {
+            @Override public int compare(Kit k1, Kit k2) {
+                return k2.getBrand().compareToIgnoreCase(k1.getBrand());
+            }
+        });
+        sortedList.clear();
+        sortedList.addAll(forSort);
+        rvAdapter.setSortedItemList(sortedList);
         ivSortBrand.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
         sortBrand = false;
-        sortBy = "brand DESC";
+//        sortBy = "brand DESC";
 
     }
 
-    private void SortByScaleAsc() {
-        itemList.clear();
-        itemList.addAll(dbConnector.filteredKits(activeTable, "scale", category));
-        rvAdapter.notifyItemRangeChanged(0, itemList.size());
+    private void sortByScaleAsc() {
+        forSort.clear();
+        forSort = rvAdapter.getItemsList();
+        Collections.sort(forSort, new Comparator<Kit>() {
+            @Override public int compare(Kit k1, Kit k2) {
+                Integer s1 = k1.getScale();
+                Integer s2 = k2.getScale();
+                return s1.compareTo(s2);
+            }
+        });
+        sortedList.clear();
+        sortedList.addAll(forSort);
+        rvAdapter.setSortedItemList(sortedList);
         ivSortScale.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
         sortScale = true;
-        sortBy = "scale";
+//        sortBy = "scale";
     }
 
-    private void SortByScaleDesc() {
-        itemList.clear();
-        itemList.addAll(dbConnector.filteredKits(activeTable, "scale DESC", category));
-        rvAdapter.notifyItemRangeChanged(0, itemList.size());
+    private void sortByScaleDesc() {
+        forSort.clear();
+        forSort = rvAdapter.getItemsList();
+        Collections.sort(forSort, new Comparator<Kit>() {
+            @Override public int compare(Kit k1, Kit k2) {
+                Integer s1 = k1.getScale();
+                Integer s2 = k2.getScale();
+                return s2.compareTo(s1);
+            }
+        });
+        sortedList.clear();
+        sortedList.addAll(forSort);
+        rvAdapter.setSortedItemList(sortedList);
+        rvAdapter.notifyItemRangeChanged(0, sortedList.size());
         ivSortScale.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
         sortScale = false;
-        sortBy = "scale DESC";
+//        sortBy = "scale DESC";
     }
 
-    private void SortByDateAcs() {
-        itemList.clear();
-        itemList.addAll(dbConnector.filteredKits(activeTable, "_id", category));
-        rvAdapter.notifyItemRangeChanged(0, itemList.size());
+    private void sortByDateAcs() {
+        forSort.clear();
+        forSort = rvAdapter.getItemsList();
+        Collections.sort(forSort, new Comparator<Kit>() {
+            @Override public int compare(Kit k1, Kit k2) {
+                Long s1 = k1.getLocalId();
+                Long s2 = k2.getLocalId();
+                return s1.compareTo(s2);
+            }
+        });
+        sortedList.clear();
+        sortedList.addAll(forSort);
+        rvAdapter.setSortedItemList(sortedList);
         ivSortDate.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
         sortDate = true;
-        sortBy = "_id";
+//        sortBy = "_id";
     }
 
-    private void SortByDateDesc() {
-        itemList.clear();
-        itemList.addAll(dbConnector.filteredKits(activeTable, "_id DESC", category));
-        rvAdapter.notifyItemRangeChanged(0, itemList.size());
+    private void sortByDateDesc() {
+        forSort.clear();
+        forSort = rvAdapter.getItemsList();
+        Collections.sort(forSort, new Comparator<Kit>() {
+            @Override public int compare(Kit k1, Kit k2) {
+                Long s1 = k1.getLocalId();
+                Long s2 = k2.getLocalId();
+                return s2.compareTo(s1);
+            }
+        });
+        sortedList.clear();
+        sortedList.addAll(forSort);
+        rvAdapter.setSortedItemList(sortedList);
         ivSortDate.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
         sortDate = false;
-        sortBy = "_id DESC";
+//        sortBy = "_id DESC";
     }
 
-    private void SortByNameAsc() {
-        itemList.clear();
-        itemList.addAll(dbConnector.filteredKits(activeTable, "kit_name", category));
-        rvAdapter.notifyItemRangeChanged(0, itemList.size());
+    private void sortByNameAsc() {
+        forSort.clear();
+        forSort = rvAdapter.getItemsList();
+        Collections.sort(forSort, new Comparator<Kit>() {
+            @Override public int compare(Kit k1, Kit k2) {
+                return k1.getKit_name().compareToIgnoreCase(k2.getKit_name());
+            }
+        });
+        sortedList.clear();
+        sortedList.addAll(forSort);
+        rvAdapter.setSortedItemList(sortedList);
         ivSortKitname.setImageResource(R.drawable.ic_keyboard_arrow_up_white_24dp);
         sortName = true;
-        sortBy = "kit_name";
+//        sortBy = "kit_name";
     }
 
-    private void SortByNameDesc() {
-        itemList.clear();
-        itemList.addAll(dbConnector.filteredKits(activeTable, "kit_name DESC", category));
-        rvAdapter.notifyItemRangeChanged(0, itemList.size());
+    private void sortByNameDesc() {
+        forSort.clear();
+        forSort = rvAdapter.getItemsList();
+        Collections.sort(forSort, new Comparator<Kit>() {
+            @Override public int compare(Kit k1, Kit k2) {
+                return k2.getKit_name().compareToIgnoreCase(k1.getKit_name());
+            }
+        });
+        sortedList.clear();
+        sortedList.addAll(forSort);
+        rvAdapter.setSortedItemList(sortedList);
         ivSortKitname.setImageResource(R.drawable.ic_keyboard_arrow_down_white_24dp);
         sortName = false;
-        sortBy = "kit_name DESC";
+//        sortBy = "kit_name DESC";
     }
 
 
@@ -402,13 +487,12 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
 
     @Override
     public void onItemSelected(Kit kit, ArrayList<Kit> filteredItemList, int position) {
-
         Intent intent;
         intent = new Intent(context, ViewActivity.class);
         intent.putExtra(MyConstants.WORK_MODE, workMode);
         //общие параметры для передачи
         intent.putExtra(MyConstants.POSITION, position);//ид открытия пейджера
-        intent.putExtra(MyConstants.SORT_BY, sortBy);
+//        intent.putExtra(MyConstants.SORT_BY, "_id DESC"); ///
         intent.putExtra(MyConstants.CATEGORY_TAB, activeTable);
         intent.putParcelableArrayListExtra(MyConstants.LIST, filteredItemList);
         ((Activity) context).startActivityForResult(intent, MainActivity.REQUEST_CODE_VIEW);
@@ -419,12 +503,12 @@ public class SortAllFragment extends Fragment implements View.OnClickListener,
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putBoolean(MyConstants.AFTERMARKET_MODE, aftermarketMode);
-        outState.putParcelableArrayList("itemList", itemList);
+        outState.putParcelableArrayList("itemList", sortedList);
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        dbConnector.close();
+//        dbConnector.close();
     }
 }

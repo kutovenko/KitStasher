@@ -37,6 +37,7 @@ public class AdapterViewStash extends FragmentStatePagerAdapter {
         bundle.putInt(MyConstants.CATEGORY_TAB, 0);
         bundle.putString(MyConstants.CATEGORY, MyConstants.EMPTY);
         bundle.putBoolean(MyConstants.AFTERMARKET_MODE, aftermarketMode);
+
         fragments.add(Fragment.instantiate(context, SortAllFragment.class.getName(), bundle));
         cursor.moveToFirst();
         for (int i = 0; i < activeCategoriesCount; i++) {

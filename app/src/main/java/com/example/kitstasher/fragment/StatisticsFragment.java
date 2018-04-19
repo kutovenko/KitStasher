@@ -20,10 +20,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.kitstasher.R;
 import com.example.kitstasher.activity.MainActivity;
-import com.example.kitstasher.other.CircleTransform;
 import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.MyConstants;
 import com.github.mikephil.charting.charts.HorizontalBarChart;
@@ -115,11 +114,12 @@ public class StatisticsFragment extends Fragment implements View.OnClickListener
         String accountPictureUrl = sharedPreferences.getString(MyConstants.PROFILE_PICTURE_URL_FACEBOOK, null);
         Glide.with(getActivity())
                 .load(accountPictureUrl)
-                .crossFade()
+//                .crossFade()
                 .thumbnail(0.5f)
-                .bitmapTransform(new CircleTransform(getActivity()))
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .placeholder(R.drawable.com_facebook_profile_picture_blank_square)
+                .apply(new RequestOptions().centerCrop().placeholder(R.drawable.com_facebook_profile_picture_blank_square).error(R.drawable.com_facebook_profile_picture_blank_square))
+
+//                .diskCacheStrategy(DiskCacheStrategy.ALL)
+
                 .into(ivProfilePic);
 
 //        String accountPictureUrl = sharedPreferences.getString(MyConstants.PROFILE_PICTURE_URL_FACEBOOK, null);

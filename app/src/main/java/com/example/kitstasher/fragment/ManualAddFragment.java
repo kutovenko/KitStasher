@@ -39,6 +39,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.kitstasher.BuildConfig;
 import com.example.kitstasher.R;
 import com.example.kitstasher.activity.CropActivity;
@@ -237,15 +238,14 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                                 savedInstanceState.getString(MyConstants.BOXART_URL)
                                         + MyConstants.BOXART_URL_LARGE
                                         + MyConstants.JPG)
-                        .placeholder(ic_menu_camera)
-                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .apply(new RequestOptions().placeholder(R.drawable.ic_menu_camera).error(R.drawable.ic_menu_camera))
+//                        .diskCacheStrategy(DiskCacheStrategy.ALL)
                         .into(ivGetBoxart);
                 if (mCurrentPhotoPath != null && !mCurrentPhotoPath.equals(MyConstants.EMPTY)) {
                     Glide
                             .with(context)
                             .load(new File(Uri.parse(mCurrentPhotoPath).getPath()))
-                            .placeholder(ic_menu_camera)
-                            .diskCacheStrategy(DiskCacheStrategy.ALL)
+                            .apply(new RequestOptions().placeholder(R.drawable.ic_menu_camera).error(R.drawable.ic_menu_camera))
                             .into(ivGetBoxart);
                 }
             }
@@ -417,7 +417,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         dateAdded = df.format(c.getTime());
 
         description = MyConstants.EMPTY;
-        year = "";
+        year = MyConstants.EMPTY;
         category = MyConstants.CODE_OTHER;
         onlineId = MyConstants.EMPTY;
         price = 0;
@@ -1333,8 +1333,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             Glide
                     .with(context)
                     .load(image)
-                    .placeholder(ic_menu_camera)
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .apply(new RequestOptions().placeholder(R.drawable.ic_menu_camera).error(R.drawable.ic_menu_camera))
                     .into(ivGetBoxart);
             boxartUri = mCurrentPhotoPath;
 
@@ -1526,8 +1525,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                                 kitToAdd.getBoxart_url()
                                         + MyConstants.BOXART_URL_LARGE
                                         + MyConstants.JPG)
-                        .placeholder(ic_menu_camera)
-                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .apply(new RequestOptions().placeholder(R.drawable.ic_menu_camera).error(R.drawable.ic_menu_camera))
                         .into(ivGetBoxart);
             }
         });

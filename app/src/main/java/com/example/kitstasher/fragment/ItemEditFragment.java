@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -16,8 +15,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatSpinner;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -33,7 +30,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.kitstasher.BuildConfig;
 import com.example.kitstasher.R;
 import com.example.kitstasher.activity.ChooserActivity;
@@ -57,7 +54,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-import static android.R.drawable.ic_menu_camera;
 import static android.app.Activity.RESULT_OK;
 import static android.view.View.GONE;
 import static com.example.kitstasher.activity.MainActivity.REQUEST_CODE_CROP;
@@ -71,7 +67,6 @@ import static java.lang.Integer.parseInt;
 public class ItemEditFragment extends Fragment implements View.OnClickListener {
     private Context context;
     private DbConnector dbConnector;
-    private Cursor cursor;
     private Cursor aftermarketCursor;
     private View view;
     private EditText etDetFullKitname,
@@ -97,8 +92,8 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
     private long id;
     private final int REQEST_AFTER_KIT = 10;
     private int position,
-            tabToReturn,
-            scale,
+
+    scale,
             quantity,
             aMode;
     private String listname, // для переключения к вкладке.
@@ -107,103 +102,58 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
             kitname,
             purchaseDate,
             boxartUri,
+            boxartUrl,
             mCurrentPhotoPath,
-            scaleFilter,
-            brandFilter,
-            kitnameFilter,
-            statusFilter,
-            mediaFilter,
             category;
     private char workMode;
     private boolean isBoxartTemporary,
             aftermarketMode;
-    private Bitmap bmBoxartPic;
-    private Uri photoPath;
     private ArrayAdapter<String> descriptionAdapter, yearsAdapter, currencyAdapter;
     private NewMyListAdapter aftermarketAdapter;
     private ArrayList<Kit> aftermarketList;
 
-
-    @Override
-    public void onResume(){
-        super.onResume();
-        aftermarketList = dbConnector.getAftermarketForKit(id, listname);
-        if (aftermarketAdapter == null) {
-            aftermarketAdapter = new NewMyListAdapter(aftermarketList, context, aMode);
-            rvAftermarket.setAdapter(aftermarketAdapter);
-        } else {
-            aftermarketAdapter.notifyDataSetChanged();
-        }
-    }
-
+    private Kit kit;
+    private Kit editedKit;
+    private int tabToreturn;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_item_edit, container, false);
+        setRetainInstance(true);
         context = getActivity();
+
         dbConnector = new DbConnector(context);
         dbConnector.open();
 
         initUI();
 
-        position = getArguments() != null ? getArguments().getInt(MyConstants.POSITION) : 0;
-        id = getArguments().getLong(MyConstants.ID);
-        listname = MyConstants.EMPTY;
+        kit = getArguments().getParcelable("kit");
+//        editedKit = kit;
 
-        scaleFilter = getArguments().getString(MyConstants.SCALE_FILTER);
-        brandFilter = getArguments().getString(MyConstants.BRAND_FILTER);
-        kitnameFilter = getArguments().getString(MyConstants.KITNAME_FILTER);
-        statusFilter = getArguments().getString(MyConstants.STATUS_FILTER);
-        mediaFilter = getArguments().getString(MyConstants.MEDIA_FILTER);
-        tabToReturn = getArguments().getInt(MyConstants.CATEGORY_TAB);
-        workMode = getArguments().getChar(MyConstants.WORK_MODE);
+        tabToreturn = getArguments().getInt(MyConstants.CATEGORY_TAB);
+        workMode = getArguments().getChar(MyConstants.WORK_MODE, 'm');
+//        category = getArguments().getInt(MyConstants.CATEGORY)
         aMode = MyConstants.MODE_A_KIT;
         switch (workMode) {
             case 'a': //MyConstants.MODE_AFTERMARKET
                 linLayoutEditAftermarket.setVisibility(GONE);
-                cursor = dbConnector.getAftermarketByID(id);
                 aftermarketMode = true;
-                showEditForm(cursor);
-                break;
-            case 'k': //MyConstants.MODE_AFTER_KIT
-                cursor = dbConnector.getKitById(id);
-                aftermarketList = dbConnector.getAftermarketForKit(id, listname);
-                aMode = MyConstants.MODE_A_EDIT;
-                aftermarketMode = false;
                 break;
             case 'm': //MyConstants.MODE_KIT
-                cursor = dbConnector.getKitById(id);
                 aftermarketList = dbConnector.getAftermarketForKit(id, listname);
                 aMode = MyConstants.MODE_A_EDIT;
-                aftermarketMode = false;
-                break;
-            case 'l': //MyConstants.MODE_LIST
-                cursor = dbConnector.getListItemById(id);
-                listname = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.MYLISTSITEMS_LISTNAME));
-                aftermarketList = dbConnector.getAftermarketForKit(id, listname);
-                aMode = MyConstants.MODE_A_KIT;
                 aftermarketMode = false;
                 break;
         }
-        cursor.moveToFirst();
-        String path = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BOXART_URI));
+        showEditForm(kit);
+        String path = kit.getBoxart_uri();
         if (path != null) {
             mCurrentPhotoPath = path;
         }
-        aftermarketAdapter = new NewMyListAdapter(aftermarketList, context, aMode);
-        rvAftermarket.setAdapter(aftermarketAdapter);
-
-        showEditForm(cursor);
-
-//        if (savedInstanceState != null) {//todo glide
-//            bmBoxartPic = savedInstanceState.getParcelable(MyConstants.BOXART_IMAGE);
-////            Drawable drawable = new BitmapDrawable(getResources(), bmBoxartPic);
-////            ivEditorBoxart.setImageDrawable(drawable);
-//            tvMPurchaseDate.setText(savedInstanceState.getString("outDate"));
-//            mCurrentPhotoPath = savedInstanceState.getString("imagePath");
+//        else{
+//            mCurrentPhotoPath = composeUrl(kit.getBoxart_url());
 //        }
-
 
         if (savedInstanceState != null) {
             if (savedInstanceState.getString(MyConstants.BOXART_URL) != null) {
@@ -214,20 +164,23 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
                                 savedInstanceState.getString(MyConstants.BOXART_URL)
                                         + MyConstants.BOXART_URL_LARGE
                                         + MyConstants.JPG)
-                        .placeholder(ic_menu_camera)
-                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .apply(new RequestOptions().placeholder(R.drawable.ic_menu_camera).error(R.drawable.ic_menu_camera))
                         .into(ivEditorBoxart);
                 if (mCurrentPhotoPath != null && !mCurrentPhotoPath.equals(MyConstants.EMPTY)) {
                     Glide
                             .with(context)
                             .load(new File(Uri.parse(mCurrentPhotoPath).getPath()))
-                            .placeholder(ic_menu_camera)
-                            .diskCacheStrategy(DiskCacheStrategy.ALL)
+                            .apply(new RequestOptions().placeholder(R.drawable.ic_menu_camera).error(R.drawable.ic_menu_camera))
                             .into(ivEditorBoxart);
                 }
             }
+        } else {
+            Glide
+                    .with(context)
+                    .load(mCurrentPhotoPath)
+                    .apply(new RequestOptions().placeholder(R.drawable.ic_menu_camera).error(R.drawable.ic_menu_camera))
+                    .into(ivEditorBoxart);
         }
-
         return view;
     }
 
@@ -241,13 +194,11 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
             case R.id.btnEditSave:
                 if (checkAllFields()) {
                     isBoxartTemporary = false;
-                    ContentValues cv = getValues();
-                    if (workMode == MyConstants.MODE_LIST) {
-                        dbConnector.editListItemById(id, cv);
-                    } else if (workMode == MyConstants.MODE_KIT) {
-                        dbConnector.editRecById(id, cv);
+                    buildEditedKit();
+                    if (workMode == MyConstants.MODE_KIT) {
+                        dbConnector.editKit(DbConnector.TABLE_KITS, editedKit);
                     } else if (workMode == MyConstants.MODE_AFTERMARKET) {
-                        dbConnector.editAftermarketById(id, cv);
+                        dbConnector.editKit(DbConnector.TABLE_AFTERMARKET, editedKit);
                     }
 
                     KitsFragment.refreshPages();
@@ -261,7 +212,7 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
                     catCursor.moveToFirst();
                     while (!catCursor.isAfterLast()) {
                         if (catCursor.getString(catCursor.getColumnIndexOrThrow(MyConstants.CATEGORY)).equals(category)) {
-                            tabToReturn = catCursor.getPosition();
+                            tabToreturn = catCursor.getPosition();
                         }
                         catCursor.moveToNext();
                     }
@@ -269,15 +220,8 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
                     String ret = String.valueOf(spCategory.getSelectedItemPosition());
                     Intent intent3 = new Intent(context, ViewActivity.class);
                     intent3.putExtra(MyConstants.POSITION, position);
-                    intent3.putExtra(MyConstants.LIST_ID, id);
-                    intent3.putExtra(MyConstants.CATEGORY, ret);
-                    intent3.putExtra(MyConstants.CATEGORY_TAB, tabToReturn);
-                    intent3.putExtra(MyConstants.SCALE_FILTER, scaleFilter);
-                    intent3.putExtra(MyConstants.BRAND_FILTER, brandFilter);
-                    intent3.putExtra(MyConstants.KITNAME_FILTER, kitnameFilter);
-                    intent3.putExtra(MyConstants.STATUS_FILTER, statusFilter);
-                    intent3.putExtra(MyConstants.MEDIA_FILTER, mediaFilter);
-                    intent3.putExtra(MyConstants.WORK_MODE, workMode);
+                    intent3.putExtra(MyConstants.CATEGORY_TAB, tabToreturn);
+                    intent3.putExtra("kit", editedKit);
                     getActivity().setResult(RESULT_OK, intent3);
                     getActivity().finish();
                 } else {
@@ -303,34 +247,6 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
         }
     }
 
-//    @Override
-//    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-//        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-//        mCurrentPhotoPath = sharedPref.getString(MyConstants.FILE_URI, "");
-//        if (resultCode == RESULT_OK && requestCode == MainActivity.REQUEST_CODE_CAMERA) {
-//            Intent cropIntent = new Intent(getActivity(), CropActivity.class);
-//            cropIntent.putExtra(MyConstants.FILE_URI, mCurrentPhotoPath);
-//            startActivityForResult(cropIntent, REQUEST_CODE_CROP);
-//        }
-//        if (resultCode != RESULT_OK) {
-//            Toast.makeText(getActivity(), R.string.camera_failure, Toast.LENGTH_LONG).show();
-//        }
-//
-//        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_CROP) {
-//            File image = new File(mCurrentPhotoPath);
-//            Glide
-//                    .with(context)
-//                    .load(image)
-//                    .placeholder(ic_menu_camera)
-//                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-//                    .into(ivEditorBoxart);
-//            boxartUri = mCurrentPhotoPath;
-//        } else if (resultCode == UCrop.RESULT_ERROR) {
-//            Toast.makeText(getActivity(), R.string.crop_error, Toast.LENGTH_SHORT).show();
-//        }
-//    }
-
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
@@ -349,8 +265,7 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
             Glide
                     .with(context)
                     .load(image)
-                    .placeholder(ic_menu_camera)
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .apply(new RequestOptions().placeholder(R.drawable.ic_menu_camera).error(R.drawable.ic_menu_camera))
                     .into(ivEditorBoxart);
             boxartUri = mCurrentPhotoPath;
 
@@ -358,17 +273,6 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
             Toast.makeText(getActivity(), R.string.crop_error, Toast.LENGTH_SHORT).show();
         }
     }
-
-//    @Override
-//    public void onSaveInstanceState(Bundle outState) {
-//        super.onSaveInstanceState(outState);
-//        outState.putStringArrayList();
-//        if (bmBoxartPic != null) {
-//            outState.putParcelable(MyConstants.BOXART_IMAGE, bmBoxartPic);
-//            String outDate = tvMPurchaseDate.getText().toString();
-//            outState.putString("outDate", outDate);
-//        }
-//    }
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
@@ -378,34 +282,29 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
         outState.putString("outDate", outDate);
     }
 
-
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (isBoxartTemporary) {
+        if (isBoxartTemporary && mCurrentPhotoPath != null && !mCurrentPhotoPath.isEmpty()) {
             File file = new File(mCurrentPhotoPath);
             file.deleteOnExit();
         }
     }
 
-    private void showEditForm(Cursor cursor) {
-        cursor.moveToFirst();
-        brand = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BRAND));
+    private void showEditForm(Kit kit) {
+        boxartUrl = kit.getBoxart_url();
+        boxartUri = kit.getBoxart_uri();
+        brand = kit.getBrand();
         etDetFullBrand.setText(brand);
-        catno = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_BRAND_CATNO));
+        catno = kit.getBrandCatno();
         etDetFullBrandCatNo.setText(catno);
-        kitname = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_KIT_NAME));
+        kitname = kit.getKit_name();
         etDetFullKitname.setText(kitname);
-        scale = cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_SCALE));
+        scale = kit.getScale();
         etDetFullScale.setText(String.valueOf(scale));
-        String pr = String.valueOf(cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_PRICE)) / 100);
+        String pr = String.valueOf(kit.getPrice() / 100);
         etFullPrice.setText(pr);
-        if (cursor.getColumnIndex(DbConnector.COLUMN_PURCHASE_PLACE) != -1) {
-            etPurchasedFrom.setText(cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_PURCHASE_PLACE)));
-        }
-        etPurchasedFrom.setText(cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_PURCHASE_PLACE)));
-
-        int categoryToSet = Integer.valueOf(cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_CATEGORY))); //беру категогию из записи
+        int categoryToSet = Integer.valueOf(kit.getCategory());
         String[] categories = new String[]{
                 getString(R.string.other),
                 getString(R.string.air),
@@ -463,9 +362,9 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         String defaultCurrency = sharedPreferences.getString(MyConstants.DEFAULT_CURRENCY, MyConstants.EMPTY);
 
-        if (cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_CURRENCY)) != null
-                && !cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_CURRENCY)).equals(MyConstants.EMPTY)) {
-            String cr = cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_CURRENCY));
+        if (kit.getCurrency() != null
+                && !kit.getCurrency().equals(MyConstants.EMPTY)) {
+            String cr = kit.getCurrency();
             setKitCurrency(cr);
         } else {
             setKitCurrency(defaultCurrency);
@@ -493,7 +392,7 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
         ArrayAdapter mediaAdapter = new ArrayAdapter<>(context, R.layout.simple_spinner_item,
                 mediaTypes);
         spKitMedia.setAdapter(mediaAdapter);
-        spKitMedia.setSelection(cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_MEDIA)));
+        spKitMedia.setSelection(kit.getMedia());
 
         String[] kitStatuses = new String[]{
                 getString(R.string.status_new),
@@ -506,52 +405,41 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
         ArrayAdapter statusAdapter = new ArrayAdapter<>(context, R.layout.simple_spinner_item,
                 kitStatuses);
         spKitStatus.setAdapter(statusAdapter);
-        spKitMedia.setSelection(cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_STATUS)));
+        spKitMedia.setSelection(kit.getStatus());
 
         if (workMode == MyConstants.MODE_KIT) {
-            String orName = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_ORIGINAL_NAME));
+            String orName = kit.getKit_noeng_name();
             if (orName != null) {
                 etDetFullKitNoengname.setText(orName);
             }
         }
-        int prc = cursor.getInt(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_PRICE));
+        int prc = kit.getPrice();
         if (prc != 0) {
             etFullPrice.setText(String.valueOf(prc / 100));
         }else{
             etFullPrice.setText(MyConstants.EMPTY);
         }
-        if (cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_NOTES)) != null) {
-            etFullNotes.setText(cursor.getString(cursor.getColumnIndex
-                    (DbConnector.COLUMN_NOTES)));
-        }
+        String notes = kit.getNotes();
+        etFullNotes.setText(notes);
 
-        int q = cursor.getInt(cursor.getColumnIndex(DbConnector.COLUMN_QUANTITY));
-        if (q != 0) {
-            quantity = q;
-            setKitQuantity(quantity);
-        }else{
-            quantity = 1;
-            setKitQuantity(quantity);
-        }
-
-        String pd = cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_PURCHASE_DATE));
+        String pd = kit.getDatePurchased();
         if (pd != null && !pd.equals("")) {
-            tvMPurchaseDate.setText(cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_PURCHASE_DATE)));
+            tvMPurchaseDate.setText(pd);
         }else{
             tvMPurchaseDate.setText(R.string.Date_not_set);
         }
 
-        String pPlace = cursor.getString(cursor.getColumnIndexOrThrow(DbConnector.COLUMN_PURCHASE_PLACE));
+        String pPlace = kit.getPlacePurchased();
         if (pPlace != null) {
             etPurchasedFrom.setText(pPlace);
         }
 
-        String year = cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_YEAR));
+        String year = kit.getYear();
         if (year != null) {
             setKitYear(year);
         }
 
-        String description = cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_DESCRIPTION));
+        String description = kit.getDescription();
         if (description != null) {
             setKitDescription(description);
         }
@@ -617,84 +505,19 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
     }
 
     private void setBoxartImage() {
-        if (workMode == MyConstants.MODE_LIST) {
-            cursor = dbConnector.getListItemById(id);
-        } else if (workMode == MyConstants.MODE_KIT) {
-            cursor = dbConnector.getKitById(id);
-        } else if (workMode == MyConstants.MODE_AFTERMARKET) {
-            cursor = dbConnector.getAftermarketByID(id);
-        }
-
-        cursor.moveToFirst();
-        if (cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_BOXART_URI)) != null
-                && cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_BOXART_URI)).length() > 1){
-            boxartUri = cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_BOXART_URI));
-            File imgFile = new File(String.valueOf(Uri.parse(boxartUri)));
-            if(imgFile.exists()){
-                Glide
-                        .with(context)
-                        .load(imgFile)
-                        .placeholder(ic_menu_camera)
-                        .diskCacheStrategy(DiskCacheStrategy.ALL)
-                        .into(ivEditorBoxart);
-
-            }
-        }else if (cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_BOXART_URL)) != null){
-            String boxart_url = cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_BOXART_URL));
-            ivEditorBoxart.setBackgroundResource(0);
-            Glide
-                    .with(context)
-                    .load(composeUrl(boxart_url))
-                    .placeholder(ic_menu_camera)
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-                    .into(ivEditorBoxart);
-        } else if (cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_BOXART_URI)) != null) {
-            String boxartUri = cursor.getString(cursor.getColumnIndex(DbConnector.COLUMN_BOXART_URI));
+        if (!Helper.isBlank(boxartUri)) {
             Glide
                     .with(context)
                     .load(new File(Uri.parse(boxartUri).getPath()))
-                    .placeholder(ic_menu_camera)
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .apply(new RequestOptions().placeholder(R.drawable.ic_menu_camera).error(R.drawable.ic_menu_camera))
+                    .into(ivEditorBoxart);
+        } else {
+            Glide
+                    .with(context)
+                    .load(Helper.composeUrl(boxartUrl))
+                    .apply(new RequestOptions().placeholder(R.drawable.ic_menu_camera).error(R.drawable.ic_menu_camera))
                     .into(ivEditorBoxart);
         }
-    }
-
-    private String composeUrl(String url){
-        if (!Helper.isBlank(url)) {
-            return MyConstants.BOXART_URL_PREFIX
-                    + url
-                    + getSuffix()
-                    + MyConstants.JPG;
-        }else{
-            return MyConstants.EMPTY;
-        }
-
-    }
-
-    private String getSuffix(){
-        String suffix = MyConstants.BOXART_URL_LARGE;
-        SharedPreferences preferences = context.getSharedPreferences(MyConstants.BOXART_SIZE,
-                Context.MODE_PRIVATE);
-        if (preferences != null) {
-            String temp = preferences.getString("boxart_size","");
-            switch (temp){
-                case MyConstants.BOXART_URL_COMPANY_SUFFIX:
-                    suffix = "";
-                    break;
-                case MyConstants.BOXART_URL_SMALL:
-                    suffix = MyConstants.BOXART_URL_SMALL;
-                    break;
-                case MyConstants.BOXART_URL_MEDIUM:
-                    suffix = MyConstants.BOXART_URL_MEDIUM;
-                    break;
-                case MyConstants.BOXART_URL_LARGE:
-                    suffix = MyConstants.BOXART_URL_LARGE;
-                    break;
-                default:
-                    break;
-            }
-        }
-        return suffix;
     }
 
     private void chooseImageAction() {
@@ -721,78 +544,79 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
             public void onClick(View view) {
                 ContentValues cvUri = new ContentValues();
                 cvUri.put(MyConstants.BOXART_URI, MyConstants.EMPTY);
-                dbConnector.editRecById(id, cvUri);
+                dbConnector.editRecById(kit.getLocalId(), cvUri);
                 setBoxartImage();
                 alertDialog.dismiss();
             }
         });
     }
 
-    private ContentValues getValues() {
-        ContentValues cv = new ContentValues();
-        cv.put(DbConnector.COLUMN_BRAND, etDetFullBrand.getText().toString().trim());
-        cv.put(DbConnector.COLUMN_KIT_NAME, etDetFullKitname.getText().toString().trim());
-        cv.put(DbConnector.COLUMN_BRAND_CATNO, etDetFullBrandCatNo.getText().toString().trim());
-        cv.put(DbConnector.COLUMN_SCALE, parseInt(etDetFullScale.getText().toString().trim()));
-        cv.put(DbConnector.COLUMN_PURCHASE_PLACE, etPurchasedFrom.getText().toString().trim());
+    private void buildEditedKit(){
+        editedKit = kit;
+        editedKit.setBrand(etDetFullBrand.getText().toString().trim());
+        editedKit.setKit_name(etDetFullKitname.getText().toString().trim());
+        editedKit.setBrandCatno(etDetFullBrandCatNo.getText().toString().trim());
+        editedKit.setScale(parseInt(etDetFullScale.getText().toString().trim()));
+        editedKit.setPlacePurchased(etPurchasedFrom.getText().toString().trim());
         String date = tvMPurchaseDate.getText().toString();
         if (!date.equals(getResources().getString(R.string.Date_not_set))) {
             purchaseDate = tvMPurchaseDate.getText().toString();
-            cv.put(DbConnector.COLUMN_PURCHASE_DATE, purchaseDate);
+            editedKit.setDatePurchased(purchaseDate);
         }else{
-            cv.put(DbConnector.COLUMN_PURCHASE_DATE, MyConstants.EMPTY);
+            editedKit.setDatePurchased(MyConstants.EMPTY);
         }
 
         if (etDetFullKitNoengname.getText() != null) {
-            cv.put(DbConnector.COLUMN_ORIGINAL_NAME, etDetFullKitNoengname.getText().toString().trim());
+            editedKit.setKit_noeng_name(etDetFullKitNoengname.getText().toString().trim());
         }
         if (etFullPrice.getText().toString().trim().equals("")){
-            cv.put(DbConnector.COLUMN_PRICE, 0);
+            editedKit.setPrice(0);
         }else{
             int pr = Integer.parseInt(etFullPrice.getText().toString().trim()) * 100;
-            cv.put(DbConnector.COLUMN_PRICE, pr);
+            editedKit.setPrice(pr);
         }
 
-        cv.put(DbConnector.COLUMN_NOTES, etFullNotes.getText().toString().trim());
+        editedKit.setNotes(etFullNotes.getText().toString().trim());
 
         if (mCurrentPhotoPath != null) {
-            cv.put(DbConnector.COLUMN_BOXART_URI, mCurrentPhotoPath);
+            editedKit.setBoxart_uri(mCurrentPhotoPath);
         } else {
-            cv.put(DbConnector.COLUMN_BOXART_URI, MyConstants.EMPTY);
+            editedKit.setBoxart_uri(MyConstants.EMPTY);
         }
 
         String cat = String.valueOf(spCategory.getSelectedItemPosition());
-        cv.put(DbConnector.COLUMN_CATEGORY, cat);
+        editedKit.setCategory(cat);
 
 
         String y = spKitYear.getSelectedItem().toString();
         if (!(y).equals(getResources().getString(R.string.unknown))) {
-            cv.put(DbConnector.COLUMN_YEAR, y);
+            editedKit.setYear(y);
         } else {
-            cv.put(DbConnector.COLUMN_YEAR, MyConstants.EMPTY);
+            editedKit.setYear(MyConstants.EMPTY);
         }
 
         String d = spKitDescription.getSelectedItem().toString();
-        cv.put(DbConnector.COLUMN_DESCRIPTION, descToCode(d));
+        editedKit.setDescription(descToCode(d));
 
         quantity = spQuantity.getSelectedItemPosition() + 1;
-        cv.put(DbConnector.COLUMN_QUANTITY, quantity);
+        editedKit.setQuantity(quantity);
 
         String curr = spCurrency.getSelectedItem().toString();
-        cv.put(DbConnector.COLUMN_CURRENCY, curr);
+        editedKit.setCurrency(curr);
 
-        String purchasedFrom = etPurchasedFrom.getText().toString();
-        cv.put(DbConnector.COLUMN_PURCHASE_PLACE, purchasedFrom);
+        String purchasedFrom = etPurchasedFrom.getText().toString().trim();
+        editedKit.setPlacePurchased(purchasedFrom);
+        if (!Helper.isBlank(purchasedFrom)){
+            dbConnector.addShop(purchasedFrom);
+        }
 
         int status = spKitStatus.getSelectedItemPosition();
-        cv.put (DbConnector.COLUMN_STATUS, status);
+        editedKit.setStatus(status);
 
         int media = spKitMedia.getSelectedItemPosition();
-        cv.put(DbConnector.COLUMN_MEDIA, media);
+        editedKit.setMedia(media);
 
-        dbConnector.addShop(purchasedFrom);
-
-        return cv;
+        editedKit.setBoxart_url(kit.getBoxart_url());
     }
 
     public String descToCode(String d) {
@@ -803,14 +627,6 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
             desc = "1";
         }else if (d.equals(getString(R.string.rebox))){
             desc = "2";
-//        }else if (d.equals(getString(R.string.new_decal))){
-//            desc = "3";
-//        }else if (d.equals(getString(R.string.changed_box))){
-//            desc = "4";
-//        }else if (d.equals(getString(R.string.repack))){
-//            desc = "5";
-//        }else if (d.equals(getString(R.string.reissue))){
-//            desc = "6";
         }
         return desc;
     }
@@ -864,11 +680,6 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
         } else {
             Toast.makeText(context, "Нельзя создать файл", Toast.LENGTH_LONG).show();
         }
-//        mCurrentPhotoPath = image != null ? image.getAbsolutePath() : MyConstants.EMPTY;
-//        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-//        SharedPreferences.Editor editor = sharedPref.edit();
-//        editor.putString(MyConstants.FILE_URI, mCurrentPhotoPath);
-//        editor.apply();
         return image;
     }
 
@@ -907,22 +718,6 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
 
         tvMPurchaseDate = view.findViewById(R.id.tvEditPurchaseDate);
         tvMPurchaseDate.setOnClickListener(this);
-
-        linLayoutEditAftermarket = view.findViewById(R.id.linLayoutEditAftermarket);
-        rvAftermarket = view.findViewById(R.id.rvEditAftermarket);
-        RecyclerView.LayoutManager afterManager = new LinearLayoutManager(context);
-        rvAftermarket.setHasFixedSize(true);
-        rvAftermarket.setLayoutManager(afterManager);
-        DefaultItemAnimator animator = new DefaultItemAnimator() {
-            @Override
-            public boolean canReuseUpdatedViewHolder(@NonNull RecyclerView.ViewHolder viewHolder) {
-                return true;
-            }
-        };
-        rvAftermarket.setItemAnimator(animator);
-        if (workMode == MyConstants.MODE_AFTER_KIT || workMode == MyConstants.MODE_AFTERMARKET) {
-            linLayoutEditAftermarket.setVisibility(GONE);
-        }
     }
 
     private boolean checkAllFields() {
@@ -948,39 +743,9 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
         LayoutInflater inflater = LayoutInflater.from(context);
         final View dialogView = inflater.inflate(R.layout.list_choosemode_alertdialog, null);
         dialogBuilder.setView(dialogView);
-
         dialogBuilder.setTitle(R.string.Choose_mode);
-//        Button scanButton = dialogView.findViewById(R.id.btnListModeScan);
-//        scanButton.setVisibility(GONE);
         final AlertDialog alertDialog = dialogBuilder.create();
         alertDialog.show();
-
-//        final Button getFromManualAdd = dialogView.findViewById(R.id.btnListModeManual);
-//        //добавляем афтермаркет к киту
-//        getFromManualAdd.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                ManualAddFragment fragment = new ManualAddFragment();
-//
-//                Bundle bundle = new Bundle();
-//                bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_AFTER_KIT);
-//                bundle.putString(MyConstants.LISTNAME, listname);
-//                bundle.putString(MyConstants.BRAND, brand);
-//                bundle.putString(MyConstants.CATNO, catno);
-//                bundle.putInt(MyConstants.SCALE, scale);
-//                bundle.putString(MyConstants.KITNAME, kitname);
-//                bundle.putInt(MyConstants.POSITION, position);
-//                bundle.putString(MyConstants.CATEGORY, category);
-//                bundle.putLong(MyConstants.ID, id);
-//                bundle.putString(MyConstants.BOXART_URI, boxartUri);
-//                fragment.setArguments(bundle);
-//                android.support.v4.app.FragmentTransaction fragmentTransaction =
-//                        getFragmentManager().beginTransaction();
-//                fragmentTransaction.replace(R.id.frameLayoutEditContainer, fragment);
-//                fragmentTransaction.commit();
-//                alertDialog.dismiss();
-//            }
-//        });
 
         final Button getFromMyStash = dialogView.findViewById(R.id.btnListModeMyStash);
         getFromMyStash.setOnClickListener(new View.OnClickListener() {

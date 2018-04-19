@@ -1,9 +1,11 @@
 package com.example.kitstasher.objects;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.example.kitstasher.other.DbConnector;
@@ -17,7 +19,9 @@ import com.parse.SaveCallback;
  * Created by Алексей on 04.05.2017.
  */
 
-public class Kit implements Parcelable {
+public class Kit implements Parcelable
+//        Comparable<Kit>
+{
 
     //Required
 
@@ -71,7 +75,7 @@ public class Kit implements Parcelable {
         return localId;
     }
 
-    public void setLocalId(int localId) {
+    public void setLocalId(long localId) {
         this.localId = localId;
     }
 
@@ -286,23 +290,26 @@ public class Kit implements Parcelable {
         kitTowrite.put(MyConstants.PARSE_KITNAME, this.getKit_name());
         kitTowrite.put(MyConstants.PARSE_NOENGNAME, this.getKit_noeng_name());
         kitTowrite.put(MyConstants.CATEGORY, this.getCategory());
+        kitTowrite.put(MyConstants.PARSE_SCALEMATES, this.getScalemates_url());
         if (!TextUtils.isEmpty(this.getBoxart_url())) {
             kitTowrite.put(MyConstants.BOXART_URL, this.getBoxart_url());
         }
         kitTowrite.put(MyConstants.PARSE_DESCRIPTION, this.getDescription());
         SharedPreferences sharedPreferences = context.getSharedPreferences(MyConstants.ACCOUNT_PREFS,
                 Context.MODE_PRIVATE);
-        kitTowrite.put(MyConstants.PARSE_OWNERID, sharedPreferences.getString(MyConstants.USER_ID_FACEBOOK, MyConstants.EMPTY));
+        kitTowrite.put(MyConstants.PARSE_OWNERID, sharedPreferences.getString(MyConstants.USER_ID_PARSE, MyConstants.EMPTY));
         kitTowrite.put(MyConstants.YEAR, this.getYear());
 
         kitTowrite.put(MyConstants.PARSE_LOCALID, this.getLocalId());
 //        kitTowrite.put(MyConstants.PARSE_PARENTID, this.getParentId());
-        kitTowrite.put(MyConstants.PARSE_ITEMTYPE, this.getItemType());
+//        kitTowrite.put(MyConstants.PARSE_ITEMTYPE, this.getDescription());
+
 
         kitTowrite.saveInBackground(new SaveCallback() {
             @Override
             public void done(ParseException e) {
                 parseId[0] = kitTowrite.getObjectId();
+
             }
         });
         return parseId[0];
@@ -324,7 +331,7 @@ public class Kit implements Parcelable {
         kitTowrite.put(MyConstants.PARSE_OWNERID, ownerId);
         kitTowrite.put(MyConstants.YEAR, this.getYear());
 
-        kitTowrite.put(MyConstants.PARSE_ITEMTYPE, this.getItemType());
+//        kitTowrite.put(MyConstants.PARSE_ITEMTYPE, this.getDescription());
 
         kitTowrite.saveInBackground();
     }
@@ -439,7 +446,6 @@ public class Kit implements Parcelable {
     }
 
     public static final Parcelable.Creator<Kit> CREATOR = new Parcelable.Creator<Kit>() {
-        // распаковываем объект из Parcel
         public Kit createFromParcel(Parcel in) {
             return new Kit(in);
         }
@@ -449,7 +455,6 @@ public class Kit implements Parcelable {
         }
     };
 
-    // конструктор, считывающий данные из Parcel
     private Kit(Parcel parcel) {
         brand = parcel.readString();
         brandCatno = parcel.readString();
@@ -488,15 +493,10 @@ public class Kit implements Parcelable {
         listname = parcel.readString();
     }
 
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj);
-    }
+//    @Override
+//    public int compareTo(@NonNull Kit kit) {
+//        return 0;
+//    }
 
 
     public static class KitBuilder{

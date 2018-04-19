@@ -129,14 +129,14 @@ public class AdapterChooserList extends CursorAdapter {
             Glide
                     .with(context)
                     .load(R.drawable.ic_android_black_24dp)
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+//                    .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(holder.ivChooseKitCategory);
         }
         if (MyConstants.CODE_FIGURES.equals(category)) {
             Glide
                     .with(context)
                     .load(R.drawable.ic_wc_black_24dp)
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+//                    .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(holder.ivChooseKitCategory);
         }
 

@@ -58,7 +58,7 @@ public class AdapterAlertDialog extends ArrayAdapter<Item> {
         Glide
                 .with(context)
                 .load(composeUrl(list.get(position).getItemBoxartUrl()))
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
+//                .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(holder.ivItemBoxart);
         return view;
     }
