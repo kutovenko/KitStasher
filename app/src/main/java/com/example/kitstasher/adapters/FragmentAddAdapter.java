@@ -15,12 +15,12 @@ import com.example.kitstasher.other.MyConstants;
  * Created by Алексей on 21.04.2017. Dispatch between scan and manual add
  */
 
-public class AdapterAddFragment extends FragmentPagerAdapter {
+public class FragmentAddAdapter extends FragmentPagerAdapter {
     private static final int FRAGMENT_COUNT = 2;
     private Context mContext;
     private boolean aftermarketMode;
 
-    public AdapterAddFragment(FragmentManager fm, Context context, boolean aftermarketMode) {
+    public FragmentAddAdapter(FragmentManager fm, Context context, boolean aftermarketMode) {
         super(fm);
         mContext = context;
         this.aftermarketMode = aftermarketMode;

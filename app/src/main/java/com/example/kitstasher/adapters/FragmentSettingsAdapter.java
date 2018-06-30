@@ -15,12 +15,12 @@ import com.example.kitstasher.fragment.SettingsOptionsFragment;
  * Created by Алексей on 03.05.2017. Adapter for Settings Fragment
  */
 
-public class AdapterSettings extends FragmentPagerAdapter {
+public class FragmentSettingsAdapter extends FragmentPagerAdapter {
 
     private static final int FRAGMENT_COUNT = 3;
     private Context mContext;
 
-    public AdapterSettings(FragmentManager fm, Context context) {
+    public FragmentSettingsAdapter(FragmentManager fm, Context context) {
         super(fm);
         mContext = context;
     }

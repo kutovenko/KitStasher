@@ -2,7 +2,6 @@ package com.example.kitstasher.fragment;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -21,18 +20,17 @@ import android.widget.TableLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.kitstasher.R;
 import com.example.kitstasher.activity.EditActivity;
-import com.example.kitstasher.adapters.NewMyListAdapter;
 import com.example.kitstasher.objects.Kit;
 import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.Helper;
 import com.example.kitstasher.other.MyConstants;
 
 import java.io.File;
-import java.util.ArrayList;
+
+import butterknife.Unbinder;
 
 
 /**
@@ -73,6 +71,7 @@ public class ItemCardFragment extends Fragment {
     private int tabToReturn;
 
     private Kit kit;
+    private Unbinder unbinder;
 
 
     public ItemCardFragment() {
@@ -95,7 +94,7 @@ public class ItemCardFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(final LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull final LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_item_card, container, false);
         context = getActivity();
 
@@ -239,9 +238,9 @@ public class ItemCardFragment extends Fragment {
 
         setCategoryImage(category);
 
-        ArrayList<Kit> aCursor = dbConnector.getAftermarketForKit(id, "");
-        NewMyListAdapter afterAdapter = new NewMyListAdapter(aCursor, context, MyConstants.MODE_A_KIT);
-        rvAftermarket.setAdapter(afterAdapter);
+//        ArrayList<Kit> aCursor = dbConnector.getAftermarketForKit(id, "");
+//        NewMyListAdapter afterAdapter = new NewMyListAdapter(aCursor, context, MyConstants.MODE_A_KIT);
+//        rvAftermarket.setAdapter(afterAdapter);
 
         btnEdit.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -340,7 +339,7 @@ public class ItemCardFragment extends Fragment {
             ivCategory.setImageResource(R.drawable.ic_tag_space_black_24dp);
         }
         if (MyConstants.CODE_OTHER.equals(category)) {
-            ivCategory.setImageResource(R.drawable.ic_check_box_outline_blank_black_24dp);
+            ivCategory.setImageResource(R.drawable.ic_help_black_24dp);
         }
         if (MyConstants.CODE_AUTOMOTO.equals(category)) {
             ivCategory.setImageResource(R.drawable.ic_directions_car_black_24dp);
@@ -352,8 +351,6 @@ public class ItemCardFragment extends Fragment {
             ivCategory.setImageResource(R.drawable.ic_android_black_24dp);
         }
     }
-
-
 
     private String codeToDescription(String code) {
         String desc = "";

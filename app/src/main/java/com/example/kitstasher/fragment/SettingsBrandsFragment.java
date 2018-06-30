@@ -1,7 +1,6 @@
 package com.example.kitstasher.fragment;
 
 import android.content.Context;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -13,9 +12,11 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.kitstasher.R;
-import com.example.kitstasher.adapters.MyListCursorAdapter;
+import com.example.kitstasher.adapters.FragmentBrandAdapter;
+import com.example.kitstasher.objects.BrandItem;
 import com.example.kitstasher.other.DbConnector;
-import com.example.kitstasher.other.MyConstants;
+
+import java.util.ArrayList;
 
 /**
  * Created by Алексей on 21.04.2017. Shows brands list in More section
@@ -49,10 +50,10 @@ public class SettingsBrandsFragment extends Fragment {
         String sortBy = DbConnector.BRANDS_COLUMN_BRAND;
         DbConnector db = new DbConnector(context);
         db.open();
-        Cursor cursor = db.getBrands(sortBy);
+        ArrayList<BrandItem> items = db.getBrands(sortBy);
 
-        MyListCursorAdapter brandAdapter = new MyListCursorAdapter(cursor, context, MyConstants.MODE_A_BRAND);
-        brandAdapter.setHasStableIds(true); //for animation on delete
+        FragmentBrandAdapter brandAdapter = new FragmentBrandAdapter(context, items);
+//        brandAdapter.setHasStableIds(true); //for animation on delete
         rvBrands.setAdapter(brandAdapter);
 
         return view;

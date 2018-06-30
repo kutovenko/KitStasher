@@ -19,7 +19,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.kitstasher.R;
-import com.example.kitstasher.adapters.AdapterAlertDialog;
+import com.example.kitstasher.adapters.UiAlertDialogAdapter;
 import com.example.kitstasher.objects.Item;
 import com.example.kitstasher.objects.Kit;
 import com.example.kitstasher.other.AsyncApp42ServiceApi;
@@ -240,16 +240,13 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
 
     private boolean isInLocalBase(String barcode) {
         String bc = barcode.substring(0, barcode.length() - 1);
-        if (workMode == MyConstants.MODE_LIST) {
-            if (dbConnector.searchListForDoubles(listname, bc)) {
-                return true;
-            }
-        } else {
-            if (dbConnector.searchForDoubles(bc)) {
-                return true;
-            }
-        }
-        return false;
+//        if (workMode == MyConstants.MODE_LIST) {
+//            if (dbConnector.searchListForDoubles(listname, bc)) {
+//                return true;
+//            }
+//        } else {
+        return dbConnector.searchForDoubles(bc);
+//        }
     }
 
     public boolean isOnline() {
@@ -403,8 +400,8 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(R.string.Found);
 
-        AdapterAlertDialog adapterAlertDialog = new AdapterAlertDialog(getActivity(), itemList);
-        builder.setAdapter(adapterAlertDialog, new DialogInterface.OnClickListener() {
+        UiAlertDialogAdapter uiAlertDialogAdapter = new UiAlertDialogAdapter(getActivity(), itemList);
+        builder.setAdapter(uiAlertDialogAdapter, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int item) {
                 if (item == 0){
@@ -428,20 +425,20 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
                     kitToAdd.setStatus(status);
                     kitToAdd.setMedia(media);
 
-                    if (workMode == MyConstants.MODE_LIST) {
-                        dbConnector.addListItem(kitToAdd, listname);
-                        Toast.makeText(mContext, R.string.Kit_added_to_list, Toast.LENGTH_SHORT)
-                                .show();
-                        ListViewFragment listViewFragment = new ListViewFragment();
-                        Bundle bundle = new Bundle(1);
-                        bundle.putString(MyConstants.LISTNAME, listname);
-                        listViewFragment.setArguments(bundle);
-                        android.support.v4.app.FragmentTransaction fragmentTransaction =
-                                getFragmentManager().beginTransaction();
-                        fragmentTransaction.replace(R.id.llListsContainer, listViewFragment);
-                        fragmentTransaction.commit();
-                    }else {
-                        currentId = dbConnector.addKitRec(kitToAdd);
+//                    if (workMode == MyConstants.MODE_LIST) {
+//                        dbConnector.addListItem(kitToAdd, listname);
+//                        Toast.makeText(mContext, R.string.Kit_added_to_list, Toast.LENGTH_SHORT)
+//                                .show();
+//                        ListViewFragment listViewFragment = new ListViewFragment();
+//                        Bundle bundle = new Bundle(1);
+//                        bundle.putString(MyConstants.LISTNAME, listname);
+//                        listViewFragment.setArguments(bundle);
+//                        android.support.v4.app.FragmentTransaction fragmentTransaction =
+//                                getFragmentManager().beginTransaction();
+//                        fragmentTransaction.replace(R.id.llListsContainer, listViewFragment);
+//                        fragmentTransaction.commit();
+//                    }else {
+                        currentId = dbConnector.addKitRec(kitToAdd, DbConnector.TABLE_KITS);
                         kitToAdd.setLocalId(currentId);
                         kitToAdd.setItemType("1");
 
@@ -458,7 +455,7 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
                         }
                         Toast.makeText(mContext, R.string.kit_added, Toast.LENGTH_SHORT).show();
                     }
-                }
+//                }
 
             }
         });

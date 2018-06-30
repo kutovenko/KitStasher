@@ -1,9 +1,11 @@
 package com.example.kitstasher.fragment;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,18 +43,19 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
     private EditText etNewCurrency;
     private ProgressBar progressBarDb;
     private Spinner spDefaultCurrency;
-
+    private Context context;
     public SettingsOptionsFragment(){
 
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_options, container, false);
 
         dbConnector = new DbConnector(getActivity());
         dbConnector.open();
+        context = getActivity();
         initUI();
         return view;
     }
@@ -89,7 +92,7 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
     private void restoreFromCloud() {
 
         dbConnector.clearTable(DbConnector.TABLE_KITS);
-        dbConnector.clearTable(DbConnector.TABLE_KIT_AFTER_CONNECTIONS);
+//        dbConnector.clearTable(DbConnector.TABLE_KIT_AFTER_CONNECTIONS);
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         String ownerId = sharedPreferences.getString(MyConstants.USER_ID_PARSE, "");
@@ -103,7 +106,7 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
         ParseQuery<ParseObject> notDeleted = ParseQuery.getQuery("Stash");
         notDeleted.whereNotEqualTo(MyConstants.PARSE_DELETED, true);
 
-        List<ParseQuery<ParseObject>> queries = new ArrayList<ParseQuery<ParseObject>>();
+        List<ParseQuery<ParseObject>> queries = new ArrayList<>();
         queries.add(ownerIds);
         queries.add(idSelect);
         queries.add(notDeleted);
@@ -142,14 +145,25 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
                             .hasPlacePurchased(object.getString(MyConstants.PARSE_PURCHASE_PLACE))
                             .hasStatus(object.getInt(MyConstants.STATUS))
                             .hasMedia(object.getInt(MyConstants.MEDIA))
+                            .hasItemType(object.getString(MyConstants.PARSE_ITEMTYPE))
 
 
 
                             //                            .hasSendStatus(sendStatus)
                             //                            .hasBoxart_uri(boxartUri)
                             .build();
-
-                    dbConnector.addKitRec(kit);
+//                    if (object.getString(MyConstants.PARSE_ITEMTYPE).equals("")){
+//                        kit.setItemType(MyConstants.TYPE_KIT);
+//                    }
+                    String activeTable;
+                    String itemType = object.getString(MyConstants.PARSE_ITEMTYPE);
+                    kit.setItemType(MyConstants.TYPE_KIT);
+//                    if (itemType.equals(MyConstants.TYPE_AFTERMARKET)){
+//                        activeTable = DbConnector.TABLE_AFTERMARKET;
+//                    }else{
+                    activeTable = DbConnector.TABLE_KITS;
+//                    }
+                    dbConnector.addKitRec(kit, activeTable);
                 }
                 progressBarDb.setVisibility(View.GONE);
                 Toast.makeText(getActivity(), getString(R.string.Restored), Toast.LENGTH_SHORT).show();
@@ -185,7 +199,7 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
             currencies[i] = currCursor.getString(1);
             currCursor.moveToNext();
         }
-        ArrayAdapter currencyAdapter = new ArrayAdapter<String>(getActivity(),
+        ArrayAdapter currencyAdapter = new ArrayAdapter<>(context,
                 android.R.layout.simple_spinner_item, currencies);
         spDefaultCurrency.setAdapter(currencyAdapter);
         int spCurrencyPosition = currencyAdapter.getPosition(defCurrency);
@@ -199,6 +213,8 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
     private void restoreBrandsFromKit(){
 
     }
+
+    //todo восстановление списка магазинов при импорте из облака
 
     private void setDefaultCurrency(String currency){
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());

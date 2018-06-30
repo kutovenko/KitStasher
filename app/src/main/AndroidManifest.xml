@@ -48,11 +48,8 @@
             android:name="com.yalantis.ucrop.UCropActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
-        <activity
-            android:name=".activity.ListActivity"
 
-            android:theme="@style/AppTheme" />
-        <activity android:name=".activity.ChooserActivity" />
+
         <activity android:name=".activity.EditActivity" />
 
         <provider

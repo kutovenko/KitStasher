@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 
 import com.example.kitstasher.R;
 import com.example.kitstasher.activity.MainActivity;
-import com.example.kitstasher.adapters.AdapterSettings;
+import com.example.kitstasher.adapters.FragmentSettingsAdapter;
 
 
 /**
@@ -30,8 +30,8 @@ public class SettingsFragment extends Fragment{
 
         TabLayout tabLayout = view.findViewById(R.id.tabsSettings);
         ViewPager viewPager = view.findViewById(R.id.viewpagerSettings);
-        AdapterSettings adapterSettings = new AdapterSettings(getChildFragmentManager(), getActivity());
-        viewPager.setAdapter(adapterSettings);
+        FragmentSettingsAdapter fragmentSettingsAdapter = new FragmentSettingsAdapter(getChildFragmentManager(), getActivity());
+        viewPager.setAdapter(fragmentSettingsAdapter);
         tabLayout.setupWithViewPager(viewPager);
 
         ((MainActivity) getActivity())

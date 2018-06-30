@@ -130,7 +130,7 @@ public class StatisticsFragment extends Fragment implements View.OnClickListener
 //                .diskCacheStrategy(DiskCacheStrategy.ALL)
 //                .into(ivProfilePic);
 
-        if (dbConnector.getAllData("_id").getCount() > 0) {
+        if (dbConnector.countAllKits("_id") > 0) {
             int brandsChartHeight = (dbConnector.getBrandsStat().getCount() * 40) + 16;
             int chartSize = dbConnector.getBrandsStat().getCount();
             bxData = new String[chartSize];
@@ -213,9 +213,9 @@ public class StatisticsFragment extends Fragment implements View.OnClickListener
         Calendar c = Calendar.getInstance();
         SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());
         String date = df.format(c.getTime());
-        int dailyMax = dbConnector.getDataDate(date).getCount();
+        int dailyMax = dbConnector.getAllForDate(date);
         String recordDate = date;
-        totalStash = dbConnector.getAllData(MyConstants._ID).getCount();
+        totalStash = dbConnector.countAllKits(MyConstants._ID);
 
         if (sharedPreferences != null) {
             int savedMax = sharedPreferences.getInt(MyConstants.DAILYMAX, 0);
@@ -224,7 +224,7 @@ public class StatisticsFragment extends Fragment implements View.OnClickListener
             if (savedMax < dailyMax) {
                 statEditor.putInt(MyConstants.DAILYMAX, dailyMax);
                 statEditor.putString(MyConstants.DAILYMAXDATE, date);
-                statEditor.commit();
+                statEditor.apply();
             }else{
                 dailyMax = savedMax;
                 recordDate = sharedPreferences.getString(MyConstants.DAILYMAXDATE, "");
@@ -238,7 +238,7 @@ public class StatisticsFragment extends Fragment implements View.OnClickListener
         }
 
         tvTotalStashCount.setText(String.valueOf(totalStash));
-        tvAddedToday.setText(String.valueOf(dbConnector.getDataDate(date).getCount()));
+        tvAddedToday.setText(String.valueOf(dbConnector.getAllForDate(date)));
         tvDailyRecord.setText(String.valueOf(dailyMax + " (" + recordDate + ")"));
 
     }

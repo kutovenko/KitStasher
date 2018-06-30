@@ -19,38 +19,30 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.kitstasher.R;
-import com.example.kitstasher.fragment.KitsFragment;
 import com.example.kitstasher.objects.Kit;
-import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.Helper;
 import com.example.kitstasher.other.MyConstants;
-import com.parse.GetCallback;
-import com.parse.ParseException;
-import com.parse.ParseObject;
-import com.parse.ParseQuery;
+import com.example.kitstasher.other.OnPagerItemInteractionListener;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Locale;
 
-public class NewAdapterKitList
-        extends android.support.v7.widget.RecyclerView.Adapter<NewAdapterKitList.ViewHolder>
+public class FragmentKitsAdapter extends android.support.v7.widget.RecyclerView.Adapter<FragmentKitsAdapter.ViewHolder>
         implements Filterable {
     private ArrayList<Kit> itemList;
-    private ArrayList<Kit> filteredItemList;
     private Context context;
-    private String activeTable;
+    private ArrayList<Kit> filteredItemList;
     private FilterListener listener;
-    private int categoryTab;
+    private OnPagerItemInteractionListener onPagerItemInteractionListener;
 
-    public NewAdapterKitList(ArrayList<Kit> itemList, Context context, String activeTable,
-                             FilterListener listener, int categoryTab) {
+    public FragmentKitsAdapter(ArrayList<Kit> itemList, Context context, FilterListener listener,
+                               OnPagerItemInteractionListener onPagerItemInteractionListener) {
         this.itemList = itemList;
-        this.filteredItemList = itemList;
         this.context = context;
-        this.activeTable = activeTable;
         this.listener = listener;
-        this.categoryTab = categoryTab;
+        this.filteredItemList = itemList;
+        this.onPagerItemInteractionListener =onPagerItemInteractionListener;
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
@@ -59,7 +51,7 @@ public class NewAdapterKitList
         TextView tvFullKitname, tvFullBrand, tvFullScale;
         ImageButton ibDelete;
 
-        public ViewHolder(View view) {
+        ViewHolder(View view) {
             super(view);
             llKitItem = view.findViewById(R.id.llKitItem);
             llKitText = view.findViewById(R.id.llKitText);
@@ -73,10 +65,10 @@ public class NewAdapterKitList
 
     @NonNull
     @Override
-    public NewAdapterKitList.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public FragmentKitsAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_kit, parent, false);
-        return new NewAdapterKitList.ViewHolder(itemView);
+        return new FragmentKitsAdapter.ViewHolder(itemView);
     }
 
     @Override
@@ -90,7 +82,9 @@ public class NewAdapterKitList
         String name = kit.getKit_name();
         String scale = String.valueOf(kit.getScale());
         final String onlneId = kit.getOnlineId();
-        String fullBrand = brand + " " + cat_no;
+        String category = kit.getCategory();
+        String item_type = kit.getItemType();
+        String fullBrand = brand + " " + cat_no + "-" + category + item_type;
 
         holder.tvFullBrand.setText(fullBrand);
         holder.tvFullScale.setText(scale);
@@ -100,20 +94,22 @@ public class NewAdapterKitList
             Glide
                     .with(context)
                     .load(new File(Uri.parse(uri).getPath()))
-                    .apply(new RequestOptions().placeholder(R.drawable.ic_menu_camera).error(R.drawable.ic_menu_camera))
+                    .apply(new RequestOptions().placeholder(R.drawable.ic_menu_camera)
+                            .error(R.drawable.ic_menu_camera))
                     .into(holder.ivBoxart);
         } else {
             Glide
                     .with(context)
                     .load(composeUrl(url))
-                    .apply(new RequestOptions().placeholder(R.drawable.ic_menu_camera).error(R.drawable.ic_menu_camera))
+                    .apply(new RequestOptions().placeholder(R.drawable.ic_menu_camera)
+                            .error(R.drawable.ic_menu_camera))
                     .into(holder.ivBoxart);
         }
 
         holder.llKitItem.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                listener.onItemSelected(filteredItemList.get(holder.getAdapterPosition()),
+                listener.onItemSelected(itemList.get(holder.getAdapterPosition()),
                         filteredItemList, holder.getAdapterPosition());
             }
         });
@@ -126,9 +122,14 @@ public class NewAdapterKitList
         });
     }
 
+
     @Override
     public int getItemCount() {
         return filteredItemList.size();
+    }
+
+    private String composeUrl(String url) {
+        return url + MyConstants.BOXART_URL_SMALL + MyConstants.JPG;
     }
 
     @Override
@@ -144,8 +145,9 @@ public class NewAdapterKitList
                     for (Kit row : itemList) {
                         if (row.getBrand().toLowerCase(Locale.getDefault()).contains(query)
                                 || row.getKit_name().toLowerCase(Locale.getDefault()).contains(query)
-                                ||  row.getBrandCatno().toLowerCase(Locale.getDefault()).contains(query))
-                        {
+                                || row.getBrandCatno().toLowerCase(Locale.getDefault()).contains(query)
+                                || row.getKit_noeng_name().toLowerCase(Locale.getDefault()).contains(query)
+                                ) {
                             filteredList.add(row);
                         }
                     }
@@ -164,52 +166,25 @@ public class NewAdapterKitList
         };
     }
 
-    public void setSortedItemList(ArrayList<Kit> list){
-        filteredItemList = list;
-        notifyItemRangeChanged(0, filteredItemList.size());
-    }
-
-    public ArrayList<Kit> getItemsList(){
-        return new ArrayList<>(filteredItemList);
-    }
-
-    public interface FilterListener {
-        void onItemSelected(Kit kit, ArrayList<Kit> filteredItemList, int position);
-    }
-
-    private String composeUrl(String url) {
-        return url + MyConstants.BOXART_URL_SMALL + MyConstants.JPG;
+    @Override
+    public long getItemId(int position) {
+        int itemID;
+        if (itemList == null){
+            itemID = position;
+        }else{
+            itemID = itemList.indexOf(filteredItemList.get(position));
+        }
+        return itemID;
     }
 
     private void showDeleteDialog(final long itemId, final int currentPosition, final String uri,
                                   final String onlineId) {
-        final DbConnector dbConnector = new DbConnector(context);
-        dbConnector.open();
         final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
         dialogBuilder.setTitle(R.string.Do_you_wish_to_delete);
         dialogBuilder.setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
-                if (!Helper.isBlank(uri)) {
-                    File file = new File(uri);
-                    if (file.exists()) {
-                        file.delete();
-                    }
-                }
-                dbConnector.deleteAllAftermarketForKit(itemId);
-                try{
-                deleteFromOnlineStash(onlineId);
-                }finally {
-                    dbConnector.delRec(activeTable, itemId);
-                    filteredItemList.remove(currentPosition);
-                    notifyItemRemoved(currentPosition);
-//                    notifyItemRangeRemoved(currentPosition, 1);
-                    if (getItemCount() == 0) {
-                        KitsFragment.refreshPages();
-                    }
-//                    }else {
-//                        notifyItemRemoved(currentPosition);
-//                    }
-                }
+                onPagerItemInteractionListener.onPagerItemDelete(itemId,
+                        currentPosition, uri, onlineId);
             }
         });
         dialogBuilder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
@@ -220,15 +195,21 @@ public class NewAdapterKitList
         d.show();
     }
 
-    private void deleteFromOnlineStash(String onlineId) {
-        ParseQuery<ParseObject> query = ParseQuery.getQuery(MyConstants.PARSE_C_STASH);
-        query.getInBackground(onlineId, new GetCallback<ParseObject>() {
-            public void done(ParseObject item, ParseException e) {
-                if (e == null) {
-                    item.put(MyConstants.PARSE_DELETED, true);
-                    item.saveInBackground();
-                }
-            }
-        });
+    public void delete(int position) {
+        filteredItemList.remove(position);
+        notifyItemRemoved(position);
+    }
+
+    public void setSortedItemList(ArrayList<Kit> list) {
+        filteredItemList = list;
+        notifyItemRangeChanged(0, filteredItemList.size());
+    }
+
+    public ArrayList<Kit> getItemsList() {
+        return new ArrayList<>(filteredItemList);
+    }
+
+    public interface FilterListener {
+        void onItemSelected(Kit kit, ArrayList<Kit> filteredItemList, int position);
     }
 }

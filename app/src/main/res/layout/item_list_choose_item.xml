@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/llChooseItemContainer"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
+    android:layout_height="wrap_content"
     android:background="@color/colorBackground"
     android:orientation="horizontal"
     android:padding="5dip">
@@ -14,7 +14,7 @@
     <!--android:layout_width="match_parent"-->
     <!--android:layout_height="match_parent">-->
     <ImageView
-        android:id="@+id/ivChooseKitCategory"
+        android:id="@+id/ivChooseBoxart"
         android:layout_width="wrap_content"
         android:layout_height="20dp"
         android:layout_gravity="left|center_vertical"

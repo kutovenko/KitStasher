@@ -20,7 +20,6 @@ import com.parse.SaveCallback;
  */
 
 public class Kit implements Parcelable
-//        Comparable<Kit>
 {
 
     //Required
@@ -302,7 +301,7 @@ public class Kit implements Parcelable
 
         kitTowrite.put(MyConstants.PARSE_LOCALID, this.getLocalId());
 //        kitTowrite.put(MyConstants.PARSE_PARENTID, this.getParentId());
-//        kitTowrite.put(MyConstants.PARSE_ITEMTYPE, this.getDescription());
+        kitTowrite.put(MyConstants.PARSE_ITEMTYPE, this.getItemType());
 
 
         kitTowrite.saveInBackground(new SaveCallback() {
@@ -331,36 +330,37 @@ public class Kit implements Parcelable
         kitTowrite.put(MyConstants.PARSE_OWNERID, ownerId);
         kitTowrite.put(MyConstants.YEAR, this.getYear());
 
-//        kitTowrite.put(MyConstants.PARSE_ITEMTYPE, this.getDescription());
+        kitTowrite.put(MyConstants.PARSE_ITEMTYPE, this.getItemType());
 
         kitTowrite.saveInBackground();
     }
 
-    public boolean saveToLocalDatabase(Context context, char workMode, Object itemSave,
-                                       String listname, Long incomeKitId) {
-        DbConnector dbConnector = new DbConnector(context);
-        dbConnector.open();
-        if (workMode == MyConstants.MODE_KIT) {
-            dbConnector.addKitRec((Kit) itemSave);
-        } else if (workMode == MyConstants.MODE_LIST) {
-            dbConnector.addListItem((Kit) itemSave, listname);
-        } else if (workMode == MyConstants.MODE_AFTERMARKET) {
-            dbConnector.addAftermarket((Aftermarket) itemSave);
-        } else if (workMode == MyConstants.MODE_AFTER_KIT) {
-            long aftId = dbConnector.addAftermarket((Aftermarket) itemSave);
-            dbConnector.addAfterToKit(incomeKitId, aftId);
-        }
-        dbConnector.close();
-        return false;
-    }
-
-    public boolean makeLocalBackup() {
-        return false;
-    }
-
-    public boolean addToKit(Kit kit, Kit aftermarket) {
-        return false;
-    }
+//    public boolean saveToLocalDatabase(Context context, char workMode, Object itemSave,
+//                                       String listname, Long incomeKitId) {
+//        DbConnector dbConnector = new DbConnector(context);
+//        dbConnector.open();
+//        if (workMode == MyConstants.MODE_KIT) {
+//            dbConnector.addKitRec((Kit) itemSave, DbConnector.TABLE_KITS);
+////        } else if (workMode == MyConstants.MODE_LIST) {
+////            dbConnector.addListItem((Kit) itemSave, listname);
+//        } else if (workMode == MyConstants.MODE_AFTERMARKET) {
+//            dbConnector.addKitRec((Kit) itemSave, DbConnector.TABLE_AFTERMARKET);
+//        }
+////        else if (workMode == MyConstants.MODE_AFTER_KIT) {
+////            long aftId = dbConnector.addAftermarket((Aftermarket) itemSave);
+////            dbConnector.addAfterToKit(incomeKitId, aftId);
+////        }
+//        dbConnector.close();
+//        return false;
+//    }
+//
+//    public boolean makeLocalBackup() {
+//        return false;
+//    }
+//
+//    public boolean addToKit(Kit kit, Kit aftermarket) {
+//        return false;
+//    }
 
 
 

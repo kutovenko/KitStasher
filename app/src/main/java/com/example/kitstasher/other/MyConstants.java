@@ -79,6 +79,11 @@ Prefixes and postfixes for links
     public static final String CAT_OTHER = "other";
     public static final String CODE_OTHER = "0";
 
+    public static final String CODE_P_OTHER = "100";
+    public static final String CODE_P_ACRYLLIC = "101";
+    public static final String CODE_P_ENAMEL = "102";
+
+
 
     public static final String LIST_ID = "id";
     public static final String LIST_TAG = "tag";
@@ -174,6 +179,10 @@ Prefixes and postfixes for links
     public static final int M_CODE_OTHER = 10;
     public static final int M_CODE_DECAL = 11;
     public static final int M_CODE_MASK = 12;
+//Paint codes
+
+    public static final int M_CODE_P_ACRYLLIC = 101;
+    public static final int M_CODE_P_ENAMEL = 102;
 
 
     //Status codes
@@ -301,6 +310,8 @@ Prefixes and postfixes for links
 
     public static final String TYPE_KIT = "1"; // тип - набор
     public static final String TYPE_AFTERMARKET = "2"; // тип - афтермаркет
+    public static final String TYPE_PAINT = "3"; // тип - краска/химия
     public static final String LIST = "list";
     public static final String PARSE_PURCHASE_PLACE = "purchasePlace";
+    public static final String ITEMS_LIST = "itemsList";
 }

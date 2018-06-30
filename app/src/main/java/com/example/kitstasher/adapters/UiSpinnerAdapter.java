@@ -15,13 +15,13 @@ import com.example.kitstasher.R;
  */
 
 // TODO: 28.02.2018 RecyclerViewAdapter
-public class AdapterSpinner extends BaseAdapter {
+public class UiSpinnerAdapter extends BaseAdapter {
     private Context context;
     private int icons[];
     private String[] categories;
     private LayoutInflater inflater;
 
-    public AdapterSpinner(Context applicationContext, int[] icons, String[] categories) {
+    public UiSpinnerAdapter(Context applicationContext, int[] icons, String[] categories) {
         this.context = applicationContext;
         this.icons = icons;
         this.categories = categories;

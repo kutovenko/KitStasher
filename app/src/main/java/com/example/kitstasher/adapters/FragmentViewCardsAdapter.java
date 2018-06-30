@@ -11,12 +11,12 @@ import java.util.List;
  * Created by Алексей on 20.09.2017. Viev cards adapter
  */
 
-public class AdapterViewCards extends FragmentStatePagerAdapter {
+public class FragmentViewCardsAdapter extends FragmentStatePagerAdapter {
     private Context context;
     private static int pos = 0;
     private List<Fragment> myFragments;
 
-    public AdapterViewCards(Context context, FragmentManager fm, List<Fragment> myFrags) {
+    public FragmentViewCardsAdapter(Context context, FragmentManager fm, List<Fragment> myFrags) {
         super(fm);
         this.context = context;
         this.myFragments = myFrags;
@@ -37,6 +37,6 @@ public class AdapterViewCards extends FragmentStatePagerAdapter {
     }
 
     public static void setPos(int pos) {
-        AdapterViewCards.pos = pos;
+        FragmentViewCardsAdapter.pos = pos;
     }
 }

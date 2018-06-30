@@ -22,7 +22,7 @@ import java.util.List;
  * Created by Алексей on 06.07.2017. Adapter for AlertDialog in Scan and Manual Add
  */
 
-public class AdapterAlertDialog extends ArrayAdapter<Item> {
+public class UiAlertDialogAdapter extends ArrayAdapter<Item> {
     private final List<Item> list;
     private final Activity context;
 
@@ -30,7 +30,7 @@ public class AdapterAlertDialog extends ArrayAdapter<Item> {
         private TextView name;
         private ImageView ivItemBoxart;
     }
-    public AdapterAlertDialog(Activity context, List<Item> list) {
+    public UiAlertDialogAdapter(Activity context, List<Item> list) {
         super(context, R.layout.item_alertdialog, list);
         this.context = context;
         this.list = list;

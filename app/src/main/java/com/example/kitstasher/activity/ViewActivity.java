@@ -6,9 +6,8 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 
 import com.example.kitstasher.R;
-import com.example.kitstasher.adapters.AdapterViewCards;
+import com.example.kitstasher.adapters.FragmentViewCardsAdapter;
 import com.example.kitstasher.fragment.ItemCardFragment;
-import com.example.kitstasher.fragment.KitsFragment;
 import com.example.kitstasher.objects.CustomKitsViewPager;
 import com.example.kitstasher.objects.Kit;
 import com.example.kitstasher.other.MyConstants;
@@ -48,8 +47,8 @@ public class ViewActivity extends AppCompatActivity {
         kitId = getIntent().getLongExtra(MyConstants.ID, 0);
         fragments = buildFragments();
         viewPager = findViewById(R.id.viewpagerViewKits);
-        AdapterViewCards adapterViewCards = new AdapterViewCards(this, getSupportFragmentManager(), fragments);
-        viewPager.setAdapter(adapterViewCards);
+        FragmentViewCardsAdapter fragmentViewCardsAdapter = new FragmentViewCardsAdapter(this, getSupportFragmentManager(), fragments);
+        viewPager.setAdapter(fragmentViewCardsAdapter);
         viewPager.setCurrentItem(position);
     }
 
@@ -75,8 +74,8 @@ public class ViewActivity extends AppCompatActivity {
             Kit editedKit = data.getParcelableExtra("kit");
             itemList.set(data.getIntExtra("position", 0), editedKit);
             List<Fragment> fragments = buildFragments();
-            AdapterViewCards adapterViewCards = new AdapterViewCards(this, getSupportFragmentManager(), fragments);
-            viewPager.setAdapter(adapterViewCards);
+            FragmentViewCardsAdapter fragmentViewCardsAdapter = new FragmentViewCardsAdapter(this, getSupportFragmentManager(), fragments);
+            viewPager.setAdapter(fragmentViewCardsAdapter);
             viewPager.setCurrentItem(position);
         }
     }
@@ -89,7 +88,7 @@ public class ViewActivity extends AppCompatActivity {
         intent.putExtra(MyConstants.CATEGORY_TAB, categoryTab);
         intent.putExtra(MyConstants.LIST_POSITION, position);
         setResult(RESULT_OK, intent);
-        KitsFragment.refreshPages();
+//        KitsFragment.refreshPages();
         finish();
     }
 

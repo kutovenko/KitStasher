@@ -69,7 +69,7 @@
     <string name="import_from_file_to_db">Import from file to database</string>
     <string name="import_to_db_started">Starting import to database, please wait</string>
     <string name="import_completed">Import successfully completed</string>
-    <!--Preference-names-->
+    <!--Preference-categoryCodes-->
     <string name="clearDb" translatable="false">clearDb</string>
     <string name="exportDb" translatable="false">exportDb</string>
     <string name="viewTrash" translatable="false">viewTrash</string>
@@ -352,6 +352,7 @@
     <string name="Main_information">Main information</string>
     <string name="Purchase_info">Purchase information</string>
     <string name="Category">Category</string>
+    <string name="Category_">Category:</string>
     <string name="please_add_boxart">Please add boxart image</string>
     <string name="Lets_search">Let\'s search database!</string>
     <string name="boxart_image">Boxart image</string>
@@ -403,6 +404,15 @@
     <string name="no">No</string>
     <string name="new_name">New name</string>
     <string name="action_search">Search</string>
+    <string name="Categories">Categories</string>
+    <string name="Sort_by">Sort by</string>
+    <string name="we_cant_read_barcodes">Without permission to use camera we can\'t read barcodes</string>
+    <string name="we_cant_save_boxarts">Without permission to write file we can\'t save boxart</string>
+    <string name="paints">Paints</string>
+    <string name="paint_name">Paint name</string>
+    <string name="paint_code">Paint code</string>
+    <string name="paint_brand">Brand</string>
+    <string name="item_name">Item name</string>
 
 
 </resources>

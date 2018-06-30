@@ -2,8 +2,10 @@ package com.example.kitstasher.other;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Environment;
+import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.Html;
 import android.text.Spanned;
@@ -71,13 +73,11 @@ public class Helper {
     }
 
 
-    public static void encrypt(File inputFile)
-            throws Exception {
+    public static void encrypt(File inputFile) {
         doCrypto(Cipher.ENCRYPT_MODE, inputFile);
     }
 
-    public static void decrypt(File inputFile)
-            throws Exception {
+    public static void decrypt(File inputFile) {
         doCrypto(Cipher.DECRYPT_MODE, inputFile);
     }
 
@@ -106,7 +106,7 @@ public class Helper {
             outputStream.close();
 
         } catch (IOException ex) {
-
+            ex.printStackTrace();
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } catch (InvalidKeyException e) {
@@ -119,6 +119,18 @@ public class Helper {
             e.printStackTrace();
         }
     }
+
+    public static Drawable getAPICompatVectorDrawable(Context callingContext, int resource_id) {
+        if (android.os.Build.VERSION.SDK_INT >= 21) {
+            return ContextCompat.getDrawable(callingContext.getApplicationContext(), resource_id);
+        } else {
+            return VectorDrawableCompat.create(
+                    callingContext.getResources(),
+                    resource_id,
+                    callingContext.getTheme());
+        }
+    }
+
 
     public static String codeToTag(String code) {
         String tag = code;
@@ -164,7 +176,7 @@ public class Helper {
 //        return desc;
 //    }
 
-    public static String composeUrl(String url) {//// TODO: 04.09.2017 Helper
+    public static String composeUrl(String url) {
         if (!Helper.isBlank(url)) {
             return MyConstants.BOXART_URL_PREFIX
                     + url
@@ -175,159 +187,8 @@ public class Helper {
         }
     }
 
-//    private String getSuffix(){
-//        String suffix = MyConstants.BOXART_URL_LARGE;
-//        SharedPreferences preferences = context.getSharedPreferences(MyConstants.BOXART_SIZE,
-//                Context.MODE_PRIVATE);
-//        if (preferences != null) {
-//            String temp = preferences.getString("boxart_size","");
-//            switch (temp){
-//                case MyConstants.BOXART_URL_COMPANY_SUFFIX:
-//                    suffix = "";
-//                    break;
-//                case MyConstants.BOXART_URL_SMALL:
-//                    suffix = MyConstants.BOXART_URL_SMALL;
-//                    break;
-//                case MyConstants.BOXART_URL_MEDIUM:
-//                    suffix = MyConstants.BOXART_URL_MEDIUM;
-//                    break;
-//                case MyConstants.BOXART_URL_LARGE:
-//                    suffix = MyConstants.BOXART_URL_LARGE;
-//                    break;
-//                default:
-//                    break;
-//            }
-//        }
-//        return suffix;
-//    }
-
-//    public static String codeToDescription(String code) {
-//        String desc = "";
-//        switch (code) {
-//            case MyConstants.NEW_TOOL:
-//                desc = MyApplication.getContext().getResources().getString(R.string.new_tool);
-//                break;
-//            case MyConstants.REBOX:
-//                desc = MyApplication.getContext().getResources().getString(R.string.rebox);
-//                break;
-//        }
-//        return desc;
-//    }
-//
-//    public static String tagToCode(String tag) {
-//        String code = tag;
-//        switch (code){
-//            case MyConstants.CAT_AIR:
-//                code = MyConstants.CODE_AIR;
-//                break;
-//            case MyConstants.CAT_GROUND:
-//                code = MyConstants.CODE_GROUND;
-//                break;
-//            case MyConstants.CAT_SEA:
-//                code = MyConstants.CODE_SEA;
-//                break;
-//            case MyConstants.CAT_SPACE:
-//                code = MyConstants.CODE_SPACE;
-//                break;
-//            case MyConstants.CAT_AUTOMOTO:
-//                code = CODE_AUTOMOTO;
-//                break;
-//            case MyConstants.CAT_OTHER:
-//                code = CODE_OTHER;
-//                break;
-//            case MyConstants.CAT_FIGURES:
-//                code = CODE_FIGURES;
-//                break;
-//            case MyConstants.CAT_FANTASY:
-//                code = CODE_FANTASY;
-//                break;
-//
-//        }
-//        return code;
-//    }
-//
-//   public static String codeToMedia(int mediaCode){
-//        String media;
-//        switch (mediaCode){
-//            case MyConstants.M_CODE_UNKNOWN:
-//                media = MyApplication.getContext().getResources().getString(R.string.unknown);
-//                break;
-//            case MyConstants.M_CODE_INJECTED:
-//                media = MyApplication.getContext().getResources().getString(R.string.media_injected);
-//                break;
-//            case MyConstants.M_CODE_SHORTRUN:
-//                media = MyApplication.getContext().getResources().getString(R.string.media_shortrun);
-//                break;
-//            case MyConstants.M_CODE_RESIN:
-//                media = MyApplication.getContext().getResources().getString(R.string.media_resin);
-//                break;
-//            case MyConstants.M_CODE_VACU:
-//                media = MyApplication.getContext().getResources().getString(R.string.media_vacu);
-//                break;
-//            case MyConstants.M_CODE_PAPER:
-//                media = MyApplication.getContext().getResources().getString(R.string.media_paper);
-//                break;
-//            case MyConstants.M_CODE_WOOD:
-//                media = MyApplication.getContext().getResources().getString(R.string.media_wood);
-//                break;
-//            case MyConstants.M_CODE_METAL:
-//                media = MyApplication.getContext().getResources().getString(R.string.media_metal);
-//                break;
-//            case MyConstants.M_CODE_3DPRINT:
-//                media = MyApplication.getContext().getResources().getString(R.string.media_3dprint);
-//                break;
-//            case MyConstants.M_CODE_MULTIMEDIA:
-//                media = MyApplication.getContext().getResources().getString(R.string.media_multimedia);
-//                break;
-//            case MyConstants.M_CODE_OTHER:
-//                media = MyApplication.getContext().getResources().getString(R.string.media_other);
-//                break;
-//            case MyConstants.M_CODE_DECAL:
-//                media = MyApplication.getContext().getResources().getString(R.string.media_decal);
-//                break;
-//            case MyConstants.M_CODE_MASK:
-//                media = MyApplication.getContext().getResources().getString(R.string.media_mask);
-//                break;
-//
-//            default:
-//                media = MyApplication.getContext().getResources().getString(R.string.unknown);
-//                break;
-//        }
-//        return media;
-//    }
-//
-//
-//    public static String codeToStatus(int code){
-//        String status;
-//        switch (code){
-//            case MyConstants.STATUS_NEW:
-//                status = MyApplication.getContext().getResources().getString(R.string.status_new);
-//                break;
-//            case MyConstants.STATUS_OPENED:
-//                status = MyApplication.getContext().getResources().getString(R.string.status_opened);
-//                break;
-//            case MyConstants.STATUS_STARTED:
-//                status = MyApplication.getContext().getResources().getString(R.string.status_started);
-//                break;
-//            case MyConstants.STATUS_INPROGRESS:
-//                status = MyApplication.getContext().getResources().getString(R.string.status_inprogress);
-//                break;
-//            case MyConstants.STATUS_FINISHED:
-//                status = MyApplication.getContext().getResources().getString(R.string.status_finished);
-//                break;
-//            case MyConstants.STATUS_LOST:
-//                status = MyApplication.getContext().getResources().getString(R.string.status_lost_sold);
-//                break;
-//            default:
-//                status = MyApplication.getContext().getResources().getString(R.string.status_new);
-//                break;
-//        }
-//        return status;
-//    }
-
     public static String trimUrl(String str) {
         if (str != null && str.length() > 0
-//                && str.charAt(str.length() - 1) == '-'
                 ) {
             str = str.substring(0, str.length() - 12);
         }

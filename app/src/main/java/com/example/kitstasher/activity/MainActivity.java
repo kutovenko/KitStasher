@@ -2,7 +2,6 @@ package com.example.kitstasher.activity;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -14,10 +13,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
-import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
@@ -37,6 +34,10 @@ import com.example.kitstasher.other.AsyncApp42ServiceApi;
 import com.example.kitstasher.other.DbConnector;
 import com.example.kitstasher.other.MyConstants;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.Unbinder;
+
 /**
  * Created by Alexey on 10.04.2017.
  * Main Activity. Sets up Navigation Drawer and contains fragments for different tasks
@@ -44,12 +45,18 @@ import com.example.kitstasher.other.MyConstants;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+    @BindView(R.id.nav_view) NavigationView navigationView;
+    @BindView(R.id.toolbar) Toolbar toolbar;
+    @BindView(R.id.drawer_layout) DrawerLayout drawer;
+    private ImageView imgProfile;
+    private TextView tvName;
+    private Handler mHandler;
     public static final String TAG_HOME = "home";
     public static final String TAG_ADDSTASH = "addstash";
     public static final String TAG_VIEWSTASH = "viewstash";
+    private static final String TAG_PAINTS = "paints";
     public static final String TAG_SETTINGS = "settings";
     public static final String TAG_AFTERMARKET = "aftermarket";
-    public static final String TAG_MYLISTS = "mylists";
     public static final String TAG_SEARCH = "search";
     public static final String TAG_STATISTICS = "statistics";
     public static String CURRENT_TAG = TAG_HOME;
@@ -59,41 +66,59 @@ public class MainActivity extends AppCompatActivity
     public static final int MY_PERMISSIONS_REQUEST_CAMERA = 10;
     public static final int MY_PERMISSIONS_REQUEST_WRITE = 20;
     public static int navItemIndex = 0;
-    private NavigationView navigationView;
-    private Toolbar toolbar;
-    private DrawerLayout drawer;
-    private ImageView imgProfile;
-    private TextView txtName;
-    private Handler mHandler;
+    private DbConnector dbConnector;
     private SharedPreferences sharedPreferences;
     public static AsyncApp42ServiceApi asyncService;
     private String title;
-    private boolean aftermarketMode;
-    // Flag to load home fragment when user presses back key
-    private boolean shouldLoadHomeFragOnBackPress = true;
+    //    private boolean aftermarketMode;
+    private Unbinder unbinder;
+
+    private String workMode;
+//    private final int MODE_KIT = 1;
+//    private final int MODE_AFTERMARKET = 2;
+//    private final int MODE_PAINT = 3;
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString("title", title);
+//        outState.putBoolean("mode", aftermarketMode);
+        outState.putString("mode", workMode);
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        dbConnector.close();
+        unbinder.unbind();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (savedInstanceState != null) {
             title = savedInstanceState.getString("title");
+            workMode = savedInstanceState.getString("mode");
+//            aftermarketMode = savedInstanceState.getBoolean("mode");
         }
         setContentView(R.layout.activity_main);
         asyncService = AsyncApp42ServiceApi.instance(this);
-
-        DbConnector dbConnector = new DbConnector(this);
+        unbinder = ButterKnife.bind(this);
+        dbConnector = new DbConnector(this);
         dbConnector.open();
 
-        aftermarketMode = false;
+//        aftermarketMode = false;
+        workMode = MyConstants.TYPE_KIT;
         sharedPreferences = this.getSharedPreferences(MyConstants.ACCOUNT_PREFS,
                 Context.MODE_PRIVATE);
-        toolbar = findViewById(R.id.toolbar);
+//        toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle(title);
         setSupportActionBar(toolbar);
 
-        navigationView = findViewById(R.id.nav_view);
+//        navigationView = findViewById(R.id.nav_view);
         View navHeader = navigationView.getHeaderView(0);
-        txtName = navHeader.findViewById(R.id.name);
+        tvName = navHeader.findViewById(R.id.name);
         imgProfile = navHeader.findViewById(R.id.img_profile);
         imgProfile.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -103,7 +128,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        drawer = findViewById(R.id.drawer_layout);
+//        drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
@@ -111,7 +136,7 @@ public class MainActivity extends AppCompatActivity
 
         mHandler = new Handler();
 
-        navigationView = findViewById(R.id.nav_view);
+//        navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
         setUpNavigationView();
@@ -121,7 +146,8 @@ public class MainActivity extends AppCompatActivity
         if (savedInstanceState == null) {
             navItemIndex = 0;
             CURRENT_TAG = TAG_VIEWSTASH;
-            loadHomeFragment(aftermarketMode);
+            loadHomeFragment(workMode);
+//            loadHomeFragment(aftermarketMode);
         }
 
         checkCameraPermissions();
@@ -129,20 +155,13 @@ public class MainActivity extends AppCompatActivity
         checkWritePermissions();
     }
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putString("title", title);
-    }
-
     private void loadNavHeader() {
-        txtName.setText(sharedPreferences.getString(MyConstants.USER_NAME_FACEBOOK, ""));
-        String accountPictureUrl = sharedPreferences.getString(MyConstants.PROFILE_PICTURE_URL_FACEBOOK, null);
+        tvName.setText(sharedPreferences.getString(MyConstants.USER_NAME_FACEBOOK, ""));
+        String accountPictureUrl = sharedPreferences.getString(MyConstants.PROFILE_PICTURE_URL_FACEBOOK, "");
         Glide.with(this).load(accountPictureUrl)
                 .thumbnail(0.5f)
-                .apply(new RequestOptions().centerCrop())
+                .apply(new RequestOptions().circleCrop())
                 .into(imgProfile);
-
     }
 
     private void setUpNavigationView() {
@@ -156,32 +175,47 @@ public class MainActivity extends AppCompatActivity
                             case R.id.nav_viewstash:
                                 navItemIndex = 0;
                                 CURRENT_TAG = TAG_VIEWSTASH;
-                                aftermarketMode = false;
+                                workMode = MyConstants.TYPE_KIT;
+//                                aftermarketMode = false;
                                 break;
                             case R.id.nav_aftermarket:
                                 navItemIndex = 1;
                                 CURRENT_TAG = TAG_AFTERMARKET;
-                                aftermarketMode = true;
+                                workMode = MyConstants.TYPE_AFTERMARKET;
+//                                aftermarketMode = true;
+                                break;
+                            case R.id.nav_paints:
+                                navItemIndex = 2;
+                                CURRENT_TAG = TAG_PAINTS;
+                                workMode = MyConstants.TYPE_PAINT;
+//                                aftermarketMode = false;
                                 break;
                             case R.id.nav_search:
-                                navItemIndex = 2;
+                                navItemIndex = 3;
                                 CURRENT_TAG = TAG_SEARCH;
-                                aftermarketMode = false;
+                                workMode = MyConstants.TYPE_KIT;
+//                                aftermarketMode = false;
                                 break;
                             case R.id.nav_statistics:
-                                navItemIndex = 3;
+                                navItemIndex = 4;
                                 CURRENT_TAG = TAG_STATISTICS;
-                                aftermarketMode = false;
+                                workMode = MyConstants.TYPE_KIT;
+
+//                                aftermarketMode = false;
                                 break;
                             case R.id.nav_settings:
-                                navItemIndex = 4;
+                                navItemIndex = 5;
                                 CURRENT_TAG = TAG_SETTINGS;
-                                aftermarketMode = false;
+                                workMode = MyConstants.TYPE_KIT;
+
+//                                aftermarketMode = false;
                                 break;
                             default:
                                 navItemIndex = 0;
                                 CURRENT_TAG = TAG_VIEWSTASH;
-                                aftermarketMode = false;
+                                workMode = MyConstants.TYPE_KIT;
+
+//                                aftermarketMode = false;
                         }
                         if (menuItem.isChecked()) {
                             menuItem.setChecked(false);
@@ -189,17 +223,13 @@ public class MainActivity extends AppCompatActivity
                             menuItem.setChecked(true);
                         }
                         menuItem.setChecked(true);
-
-                        loadHomeFragment(aftermarketMode);
-
+                        loadHomeFragment(workMode);
                         return true;
                     }
                 });
 
-
         ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawer,
                 toolbar, R.string.openDrawer, R.string.closeDrawer) {
-
             @Override
             public void onDrawerClosed(View drawerView) {
                 super.onDrawerClosed(drawerView);
@@ -221,30 +251,9 @@ public class MainActivity extends AppCompatActivity
             drawer.closeDrawers();
             return;
         }
-        if (shouldLoadHomeFragOnBackPress) {
-            navItemIndex = 0;
-            CURRENT_TAG = TAG_ADDSTASH;
-            loadHomeFragment(aftermarketMode);
-        } else {
-            super.onBackPressed();
-        }
-    }
-
-    private void promptExit() {
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
-        dialogBuilder.setTitle(R.string.Do_you_wish_to_exit);
-
-        dialogBuilder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                finish();
-            }
-        });
-        dialogBuilder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-            }
-        });
-        AlertDialog d = dialogBuilder.create();
-        d.show();
+        navItemIndex = 0;
+        CURRENT_TAG = TAG_ADDSTASH;
+        loadHomeFragment(workMode);
     }
 
     public void setActionBarTitle(String t) {
@@ -252,7 +261,7 @@ public class MainActivity extends AppCompatActivity
         toolbar.setTitle(title);
     }
 
-    public void loadHomeFragment(final boolean aftermarketMode) {
+    public void loadHomeFragment(final String workMode) {
         if (getSupportFragmentManager().findFragmentByTag(CURRENT_TAG) != null) {
             drawer.closeDrawers();
             return;
@@ -261,7 +270,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void run() {
                 Bundle bundle = new Bundle();
-                bundle.putBoolean(MyConstants.AFTERMARKET_MODE, aftermarketMode);
+                bundle.putString(MyConstants.WORK_MODE, workMode);
                 android.support.v4.app.Fragment fragment = getHomeFragment();
                 fragment.setArguments(bundle);//
                 android.support.v4.app.FragmentTransaction fragmentTransaction =
@@ -276,30 +285,28 @@ public class MainActivity extends AppCompatActivity
     }
 
     private android.support.v4.app.Fragment getHomeFragment() {
+        Fragment kitsFragment = new KitsFragment();
+        Bundle bundle = new Bundle();
+        bundle.putString(MyConstants.WORK_MODE, workMode);
+        kitsFragment.setArguments(bundle);
 
         switch (navItemIndex) {
             case 0:
-                Fragment kitFragment = new KitsFragment();
-                Bundle bundle = new Bundle();
-                bundle.putBoolean(MyConstants.AFTERMARKET_MODE, false);
-                kitFragment.setArguments(bundle);
-                return kitFragment;
+                return kitsFragment;
             case 1:
-                Fragment fragment = new KitsFragment();
-                Bundle aBundle = new Bundle();
-                aBundle.putBoolean(MyConstants.AFTERMARKET_MODE, true);
-                fragment.setArguments(aBundle);
-                return fragment;
+                return kitsFragment;
             case 2:
-                return new SearchFragment();
+                return kitsFragment;
             case 3:
-                return new StatisticsFragment();
+                return new SearchFragment();
             case 4:
+                return new StatisticsFragment();
+            case 5:
                 return new SettingsFragment();
             default:
                 Fragment defFragment = new KitsFragment();
                 Bundle defBundle = new Bundle();
-                defBundle.putBoolean(MyConstants.AFTERMARKET_MODE, false);
+                defBundle.putString(MyConstants.WORK_MODE, workMode);
                 defFragment.setArguments(defBundle);
                 return defFragment;
         }
@@ -311,19 +318,22 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
         if (id == R.id.nav_viewstash) {
             navItemIndex = 0;
-            loadHomeFragment(aftermarketMode);
+            loadHomeFragment(workMode);
         } else if (id == R.id.nav_aftermarket) {
             navItemIndex = 1;
-            loadHomeFragment(aftermarketMode);
-        } else if (id == R.id.nav_search) {
+            loadHomeFragment(workMode);
+        } else if (id == R.id.nav_paints) {
             navItemIndex = 2;
-            loadHomeFragment(aftermarketMode);
-        } else if (id == R.id.nav_statistics) {
+            loadHomeFragment(workMode);
+        } else if (id == R.id.nav_search) {
             navItemIndex = 3;
-            loadHomeFragment(aftermarketMode);
-        } else if (id == R.id.nav_settings) {
+            loadHomeFragment(workMode);
+        } else if (id == R.id.nav_statistics) {
             navItemIndex = 4;
-            loadHomeFragment(aftermarketMode);
+            loadHomeFragment(workMode);
+        } else if (id == R.id.nav_settings) {
+            navItemIndex = 5;
+            loadHomeFragment(workMode);
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -331,12 +341,6 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    /**
-     * Request to KitEdit Activity if user edit kit. Return user to proper position in kits list.
-     *             //Если вернулись напрямую из афтермаркетЭдит, workMode будет MODE_AFTERMARKET
-     //Если из карточки KitCard - MODE_KIT
-     //Если из KitEdit - MODE_KIT AFTER
-     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -344,59 +348,25 @@ public class MainActivity extends AppCompatActivity
         if (resultCode == RESULT_OK) {
             if (requestCode == REQUEST_CODE_VIEW) {
                 super.onActivityResult(requestCode, resultCode, data);
+                boolean aftermarketMode = data.getBooleanExtra(MyConstants.WORK_MODE, false);
                 char workMode = data.getCharExtra(MyConstants.WORK_MODE, MyConstants.MODE_KIT);
                 int position = data.getIntExtra(MyConstants.LIST_POSITION, 0);
                 int categoryTab = data.getIntExtra(MyConstants.CATEGORY_TAB, 0);
                 String category = data.getStringExtra(MyConstants.CATEGORY);
-//                String scaleFilter = data.getStringExtra(MyConstants.SCALE_FILTER);
-//                String brandFilter = data.getStringExtra(MyConstants.BRAND_FILTER);
-//                String kitnameFilter = data.getStringExtra(MyConstants.KITNAME_FILTER);
-//                String statusFilter = data.getStringExtra(MyConstants.STATUS_FILTER);
-//                String mediaFilter = data.getStringExtra(MyConstants.MEDIA_FILTER);
 
                 Bundle bundle = new Bundle();
                 bundle.putInt(MyConstants.POSITION, position);
                 bundle.putInt(MyConstants.CATEGORY_TAB, categoryTab);
                 bundle.putString(MyConstants.CATEGORY, category);
                 bundle.putChar(MyConstants.WORK_MODE, workMode);
-//                bundle.putString(MyConstants.SCALE_FILTER, scaleFilter);
-//                bundle.putString(MyConstants.BRAND_FILTER, brandFilter);
-//                bundle.putString(MyConstants.KITNAME_FILTER, kitnameFilter);
-//                bundle.putString(MyConstants.STATUS_FILTER, statusFilter);
-//                bundle.putString(MyConstants.MEDIA_FILTER, mediaFilter);
+                bundle.putBoolean(MyConstants.WORK_MODE, aftermarketMode);
 
                 KitsFragment fragment = new KitsFragment();
-                if (workMode == MyConstants.MODE_KIT) {
-                    bundle.putBoolean(MyConstants.AFTERMARKET_MODE, false);
-                    fragment.setArguments(bundle);
-                    android.support.v4.app.FragmentTransaction fragmentTransaction =
-                            getSupportFragmentManager().beginTransaction();
-                    fragmentTransaction.replace(R.id.mainactivityContainer, fragment);
-                    fragmentTransaction.commit();
-
-                    KitsFragment.refreshPages(); //???
-
-                    ViewPager viewPager = findViewById(R.id.viewpagerViewStash);
-                    viewPager.setCurrentItem(categoryTab);
-                } else if (workMode == MyConstants.MODE_AFTERMARKET) {
-                    bundle.putBoolean(MyConstants.AFTERMARKET_MODE, true);
-                    fragment.setArguments(bundle);
-                    android.support.v4.app.FragmentTransaction fragmentTransaction =
-                            getSupportFragmentManager().beginTransaction();
-                    fragmentTransaction.replace(R.id.mainactivityContainer, fragment);
-                    fragmentTransaction.commit();
-
-                    KitsFragment.refreshPages();
-
-                    ViewPager viewPager = findViewById(R.id.viewpagerViewStash);
-                    viewPager.setCurrentItem(categoryTab);
-
-                } else if (workMode == MyConstants.MODE_VIEW_FROM_KIT) {
-                    //Возвращаемся в просмотр кита
-
-                } else if (workMode == MyConstants.MODE_EDIT_FROM_KIT) {
-                    //Возвращаемся в КитЕдит
-                }
+                fragment.setArguments(bundle);
+                android.support.v4.app.FragmentTransaction fragmentTransaction =
+                        getSupportFragmentManager().beginTransaction();
+                fragmentTransaction.replace(R.id.mainactivityContainer, fragment);
+                fragmentTransaction.commit();
             }
         }
     }
@@ -406,7 +376,7 @@ public class MainActivity extends AppCompatActivity
                 != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     Manifest.permission.CAMERA)) {
-                Toast.makeText(this, "Without permission to use camera we can't read barcodes",
+                Toast.makeText(this, R.string.we_cant_read_barcodes,
                         Toast.LENGTH_LONG).show();
             } else {
                 ActivityCompat.requestPermissions(this,
@@ -421,7 +391,7 @@ public class MainActivity extends AppCompatActivity
                 != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                Toast.makeText(this, "Without permission to write file we can't save boxart",
+                Toast.makeText(this, R.string.we_cant_save_boxarts,
                         Toast.LENGTH_LONG).show();
             } else {
                 ActivityCompat.requestPermissions(this,

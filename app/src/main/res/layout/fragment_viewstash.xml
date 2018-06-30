@@ -1,39 +1,105 @@
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/coordinatorLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     tools:context="com.example.kitstasher.activity.MainActivity">
 
+
     <LinearLayout
+        android:id="@+id/llKits"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="40dp"
         android:orientation="vertical">
 
-        <android.support.design.widget.TabLayout
-            android:id="@+id/tabsViewStash"
+        <include
+            android:id="@+id/sortBar"
+            layout="@layout/sort_bar"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/com_facebook_button_background_color_selected"
-            android:padding="@dimen/dp4" />
+            android:layout_height="wrap_content"
+            android:background="@color/colorBackground" />
 
-        <com.example.kitstasher.objects.CustomKitsViewPager
-            android:id="@+id/viewpagerViewStash"
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rvViewKits"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="match_parent">
 
-            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
-
+        </android.support.v7.widget.RecyclerView>
     </LinearLayout>
+
+    <android.widget.LinearLayout
+        android:id="@+id/bottomsheet"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorItem"
+        android:orientation="vertical"
+        app:behavior_peekHeight="32dp"
+        app:layout_behavior="android.support.design.widget.BottomSheetBehavior">
+
+        <LinearLayout
+            android:id="@+id/llAll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorHighlight"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingBottom="8dp"
+            android:paddingLeft="@dimen/activity_margin"
+            android:paddingRight="@dimen/activity_margin"
+            android:paddingTop="8dp">
+
+            <TextView
+                android:id="@+id/textView9"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Категория:"
+                android:textAppearance="@style/AppTheme.LittleHeader" />
+
+            <TextView
+                android:id="@+id/tvChoosedCategory"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginLeft="@dimen/dp16"
+                android:text="TextView"
+                android:textAppearance="@style/AppTheme.LittleHeader" />
+
+        </LinearLayout>
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rvActiveCategories"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="16dp"
+            android:layout_marginTop="@dimen/dp8"
+            android:layout_weight="1"
+            android:clipChildren="false"
+            android:clipToPadding="false">
+
+        </android.support.v7.widget.RecyclerView>
+
+    </android.widget.LinearLayout>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
+        android:layout_margin="@dimen/dp16"
+        android:clickable="true"
+        android:focusable="true"
+        android:src="@android:drawable/ic_input_add"
         android:tint="@color/colorItem"
-        android:src="@android:drawable/ic_input_add" />
+        app:layout_anchor="@+id/llKits"
+        app:layout_anchorGravity="right|bottom" />
+
+
+    <!--<include-->
+        <!--android:id="@+id/include"-->
+        <!--layout="@layout/fragment_bottom_sheet_dialog" />-->
 
 </android.support.design.widget.CoordinatorLayout>

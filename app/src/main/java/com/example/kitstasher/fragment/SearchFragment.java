@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
@@ -22,7 +23,7 @@ import android.widget.Toast;
 
 import com.example.kitstasher.R;
 import com.example.kitstasher.activity.MainActivity;
-import com.example.kitstasher.adapters.AdapterAlertDialog;
+import com.example.kitstasher.adapters.UiAlertDialogAdapter;
 import com.example.kitstasher.objects.Item;
 import com.example.kitstasher.objects.Kit;
 import com.example.kitstasher.other.AsyncApp42ServiceApi;
@@ -57,11 +58,12 @@ public class SearchFragment extends Fragment implements AsyncApp42ServiceApi.App
     private String barcode;
     private ProgressBar pbProgress;
     private Kit kitToShow;
+    private Context context;
 
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_search, container, false);
         Button btnCheck = view.findViewById(R.id.btnCheck);
@@ -88,11 +90,12 @@ public class SearchFragment extends Fragment implements AsyncApp42ServiceApi.App
 
         DbConnector dbConnector = new DbConnector(getActivity());
         dbConnector.open();
+        context = getActivity();
 
         kitToShow = new Kit.KitBuilder().build();
 
         ArrayList<String> myBrands = DbConnector.getAllBrands();
-        ArrayAdapter<String> acAdapterMybrands = new ArrayAdapter<>(getActivity(),
+        ArrayAdapter<String> acAdapterMybrands = new ArrayAdapter<>(context,
                 android.R.layout.simple_dropdown_item_1line, myBrands);
         acBrand.addTextChangedListener(this);
         acBrand.setAdapter(acAdapterMybrands);
@@ -258,11 +261,11 @@ public class SearchFragment extends Fragment implements AsyncApp42ServiceApi.App
             kitsForChoose.add(kit);
         }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(R.string.Found);
 
-        AdapterAlertDialog adapterAlertDialog = new AdapterAlertDialog(getActivity(), itemList);
-        builder.setAdapter(adapterAlertDialog, new DialogInterface.OnClickListener() {
+        UiAlertDialogAdapter uiAlertDialogAdapter = new UiAlertDialogAdapter(getActivity(), itemList);
+        builder.setAdapter(uiAlertDialogAdapter, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int item) {
                 kitToShow = kitsForChoose.get(item);

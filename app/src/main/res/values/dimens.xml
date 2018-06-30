@@ -19,5 +19,6 @@
     <dimen name="text_medium">18sp</dimen>
     <dimen name="text_large">22sp</dimen>
     <dimen name="dp144">144dp</dimen>
+    <dimen name="activity_margin">16dp</dimen>
 
 </resources>
