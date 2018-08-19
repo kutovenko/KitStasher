@@ -13,19 +13,30 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.kitstasher.R;
+import com.example.kitstasher.fragment.KitsFragment;
 import com.example.kitstasher.objects.CategoryItem;
 
 import java.util.ArrayList;
 
+/*
+Adapter for BottomSheet in KitsFragment. Returns list of all active categories and
+number of kits in each category.
+
+Адаптер для BottomSheet в KitsFragment. Возвращает перечень всех активных категорий
+и количество наборов для каждой из них.
+ */
+
 public class BottomSheetAdapter extends RecyclerView.Adapter<BottomSheetAdapter.ViewHolder>{
     private ArrayList<CategoryItem> activeCategories;
     private Context context;
-    private ActiveCategoriesListener listener;
+    private ActiveCategoriesListener activeCategoriesListener;
+    private KitsFragment.CategoriesChangeListener categoriesChangeListener;
 
-    public BottomSheetAdapter(Context context, ArrayList<CategoryItem> objects, ActiveCategoriesListener listener){
+    public BottomSheetAdapter(Context context, ArrayList<CategoryItem> objects,
+                              ActiveCategoriesListener activeCategoriesListener){
         this.context = context;
         this.activeCategories = objects;
-        this.listener = listener;
+        this.activeCategoriesListener = activeCategoriesListener;
     }
 
     @NonNull
@@ -35,7 +46,6 @@ public class BottomSheetAdapter extends RecyclerView.Adapter<BottomSheetAdapter.
                 .inflate(R.layout.item_rv_categories, parent, false);
         return new BottomSheetAdapter.ViewHolder(itemView);
     }
-
 
     static class ViewHolder extends RecyclerView.ViewHolder{
         ImageView ivLogo;
@@ -58,14 +68,14 @@ public class BottomSheetAdapter extends RecyclerView.Adapter<BottomSheetAdapter.
         Glide.with(context)
                 .load(item.getLogoResource())
                 .apply(new RequestOptions().placeholder(R.drawable.ic_help_black_24dp)
-                .error(R.drawable.ic_help_black_24dp))
+                        .error(R.drawable.ic_help_black_24dp))
                 .into(holder.ivLogo);
         holder.tvName.setText(tagToCategoryName(item.getName()));
         holder.tvQuantity.setText(String.valueOf(item.getQuantity()));
         holder.llCategoryItem.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                listener.onCategorySelected(item.getName());
+                activeCategoriesListener.onCategorySelected(item.getName());
             }
         });
     }
@@ -74,7 +84,7 @@ public class BottomSheetAdapter extends RecyclerView.Adapter<BottomSheetAdapter.
         String name;
         switch (tag){
             case "1":
-                name = context.getResources().getString(R.string.Air);
+                name = context.getResources().getString(R.string.air);
                 break;
             case "2":
                 name = context.getResources().getString(R.string.ground);
@@ -107,6 +117,11 @@ public class BottomSheetAdapter extends RecyclerView.Adapter<BottomSheetAdapter.
     @Override
     public int getItemCount() {
         return activeCategories.size();
+    }
+
+    public void updateCategories(ArrayList<CategoryItem> activeCategories) {
+        this.activeCategories = activeCategories;
+        this.notifyDataSetChanged();
     }
 
     public interface ActiveCategoriesListener {

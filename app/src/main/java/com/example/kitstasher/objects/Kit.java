@@ -15,6 +15,13 @@ import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.SaveCallback;
 
+import static com.example.kitstasher.other.DbConnector.COLUMN_BOXART_URI;
+import static com.example.kitstasher.other.DbConnector.COLUMN_BOXART_URL;
+import static com.example.kitstasher.other.DbConnector.COLUMN_BRAND;
+import static com.example.kitstasher.other.DbConnector.COLUMN_BRAND_CATNO;
+import static com.example.kitstasher.other.DbConnector.COLUMN_ITEMTYPE;
+import static com.example.kitstasher.other.DbConnector.COLUMN_KIT_NAME;
+
 /**
  * Created by Алексей on 04.05.2017.
  */
@@ -278,6 +285,14 @@ public class Kit implements Parcelable
         this.listname = listname;
     }
 
+    public boolean saveToLocalDb(Context context){
+        DbConnector dbConnector = new DbConnector(context);
+        dbConnector.open();
+        long id = dbConnector.addItem(this, DbConnector.TABLE_KITS);
+        dbConnector.close();
+        return id != -1;
+    }
+
 
     public String saveToOnlineStash(final Context context) {
         final String[] parseId = new String[1];
@@ -302,6 +317,7 @@ public class Kit implements Parcelable
         kitTowrite.put(MyConstants.PARSE_LOCALID, this.getLocalId());
 //        kitTowrite.put(MyConstants.PARSE_PARENTID, this.getParentId());
         kitTowrite.put(MyConstants.PARSE_ITEMTYPE, this.getItemType());
+        kitTowrite.put(MyConstants.PARSE_MEDIA, this.getMedia());
 
 
         kitTowrite.saveInBackground(new SaveCallback() {
@@ -331,6 +347,7 @@ public class Kit implements Parcelable
         kitTowrite.put(MyConstants.YEAR, this.getYear());
 
         kitTowrite.put(MyConstants.PARSE_ITEMTYPE, this.getItemType());
+        kitTowrite.put(MyConstants.PARSE_MEDIA, this.getMedia());
 
         kitTowrite.saveInBackground();
     }
@@ -340,11 +357,11 @@ public class Kit implements Parcelable
 //        DbConnector dbConnector = new DbConnector(context);
 //        dbConnector.open();
 //        if (workMode == MyConstants.MODE_KIT) {
-//            dbConnector.addKitRec((Kit) itemSave, DbConnector.TABLE_KITS);
+//            dbConnector.addItem((Kit) itemSave, DbConnector.TABLE_KITS);
 ////        } else if (workMode == MyConstants.MODE_LIST) {
 ////            dbConnector.addListItem((Kit) itemSave, listname);
 //        } else if (workMode == MyConstants.MODE_AFTERMARKET) {
-//            dbConnector.addKitRec((Kit) itemSave, DbConnector.TABLE_AFTERMARKET);
+//            dbConnector.addItem((Kit) itemSave, DbConnector.TABLE_AFTERMARKET);
 //        }
 ////        else if (workMode == MyConstants.MODE_AFTER_KIT) {
 ////            long aftId = dbConnector.addAftermarket((Aftermarket) itemSave);
@@ -438,7 +455,7 @@ public class Kit implements Parcelable
         parcel.writeInt(media);
         parcel.writeInt(status);
 
-        parcel.writeString(itemType); //1 - kit, 2 - aftermarket
+        parcel.writeString(itemType); //1 - kit, 2 - aftermarket, 3 - paint
         parcel.writeLong(localId);
         parcel.writeLong(parentId);
 
@@ -487,7 +504,7 @@ public class Kit implements Parcelable
         media = parcel.readInt();
         status = parcel.readInt();
 
-        itemType = parcel.readString(); //1 - kit, 2 - aftermarket
+        itemType = parcel.readString(); //1 - kit, 2 - aftermarket, 3 - paint
         localId = parcel.readLong();
         parentId = parcel.readLong();
         listname = parcel.readString();
@@ -552,7 +569,7 @@ public class Kit implements Parcelable
             return this;
         }
 
-        public KitBuilder hasKit_name(String kit_name){
+        public KitBuilder hasKitName(String kit_name){
             this.kit_name = kit_name;
             return this;
         }
@@ -571,7 +588,7 @@ public class Kit implements Parcelable
             this.barcode = barcode;
             return this;
         }
-        public KitBuilder hasKit_noeng_name(String kit_noeng_name) {
+        public KitBuilder hasKitNoengName(String kit_noeng_name) {
             this.kit_noeng_name = kit_noeng_name;
             return this;
         }
@@ -583,15 +600,15 @@ public class Kit implements Parcelable
             this.prototype = prototype;
             return this;
         }
-        public KitBuilder hasBoxart_url(String boxart_url) {
+        public KitBuilder hasBoxartUrl(String boxart_url) {
             this.boxart_url = boxart_url;
             return this;
         }
-        public KitBuilder hasScalemates_url(String scalemates_url) {
+        public KitBuilder hasScalematesUrl(String scalemates_url) {
             this.scalemates_url = scalemates_url;
             return this;
         }
-        public KitBuilder hasBoxart_uri(String boxart_uri) {
+        public KitBuilder hasBoxartUri(String boxart_uri) {
             this.boxart_uri = boxart_uri;
             return this;
         }

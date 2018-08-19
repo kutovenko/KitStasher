@@ -10,7 +10,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.kitstasher.R;
 import com.example.kitstasher.objects.Item;
 import com.example.kitstasher.other.Helper;
@@ -19,7 +18,9 @@ import com.example.kitstasher.other.MyConstants;
 import java.util.List;
 
 /**
- * Created by Алексей on 06.07.2017. Adapter for AlertDialog in Scan and Manual Add
+ * Created by Алексей on 06.07.2017. Adapter for AlertDialog in ScanFragment and ManualAddFragment.
+ *
+ * Адаптер для AlertDialog в ScanFragment и ManualAddFragment.
  */
 
 public class UiAlertDialogAdapter extends ArrayAdapter<Item> {
@@ -58,7 +59,6 @@ public class UiAlertDialogAdapter extends ArrayAdapter<Item> {
         Glide
                 .with(context)
                 .load(composeUrl(list.get(position).getItemBoxartUrl()))
-//                .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(holder.ivItemBoxart);
         return view;
     }
@@ -69,7 +69,7 @@ public class UiAlertDialogAdapter extends ArrayAdapter<Item> {
                     + MyConstants.BOXART_URL_SMALL
                     + MyConstants.JPG;
         }else{
-            return "";
+            return MyConstants.EMPTY;
         }
     }
 }

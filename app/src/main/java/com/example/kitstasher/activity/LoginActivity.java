@@ -44,6 +44,8 @@ import java.util.Collection;
  * Log in Facebook account and then in cloud services for interacting with online kits database
  * and Top users service. Currently there are AppHQ for kits and Parse on Buddy for Top users.
  *
+ * Авторизация с помощью Facebook. Проверка наличия учетной записи Parse и регистрация,
+ * если таковой не было. Регистрация на сервисе AppHq  для доступа к основной базе наборов.
  */
 
 public class LoginActivity extends AppCompatActivity {
@@ -54,6 +56,8 @@ public class LoginActivity extends AppCompatActivity {
     private SharedPreferences sharedPreferences;
     private KsUser ksUser;
     Collection<String> permissions;
+    public static final int MY_PERMISSIONS_REQUEST_CAMERA = 10;
+    public static final int MY_PERMISSIONS_REQUEST_WRITE = 20;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -135,6 +139,7 @@ public class LoginActivity extends AppCompatActivity {
                     setSprefData(MyConstants.USER_ID_PARSE, user.getUsername());
                 }
 
+//                if (user != null && user.isNew()) {
                 if (user != null && user.isNew()) {
 
                     ParseQuery<ParseObject> query = ParseQuery.getQuery(MyConstants.PARSE_C_TOPUSERS);

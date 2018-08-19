@@ -5,5 +5,5 @@ package com.example.kitstasher.other;
  */
 
 public interface OnFragmentInteractionListener {
-    void onFragmentInteraction(String barcode, char mode);
+    void onFragmentInteraction(String barcode, String mode);
 }

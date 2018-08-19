@@ -1,11 +1,19 @@
 package com.example.kitstasher.other;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.support.graphics.drawable.VectorDrawableCompat;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.Html;
 import android.text.Spanned;
@@ -16,6 +24,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.example.kitstasher.MyApplication;
 import com.example.kitstasher.R;
@@ -27,12 +36,17 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
+
+import static com.example.kitstasher.activity.MainActivity.MY_PERMISSIONS_REQUEST_WRITE;
 
 
 /**
@@ -234,6 +248,20 @@ public class Helper {
         }
     }
 
+    public static String getTodaysDate() {
+        Calendar c = Calendar.getInstance();
+        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());
+        return df.format(c.getTime());
+    }
+
+    public static String unifyValue(Object object) {
+        if (object.getClass() == String.class) {
+            return object.toString();
+        } else {
+        return String.valueOf(object);
+        }
+    }
+
     public enum StorageState {
         NOT_AVAILABLE, WRITEABLE, READ_ONLY
     }
@@ -299,6 +327,19 @@ public class Helper {
         return suffix;
     }
 
+    public static Intent newFacebookIntent(PackageManager pm, String url) {
+        Uri uri = Uri.parse(url);
+        try {
+            ApplicationInfo applicationInfo = pm.getApplicationInfo("com.facebook.katana", 0);
+            if (applicationInfo.enabled) {
+                // http://stackoverflow.com/a/24547437/1048340
+                uri = Uri.parse("fb://facewebmodal/f?href=" + url);
+            }
+        } catch (PackageManager.NameNotFoundException ignored) {
+        }
+        return new Intent(Intent.ACTION_VIEW, uri);
+    }
+
 //    public static String descToCode(String d) { //// TODO: 13.09.2017 Helper
 //        String desc = "";
 //        if (d.equals(MyApplication.getContext().getString(R.string.unknown))){
@@ -326,6 +367,18 @@ public class Helper {
             return "";
         }
     }
+
+
+    public static boolean isOnline(Context context) {
+        // Add a null check before you proceed. Need for Samsung devices.
+        //https://stackoverflow.com/questions/46500571/nullpointerexception-when-checking-network-state-on-samsung-devices
+        if (context == null) return false;
+
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo info = cm.getActiveNetworkInfo();
+        return info != null && info.isConnected();
+    }
+
 
 //    public static String setDescription(String description) { // TODO: 03.09.2017 Helper
 //        String desc = MyConstants.EMPTY;

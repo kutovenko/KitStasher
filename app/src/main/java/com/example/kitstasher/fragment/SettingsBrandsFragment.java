@@ -50,7 +50,7 @@ public class SettingsBrandsFragment extends Fragment {
         String sortBy = DbConnector.BRANDS_COLUMN_BRAND;
         DbConnector db = new DbConnector(context);
         db.open();
-        ArrayList<BrandItem> items = db.getBrands(sortBy);
+        ArrayList<BrandItem> items = db.getAllBrands(sortBy);
 
         FragmentBrandAdapter brandAdapter = new FragmentBrandAdapter(context, items);
 //        brandAdapter.setHasStableIds(true); //for animation on delete

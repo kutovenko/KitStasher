@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    tools:context=".fragment.NoPermissionFragment">
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="160dp"
+        android:layout_height="160dp"
+        android:layout_gravity="center_vertical|center_horizontal"
+        app:srcCompat="@drawable/ic_if_icon_20_sad_face_eyebrows_315531" />
+
+    <TextView
+        android:id="@+id/tvRequestText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical|center_horizontal"
+        android:layout_margin="32dp"
+        android:maxLines="5"
+        android:minLines="3"
+        android:singleLine="false"
+        android:text="@string/nopermission_begin" />
+
+    <LinearLayout
+        android:id="@+id/linLayoutButtons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="32dp"
+        android:layout_marginLeft="32dp"
+        android:layout_marginRight="32dp"
+        android:orientation="horizontal"
+        android:theme="@style/Widget.AppCompat.ButtonBar">
+
+        <Button
+            android:id="@+id/btnCancelPermission"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="@dimen/dp8"
+            android:layout_weight="1"
+            android:background="?android:attr/selectableItemBackground"
+            android:text="@string/cancel" />
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="4dip"
+            android:layout_marginRight="4dip"
+            android:background="?android:attr/dividerVertical" />
+
+        <Button
+            android:id="@+id/btnRequestPermission"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/dp8"
+            android:layout_weight="1"
+            android:background="?android:attr/selectableItemBackground"
+            android:text="@string/request_permission" />
+    </LinearLayout>
+
+</LinearLayout>

@@ -47,7 +47,6 @@ public class ItemCardFragment extends Fragment {
             tvBrand,
             tvBrandcatno,
             tvScale,
-            tvStatus,
             tvMedia,
             tvDesc,
             tvYear,
@@ -66,8 +65,8 @@ public class ItemCardFragment extends Fragment {
     private TableLayout tableLayoutPurchase;
     private RecyclerView rvAftermarket;
     private String category,
-            tableName;
-    private final int EDIT_ACTIVITY_CODE = 21;
+            workMode;
+    public static final int EDIT_ACTIVITY_CODE = 21;
     private int tabToReturn;
 
     private Kit kit;
@@ -100,7 +99,7 @@ public class ItemCardFragment extends Fragment {
 
 
         initUi();
-        final char workMode = getArguments().getChar(MyConstants.WORK_MODE);
+        final String workMode = getArguments().getString(MyConstants.WORK_MODE);
 
         if ((workMode == MyConstants.MODE_SEARCH)) {
             showSearchCard();
@@ -119,7 +118,6 @@ public class ItemCardFragment extends Fragment {
         tvBrandcatno = view.findViewById(R.id.tvCatno);
         tvScale = view.findViewById(R.id.tvScale);
         ivCategory = view.findViewById(R.id.ivCategory);
-        tvStatus = view.findViewById(R.id.tvStatus);
         tvMedia = view.findViewById(R.id.tvMedia);
         tvDesc = view.findViewById(R.id.tvDesc);
         tvYear = view.findViewById(R.id.tvYear);
@@ -129,31 +127,29 @@ public class ItemCardFragment extends Fragment {
         tvDatePurchased = view.findViewById(R.id.tvDatePurchased);
         tvPrice = view.findViewById(R.id.tvPrice);
         tvCurrency = view.findViewById(R.id.tvCurrency);
-        rvAftermarket = view.findViewById(R.id.lvAftermarket);
-        RecyclerView.LayoutManager afterManager = new LinearLayoutManager(context);
-        rvAftermarket.setHasFixedSize(true);
-        rvAftermarket.setLayoutManager(afterManager);
-        DefaultItemAnimator animator = new DefaultItemAnimator() {
-            @Override
-            public boolean canReuseUpdatedViewHolder(@NonNull RecyclerView.ViewHolder viewHolder) {
-                return true;
-            }
-        };
-        rvAftermarket.setItemAnimator(animator);
+//        rvAftermarket = view.findViewById(R.id.lvAftermarket);
+//        RecyclerView.LayoutManager afterManager = new LinearLayoutManager(context);
+//        rvAftermarket.setHasFixedSize(true);
+//        rvAftermarket.setLayoutManager(afterManager);
+//        DefaultItemAnimator animator = new DefaultItemAnimator() {
+//            @Override
+//            public boolean canReuseUpdatedViewHolder(@NonNull RecyclerView.ViewHolder viewHolder) {
+//                return true;
+//            }
+//        };
+//        rvAftermarket.setItemAnimator(animator);
 
         tvScalematesUrl = view.findViewById(R.id.tvScalemates);
         tvGoogleUrl = view.findViewById(R.id.tvGoogle);
         btnEdit = view.findViewById(R.id.btnEdit);
 
         tvPurchaseTitle = view.findViewById(R.id.tvPurchaseTitle);
-        tvAftermarketTitle = view.findViewById(R.id.tvAftermarketTitle);
         tableLayoutPurchase = view.findViewById(R.id.tableLayoutPurchase);
         tvNotesTitle = view.findViewById(R.id.tvNotesTitle);
 
     }
 
-    private void showDbCard(final char workMode) {
-        DbConnector dbConnector = new DbConnector(context);
+    private void showDbCard(final String workMode) {
 
         kit = getArguments().getParcelable("kit");
 
@@ -189,7 +185,7 @@ public class ItemCardFragment extends Fragment {
         tvScale.setText(scaleText);
         ivCategory = view.findViewById(R.id.ivCategory);
 
-        tvStatus.setText(codeToStatus(status));
+//        tvStatus.setText(codeToStatus(status));
         tvMedia.setText(codeToMedia(media));
         tvDesc.setText(codeToDescription(description));
         tvYear.setText(year);
@@ -209,10 +205,10 @@ public class ItemCardFragment extends Fragment {
         String scalematesText = "<a href='"
                 + scalematesUrl
                 + "'> " + getString(R.string.Look_up_on_Scalemates) + "</a>";
-        if (scalematesUrl != null) {
+        if (!Helper.isBlank(scalematesUrl)) {
             tvScalematesUrl.setText(Helper.fromHtml(scalematesText));
         } else {
-            tvScalematesUrl.setText("n");
+            tvScalematesUrl.setVisibility(View.GONE);
         }
 
         tvGoogleUrl.setClickable(true);
@@ -238,13 +234,9 @@ public class ItemCardFragment extends Fragment {
 
         setCategoryImage(category);
 
-//        ArrayList<Kit> aCursor = dbConnector.getAftermarketForKit(id, "");
-//        NewMyListAdapter afterAdapter = new NewMyListAdapter(aCursor, context, MyConstants.MODE_A_KIT);
-//        rvAftermarket.setAdapter(afterAdapter);
-
         btnEdit.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
+            public void onClick(View view) { // TODO: 04.07.2018 replace with fragment
                 Intent intent = new Intent(getActivity(), EditActivity.class);
                 intent.putExtra("kit", kit);
                 intent.putExtra(MyConstants.CATEGORY_TAB, tabToReturn);
@@ -272,7 +264,6 @@ public class ItemCardFragment extends Fragment {
         String scaleText = "1/" + String.valueOf(scale);
         tvScale.setText(scaleText);
 
-        tvStatus.setVisibility(View.GONE);
         tvMedia.setText(codeToMedia(getArguments().getInt(MyConstants.MEDIA)));
         tvDesc.setText(codeToDescription(getArguments().getString(MyConstants.DESCRIPTION)));
         tvYear.setText(getArguments().getString(MyConstants.YEAR));
@@ -356,7 +347,7 @@ public class ItemCardFragment extends Fragment {
         String desc = "";
         switch (code) {
             case MyConstants.NEW_TOOL:
-                desc = getResources().getString(R.string.new_tool);
+                desc = getResources().getString(R.string.newkit);
                 break;
             case MyConstants.REBOX:
                 desc = getResources().getString(R.string.rebox);

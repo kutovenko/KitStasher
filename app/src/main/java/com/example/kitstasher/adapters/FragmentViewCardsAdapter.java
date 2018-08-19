@@ -8,17 +8,17 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import java.util.List;
 
 /**
- * Created by Алексей on 20.09.2017. Viev cards adapter
+ * Created by Алексей on 20.09.2017. Viev cards adapter for ViewActivity.
+ *
+ * Просмотр списка карточек наборов. Используется ViewActivity.
  */
 
 public class FragmentViewCardsAdapter extends FragmentStatePagerAdapter {
-    private Context context;
     private static int pos = 0;
     private List<Fragment> myFragments;
 
-    public FragmentViewCardsAdapter(Context context, FragmentManager fm, List<Fragment> myFrags) {
+    public FragmentViewCardsAdapter(FragmentManager fm, List<Fragment> myFrags) {
         super(fm);
-        this.context = context;
         this.myFragments = myFrags;
     }
 

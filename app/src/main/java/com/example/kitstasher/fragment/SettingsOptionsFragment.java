@@ -2,7 +2,6 @@ package com.example.kitstasher.fragment;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -124,17 +123,17 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
 
                             .hasBrand(object.getString(MyConstants.PARSE_BRAND))
                             .hasBrand_catno(object.getString(MyConstants.PARSE_BRAND_CATNO))
-                            .hasKit_name(object.getString(MyConstants.PARSE_KITNAME))
+                            .hasKitName(object.getString(MyConstants.PARSE_KITNAME))
                             .hasScale(object.getInt(MyConstants.PARSE_SCALE))
                             .hasCategory(object.getString(MyConstants.PARSE_CATEGORY))
                             .hasBarcode(object.getString(MyConstants.PARSE_BARCODE))
-                            .hasKit_noeng_name(object.getString(MyConstants.PARSE_NOENGNAME))
+                            .hasKitNoengName(object.getString(MyConstants.PARSE_NOENGNAME))
                             .hasDescription(object.getString(MyConstants.PARSE_DESCRIPTION))
                             .hasYear(object.getString(MyConstants.PARSE_YEAR))
                             .hasPrototype(MyConstants.EMPTY)//not in use
 
-                            .hasBoxart_url(object.getString(MyConstants.PARSE_BOXART_URL))
-                            .hasScalemates_url(object.getString(MyConstants.PARSE_SCALEMATES))
+                            .hasBoxartUrl(object.getString(MyConstants.PARSE_BOXART_URL))
+                            .hasScalematesUrl(object.getString(MyConstants.PARSE_SCALEMATES))
 
                             .hasDateAdded(object.getString("createdAt"))
                             .hasDatePurchased(object.getString(MyConstants.PURCHASE_DATE))
@@ -146,24 +145,10 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
                             .hasStatus(object.getInt(MyConstants.STATUS))
                             .hasMedia(object.getInt(MyConstants.MEDIA))
                             .hasItemType(object.getString(MyConstants.PARSE_ITEMTYPE))
-
-
-
-                            //                            .hasSendStatus(sendStatus)
-                            //                            .hasBoxart_uri(boxartUri)
                             .build();
-//                    if (object.getString(MyConstants.PARSE_ITEMTYPE).equals("")){
-//                        kit.setItemType(MyConstants.TYPE_KIT);
-//                    }
                     String activeTable;
-                    String itemType = object.getString(MyConstants.PARSE_ITEMTYPE);
-                    kit.setItemType(MyConstants.TYPE_KIT);
-//                    if (itemType.equals(MyConstants.TYPE_AFTERMARKET)){
-//                        activeTable = DbConnector.TABLE_AFTERMARKET;
-//                    }else{
                     activeTable = DbConnector.TABLE_KITS;
-//                    }
-                    dbConnector.addKitRec(kit, activeTable);
+                    dbConnector.addItem(kit, activeTable);
                 }
                 progressBarDb.setVisibility(View.GONE);
                 Toast.makeText(getActivity(), getString(R.string.Restored), Toast.LENGTH_SHORT).show();
@@ -191,14 +176,8 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
     private void loadCurrencySpinner() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         String defCurrency = sharedPreferences.getString(MyConstants.DEFAULT_CURRENCY, "USD");
-        Cursor currCursor = dbConnector.getAllFromTable(DbConnector.TABLE_CURRENCIES,
+        String[] currencies = dbConnector.getCurrencies(DbConnector.TABLE_CURRENCIES,
                 DbConnector.CURRENCIES_COLUMN_CURRENCY);
-        currCursor.moveToFirst();
-        String[] currencies = new String[currCursor.getCount()];
-        for (int i = 0; i < currCursor.getCount(); i++) {
-            currencies[i] = currCursor.getString(1);
-            currCursor.moveToNext();
-        }
         ArrayAdapter currencyAdapter = new ArrayAdapter<>(context,
                 android.R.layout.simple_spinner_item, currencies);
         spDefaultCurrency.setAdapter(currencyAdapter);

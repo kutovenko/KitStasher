@@ -7,17 +7,20 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
 import com.example.kitstasher.R;
+import com.example.kitstasher.fragment.SettingsAboutFragment;
 import com.example.kitstasher.fragment.SettingsBrandsFragment;
 import com.example.kitstasher.fragment.SettingsMyShopsFragment;
 import com.example.kitstasher.fragment.SettingsOptionsFragment;
 
 /**
- * Created by Алексей on 03.05.2017. Adapter for Settings Fragment
+ * Created by Алексей on 03.05.2017. Adapter for Settings Fragment with ViewPager
+ *
+ * Адаптер для фрагмента Settings c ViewPAger.
  */
 
 public class FragmentSettingsAdapter extends FragmentPagerAdapter {
 
-    private static final int FRAGMENT_COUNT = 3;
+    private static final int FRAGMENT_COUNT = 4;
     private Context mContext;
 
     public FragmentSettingsAdapter(FragmentManager fm, Context context) {
@@ -30,8 +33,10 @@ public class FragmentSettingsAdapter extends FragmentPagerAdapter {
             case 0:
                 return new SettingsOptionsFragment();
             case 1:
-                return new SettingsBrandsFragment();
+                return SettingsAboutFragment.newInstance();
             case 2:
+                return new SettingsBrandsFragment();
+            case 3:
                 return new SettingsMyShopsFragment();
         }
         return null;
@@ -52,8 +57,10 @@ public class FragmentSettingsAdapter extends FragmentPagerAdapter {
             case 0:
                 return mContext.getResources().getString(R.string.options);
             case 1:
-                return mContext.getResources().getString(R.string.Brands);
+                return mContext.getResources().getString(R.string.about);
             case 2:
+                return mContext.getResources().getString(R.string.Brands);
+            case 3:
                 return mContext.getResources().getString(R.string.shops);
 
         }

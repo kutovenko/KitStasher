@@ -4,7 +4,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -15,7 +14,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatSpinner;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,7 +23,6 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -53,7 +50,6 @@ import java.util.Date;
 import java.util.Locale;
 
 import static android.app.Activity.RESULT_OK;
-import static android.view.View.GONE;
 import static com.example.kitstasher.activity.MainActivity.REQUEST_CODE_CROP;
 import static java.lang.Integer.parseInt;
 
@@ -65,7 +61,7 @@ import static java.lang.Integer.parseInt;
 public class ItemEditFragment extends Fragment implements View.OnClickListener {
     private Context context;
     private DbConnector dbConnector;
-//    private Cursor aftermarketCursor;
+    //    private Cursor aftermarketCursor;
     private View view;
 //    @BindView(R.id.ivEditBoxart) ImageView ivEditorBoxart;
 //    @BindView(R.id.acEditBrand) AutoCompleteTextView etDetFullBrand;
@@ -93,12 +89,12 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
             spQuantity,
             spCurrency,
             spKitMedia,
-            spKitStatus,
+//            spKitStatus,
             spCategory;
     private TextView tvMPurchaseDate;
     //    private ImageView ivEditorBoxart;
-    private RecyclerView rvAftermarket;
-    private LinearLayout linLayoutEditAftermarket;
+//    private RecyclerView rvAftermarket;
+//    private LinearLayout linLayoutEditAftermarket;
 
     private long id;
     private final int REQEST_AFTER_KIT = 10;
@@ -116,13 +112,10 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
             boxartUrl,
             mCurrentPhotoPath,
             category;
-    private char workMode;
+    private String workMode;
     private boolean isBoxartTemporary,
             aftermarketMode;
     private ArrayAdapter<String> descriptionAdapter, yearsAdapter, currencyAdapter;
-//    private NewMyListAdapter aftermarketAdapter;
-//    private ArrayList<Kit> aftermarketList;
-
     private Kit kit;
     private Kit editedKit;
     private int tabToreturn;
@@ -132,7 +125,6 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_item_edit, container, false);
-//        setRetainInstance(true);
         context = getActivity();
 
         dbConnector = new DbConnector(context);
@@ -140,38 +132,20 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
 
         initUI();
 
-        kit = getArguments().getParcelable("kit");
-//        editedKit = kit;
+        kit = getArguments().getParcelable(MyConstants.KIT);
 
-        tabToreturn = getArguments().getInt(MyConstants.CATEGORY_TAB);
-        workMode = getArguments().getChar(MyConstants.WORK_MODE, 'm');
-//        category = getArguments().getInt(MyConstants.CATEGORY)
-        aMode = MyConstants.MODE_A_KIT;
-        switch (workMode) {
-            case 'a': //MyConstants.MODE_AFTERMARKET
-                linLayoutEditAftermarket.setVisibility(GONE);
-                aftermarketMode = true;
-                break;
-            case 'm': //MyConstants.MODE_KIT
-//                aftermarketList = dbConnector.getAftermarketForKit(id, listname);
-                aMode = MyConstants.MODE_A_EDIT;
-                aftermarketMode = false;
-                break;
-        }
+//        tabToreturn = getArguments().getInt(MyConstants.CATEGORY_TAB);
+        workMode = getArguments().getString(MyConstants.WORK_MODE, MyConstants.TYPE_KIT);
+        category = getArguments().getString(MyConstants.CATEGORY);
+//        aMode = MyConstants.MODE_A_KIT;
+//                aMode = MyConstants.MODE_A_EDIT;
+//                aftermarketMode = false;
         showEditForm(kit);
 
 
         if (savedInstanceState != null) {
             if (savedInstanceState.getString(MyConstants.BOXART_URI) != null) {
                 mCurrentPhotoPath = savedInstanceState.getString("imagePath");
-//                Glide
-//                        .with(context)
-//                        .load(
-//                                savedInstanceState.getString(MyConstants.BOXART_URL)
-//                                        + MyConstants.BOXART_URL_LARGE
-//                                        + MyConstants.JPG)
-//                        .apply(new RequestOptions().placeholder(R.drawable.ic_menu_camera).error(R.drawable.ic_menu_camera))
-//                        .into(ivEditorBoxart);
                 if (mCurrentPhotoPath != null && !mCurrentPhotoPath.equals(MyConstants.EMPTY)) {
                     Glide
                             .with(context)
@@ -186,25 +160,18 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
             if (path != null) {
                 mCurrentPhotoPath = path;
             }
-            else{
-                mCurrentPhotoPath = Helper.composeUrl(kit.getBoxart_url());
-            }
-
-//            Glide
-//                    .with(context)
-//                    .load(boxartUrl)
-//                    .apply(new RequestOptions().placeholder(R.drawable.ic_menu_camera).error(R.drawable.ic_menu_camera))
-//                    .into(ivEditorBoxart);
+//            else{
+//                mCurrentPhotoPath = Helper.composeUrl(kit.getBoxart_url());
+//            }
         }
-
-//        aftermarketList = dbConnector.getAftermarketForKit(id, "");
-//        aftermarketList = dbConnector.getAllAftermarket("_id DESC");
-
-//        AdapterChooserList rvAdapter = new AdapterChooserList(context, aftermarketList);
-//        rvAftermarket.setAdapter(rvAdapter);
-
-
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (dbConnector == null) dbConnector = new DbConnector(getActivity());
+        dbConnector.open();
     }
 
     @Override
@@ -219,9 +186,11 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
                     isBoxartTemporary = false;
                     buildEditedKit();
 //                    if (workMode == MyConstants.MODE_KIT) {
-                        dbConnector.editKit(DbConnector.TABLE_KITS, editedKit);
+//                    dbConnector.open();
+                    dbConnector.editItem(editedKit);
+//                        dbConnector.close();
 //                    } else if (workMode == MyConstants.MODE_AFTERMARKET) {
-//                        dbConnector.editKit(DbConnector.TABLE_AFTERMARKET, editedKit);
+//                        dbConnector.editItem(DbConnector.TABLE_AFTERMARKET, editedKit);
 //                    }
 
 //                    KitsFragment.refreshPages();
@@ -244,7 +213,8 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
                     Intent intent3 = new Intent(context, ViewActivity.class);
                     intent3.putExtra(MyConstants.POSITION, position);
                     intent3.putExtra(MyConstants.CATEGORY_TAB, tabToreturn);
-                    intent3.putExtra("kit", editedKit);
+                    intent3.putExtra(MyConstants.KIT, editedKit);
+                    intent3.putExtra(MyConstants.WORK_MODE, workMode);
                     getActivity().setResult(RESULT_OK, intent3);
                     getActivity().finish();
                 } else {
@@ -264,9 +234,9 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
                 purchaseDate = "";
                 tvMPurchaseDate.setText(R.string.Date_not_set);
                 break;
-            case R.id.btnAddAftermarket:
-                addAftermarket();
-                break;
+//            case R.id.btnAddAftermarket:
+//                addAftermarket();
+//                break;
         }
     }
 
@@ -312,6 +282,7 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
             File file = new File(mCurrentPhotoPath);
             file.deleteOnExit();
         }
+        dbConnector.close();
     }
 
     private void showEditForm(Kit kit) {
@@ -351,7 +322,7 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
         spCategory.setAdapter(uiSpinnerAdapter);
         spCategory.setSelection(categoryToSet);
 
-        String[] descriptionItems = new String[]{getString(R.string.kittype),
+        String[] descriptionItems = new String[]{getString(R.string.unknown),
                 getString(R.string.newkit),
                 getString(R.string.rebox),
         };
@@ -370,14 +341,9 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
                 R.layout.simple_spinner_item, years);
         spKitYear.setAdapter(yearsAdapter);
 
-        Cursor currCursor = dbConnector.getAllFromTable(DbConnector.TABLE_CURRENCIES,
+        String[] currencies = dbConnector.getCurrencies(DbConnector.TABLE_CURRENCIES,
                 DbConnector.CURRENCIES_COLUMN_CURRENCY);
-        currCursor.moveToFirst();
-        String[] currencies = new String[currCursor.getCount()];
-        for (int i = 0; i < currCursor.getCount(); i++) {
-            currencies[i] = currCursor.getString(1);
-            currCursor.moveToNext();
-        }
+
         currencyAdapter = new ArrayAdapter<>(context,
                 R.layout.simple_spinner_item, currencies);
         spCurrency.setAdapter(currencyAdapter);
@@ -417,20 +383,9 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
         spKitMedia.setAdapter(mediaAdapter);
         spKitMedia.setSelection(kit.getMedia());
 
-        String[] kitStatuses = new String[]{
-                getString(R.string.status_new),
-                getString(R.string.status_opened),
-                getString(R.string.status_started),
-                getString(R.string.status_inprogress),
-                getString(R.string.status_finished),
-                getString(R.string.status_lost_sold)
-        };
-        ArrayAdapter statusAdapter = new ArrayAdapter<>(context, R.layout.simple_spinner_item,
-                kitStatuses);
-        spKitStatus.setAdapter(statusAdapter);
-        spKitMedia.setSelection(kit.getStatus());
 
-        if (workMode == MyConstants.MODE_KIT) {
+
+        if (workMode.equals(MyConstants.TYPE_KIT)) {
             String orName = kit.getKit_noeng_name();
             if (orName != null) {
                 etDetFullKitNoengname.setText(orName);
@@ -565,10 +520,20 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
         btnClearPicture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ContentValues cvUri = new ContentValues();
-                cvUri.put(MyConstants.BOXART_URI, MyConstants.EMPTY);
-                dbConnector.editRecById(kit.getLocalId(), cvUri);
+                if (!Helper.isBlank(boxartUri)) {
+                    File file = new File(boxartUri);
+                    if (file.exists()) {
+                        file.delete();
+                    }
+                }
+                boxartUri = MyConstants.EMPTY;
+                mCurrentPhotoPath = MyConstants.EMPTY;
+                ContentValues cvUri = new ContentValues(1);
+                cvUri.put(DbConnector.COLUMN_BOXART_URI, MyConstants.EMPTY);
+                dbConnector.editItemById(kit.getLocalId(), cvUri);
+
                 setBoxartImage();
+
                 alertDialog.dismiss();
             }
         });
@@ -601,7 +566,7 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
 
         editedKit.setNotes(etFullNotes.getText().toString().trim());
 
-        if (mCurrentPhotoPath != null) {
+        if (mCurrentPhotoPath != null && !Helper.isBlank(mCurrentPhotoPath)) {
             editedKit.setBoxart_uri(mCurrentPhotoPath);
         } else {
             editedKit.setBoxart_uri(MyConstants.EMPTY);
@@ -633,8 +598,8 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
             dbConnector.addShop(purchasedFrom);
         }
 
-        int status = spKitStatus.getSelectedItemPosition();
-        editedKit.setStatus(status);
+//        int status = spKitStatus.getSelectedItemPosition();
+//        editedKit.setStatus(status);
 
         int media = spKitMedia.getSelectedItemPosition();
         editedKit.setMedia(media);
@@ -728,15 +693,15 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
         btnSaveEdit.setOnClickListener(this);
         Button btnClearDate = view.findViewById(R.id.btnEditClearDate);
         btnClearDate.setOnClickListener(this);
-        Button btnAddAftermarket = view.findViewById(R.id.btnAddAftermarket);
-        btnAddAftermarket.setOnClickListener(this);
+//        Button btnAddAftermarket = view.findViewById(R.id.btnAddAftermarket);
+//        btnAddAftermarket.setOnClickListener(this);
 
         spKitDescription = view.findViewById(R.id.spEditDescription);
         spKitYear = view.findViewById(R.id.spEditYear);
         spCurrency = view.findViewById(R.id.spEditCurrency);
         spQuantity = view.findViewById(R.id.spEditQuantity);
         spKitMedia = view.findViewById(R.id.spEditMedia);
-        spKitStatus = view.findViewById(R.id.spEditStatus);
+//        spKitStatus = view.findViewById(R.id.spEditStatus);
         spCategory = view.findViewById(R.id.spEditCategory);
 
         tvMPurchaseDate = view.findViewById(R.id.tvEditPurchaseDate);
@@ -767,26 +732,26 @@ public class ItemEditFragment extends Fragment implements View.OnClickListener {
         return check;
     }
 
-    private void addAftermarket(){
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
-        LayoutInflater inflater = LayoutInflater.from(context);
-        final View dialogView = inflater.inflate(R.layout.list_choosemode_alertdialog, null);
-        dialogBuilder.setView(dialogView);
-        dialogBuilder.setTitle(R.string.Choose_mode);
-        final AlertDialog alertDialog = dialogBuilder.create();
-        alertDialog.show();
-
-        final Button getFromMyStash = dialogView.findViewById(R.id.btnListModeMyStash);
-        getFromMyStash.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-//                Intent intent = new Intent(context, ChooserActivity.class);
-////                intent.putExtra(MyConstants.LISTNAME, listname);
-//                intent.putExtra(MyConstants.KIT_ID, id);
-////                intent.putExtra(MyConstants.WORK_MODE, MyConstants.MODE_AFTER_KIT);
-//                startActivityForResult(intent, REQEST_AFTER_KIT);
-                alertDialog.dismiss();
-            }
-        });
-    }
+//    private void addAftermarket(){
+//        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+//        LayoutInflater inflater = LayoutInflater.from(context);
+//        final View dialogView = inflater.inflate(R.layout.list_choosemode_alertdialog, null);
+//        dialogBuilder.setView(dialogView);
+//        dialogBuilder.setTitle(R.string.Choose_mode);
+//        final AlertDialog alertDialog = dialogBuilder.create();
+//        alertDialog.show();
+//
+//        final Button getFromMyStash = dialogView.findViewById(R.id.btnListModeMyStash);
+//        getFromMyStash.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+////                Intent intent = new Intent(context, ChooserActivity.class);
+//////                intent.putExtra(MyConstants.LISTNAME, listname);
+////                intent.putExtra(MyConstants.KIT_ID, id);
+//////                intent.putExtra(MyConstants.WORK_MODE, MyConstants.MODE_AFTER_KIT);
+////                startActivityForResult(intent, REQEST_AFTER_KIT);
+//                alertDialog.dismiss();
+//            }
+//        });
+//    }
 }

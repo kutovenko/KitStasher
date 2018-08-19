@@ -3,7 +3,6 @@ package com.example.kitstasher.fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -114,38 +113,19 @@ public class StatisticsFragment extends Fragment implements View.OnClickListener
         String accountPictureUrl = sharedPreferences.getString(MyConstants.PROFILE_PICTURE_URL_FACEBOOK, null);
         Glide.with(getActivity())
                 .load(accountPictureUrl)
-//                .crossFade()
                 .thumbnail(0.5f)
                 .apply(new RequestOptions().centerCrop().placeholder(R.drawable.com_facebook_profile_picture_blank_square).error(R.drawable.com_facebook_profile_picture_blank_square))
-
-//                .diskCacheStrategy(DiskCacheStrategy.ALL)
-
+                .apply(RequestOptions.circleCropTransform())
                 .into(ivProfilePic);
 
-//        String accountPictureUrl = sharedPreferences.getString(MyConstants.PROFILE_PICTURE_URL_FACEBOOK, null);
-//        Glide.with(this).load(accountPictureUrl)
-//                .crossFade()
-//                .thumbnail(0.5f)
-//                .bitmapTransform(new CircleTransform(getActivity()))
-//                .diskCacheStrategy(DiskCacheStrategy.ALL)
-//                .into(ivProfilePic);
 
-        if (dbConnector.countAllKits("_id") > 0) {
-            int brandsChartHeight = (dbConnector.getBrandsStat().getCount() * 40) + 16;
-            int chartSize = dbConnector.getBrandsStat().getCount();
-            bxData = new String[chartSize];
+        if (dbConnector.countAllRecords(DbConnector.TABLE_KITS) > 0) {
+            bxData = dbConnector.getSortedBrandNames();
+            int chartSize = bxData.length;
+            int brandsChartHeight = (chartSize * 40) + 16;
             byData = new float[chartSize];
 
-            Cursor brandsList = dbConnector.getBrandsStat();
-            brandsList.moveToFirst();
-            for (int i = 0; i < chartSize; i++) {
-                bxData[i] = brandsList.getString(brandsList.getColumnIndex(DbConnector.COLUMN_BRAND));
-                brandsList.moveToNext();
-            }
-
-            for (int i = 0; i < chartSize; i++) {
-                byData[i] = dbConnector.getBrandsForCount(bxData[i]).getCount();
-            }
+            for (int i = 0; i < chartSize; i++) byData[i] = dbConnector.countKitsOfBrand(bxData[i]);
 
             brandsChart = new HorizontalBarChart(getActivity());
             LinearLayout brandsLayout = view.findViewById(R.id.linLayoutBrands);
@@ -159,20 +139,20 @@ public class StatisticsFragment extends Fragment implements View.OnClickListener
             brandsChart.setDrawGridBackground(false);
             addBrandData();
 
-            int countAir = dbConnector.getByTag(MyConstants.CODE_AIR).getCount();
-            int countSea = dbConnector.getByTag(MyConstants.CODE_SEA).getCount();
-            int countGround = dbConnector.getByTag(MyConstants.CODE_GROUND).getCount();
-            int countSpace = dbConnector.getByTag(MyConstants.CODE_SPACE).getCount();
-            int countCarBike = dbConnector.getByTag(MyConstants.CODE_AUTOMOTO).getCount();
-            int countOther = dbConnector.getByTag(MyConstants.CODE_OTHER).getCount();
+            int countAir = dbConnector.countForTag(MyConstants.CODE_AIR);
+            int countSea = dbConnector.countForTag(MyConstants.CODE_SEA);
+            int countGround = dbConnector.countForTag(MyConstants.CODE_GROUND);
+            int countSpace = dbConnector.countForTag(MyConstants.CODE_SPACE);
+            int countCarBike = dbConnector.countForTag(MyConstants.CODE_AUTOMOTO);
+            int countOther = dbConnector.countForTag(MyConstants.CODE_OTHER);
 
             cxData = new String[]{
-                    getString(R.string.air) + String.valueOf(countAir),
-                    getString(R.string.sea) + String.valueOf(countSea),
-                    getString(R.string.ground) + String.valueOf(countGround),
-                    getString(R.string.space) + String.valueOf(countSpace),
-                    getString(R.string.cars_bikes) + String.valueOf(countCarBike),
-                    getString(R.string.other) + String.valueOf(countOther)
+                    getString(R.string.air_) + String.valueOf(countAir),
+                    getString(R.string.sea_) + String.valueOf(countSea),
+                    getString(R.string.ground_) + String.valueOf(countGround),
+                    getString(R.string.space_) + String.valueOf(countSpace),
+                    getString(R.string.cars_bikes_) + String.valueOf(countCarBike),
+                    getString(R.string.other_) + String.valueOf(countOther)
             };
 
             cyData = new float[]{countAir, countSea, countGround, countSpace, countCarBike, countOther};
@@ -213,9 +193,9 @@ public class StatisticsFragment extends Fragment implements View.OnClickListener
         Calendar c = Calendar.getInstance();
         SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());
         String date = df.format(c.getTime());
-        int dailyMax = dbConnector.getAllForDate(date);
+        int dailyMax = dbConnector.countForDate(date);
         String recordDate = date;
-        totalStash = dbConnector.countAllKits(MyConstants._ID);
+        totalStash = dbConnector.countAllRecords(DbConnector.TABLE_KITS);
 
         if (sharedPreferences != null) {
             int savedMax = sharedPreferences.getInt(MyConstants.DAILYMAX, 0);
@@ -238,7 +218,7 @@ public class StatisticsFragment extends Fragment implements View.OnClickListener
         }
 
         tvTotalStashCount.setText(String.valueOf(totalStash));
-        tvAddedToday.setText(String.valueOf(dbConnector.getAllForDate(date)));
+        tvAddedToday.setText(String.valueOf(dbConnector.countForDate(date)));
         tvDailyRecord.setText(String.valueOf(dailyMax + " (" + recordDate + ")"));
 
     }

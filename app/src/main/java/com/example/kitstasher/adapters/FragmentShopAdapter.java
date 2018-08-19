@@ -1,5 +1,6 @@
 package com.example.kitstasher.adapters;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.support.annotation.NonNull;
@@ -18,9 +19,16 @@ import com.example.kitstasher.other.DbConnector;
 
 import java.util.ArrayList;
 
+/**
+ * Adapter for list of shops (SettingsFragment).
+ *
+ * Адаптер для списка магазинов (SettingsFragment).
+ */
+
 public class FragmentShopAdapter extends RecyclerView.Adapter<FragmentShopAdapter.ViewHolder>{
     private ArrayList<ShopItem> items;
     private Context context;
+
     public FragmentShopAdapter(Context context, ArrayList<ShopItem> items) {
         this.context = context;
         this.items = items;
@@ -47,7 +55,7 @@ public class FragmentShopAdapter extends RecyclerView.Adapter<FragmentShopAdapte
             public void onClick(View view) {
                 AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
                 LayoutInflater inflater = LayoutInflater.from(context);
-                final View dialogView = inflater.inflate(R.layout.list_alertdialog, null);
+                @SuppressLint("InflateParams") final View dialogView = inflater.inflate(R.layout.list_alertdialog, null);
                 dialogBuilder.setView(dialogView);
                 final EditText etNewBrandName = dialogView.findViewById(R.id.etNewListName);
                 etNewBrandName.setText(name);
@@ -59,7 +67,7 @@ public class FragmentShopAdapter extends RecyclerView.Adapter<FragmentShopAdapte
                         DbConnector dbConnector = new DbConnector(context);
                         dbConnector.open();
                         try{
-                            dbConnector.updateShop(id, newName);
+                            dbConnector.editShop(id, newName);
                         }finally {
                             dbConnector.close();
                             item.setName(newName);
@@ -107,7 +115,7 @@ public class FragmentShopAdapter extends RecyclerView.Adapter<FragmentShopAdapte
         ViewHolder(View itemView) {
             super(itemView);
             tvShopName = itemView.findViewById(R.id.tvShopName);
-//            tvShopDateAdded = itemView.findViewById(R.id.tvShopDateAdded);
+            tvShopDateAdded = itemView.findViewById(R.id.tvDateShopAdded);
             ibtnDeleteShop = itemView.findViewById(R.id.ibtnDeleteShop);
             ibtnEditShop = itemView.findViewById(R.id.ibtnEditShop);
         }

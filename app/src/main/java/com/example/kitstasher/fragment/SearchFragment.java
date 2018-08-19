@@ -1,12 +1,16 @@
 package com.example.kitstasher.fragment;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -45,6 +49,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.example.kitstasher.activity.MainActivity.MY_PERMISSIONS_REQUEST_CAMERA;
 import static com.example.kitstasher.activity.MainActivity.asyncService;
 
 /**
@@ -60,12 +65,26 @@ public class SearchFragment extends Fragment implements AsyncApp42ServiceApi.App
     private Kit kitToShow;
     private Context context;
 
+    public SearchFragment() {
+    }
+
+    /**
+     * Returns a new instance of this fragment for the given section
+     * number.
+     */
+    public static SearchFragment newInstance() {
+        return new SearchFragment();
+    }
 
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         View view = inflater.inflate(R.layout.fragment_search, container, false);
+
+        checkCameraPermissions();
+
         Button btnCheck = view.findViewById(R.id.btnCheck);
         if (!isOnline()){
             btnCheck.setClickable(false);
@@ -94,7 +113,7 @@ public class SearchFragment extends Fragment implements AsyncApp42ServiceApi.App
 
         kitToShow = new Kit.KitBuilder().build();
 
-        ArrayList<String> myBrands = DbConnector.getAllBrands();
+        ArrayList<String> myBrands = dbConnector.getBrandsNames();
         ArrayAdapter<String> acAdapterMybrands = new ArrayAdapter<>(context,
                 android.R.layout.simple_dropdown_item_1line, myBrands);
         acBrand.addTextChangedListener(this);
@@ -248,14 +267,14 @@ public class SearchFragment extends Fragment implements AsyncApp42ServiceApi.App
             Kit kit = new Kit.KitBuilder()
                     .hasBrand(brand)
                     .hasBrand_catno(brand_catno)
-                    .hasKit_name(kit_name)
+                    .hasKitName(kit_name)
                     .hasScale(scale)
                     .hasDescription(description)
                     .hasPrototype(prototype)//not in use
-                    .hasKit_noeng_name(kit_noeng_name)
-                    .hasBoxart_url(boxart_url)
+                    .hasKitNoengName(kit_noeng_name)
+                    .hasBoxartUrl(boxart_url)
                     .hasBarcode(barcode)
-                    .hasScalemates_url(scalemates_page)//not in use
+                    .hasScalematesUrl(scalemates_page)//not in use
                     .hasYear(year)
                     .build();
             kitsForChoose.add(kit);
@@ -270,7 +289,7 @@ public class SearchFragment extends Fragment implements AsyncApp42ServiceApi.App
             public void onClick(DialogInterface dialogInterface, int item) {
                 kitToShow = kitsForChoose.get(item);
                 Bundle bundle = new Bundle();
-                bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_SEARCH);
+                bundle.putString(MyConstants.WORK_MODE, MyConstants.MODE_SEARCH);
 
                 bundle.putString(MyConstants.LIST_CATEGORY, kitToShow.getCategory());
                 bundle.putString(MyConstants.KITNAME, kitToShow.getKit_name());
@@ -372,5 +391,25 @@ public class SearchFragment extends Fragment implements AsyncApp42ServiceApi.App
     @Override
     public void afterTextChanged(Editable editable) {
 
+    }
+
+    private void checkCameraPermissions() {
+        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
+                    Manifest.permission.CAMERA)) {
+                Toast.makeText(getActivity(), R.string.we_cant_read_barcodes,
+                        Toast.LENGTH_LONG).show();
+                android.support.v4.app.Fragment fragment = NoPermissionFragment.newInstance(Manifest.permission.CAMERA, MyConstants.TYPE_PAINT);
+                android.support.v4.app.FragmentTransaction fragmentTransaction =
+                        getFragmentManager().beginTransaction();
+                fragmentTransaction.replace(R.id.mainactivityContainer, fragment);
+                fragmentTransaction.commitAllowingStateLoss();
+            } else {
+                ActivityCompat.requestPermissions(getActivity(),
+                        new String[]{Manifest.permission.CAMERA},
+                        MY_PERMISSIONS_REQUEST_CAMERA);
+            }
+        }
     }
 }

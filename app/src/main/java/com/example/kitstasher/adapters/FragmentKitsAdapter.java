@@ -20,6 +20,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.kitstasher.R;
 import com.example.kitstasher.objects.Kit;
+import com.example.kitstasher.objects.PaintItem;
 import com.example.kitstasher.other.Helper;
 import com.example.kitstasher.other.MyConstants;
 import com.example.kitstasher.other.OnPagerItemInteractionListener;
@@ -28,6 +29,12 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Locale;
 
+/**
+ * Adapter for kits and aftermarket list.
+ *
+ * Адаптер для списков наборов и афтермаркета.
+ */
+
 public class FragmentKitsAdapter extends android.support.v7.widget.RecyclerView.Adapter<FragmentKitsAdapter.ViewHolder>
         implements Filterable {
     private ArrayList<Kit> itemList;
@@ -35,10 +42,12 @@ public class FragmentKitsAdapter extends android.support.v7.widget.RecyclerView.
     private ArrayList<Kit> filteredItemList;
     private FilterListener listener;
     private OnPagerItemInteractionListener onPagerItemInteractionListener;
+    private String workMode;
 
-    public FragmentKitsAdapter(ArrayList<Kit> itemList, Context context, FilterListener listener,
+    public FragmentKitsAdapter(ArrayList<Kit> itemList, String workMode, Context context, FilterListener listener,
                                OnPagerItemInteractionListener onPagerItemInteractionListener) {
         this.itemList = itemList;
+        this.workMode = workMode;
         this.context = context;
         this.listener = listener;
         this.filteredItemList = itemList;
@@ -48,7 +57,7 @@ public class FragmentKitsAdapter extends android.support.v7.widget.RecyclerView.
     static class ViewHolder extends RecyclerView.ViewHolder {
         LinearLayout llKitItem, llKitText;
         ImageView ivBoxart;
-        TextView tvFullKitname, tvFullBrand, tvFullScale;
+        TextView tvFullKitname, tvFullBrand, tvFullScale, tvItemCardScaleText;
         ImageButton ibDelete;
 
         ViewHolder(View view) {
@@ -57,6 +66,7 @@ public class FragmentKitsAdapter extends android.support.v7.widget.RecyclerView.
             llKitText = view.findViewById(R.id.llKitText);
             tvFullBrand = view.findViewById(R.id.tvBrandItem);
             tvFullKitname = view.findViewById(R.id.tvKit_nameItem);
+            tvItemCardScaleText = view.findViewById(R.id.tvItemCardScaleText);
             tvFullScale = view.findViewById(R.id.tvScaleItem);
             ivBoxart = view.findViewById(R.id.ivBoxartItem);
             ibDelete = view.findViewById(R.id.ibDelete);
@@ -80,14 +90,32 @@ public class FragmentKitsAdapter extends android.support.v7.widget.RecyclerView.
         String brand = kit.getBrand();
         String cat_no = kit.getBrandCatno();
         String name = kit.getKit_name();
+        switch (workMode){
+            case "1":
+                break;
+            case "2":
+                break;
+            case "3":
+
+                break;
+
+        }
+        int media = kit.getMedia();
+
         String scale = String.valueOf(kit.getScale());
         final String onlneId = kit.getOnlineId();
-        String category = kit.getCategory();
-        String item_type = kit.getItemType();
-        String fullBrand = brand + " " + cat_no + "-" + category + item_type;
+//        String category = kit.getCategory();
+//        String item_type = kit.getItemType();
+        String fullBrand = brand + " " + cat_no;
+//                + "-" + category + "-" + item_type +"-" + String.valueOf(media);
 
         holder.tvFullBrand.setText(fullBrand);
-        holder.tvFullScale.setText(scale);
+        if (workMode.equals(MyConstants.TYPE_PAINT)){
+            holder.tvItemCardScaleText.setVisibility(View.GONE);
+            holder.tvFullScale.setVisibility(View.GONE);
+        }else {
+            holder.tvFullScale.setText(scale);
+        }
         holder.tvFullKitname.setText(name);
 
         if (!Helper.isBlank(uri)) {
@@ -106,14 +134,24 @@ public class FragmentKitsAdapter extends android.support.v7.widget.RecyclerView.
                     .into(holder.ivBoxart);
         }
 
-        holder.llKitItem.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                listener.onItemSelected(itemList.get(holder.getAdapterPosition()),
-                        filteredItemList, holder.getAdapterPosition());
-            }
-        });
+        if (workMode.equals(MyConstants.TYPE_KIT) || workMode.equals(MyConstants.TYPE_AFTERMARKET)) {
 
+            holder.llKitItem.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    listener.onItemSelected(itemList.get(holder.getAdapterPosition()),
+                            filteredItemList, holder.getAdapterPosition());
+                }
+            });
+        } else if (workMode.equals(MyConstants.TYPE_PAINT)){
+            holder.llKitItem.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    listener.onItemSelected(itemList.get(holder.getAdapterPosition()),
+                            filteredItemList, holder.getAdapterPosition());
+                }
+            });
+        }
         holder.ibDelete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

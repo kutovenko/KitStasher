@@ -5,18 +5,17 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <!--android:maxSdkVersion="18" -->
+    <!-- android:maxSdkVersion="18" -->
     <uses-permission android:name="android.permission.CAMERA" />
 
     <application
+        android:name=".MyApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:name=".MyApplication"
         android:theme="@style/AppTheme.NoActionBar">
-
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />
@@ -26,14 +25,12 @@
             android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".activity.MainActivity"
             android:theme="@style/AppTheme.NoActionBar">
-
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
@@ -48,8 +45,6 @@
             android:name="com.yalantis.ucrop.UCropActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
-
-
         <activity android:name=".activity.EditActivity" />
 
         <provider
@@ -61,8 +56,6 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
-
-
         <activity android:name=".activity.CropActivity" />
     </application>
 

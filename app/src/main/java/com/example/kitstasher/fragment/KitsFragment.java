@@ -20,8 +20,11 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.example.kitstasher.R;
 import com.example.kitstasher.activity.MainActivity;
 import com.example.kitstasher.activity.ViewActivity;
@@ -58,20 +61,29 @@ public class KitsFragment extends Fragment
         BottomSheetAdapter.ActiveCategoriesListener {
     private Context context;
     private DbConnector dbConnector;
+    private ArrayList<Kit> sortedList;
+    private ArrayList<Kit> forSort;
+    private ArrayList<CategoryItem> activeCategories;
+    private BottomSheetAdapter bottomSheetAdapter;
+    private FragmentKitsAdapter rvAdapter;
+    private BottomSheetAdapter.ActiveCategoriesListener activeCategoriesListener;
+    private Unbinder unbinder;
     @BindView(R.id.tvBarBrand) TextView tvBarBrand;
     @BindView(R.id.tvBarDate) TextView tvBarDate;
     @BindView(R.id.tvBarScale) TextView tvBarScale;
     @BindView(R.id.tvBarName) TextView tvBarName;
     @BindView(R.id.tvChoosedCategory) TextView tvChoosedCategory;
+    private ImageView ivBottomSheetArrow;
     private boolean isSortBrandAsc,
             isSortDateAsc,
             isSortScaleAsc,
             isSortNameAsc,
             isInAftermarketMode;
-    private String workMode;
-    private String currentTable,
-            currentCategory,
-            currentFilter;
+    private String workMode,
+    //    private String currentTable,
+    currentCategory,
+            currentSortOrder;
+    private int position;
     private final String NAME_ASC = "kit_name ASC";
     private final String NAME_DESC = "kit_name DESC";
     private final String DATE_ASC = "_id ASC";
@@ -80,21 +92,12 @@ public class KitsFragment extends Fragment
     private final String BRAND_DESC = "brand DESC";
     private final String SCALE_ASC = "scale ASC";
     private final String SCALE_DESC = "scale DESC";
-    private final String CURRENT_FILTER = "currentFilter";
+    private final String CURRENT_FILTER = "currentSortOrder";
     private final String CURRENT_CATEGORY = "currentCategory";
     private final String SORT_DATE = "isSortDateAsc";
     private final String SORT_NAME = "isSortNameAsc";
     private final String SORT_SCALE = "isSortScaleAsc";
     private final String SORT_BRAND = "isSortBrandAsc";
-    private final int MODE_KIT = 1;
-    private final int MODE_AFTERMARKET = 2;
-    private final int MODE_PAINT = 3;
-    private ArrayList<Kit> sortedList;
-    private ArrayList<Kit> forSort;
-    private ArrayList<CategoryItem> activeCategories;
-    private FragmentKitsAdapter rvAdapter;
-    private BottomSheetAdapter.ActiveCategoriesListener listener;
-    private Unbinder unbinder;
 
     public KitsFragment() {
     }
@@ -106,57 +109,40 @@ public class KitsFragment extends Fragment
     @Override
     public void onResume() {
         super.onResume();
+        context = getActivity();
         dbConnector = new DbConnector(context);
         dbConnector.open();
         if (getArguments() != null) {
             workMode = getArguments().getString(MyConstants.WORK_MODE);
-            currentTable = workMode;
-            activeCategories = dbConnector.getActiveCategories(workMode);
-//            switch (workMode){
-//                case MyConstants.TYPE_AFTERMARKET:
-//                    currentTable = MyConstants.TYPE_AFTERMARKET;
-//                    activeCategories = dbConnector.getAfterActiveCategories();
-//                    break;
-//                case MODE_KIT:
-//                    currentTable = MyConstants.TYPE_KIT;
-//                    activeCategories = dbConnector.getActiveCategories();
-//                    break;
-//                case MODE_PAINT:
-//                    currentTable = MyConstants.TYPE_PAINT;
-//            }
-//
-//
-//            if (workMode == MODE_AFTERMARKET) {
-//                currentTable = MyConstants.TYPE_AFTERMARKET;
-//                activeCategories = dbConnector.getAfterActiveCategories();
-//            }else if
-//            else {
-//                currentTable = MyConstants.TYPE_KIT;
-//                activeCategories = dbConnector.getActiveCategories();
-//            }
+
+            currentCategory = getArguments().getString(MyConstants.CATEGORY);
+            if (currentCategory == null) currentCategory = MyConstants.CAT_ALL;
+            position = getArguments().getInt(MyConstants.POSITION);
+//            currentTable = workMode;
         }else{
-            workMode = MyConstants.TYPE_KIT;
-            currentTable = workMode;
-            activeCategories = dbConnector.getActiveCategories(workMode);
+            if (workMode == null) workMode = MyConstants.TYPE_KIT;
         }
+        activeCategories = dbConnector.getActiveCategories(workMode);
+
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         OnPagerItemInteractionListener mListener = this;
-        listener = this;
+        activeCategoriesListener = this;
+
     }
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putString(CURRENT_FILTER, currentFilter);
+        outState.putString(CURRENT_FILTER, currentSortOrder);
         outState.putString(CURRENT_CATEGORY, currentCategory);
         outState.putBoolean(SORT_BRAND, isSortBrandAsc);
         outState.putBoolean(SORT_DATE, isSortDateAsc);
         outState.putBoolean(SORT_NAME, isSortNameAsc);
-        outState.putBoolean(SORT_SCALE, isSortScaleAsc);
+//        outState.putBoolean(SORT_SCALE, isSortScaleAsc);
     }
 
     @Override
@@ -165,6 +151,12 @@ public class KitsFragment extends Fragment
         unbinder.unbind();
         dbConnector.close();
     }
+
+//    @Override
+//    public void onDestroy() {
+//        super.onDestroy();
+//        dbConnector.close();
+//    }
 
 
     @Override
@@ -176,73 +168,53 @@ public class KitsFragment extends Fragment
 
         context = getActivity();
         unbinder = ButterKnife.bind(this, view);
+
         dbConnector = new DbConnector(context);
         dbConnector.open();
+
         forSort = new ArrayList<>();
-        currentFilter = savedInstanceState != null ? savedInstanceState.getString(CURRENT_FILTER, DATE_DESC) : DATE_DESC;
+        //position
+        currentSortOrder = savedInstanceState != null ? savedInstanceState.getString(CURRENT_FILTER, DATE_DESC) : DATE_DESC;
         currentCategory = savedInstanceState != null ? savedInstanceState.getString(CURRENT_CATEGORY, "") : "";
         isSortDateAsc = savedInstanceState != null && savedInstanceState.getBoolean(SORT_DATE, false);
         isSortNameAsc = savedInstanceState != null && savedInstanceState.getBoolean(SORT_NAME, true);
-        isSortScaleAsc = savedInstanceState != null && savedInstanceState.getBoolean(SORT_SCALE, true);
+//        isSortScaleAsc = savedInstanceState != null && savedInstanceState.getBoolean(SORT_SCALE, true);
         isSortBrandAsc = savedInstanceState != null && savedInstanceState.getBoolean(SORT_BRAND, true);
-
-//        if (getArguments() != null) {
-//            isInAftermarketMode = getArguments().getBoolean(MyConstants.WORK_MODE);
-//            if (isInAftermarketMode) {
-////            currentTable = DbConnector.TABLE_AFTERMARKET;
-//                activeCategories = dbConnector.getAfterActiveCategories();
-//                ((MainActivity) getActivity())
-//                        .setActionBarTitle(getActivity().getResources().getString(R.string.aftermarket));
-//                currentTable = MyConstants.TYPE_AFTERMARKET;
-//            } else {
-////            currentTable = currentTable;
-//                currentTable = MyConstants.TYPE_KIT;
-//                activeCategories = dbConnector.getActiveCategories();
-//                ((MainActivity) getActivity())
-//                        .setActionBarTitle(getActivity().getResources().getString(R.string.kits));
-//            }
-//        }else{
-//            isInAftermarketMode = false;
-//            currentTable = MyConstants.TYPE_KIT;
-//            activeCategories = dbConnector.getActiveCategories();
-//            ((MainActivity) getActivity())
-//                    .setActionBarTitle(getActivity().getResources().getString(R.string.kits));
-//        }
-
 
 
         if (getArguments() != null) {
             workMode = getArguments().getString(MyConstants.WORK_MODE);
+//            if (workMode == null) workMode = MyConstants.TYPE_KIT;
+            currentCategory = getArguments().getString(MyConstants.CATEGORY);
+            if (currentCategory == null) currentCategory = MyConstants.CAT_ALL;
             activeCategories = dbConnector.getActiveCategories(workMode);
+            position = getArguments().getInt(MyConstants.POSITION);
+
             switch (workMode){
                 case MyConstants.TYPE_AFTERMARKET:
                     ((MainActivity) getActivity())
                             .setActionBarTitle(getActivity().getResources().getString(R.string.aftermarket));
-                    currentTable = MyConstants.TYPE_AFTERMARKET;
                     break;
                 case MyConstants.TYPE_KIT:
                     ((MainActivity) getActivity())
                             .setActionBarTitle(getActivity().getResources().getString(R.string.kits));
-                    currentTable = MyConstants.TYPE_KIT;
                     break;
                 case MyConstants.TYPE_PAINT:
                     ((MainActivity) getActivity())
                             .setActionBarTitle(getActivity().getResources().getString(R.string.paints));
-                    currentTable = MyConstants.TYPE_PAINT;
+                    tvBarScale.setVisibility(View.GONE);
                     break;
             }
         }else{
             workMode = MyConstants.TYPE_KIT;
-            currentTable = MyConstants.TYPE_KIT;
+            currentCategory = MyConstants.CAT_ALL;
             activeCategories = dbConnector.getActiveCategories(workMode);
             ((MainActivity) getActivity())
                     .setActionBarTitle(getActivity().getResources().getString(R.string.kits));
         }
 
-
-
         tvChoosedCategory.setText(tagToCategoryName(currentCategory));
-        sortedList = dbConnector.filteredKits(workMode, currentCategory, currentFilter);
+        sortedList = dbConnector.filteredKits(workMode, currentCategory, currentSortOrder);
 
         final FloatingActionButton fab = view.findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -255,48 +227,24 @@ public class KitsFragment extends Fragment
                 bundle.putString(MyConstants.WORK_MODE, workMode);
                 switch (workMode){
                     case MyConstants.TYPE_KIT:
-
-                        AddFragment addFragment = new AddFragment();
-//                        bundle.putString(MyConstants.WORK_MODE, workMode);
-//                        bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_KIT);
+                        AddFragment addFragment = AddFragment.newInstance();
                         addFragment.setArguments(bundle);
                         fragmentTransaction.replace(R.id.mainactivityContainer, addFragment);
                         fragmentTransaction.commit();
                         break;
                     case MyConstants.TYPE_AFTERMARKET:
                         ManualAddFragment aftermarketAddFragment = ManualAddFragment.newInstance();
-//                        bundle.putBoolean(MyConstants.WORK_MODE, true);
-//                        bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_AFTERMARKET);
                         aftermarketAddFragment.setArguments(bundle);
                         fragmentTransaction.replace(R.id.mainactivityContainer, aftermarketAddFragment);
                         fragmentTransaction.commit();
                         break;
                     case MyConstants.TYPE_PAINT:
                         AddPaintFragment paintAddFragment = AddPaintFragment.newInstance();
-//                        bundle.putBoolean(MyConstants.WORK_MODE, true);
-//                        bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_AFTERMARKET);
                         paintAddFragment.setArguments(bundle);
                         fragmentTransaction.replace(R.id.mainactivityContainer, paintAddFragment);
                         fragmentTransaction.commit();
                         break;
                 }
-//                if (!isInAftermarketMode) {
-//                    Bundle bundle = new Bundle();
-//                    AddFragment addFragment = new AddFragment();
-//                    bundle.putBoolean(MyConstants.WORK_MODE, false);
-//                    bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_KIT);
-//                    addFragment.setArguments(bundle);
-//                    fragmentTransaction.replace(R.id.mainactivityContainer, addFragment);
-//                    fragmentTransaction.commit();
-//                } else {
-//                    Bundle bundle = new Bundle();
-//                    ManualAddFragment manualAddFragment = ManualAddFragment.newInstance();
-//                    bundle.putBoolean(MyConstants.WORK_MODE, true);
-//                    bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_AFTERMARKET);
-//                    manualAddFragment.setArguments(bundle);
-//                    fragmentTransaction.replace(R.id.mainactivityContainer, manualAddFragment);
-//                    fragmentTransaction.commit();
-//                }
             }
         });
 
@@ -304,7 +252,7 @@ public class KitsFragment extends Fragment
         LinearLayoutManager rvKitsManager = new LinearLayoutManager(getActivity());
         rvKits.setLayoutManager(rvKitsManager);
         rvKits.setItemAnimator(new DefaultItemAnimator());
-        rvAdapter = new FragmentKitsAdapter(sortedList, context, this, this);
+        rvAdapter = new FragmentKitsAdapter(sortedList, workMode, context, this, this);
         rvKits.setAdapter(rvAdapter);
         rvKits.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -318,34 +266,53 @@ public class KitsFragment extends Fragment
             }
         });
 
+
+        ivBottomSheetArrow = view.findViewById(R.id.ivBottomSheetArrow);
         View bottomSheet = view.findViewById(R.id.bottomsheet);
-        final BottomSheetBehavior mBottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
-        mBottomSheetBehavior.setHideable(false);
-        final RecyclerView rvCategories = view.findViewById(R.id.rvActiveCategories);
-        LinearLayoutManager rvCategoriesManager = new LinearLayoutManager(getActivity());
-        rvCategories.setLayoutManager(rvCategoriesManager);
-        rvCategories.setItemAnimator(new DefaultItemAnimator());
-        BottomSheetAdapter bottomSheetAdapter = new BottomSheetAdapter(context, activeCategories, listener);
-        rvCategories.setAdapter(bottomSheetAdapter);
+        if (workMode.equals(MyConstants.TYPE_PAINT)){
+            bottomSheet.setVisibility(View.GONE);
+        }else {
+            final BottomSheetBehavior mBottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
+            mBottomSheetBehavior.setHideable(false);
+            final RecyclerView rvCategories = view.findViewById(R.id.rvActiveCategories);
+            LinearLayoutManager rvCategoriesManager = new LinearLayoutManager(getActivity());
+            rvCategories.setLayoutManager(rvCategoriesManager);
+            rvCategories.setItemAnimator(new DefaultItemAnimator());
+            bottomSheetAdapter = new BottomSheetAdapter(context, activeCategories, activeCategoriesListener );
+            rvCategories.setAdapter(bottomSheetAdapter);
 
-        mBottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
-            @Override
-            public void onStateChanged(@NonNull View bottomSheet, int newState) {
-                if (BottomSheetBehavior.STATE_EXPANDED == newState) {
-                    fab.hide();
-                } else if (BottomSheetBehavior.STATE_COLLAPSED == newState) {
-                    fab.show();
-                } else if (BottomSheetBehavior.STATE_HIDDEN == newState) {
-                    fab.show();
+            mBottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+                @Override
+                public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                    if (BottomSheetBehavior.STATE_EXPANDED == newState) {
+                        fab.hide();
+                        Glide.with(context)
+                                .load(R.drawable.ic_keyboard_arrow_down_white_24dp)
+                                .into(ivBottomSheetArrow);
+                    } else if (BottomSheetBehavior.STATE_COLLAPSED == newState) {
+                        fab.show();
+                        Glide.with(context)
+                                .load(R.drawable.ic_keyboard_arrow_up_black_24dp)
+                                .into(ivBottomSheetArrow);
+                    } else if (BottomSheetBehavior.STATE_HIDDEN == newState) {
+                        fab.show();
+                        Glide.with(context)
+                                .load(R.drawable.ic_keyboard_arrow_up_black_24dp)
+                                .into(ivBottomSheetArrow);
+                    }
                 }
-            }
-            @Override
-            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-            }
-        });
 
-        requestSort(currentFilter);
+                @Override
+                public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                }
+            });
+        }
 
+        requestSort(currentSortOrder);
+
+        if(position != 0) {
+            rvKits.scrollToPosition(position);
+        }
         return view;
     }
 
@@ -418,28 +385,28 @@ public class KitsFragment extends Fragment
     private String tagToCategoryName(String tag) {
         String name;
         switch (tag) {
-            case "1":
+            case MyConstants.CODE_AIR:
                 name = context.getResources().getString(R.string.Air);
                 break;
-            case "2":
+            case MyConstants.CODE_GROUND:
                 name = context.getResources().getString(R.string.ground);
                 break;
-            case "3":
+            case MyConstants.CODE_SEA:
                 name = context.getResources().getString(R.string.sea);
                 break;
-            case "4":
+            case MyConstants.CODE_SPACE:
                 name = context.getResources().getString(R.string.space);
                 break;
-            case "5":
-                name = context.getResources().getString(R.string.cars_bikes);
+            case MyConstants.CODE_AUTOMOTO:
+                name = context.getResources().getString(R.string.auto_moto);
                 break;
-            case "6":
+            case MyConstants.CODE_FIGURES:
                 name = context.getResources().getString(R.string.Figures);
                 break;
-            case "7":
+            case MyConstants.CODE_FANTASY:
                 name = context.getResources().getString(R.string.Fantasy);
                 break;
-            case "0":
+            case MyConstants.CODE_OTHER:
                 name = context.getResources().getString(R.string.other);
                 break;
             default:
@@ -453,6 +420,15 @@ public class KitsFragment extends Fragment
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_main, menu);
         super.onCreateOptionsMenu(menu, inflater);
+        MenuItem closeItem = menu.findItem(R.id.action_close);
+        closeItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                getActivity().finish();
+                return false;
+            }
+        });
+
         SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
         SearchView searchView = (SearchView) menu.findItem(R.id.action_search)
                 .getActionView();
@@ -483,13 +459,25 @@ public class KitsFragment extends Fragment
 
     @Override
     public void onItemSelected(Kit kit, ArrayList<Kit> filteredItemList, int position) {
-        Intent intent;
-        intent = new Intent(context, ViewActivity.class);
-        intent.putExtra(MyConstants.WORK_MODE, workMode);
-        intent.putExtra(MyConstants.POSITION, position);//ид открытия пейджера
-        intent.putExtra(MyConstants.CATEGORY_TAB, currentTable);
-        intent.putParcelableArrayListExtra(MyConstants.LIST, filteredItemList);
-        ((Activity) context).startActivityForResult(intent, MainActivity.REQUEST_CODE_VIEW);
+        if (workMode.equals(MyConstants.TYPE_PAINT)){
+            android.support.v4.app.FragmentTransaction fragmentTransaction =
+                    getFragmentManager().beginTransaction();
+            Bundle bundle = new Bundle(2);
+            bundle.putString(MyConstants.WORK_MODE, workMode);
+            bundle.putLong(MyConstants.ID, kit.getLocalId());
+            AddPaintFragment addFragment = AddPaintFragment.newInstance();
+            addFragment.setArguments(bundle);
+            fragmentTransaction.replace(R.id.mainactivityContainer, addFragment);
+            fragmentTransaction.commit();
+        }else{
+            Intent intent;
+            intent = new Intent(context, ViewActivity.class);
+            intent.putExtra(MyConstants.WORK_MODE, workMode);
+            intent.putExtra(MyConstants.POSITION, position);//ид открытия пейджера
+            intent.putExtra(MyConstants.CATEGORY, currentCategory);//???
+            intent.putParcelableArrayListExtra(MyConstants.LIST, filteredItemList);
+            ((Activity) context).startActivityForResult(intent, MainActivity.REQUEST_CODE_VIEW);
+        }
     }
 
 
@@ -501,15 +489,19 @@ public class KitsFragment extends Fragment
                 file.delete();
             }
         }
-//        dbConnector.deleteAllAftermarketForKit(itemId);
         try {
             deleteFromOnlineStash(onlineId);
         } finally {
-            dbConnector.delRec(DbConnector.TABLE_KITS, itemId);
+            dbConnector.deleteItem(itemId);
         }
         rvAdapter.delete(currentPosition);
         sortedList.clear();
-        sortedList.addAll(dbConnector.filteredKits(currentTable, currentCategory, "_id DESC"));
+        sortedList.addAll(dbConnector.filteredKits(workMode, currentCategory, "_id DESC"));
+        activeCategories = dbConnector.getActiveCategories(workMode);
+        bottomSheetAdapter.updateCategories(activeCategories);
+
+        // TODO: 17.08.2018 изменить количество счетчика после удаления изменения
+
     }
 
     private void deleteFromOnlineStash(String onlineId) {
@@ -527,11 +519,14 @@ public class KitsFragment extends Fragment
     @Override
     public void onCategorySelected(String category) {
         sortedList.clear();
-        sortedList.addAll(dbConnector.filteredKits(currentTable, category, "_id DESC"));
+        sortedList.addAll(dbConnector.filteredKits(workMode, category, "_id DESC"));
         rvAdapter.notifyDataSetChanged();
         currentCategory = category;
         tvChoosedCategory.setText(tagToCategoryName(category));
         rvAdapter.notifyItemRangeChanged(0, sortedList.size());
+
+        setAllPassive();
+        sortByNameAsc();
     }
 
     private void sortByBrandAsc() {
@@ -550,7 +545,7 @@ public class KitsFragment extends Fragment
         tvBarBrand.setCompoundDrawablesWithIntrinsicBounds(null,null, null, Helper.getAPICompatVectorDrawable
                 (context, R.drawable.ic_keyboard_arrow_up_white_24dp));
         isSortBrandAsc = true;
-        currentFilter = BRAND_ASC;
+        currentSortOrder = BRAND_ASC;
     }
 
     private void sortByBrandDesc() {
@@ -569,7 +564,7 @@ public class KitsFragment extends Fragment
         tvBarBrand.setCompoundDrawablesWithIntrinsicBounds(null, null, null, Helper.getAPICompatVectorDrawable
                 (context, R.drawable.ic_keyboard_arrow_down_white_24dp));
         isSortBrandAsc = false;
-        currentFilter = BRAND_DESC;
+        currentSortOrder = BRAND_DESC;
 
     }
 
@@ -591,7 +586,7 @@ public class KitsFragment extends Fragment
         tvBarScale.setCompoundDrawablesWithIntrinsicBounds(null,null, null, Helper.getAPICompatVectorDrawable
                 (context, R.drawable.ic_keyboard_arrow_up_white_24dp));
         isSortScaleAsc = true;
-        currentFilter = SCALE_ASC;
+        currentSortOrder = SCALE_ASC;
     }
 
     private void sortByScaleDesc() {
@@ -612,7 +607,7 @@ public class KitsFragment extends Fragment
         tvBarScale.setCompoundDrawablesWithIntrinsicBounds(null,null, null, Helper.getAPICompatVectorDrawable
                 (context, R.drawable.ic_keyboard_arrow_down_white_24dp));
         isSortScaleAsc = false;
-        currentFilter = SCALE_DESC;
+        currentSortOrder = SCALE_DESC;
     }
 
     private void sortByDateAcs() {
@@ -633,7 +628,7 @@ public class KitsFragment extends Fragment
         tvBarDate.setCompoundDrawablesWithIntrinsicBounds(null,null, null, Helper.getAPICompatVectorDrawable
                 (context, R.drawable.ic_keyboard_arrow_up_white_24dp));
         isSortDateAsc = true;
-        currentFilter = DATE_ASC;
+        currentSortOrder = DATE_ASC;
     }
 
     private void sortByDateDesc() {
@@ -654,7 +649,7 @@ public class KitsFragment extends Fragment
         tvBarDate.setCompoundDrawablesWithIntrinsicBounds(null,null, null, Helper.getAPICompatVectorDrawable
                 (context, R.drawable.ic_keyboard_arrow_down_white_24dp));
         isSortDateAsc = false;
-        currentFilter = DATE_DESC;
+        currentSortOrder = DATE_DESC;
     }
 
     private void sortByNameAsc() {
@@ -673,7 +668,7 @@ public class KitsFragment extends Fragment
         tvBarName.setCompoundDrawablesWithIntrinsicBounds(null,null, null, Helper.getAPICompatVectorDrawable
                 (context, R.drawable.ic_keyboard_arrow_up_white_24dp));
         isSortNameAsc = true;
-        currentFilter = NAME_ASC;
+        currentSortOrder = NAME_ASC;
     }
 
     private void sortByNameDesc() {
@@ -692,7 +687,7 @@ public class KitsFragment extends Fragment
         tvBarName.setCompoundDrawablesWithIntrinsicBounds(null,null, null, Helper.getAPICompatVectorDrawable
                 (context, R.drawable.ic_keyboard_arrow_down_white_24dp));
         isSortNameAsc = false;
-        currentFilter = NAME_DESC;
+        currentSortOrder = NAME_DESC;
     }
 
     private void setActive(TextView item){
@@ -717,5 +712,9 @@ public class KitsFragment extends Fragment
         tvBarBrand.setBackgroundColor(Helper.getColor(getActivity(), R.color.colorItem));
         tvBarBrand.setTextColor(Helper.getColor(getActivity(), R.color.colorPassive));
         tvBarBrand.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
+    }
+
+    public interface CategoriesChangeListener {
+        void onCategoryChanged(String category);
     }
 }

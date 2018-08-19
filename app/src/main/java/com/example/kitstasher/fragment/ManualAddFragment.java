@@ -1,11 +1,12 @@
 package com.example.kitstasher.fragment;
 
+import android.Manifest;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -17,8 +18,10 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatSpinner;
@@ -43,7 +46,6 @@ import com.example.kitstasher.BuildConfig;
 import com.example.kitstasher.R;
 import com.example.kitstasher.activity.CropActivity;
 import com.example.kitstasher.activity.MainActivity;
-import com.example.kitstasher.adapters.FragmentAddAdapter;
 import com.example.kitstasher.adapters.UiAlertDialogAdapter;
 import com.example.kitstasher.adapters.UiSpinnerAdapter;
 import com.example.kitstasher.objects.Item;
@@ -82,6 +84,8 @@ import java.util.regex.Pattern;
 import moe.feng.common.stepperview.VerticalStepperItemView;
 
 import static android.app.Activity.RESULT_OK;
+import static com.example.kitstasher.activity.MainActivity.MY_PERMISSIONS_REQUEST_CAMERA;
+import static com.example.kitstasher.activity.MainActivity.MY_PERMISSIONS_REQUEST_WRITE;
 import static com.example.kitstasher.activity.MainActivity.REQUEST_CODE_CROP;
 import static com.example.kitstasher.activity.MainActivity.asyncService;
 
@@ -131,7 +135,8 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             defCurrency,
             mCurrentPhotoPath; //path for use with ACTION_VIEW intents
     private long currentId;
-    private char workMode;
+    private int media;
+    private String workMode;
     private boolean isFoundOnline,
             isReported,
             cloudModeOn,
@@ -203,6 +208,9 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 
         initUI();
 
+        checkCameraPermissions();
+        checkWritePermissions();
+
         initVariables();
 
         prepareBrandsList();
@@ -248,14 +256,16 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             setAllStepsState(1);
         }
 
-        if (workMode == MyConstants.MODE_AFTERMARKET || workMode == MyConstants.MODE_AFTER_KIT) {
+        if (workMode.equals(MyConstants.TYPE_AFTERMARKET)) {
             setAftermarketUI();
-        } else if (workMode == MyConstants.MODE_KIT || workMode == MyConstants.MODE_LIST) {
+        } else if (workMode.equals(MyConstants.TYPE_KIT) || workMode.equals(MyConstants.MODE_SEARCH)) {
             setKitUI();
         }
 
-        String[] descriptionItems = new String[]{getString(R.string.unknown),
-                getString(R.string.newkit), getString(R.string.rebox)};
+        String[] descriptionItems = new String[]{
+                getString(R.string.unknown),
+                getString(R.string.newkit),
+                getString(R.string.rebox)};
         descriptionAdapter = new ArrayAdapter<>(context,
                 R.layout.simple_spinner_item, descriptionItems);
         spDescription.setAdapter(descriptionAdapter);
@@ -276,14 +286,9 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         spQuantity.setAdapter(quantityAdapter);
         spQuantity.setSelection(0, true);
 
-        Cursor currCursor = dbConnector.getAllFromTable(DbConnector.TABLE_CURRENCIES,
+        String[] currencies = dbConnector.getCurrencies(DbConnector.TABLE_CURRENCIES,
                 DbConnector.CURRENCIES_COLUMN_CURRENCY);
-        currCursor.moveToFirst();
-        String[] currencies = new String[currCursor.getCount()];
-        for (int i = 0; i < currCursor.getCount(); i++) {
-            currencies[i] = currCursor.getString(1);
-            currCursor.moveToNext();
-        }
+
         currencyAdapter = new ArrayAdapter<>(context,
                 R.layout.simple_spinner_item, currencies);
         spCurrency.setAdapter(currencyAdapter);
@@ -303,38 +308,55 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                 getString(R.string.media_metal),
                 getString(R.string.media_3dprint),
                 getString(R.string.media_multimedia),
-                getString(R.string.media_other),
-                getString(R.string.media_decal),
-                getString(R.string.media_mask)
+                getString(R.string.media_other)
         };
         ArrayAdapter<String> mediaAdapter = new ArrayAdapter<>(context, R.layout.simple_spinner_item,
                 mediaTypes);
         spKitMedia.setAdapter(mediaAdapter);
-        spKitMedia.setSelection(1);
+        spKitMedia.setSelection(0);
+        String[] categories;
+        int[] icons;
+        if (workMode.equals(MyConstants.TYPE_KIT)) {
+            categories = new String[]{
+                    getString(R.string.other),
+                    getString(R.string.Air),
+                    getString(R.string.Ground),
+                    getString(R.string.Sea),
+                    getString(R.string.Space),
+                    getString(R.string.Auto_moto),
+                    getString(R.string.Figures),
+                    getString(R.string.Fantasy)
+            };
+            icons = new int[]{
+                    R.drawable.ic_check_box_outline_blank_black_24dp,
+                    R.drawable.ic_tag_air_black_24dp,
+                    R.drawable.ic_tag_afv_black_24dp,
+                    R.drawable.ic_tag_ship_black_24dp,
+                    R.drawable.ic_tag_space_black_24dp,
+                    R.drawable.ic_directions_car_black_24dp,
+                    R.drawable.ic_wc_black_24dp,
+                    R.drawable.ic_android_black_24dp
+            };
+            UiSpinnerAdapter uiSpinnerAdapter = new UiSpinnerAdapter(context, icons, categories);
+            spCategory.setAdapter(uiSpinnerAdapter);
+            spCategory.setSelection(Integer.parseInt(category));
+        }else if (workMode.equals(MyConstants.TYPE_AFTERMARKET)) {
+            categories = new String[]{
+                    getString(R.string.media_other),
+                    getString(R.string.media_decal),
+                    getString(R.string.media_mask),
+                    getString(R.string.media_addon)
+            };
+            icons = new int[]{
+                    R.drawable.ic_check_black_24dp,
+                    R.drawable.ic_check_black_24dp,
+                    R.drawable.ic_check_black_24dp
+            };
+            UiSpinnerAdapter uiSpinnerAdapter = new UiSpinnerAdapter(context, icons, categories);
+            spCategory.setAdapter(uiSpinnerAdapter);
+            spCategory.setSelection(Integer.parseInt(category));
+        }
 
-        String[] categories = new String[]{
-                getString(R.string.other),
-                getString(R.string.Air),
-                getString(R.string.Ground),
-                getString(R.string.Sea),
-                getString(R.string.Space),
-                getString(R.string.Auto_moto),
-                getString(R.string.Figures),
-                getString(R.string.Fantasy)
-        };
-        int[] icons = new int[]{
-                R.drawable.ic_check_box_outline_blank_black_24dp,
-                R.drawable.ic_tag_air_black_24dp,
-                R.drawable.ic_tag_afv_black_24dp,
-                R.drawable.ic_tag_ship_black_24dp,
-                R.drawable.ic_tag_space_black_24dp,
-                R.drawable.ic_directions_car_black_24dp,
-                R.drawable.ic_wc_black_24dp,
-                R.drawable.ic_android_black_24dp
-        };
-        UiSpinnerAdapter uiSpinnerAdapter = new UiSpinnerAdapter(context, icons, categories);
-        spCategory.setAdapter(uiSpinnerAdapter);
-        spCategory.setSelection(Integer.parseInt(category));
 
         return view;
     }
@@ -347,16 +369,21 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         Calendar c = Calendar.getInstance();
         SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());
         if (getArguments() != null) {
-            workMode = getArguments().getChar(MyConstants.WORK_MODE);
-            if (workMode == MyConstants.MODE_AFTERMARKET) {
-                setAftermarketUI();
-            } else if (workMode == MyConstants.MODE_KIT && isOnline()) {
+            workMode = getArguments().getString(MyConstants.WORK_MODE);
+            if (workMode.equals(MyConstants.TYPE_KIT) && isOnline()) {
                 setKitUI();
-            } else if (workMode == MyConstants.MODE_KIT && !isOnline()) {
+            } else {
                 setAftermarketUI();
             }
+//            if (workMode.equals(MyConstants.MODE_AFTERMARKET)) {
+//                setAftermarketUI();
+//            } else if (workMode.equals(MyConstants.MODE_KIT) && isOnline()) {
+//                setKitUI();
+//            } else if (workMode == MyConstants.MODE_KIT && !isOnline()) {
+//                setAftermarketUI();
+//            }
         } else {
-            workMode = MyConstants.MODE_KIT;
+            workMode = MyConstants.TYPE_KIT;
         }
         wasSearchedOnline = false;
         isFoundOnline = false;
@@ -371,7 +398,9 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         }
         dateAdded = df.format(c.getTime());
         category = MyConstants.CODE_OTHER;
-        onlineId = MyConstants.EMPTY;
+
+        if (workMode.equals(MyConstants.TYPE_PAINT))
+            onlineId = MyConstants.EMPTY;
         datePurchased = MyConstants.EMPTY;
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
         currency = sharedPref.getString(MyConstants.DEFAULT_CURRENCY, MyConstants.EMPTY);
@@ -379,6 +408,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         defCurrency = sharedPref.getString(MyConstants.DEFAULT_CURRENCY, MyConstants.EMPTY);
         scalematesUrl = MyConstants.EMPTY;
         placePurchased = MyConstants.EMPTY;
+        media = 0;
     }
 
     private void initUI() {
@@ -422,9 +452,9 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 
     private void prepareBrandsList() {
         myBrands = new ArrayList<>();
-        myBrands = DbConnector.getAllBrands();
+        myBrands = dbConnector.getBrandsNames();
         myShops = new ArrayList<>();
-        myShops = DbConnector.getAllShops();
+        myShops = dbConnector.getShopNames();
     }
 
     private boolean checkSearchFields() {
@@ -498,11 +528,9 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 
             case (R.id.btnMAdd):
                 String newBrand = acTvBrand.getText().toString().trim();
-                if (!myBrands.contains(newBrand)) {
-                    if (newBrand.length() > 1) {
-                        myBrands.add(newBrand);
-                        dbConnector.addBrand(newBrand);
-                    }
+                if (!myBrands.contains(newBrand) && newBrand.length() > 1) {
+                    myBrands.add(newBrand);
+                    dbConnector.addBrand(newBrand);
                     acAdapterMybrands = new ArrayAdapter<>(
                             context,
                             android.R.layout.simple_dropdown_item_1line, myBrands);
@@ -524,20 +552,23 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                 if (checkAllFields()) {
                     getFieldsValues();
                     isBoxartTemporary = false;
-                    switch (workMode) {
-                        case 'm':
-                            kit.setItemType(MyConstants.TYPE_KIT);
-                            break;
-                        case 'a':
-                            kit.setItemType(MyConstants.TYPE_AFTERMARKET);
-                            break;
-                    }
+
+                    kit.setItemType(workMode);
+
+//                    switch (workMode) {
+//                        case MyConstants.MODE_KIT:
+//                            kit.setItemType(MyConstants.TYPE_KIT);
+//                            break;
+//                        case MyConstants.MODE_AFTERMARKET:
+//                            kit.setItemType(MyConstants.TYPE_AFTERMARKET);
+//                            break;
+//                    }
                     if (!isInLocalBase(kit.getBrand(), kit.getBrandCatno())) {
-                        currentId = dbConnector.addKitRec(kit, activeTable); //kit has been saved in local base
+                        currentId = dbConnector.addItem(kit, activeTable); //kit has been saved in local base
                         kit.setLocalId((int) currentId);
                         if (isOnline()) {
 
-//                                    currentId = dbConnector.addKitRec(kit); //kit has been saved in local base
+//                                    currentId = dbConnector.addItem(kit); //kit has been saved in local base
                             if (wasSearchedOnline && !isFoundOnline) { //todo проверка в mystash на дубли
                                 if (!TextUtils.isEmpty(mCurrentPhotoPath)) {
                                     saveWithBoxartToParse(mCurrentPhotoPath, kit);
@@ -554,7 +585,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                             String sendStatus = "n";//Надо потом записать в облако
                             kit.setSendStatus(sendStatus);
 
-//                                    currentId = dbConnector.addKitRec(kit);
+//                                    currentId = dbConnector.addItem(kit);
 
                         }
                         Toast.makeText(getActivity(), R.string.kit_added, Toast.LENGTH_SHORT).show();
@@ -569,7 +600,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 //                            if (!isInLocalBase(kit.getBrand(), kit.getBrandCatno())) {
 //                                //todo не работает поиск афтеркопий, посмотреть db
 //                                kit.setItemType(MyConstants.TYPE_AFTERMARKET);
-//                                dbConnector.addKitRec(kit, activeTable);//запись
+//                                dbConnector.addItem(kit, activeTable);//запись
 //                                Toast.makeText(getActivity(), R.string.aftermarket_added,
 //                                        Toast.LENGTH_SHORT).show();
 //                                sendStatus = MyConstants.EMPTY;
@@ -588,7 +619,6 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                 break;
 
             case R.id.ivGetBoxart:
-
                 try {
                     dispatchTakePictureIntent();
                 } catch (ActivityNotFoundException e) {
@@ -669,7 +699,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     }
 
     private boolean isInLocalBase(String brand, String brand_catno) {
-        return dbConnector.searchForDoubles(activeTable, brand, brand_catno);
+        return dbConnector.isItemDuplicate(brand, brand_catno);
     }
 
     private void setAllStepsState(int state) {
@@ -706,7 +736,27 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             barcode = MyConstants.EMPTY;
         }
         year = MyConstants.EMPTY;
-        category = String.valueOf(spCategory.getSelectedItemPosition());
+        if (workMode.equals(MyConstants.TYPE_KIT)){
+            category = String.valueOf(spCategory.getSelectedItemPosition());
+        }else{
+            int position = spCategory.getSelectedItemPosition();
+            switch (position){
+                case 0:
+                    category = String.valueOf(MyConstants.M_CODE_OTHER);
+                    break;
+                case 1:
+                    category = String.valueOf(MyConstants.M_CODE_DECAL);
+                    break;
+                case 2:
+                    category = String.valueOf(MyConstants.M_CODE_MASK);
+                    break;
+                case 3:
+                    category = String.valueOf(MyConstants.M_CODE_ADDON);
+                    break;
+                default:
+                    category = String.valueOf(MyConstants.M_CODE_OTHER);
+            }
+        }
         String y = spYear.getSelectedItem().toString();
         if (!y.equals(getResources().getString(R.string.unknown))
                 || y.equals(MyConstants.EMPTY)) {
@@ -740,17 +790,17 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         kit = new Kit.KitBuilder()
                 .hasBrand(brand)
                 .hasBrand_catno(brandCatno)
-                .hasKit_name(kitName)
+                .hasKitName(kitName)
                 .hasScale(scale)
                 .hasCategory(category)
                 .hasBarcode(barcode)
-                .hasKit_noeng_name(kitNoengname)
+                .hasKitNoengName(kitNoengname)
                 .hasDescription(description)
                 .hasPrototype(MyConstants.EMPTY)//not in use
                 .hasSendStatus(sendStatus)
-                .hasBoxart_url(boxartUrl)
-                .hasBoxart_uri(boxartUri)
-                .hasScalemates_url(scalematesUrl)
+                .hasBoxartUrl(boxartUrl)
+                .hasBoxartUri(boxartUri)
+                .hasScalematesUrl(scalematesUrl)
                 .hasYear(year)
                 .hasOnlineId(onlineId)
 
@@ -767,11 +817,13 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                 .hasMedia(media)
                 .build();
 
-        if (workMode == MyConstants.MODE_AFTERMARKET) {
-            kit.setItemType(MyConstants.TYPE_AFTERMARKET);
-        } else {
-            kit.setItemType(MyConstants.TYPE_KIT);
-        }
+        kit.setItemType(workMode);
+
+//        if (workMode == MyConstants.MODE_AFTERMARKET) {
+//            kit.setItemType(MyConstants.TYPE_AFTERMARKET);
+//        } else {
+//            kit.setItemType(MyConstants.TYPE_KIT);
+//        }
     }
 
     private String descToCode(String d) {
@@ -823,7 +875,8 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         isFoundOnline = false;
         isReported = false;
         sendStatus = MyConstants.EMPTY;//Статус для последующей записи пропущенных в офлайне записей
-        workMode = MyConstants.MODE_KIT;
+//        workMode = MyConstants.MODE_KIT;
+        workMode = MyConstants.TYPE_KIT;
         boxartUrl = MyConstants.EMPTY;
         boxartUri = MyConstants.EMPTY;
         barcode = MyConstants.EMPTY;
@@ -835,15 +888,16 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         acPurchasedFrom.setText(placePurchased);
         currentId = 0;
         sendStatus = MyConstants.EMPTY;
+        media = 0;
 
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.remove(MyConstants.BARCODE).apply();
     }
 
-    private void returnToScan() {
-        FragmentAddAdapter.openScan();
-    }
+//    private void returnToScan() {
+//        FragmentAddAdapter.openScan();
+//    }
 
     private void setDescription(String description) {
         if (!description.equals(MyConstants.EMPTY)) {
@@ -924,7 +978,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     }
 
     @Override
-    public void onFragmentInteraction(String b, char mode) {
+    public void onFragmentInteraction(String b, String mode) {
         barcode = b;
         wasSearchedOnline = true;
         isFoundOnline = false;
@@ -1050,6 +1104,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         String inBrand = "";
         String inBrandCatno = "";
         int inScale = 0;
+        int inMedia = 0;
         String inKitName = "";
         String inKitNoengname = "";
         String inDescription = "";
@@ -1073,6 +1128,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                 inDescription = reader.getString(MyConstants.TAG_DESCRIPTION);
                 inYear = reader.getString(MyConstants.TAG_YEAR);
                 inScalematesUrl = reader.getString(MyConstants.TAG_SCALEMATES_PAGE);
+                inMedia = reader.getInt(MyConstants.TAG_MEDIA);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -1087,15 +1143,16 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
 //                    .hasBarcode(inBarcode) //?
                     .hasBrand(inBrand)
                     .hasBrand_catno(inBrandCatno)
-                    .hasKit_name(inKitName)
+                    .hasKitName(inKitName)
                     .hasScale(inScale)
                     .hasDescription(inDescription)
                     .hasCategory(categoryContainer.getVal())
-                    .hasKit_noeng_name(inKitNoengname)
-                    .hasBoxart_url(urlContainer.getVal())
+                    .hasKitNoengName(inKitNoengname)
+                    .hasBoxartUrl(urlContainer.getVal())
                     .hasBarcode(barcodeContainer.getVal())
-                    .hasScalemates_url(inScalematesUrl)
+                    .hasScalematesUrl(inScalematesUrl)
                     .hasYear(inYear)
+                    .hasMedia(inMedia)
                     .build();
             itemsToShow.add(kitToShow);
         }
@@ -1142,6 +1199,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         alert.show();
     }
 
+
     @Override
     public void onFindDocFailed(App42Exception ex) {
         progressBar.setVisibility(View.GONE);
@@ -1172,5 +1230,40 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     @Override
     public void onUpdateDocFailed(App42Exception ex) {
         progressBar.setVisibility(View.GONE);
+    }
+
+    private void checkCameraPermissions() {
+        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
+                    Manifest.permission.CAMERA)) {
+                Toast.makeText(getActivity(), R.string.we_cant_read_barcodes,
+                        Toast.LENGTH_LONG).show();
+                android.support.v4.app.Fragment fragment = NoPermissionFragment.newInstance(Manifest.permission.CAMERA, MyConstants.TYPE_PAINT);
+                android.support.v4.app.FragmentTransaction fragmentTransaction =
+                        getFragmentManager().beginTransaction();
+                fragmentTransaction.replace(R.id.mainactivityContainer, fragment);
+                fragmentTransaction.commitAllowingStateLoss();
+            } else {
+                ActivityCompat.requestPermissions(getActivity(),
+                        new String[]{Manifest.permission.CAMERA},
+                        MY_PERMISSIONS_REQUEST_CAMERA);
+            }
+        }
+    }
+
+    private void checkWritePermissions() {
+        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                Toast.makeText(getActivity(), R.string.we_cant_save_boxarts,
+                        Toast.LENGTH_LONG).show();
+            } else {
+                ActivityCompat.requestPermissions(getActivity(),
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        MY_PERMISSIONS_REQUEST_WRITE);
+            }
+        }
     }
 }

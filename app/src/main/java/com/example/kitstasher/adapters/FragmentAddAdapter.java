@@ -13,22 +13,24 @@ import com.example.kitstasher.other.MyConstants;
 
 /**
  * Created by Алексей on 21.04.2017. Dispatch between scan and manual add
+ *
+ * Адаптер, обеспечивающий переход между ScanFragment и ManualAddFragment.
  */
 
 public class FragmentAddAdapter extends FragmentPagerAdapter {
     private static final int FRAGMENT_COUNT = 2;
     private Context mContext;
-    private boolean aftermarketMode;
+    private String workMode;
 
-    public FragmentAddAdapter(FragmentManager fm, Context context, boolean aftermarketMode) {
+    public FragmentAddAdapter(FragmentManager fm, Context context, String workMode) {
         super(fm);
         mContext = context;
-        this.aftermarketMode = aftermarketMode;
+        this.workMode = workMode;
     }
     @Override
     public Fragment getItem(int position) {
         Bundle bundle = new Bundle();
-        bundle.putBoolean(MyConstants.AFTERMARKET_MODE, aftermarketMode);
+        bundle.putString(MyConstants.WORK_MODE, workMode);
 
         switch (position){
             case 0:
@@ -37,7 +39,7 @@ public class FragmentAddAdapter extends FragmentPagerAdapter {
                 return scanFragment;
             case 1:
                 ManualAddFragment manualAddFragment = new ManualAddFragment();
-                bundle.putChar(MyConstants.WORK_MODE, MyConstants.MODE_KIT); // TODO: 02.04.2018 обработать вызов из афтермаркета 
+                bundle.putString(MyConstants.WORK_MODE, workMode);
                 manualAddFragment.setArguments(bundle);
                 return manualAddFragment;
         }
@@ -59,9 +61,6 @@ public class FragmentAddAdapter extends FragmentPagerAdapter {
         return null;
     }
 
-    public static Fragment openManualAdd(){
-        return new ManualAddFragment();
-    }
     public static Fragment openScan(){
         return new ScanFragment();
     }

@@ -1,5 +1,6 @@
 package com.example.kitstasher.adapters;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.support.annotation.NonNull;
@@ -17,6 +18,11 @@ import com.example.kitstasher.objects.BrandItem;
 import com.example.kitstasher.other.DbConnector;
 
 import java.util.ArrayList;
+
+/*
+Adapter for brands list.
+Адаптер для списка брэндов.
+ */
 
 public class FragmentBrandAdapter extends RecyclerView.Adapter<FragmentBrandAdapter.ViewHolder>{
     private Context context;
@@ -46,7 +52,7 @@ public class FragmentBrandAdapter extends RecyclerView.Adapter<FragmentBrandAdap
             public void onClick(View view) {
                 AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
                 LayoutInflater inflater = LayoutInflater.from(context);
-                final View dialogView = inflater.inflate(R.layout.list_alertdialog, null);
+                @SuppressLint("InflateParams") final View dialogView = inflater.inflate(R.layout.list_alertdialog, null);
                 dialogBuilder.setView(dialogView);
                 final EditText etNewBrandName = dialogView.findViewById(R.id.etNewListName);
                 etNewBrandName.setText(name);
@@ -83,7 +89,7 @@ public class FragmentBrandAdapter extends RecyclerView.Adapter<FragmentBrandAdap
                 DbConnector dbConnector = new DbConnector(context);
                 dbConnector.open();
                 try {
-                    dbConnector.delBrand(id);
+                    dbConnector.deleteBrand(id);
                 }finally {
                     dbConnector.close();
                     notifyItemRemoved(holder.getAdapterPosition());

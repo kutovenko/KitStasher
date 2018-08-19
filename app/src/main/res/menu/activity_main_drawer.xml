@@ -20,9 +20,9 @@
             android:icon="@drawable/ic_build_black_24dp"
             android:title="@string/nav_aftermarket" />
         <item
-        android:id="@+id/nav_paints"
-        android:icon="@drawable/ic_palette_black_24dp"
-        android:title="@string/paints" />
+            android:id="@+id/nav_paints"
+            android:icon="@drawable/ic_palette_black_24dp"
+            android:title="@string/paints" />
         <item
             android:id="@+id/nav_search"
             android:icon="@drawable/ic_search_black_24dp"

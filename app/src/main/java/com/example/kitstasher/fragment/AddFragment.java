@@ -17,12 +17,14 @@ import com.example.kitstasher.other.MyConstants;
 import com.example.kitstasher.other.OnFragmentInteractionListener;
 
 /**
- * Created by Алексей on 21.04.2017. Fragment with scan and manual add
+ * Created by Алексей on 21.04.2017. Fragment with scan and manual add for kits.
+ *
+ * Фрагмент с пейджером для фрагментов сканера и ручного добавления набора и афтермаркета.
  */
 
 public class AddFragment extends Fragment implements OnFragmentInteractionListener {
     public String passBarcode;
-    public char passWorkMode;
+    public String passWorkMode;
     public AddFragment(){
 
     }
@@ -38,8 +40,8 @@ public class AddFragment extends Fragment implements OnFragmentInteractionListen
         View view = inflater.inflate(R.layout.fragment_add, container, false);
         TabLayout tabLayout = view.findViewById(R.id.tabsAdd);
         ViewPager viewPager = view.findViewById(R.id.viewpagerAdd);
-        boolean aftermarketMode = getArguments().getBoolean(MyConstants.AFTERMARKET_MODE);
-        viewPager.setAdapter(new FragmentAddAdapter(getChildFragmentManager(), getActivity(), aftermarketMode));
+        String workMode = getArguments().getString(MyConstants.WORK_MODE, MyConstants.TYPE_KIT);
+        viewPager.setAdapter(new FragmentAddAdapter(getChildFragmentManager(), getActivity(), workMode));
         tabLayout.setupWithViewPager(viewPager);
 
         ((MainActivity) getActivity())
@@ -49,7 +51,7 @@ public class AddFragment extends Fragment implements OnFragmentInteractionListen
     }
 
     @Override
-    public void onFragmentInteraction(String barcode, char mode) {
+    public void onFragmentInteraction(String barcode, String mode) {
         FragmentManager fragmentManager = getChildFragmentManager();
         ScanFragment scanFragment = (ScanFragment) fragmentManager.findFragmentByTag(ScanFragment.scanTag);
         ManualAddFragment manualAddFragment = (ManualAddFragment)fragmentManager.findFragmentByTag(ManualAddFragment.manualTag);

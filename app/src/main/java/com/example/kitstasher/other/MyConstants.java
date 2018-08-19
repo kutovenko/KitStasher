@@ -55,12 +55,20 @@ Category tags
     public static final String TAG_BARCODE = "a";
     public static final String TAG_CATEGORY = "g";
     public static final String TAG_YEAR = "y";
+    public static final String TAG_MEDIA = "e";
+    public static final String TAG_TIMEFRAME = "f";
+    public static final String TAG_OWNERID = "o";
+    public static final String TAG_KITTYPE = "t";
+    //f //timeframe
+    //o //owner_id
+    //t kit type 1 - full kit
 
 
 /*
 Prefixes and postfixes for links
  */
 // TODO: 19.02.2018 проверить категории!!! 0 - неправильно уже
+
     public static final String CAT_ALL = "all";
     public static final String CAT_AIR = "air";
     public static final String CODE_AIR = "1";
@@ -79,9 +87,27 @@ Prefixes and postfixes for links
     public static final String CAT_OTHER = "other";
     public static final String CODE_OTHER = "0";
 
-    public static final String CODE_P_OTHER = "100";
-    public static final String CODE_P_ACRYLLIC = "101";
-    public static final String CODE_P_ENAMEL = "102";
+//    public static final String CAT_ALL = "all";
+//    public static final String CAT_AIR = "air";
+//    public static final String CODE_AIR = "101";
+//    public static final String CAT_GROUND = "ground";
+//    public static final String CODE_GROUND = "102";
+//    public static final String CAT_SEA = "sea";
+//    public static final String CODE_SEA = "103";
+//    public static final String CAT_SPACE = "space";
+//    public static final String CODE_SPACE = "104";
+//    public static final String CAT_AUTOMOTO = "auto";
+//    public static final String CODE_AUTOMOTO = "105";
+//    public static final String CAT_FIGURES = "figures";
+//    public static final String CODE_FIGURES = "106";
+//    public static final String CAT_FANTASY = "fantasy";
+//    public static final String CODE_FANTASY = "107";
+//    public static final String CAT_OTHER = "other";
+//    public static final String CODE_OTHER = "100";
+
+    public static final String CODE_P_OTHER = "300";
+    public static final String CODE_P_ACRYLLIC = "301";
+    public static final String CODE_P_ENAMEL = "302";
 
 
 
@@ -155,13 +181,13 @@ Prefixes and postfixes for links
     //Modes for editor
     public static final String LISTNAME = "listname";
     public static final String WORK_MODE = "mode";
-    public static final Character MODE_KIT = 'm';
-    public static final Character MODE_LIST = 'l';
-    public static final Character MODE_AFTERMARKET = 'a';
-    public static final Character MODE_AFTER_KIT = 'k';
-    public static final Character MODE_VIEW_FROM_KIT = 'v';
-    public static final Character MODE_EDIT_FROM_KIT = 'e';
-    public static final Character MODE_SEARCH = 's';
+//    public static final String MODE_KIT = "m";
+//    public static final Character MODE_LIST = 'l';
+//    public static final String MODE_AFTERMARKET = "a";
+//    public static final Character MODE_AFTER_KIT = 'k';
+//    public static final Character MODE_VIEW_FROM_KIT = 'v';
+//    public static final Character MODE_EDIT_FROM_KIT = 'e';
+    public static final String MODE_SEARCH = "s";
 
     public static final String PASS_ID = "passid";
 
@@ -179,6 +205,7 @@ Prefixes and postfixes for links
     public static final int M_CODE_OTHER = 10;
     public static final int M_CODE_DECAL = 11;
     public static final int M_CODE_MASK = 12;
+    public static final int M_CODE_ADDON = 13;
 //Paint codes
 
     public static final int M_CODE_P_ACRYLLIC = 101;
@@ -277,6 +304,8 @@ Prefixes and postfixes for links
     public static final String PARSE_TU_USERID = "userId";
     public static final String PARSE_TU_OWNERNAME = "ownerName";
 
+    public static final String PARSE_MEDIA = "media";
+
 
     public static final String POSITIONS = "positions";
     public static final String EMPTY = "";
@@ -314,4 +343,7 @@ Prefixes and postfixes for links
     public static final String LIST = "list";
     public static final String PARSE_PURCHASE_PLACE = "purchasePlace";
     public static final String ITEMS_LIST = "itemsList";
+    public static final String KIT = "kit";
+    public static final float ASPECTRATIO_X = 16;
+    public static final float ASPECTRATIO_Y = 10;
 }

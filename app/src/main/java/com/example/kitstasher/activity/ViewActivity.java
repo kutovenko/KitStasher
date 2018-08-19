@@ -15,22 +15,25 @@ import com.example.kitstasher.other.MyConstants;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.example.kitstasher.fragment.ItemCardFragment.EDIT_ACTIVITY_CODE;
+
 /*
- * Universal Activity for displaying kit and aftermarket pages in pager based on ArrayList.
+ * Will be deprecated
+ *  Universal Activity for displaying kit and aftermarket pages in pager based on ArrayList.
+ *
+ * Класс для демонстрации карточек наборов и афтермаркета. Использует Pager, данные получает в виде
+ * ArrayList<Kit>.
  */
 
 public class ViewActivity extends AppCompatActivity {
     public static CustomKitsViewPager viewPager;
-    private final int EDIT_ACTIVITY_CODE = 21;
     private long kitId;
     private ArrayList<Kit> itemList;
     private String
-//            sortBy,
             category;
     private int categoryTab,
             position;
-    private char workMode;
-    private List<Fragment> fragments;
+    private String workMode;
 
 
     @Override
@@ -39,15 +42,14 @@ public class ViewActivity extends AppCompatActivity {
         setContentView(R.layout.activity_kit);
 
         category = getIntent().getStringExtra(MyConstants.CATEGORY);
-        categoryTab = getIntent().getIntExtra(MyConstants.CATEGORY_TAB, 0);
+//        categoryTab = getIntent().getIntExtra(MyConstants.CATEGORY_TAB, 0);
         itemList = getIntent().getParcelableArrayListExtra(MyConstants.LIST);
-        workMode = getIntent().getCharExtra(MyConstants.WORK_MODE, MyConstants.MODE_KIT);
-//        sortBy = getIntent().getStringExtra(MyConstants.SORT_BY);
+        workMode = getIntent().getStringExtra(MyConstants.WORK_MODE);
         position = getIntent().getIntExtra(MyConstants.POSITION, 0);
         kitId = getIntent().getLongExtra(MyConstants.ID, 0);
-        fragments = buildFragments();
+        List<Fragment> fragments = buildFragments();
         viewPager = findViewById(R.id.viewpagerViewKits);
-        FragmentViewCardsAdapter fragmentViewCardsAdapter = new FragmentViewCardsAdapter(this, getSupportFragmentManager(), fragments);
+        FragmentViewCardsAdapter fragmentViewCardsAdapter = new FragmentViewCardsAdapter(getSupportFragmentManager(), fragments);
         viewPager.setAdapter(fragmentViewCardsAdapter);
         viewPager.setCurrentItem(position);
     }
@@ -57,10 +59,11 @@ public class ViewActivity extends AppCompatActivity {
         for (int i = 0; i < itemList.size(); i++) {
             Bundle bundle = new Bundle();
             bundle.putLong(MyConstants.ID, kitId); //id записи, по которой кликнули в списке
-            bundle.putInt(MyConstants.CATEGORY_TAB, categoryTab);
+//            bundle.putInt(MyConstants.CATEGORY_TAB, categoryTab);
             bundle.putInt(MyConstants.POSITION, position);
             bundle.putString(MyConstants.CATEGORY, category);
-            bundle.putParcelable("kit", itemList.get(i));
+            bundle.putString(MyConstants.WORK_MODE, workMode);
+            bundle.putParcelable(MyConstants.KIT, itemList.get(i));
             fragments.add(Fragment.instantiate(this, ItemCardFragment.class.getName(), bundle));
         }
         return fragments;
@@ -68,14 +71,19 @@ public class ViewActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+//        int EDIT_ACTIVITY_CODE = 21;
         if (resultCode == RESULT_OK && requestCode == EDIT_ACTIVITY_CODE) {
-            super.onActivityResult(requestCode, resultCode, data);
+position = data.getIntExtra(MyConstants.POSITION, 0);
             category = data.getStringExtra(MyConstants.CATEGORY);
-            Kit editedKit = data.getParcelableExtra("kit");
-            itemList.set(data.getIntExtra("position", 0), editedKit);
+            workMode = data.getStringExtra(MyConstants.WORK_MODE);
+            Kit editedKit = data.getParcelableExtra(MyConstants.KIT);
+            itemList.set(position, editedKit);
             List<Fragment> fragments = buildFragments();
-            FragmentViewCardsAdapter fragmentViewCardsAdapter = new FragmentViewCardsAdapter(this, getSupportFragmentManager(), fragments);
+            FragmentViewCardsAdapter fragmentViewCardsAdapter
+                    = new FragmentViewCardsAdapter(getSupportFragmentManager(), fragments);
             viewPager.setAdapter(fragmentViewCardsAdapter);
+//            viewPager.refresh();
             viewPager.setCurrentItem(position);
         }
     }
@@ -83,16 +91,11 @@ public class ViewActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         Intent intent = new Intent(ViewActivity.this, MainActivity.class);
-//        intent.putExtra(MyConstants.SORT_BY, sortBy);
         intent.putExtra(MyConstants.WORK_MODE, workMode);
-        intent.putExtra(MyConstants.CATEGORY_TAB, categoryTab);
+        intent.putExtra(MyConstants.CATEGORY, category);
         intent.putExtra(MyConstants.LIST_POSITION, position);
+        intent.putExtra(MyConstants.WORK_MODE, workMode);
         setResult(RESULT_OK, intent);
-//        KitsFragment.refreshPages();
         finish();
-    }
-
-    public static void refreshPages() {
-        viewPager.refresh();
     }
 }

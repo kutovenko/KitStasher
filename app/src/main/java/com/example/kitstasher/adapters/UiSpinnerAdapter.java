@@ -11,18 +11,18 @@ import android.widget.TextView;
 import com.example.kitstasher.R;
 
 /**
- * Created by Алексей on 04.10.2017. Adapter for spinners
+ * Created by Алексей on 04.10.2017. Adapter for spinners in AddPaintFragment, ManualAddFragment.
+ *
+ * Адаптер для спиннеров в AddPaintFragment, ManualAddFragment.
  */
 
 // TODO: 28.02.2018 RecyclerViewAdapter
 public class UiSpinnerAdapter extends BaseAdapter {
-    private Context context;
     private int icons[];
     private String[] categories;
     private LayoutInflater inflater;
 
     public UiSpinnerAdapter(Context applicationContext, int[] icons, String[] categories) {
-        this.context = applicationContext;
         this.icons = icons;
         this.categories = categories;
         inflater = (LayoutInflater.from(applicationContext));
