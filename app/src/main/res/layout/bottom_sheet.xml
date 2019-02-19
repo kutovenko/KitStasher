@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    >
+    <data>
+        <variable
+            name="choosedCategory"
+            type="String"/>
+    </data>
+<androidx.appcompat.widget.LinearLayoutCompat
     android:id="@+id/bottomsheet"
     android:layout_width="match_parent"
     android:layout_height="480dp"
@@ -39,6 +46,7 @@
 
         <TextView
             android:id="@+id/tvChoosedCategory"
+            android:text="@{choosedCategory}"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
@@ -47,7 +55,7 @@
 
     </LinearLayout>
 
-    <android.support.v7.widget.RecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvActiveCategories"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -56,5 +64,6 @@
         android:clipChildren="false"
         android:clipToPadding="false">
 
-    </android.support.v7.widget.RecyclerView>
-</android.support.v7.widget.LinearLayoutCompat>
+    </androidx.recyclerview.widget.RecyclerView>
+</androidx.appcompat.widget.LinearLayoutCompat>
+</layout>

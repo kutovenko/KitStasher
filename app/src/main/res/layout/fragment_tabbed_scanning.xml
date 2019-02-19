@@ -1,32 +1,36 @@
-<android.support.v7.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/colorText"
-    android:gravity="center_vertical"
-    android:orientation="vertical">
-
-    <ProgressBar
-        android:id="@+id/pbScan"
-        style="?android:attr/progressBarStyleHorizontal"
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top"
-        android:indeterminate="true" />
-
-    <LinearLayout
-        android:id="@+id/llBarcodePreview"
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="match_parent"
+        android:background="@color/colorText"
+        android:gravity="center_vertical"
         android:orientation="vertical">
 
-        <com.journeyapps.barcodescanner.DecoratedBarcodeView
-            android:id="@+id/barcode_view"
+        <ProgressBar
+            android:id="@+id/pbScan"
+            style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_marginBottom="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="9dp"
-            android:layout_weight="1" />
-    </LinearLayout>
-</android.support.v7.widget.LinearLayoutCompat>
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:indeterminate="true" />
+
+        <LinearLayout
+            android:id="@+id/llBarcodePreview"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:orientation="vertical">
+
+            <com.journeyapps.barcodescanner.DecoratedBarcodeView
+                android:id="@+id/barcodeview"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginBottom="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="9dp"
+                android:layout_weight="1" />
+        </LinearLayout>
+    </androidx.appcompat.widget.LinearLayoutCompat>
+</layout>

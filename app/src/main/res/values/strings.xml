@@ -218,7 +218,7 @@
     <string name="Manual_add">Manual Add</string>
     <string name="Your_device_cannot_take_photos">Your device cannot take photos</string>
     <string name="camera_failure">Sorry, camera failure</string>
-    <string name="the_world_s">The World\'s №</string>
+    <string name="the_world_s">Your Stash is the World\'s №</string>
     <string name="total_stash">Total Stash</string>
     <string name="added_today">Added Today</string>
     <string name="daily_record">Daily Record</string>
@@ -367,9 +367,9 @@
     <string name="Sort_by">Sort by</string>
     <string name="we_cant_read_barcodes">Without permission to use camera we can\'t read barcodes</string>
     <string name="we_cant_save_boxarts">Without permission to write file we can\'t save boxart</string>
-    <string name="paints">Paints</string>
-    <string name="paint_name">*Paint name (e.g. Olive Drab)</string>
-    <string name="paint_code">*Paint code (e.g. XF-62)</string>
+    <string name="paints">Supplies</string>
+    <string name="paint_name">Supply name (e.g. Olive Drab)</string>
+    <string name="paint_code">*Supply code (e.g. XF-62)</string>
     <string name="paint_brand">*Brand</string>
     <string name="item_name">Item name</string>
     <string name="acryllic">Acryllic</string>
@@ -399,9 +399,9 @@
     <string name="about">About</string>
     <string name="personal_data_policy">Personal Data Policy</string>
     <string name="support">Support</string>
-    <string name="kitstasher_support_text">KitStasher has Facebook page. Feel free to ask questions. Please remember that KitStasher is a personal hobby project. I\'ll try to do my best but I can not guarantee 24/7 tecnical support.</string>
+    <string name="kitstasher_support_text">KitStasher has Facebook page. Feel free to ask questions. Please remember that KitStasher is a personal hobby project. I\'ll try to do my best but I can not guarantee 24/7 technical support.</string>
     <string name="close_kitstasher">Close KitStasher</string>
-<!--List-->
+    <!--List-->
     <string name="title_activity_list" translatable="false">ListActivity</string>
     <string name="Choose_mode">Choose Mode:</string>
     <string name="Kit_added_to_list">Kit added to list</string>
@@ -414,6 +414,52 @@
     <string name="get_from_my_stash">Get From My Stash</string>
     <string name="paint_type">Paint type</string>
     <string name="cant_write_to_local_db">Can\'t write to local database</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="error_in_online_record">Error in online record</string>
+    <string name="online_backup_error">Online Backup Error</string>
+    <string name="media_photoetch">Photoetch</string>
+    <string name="media_filler">Filler</string>
+    <string name="media_colorstop">Liquid Mask</string>
+    <string name="media_pigment">Pigment</string>
+    <string name="media_decalsol">Decal Sol</string>
+    <string name="media_decalset">Decal Set</string>
+    <string name="media_glue">Glue</string>
+    <string name="media_thinner">Thinner</string>
+    <string name="media_lacquer">Lacquer</string>
+    <string name="media_oil">Oil</string>
+    <string name="media_primer">Primer</string>
+    <string name="offline_mode">No Internet connection. Online database unavailable</string>
+    <string name="online_backup_inactive">Online backup inactive</string>
+    <string name="total_kits">Kits total:</string>
+    <string name="total_after">Aftermarket total:</string>
+    <string name="total_supply">Supplies total:</string>
+    <string name="supplies">Supplies</string>
+    <string name="supplies_total">Supplies total:</string>
+    <string name="media_addon_">Add-on: </string>
+    <string name="media_photoetch_">Photoetched: </string>
+    <string name="media_decal_">Decal: </string>
+    <string name="media_mask_">Mask: </string>
+    <string name="media_other_">Other: </string>
+    <string name="acryllic_">Acryllic: </string>
+    <string name="enamel_">Enamel: </string>
+    <string name="media_oil_">Oil: </string>
+    <string name="media_lacquer_">Lacquer: </string>
+    <string name="media_thinner_">Thinner: </string>
+    <string name="media_glue_">Glue: </string>
+    <string name="media_decalset_">Decal Set: </string>
+    <string name="media_decalsol_">Decal Sol: </string>
+    <string name="media_pigment_">Pigment: </string>
+    <string name="media_colorstop_">Color Stop: </string>
+    <string name="media_filler_">Filler: </string>
+    <string name="media_primer_">Primer: </string>
+    <string name="app_version">KitStasher 0.9</string>
+    <string name="nav_about_privacy">About</string>
+    <string name="about_permissions">KitStasher asks for Camera and Storage permissions. Camera permission is used for barcode scanning and making photos of boxart pictures. Storage permission is used for saving boxart pictures. KitStasher will not be able to work without them.</string>
+    <string name="permissions">KitStasher Permissions</string>
+    <string name="responce_message">Response Message</string>
+    <string name="saving_failed">Saving failed. Please, try again!</string>
 
 
 </resources>

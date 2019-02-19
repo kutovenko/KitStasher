@@ -9,6 +9,11 @@
 -dontwarn '*facebook*'
 -dontwarn '*parse-android*'
 -dontwarn '*zxing-android-embedded*'
+-dontwarn '*ucrop*'
+-dontwarn '*MaterialStepperView*'
+-dontwarn '*butterknife*'
+-dontwarn '*zxing-android-embedded*'
+-dontwarn '*zxing-android-embedded*'
 # Add project specific ProGuard rules here.
 # By default, the flags in this file are appended to flags specified
 # in C:\Android\sdk/tools/proguard/proguard-android.txt
