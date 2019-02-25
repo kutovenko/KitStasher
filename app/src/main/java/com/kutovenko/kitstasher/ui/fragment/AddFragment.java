@@ -1,5 +1,6 @@
 package com.kutovenko.kitstasher.ui.fragment;
 
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 
@@ -40,6 +41,7 @@ public class AddFragment extends Fragment implements OnFragmentInteractionListen
                              Bundle savedInstanceState) {
         FragmentAddBinding binding = DataBindingUtil
                 .inflate(inflater, R.layout.fragment_add, container, false);
+
         assert getArguments() != null;
         String workMode = getArguments().getString(MyConstants.ITEM_TYPE, MyConstants.TYPE_KIT);
         binding.viewpagerAdd.setAdapter(new FragmentAddAdapter(getChildFragmentManager(), getActivity(), workMode));

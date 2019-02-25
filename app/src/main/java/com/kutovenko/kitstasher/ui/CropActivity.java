@@ -29,8 +29,9 @@ public class CropActivity extends AppCompatActivity {
         options.setToolbarColor(getResources().getColor(com.kutovenko.kitstasher.R.color.colorPrimary));
         options.setActiveWidgetColor(getResources().getColor(com.kutovenko.kitstasher.R.color.colorPrimary));
         UCrop.of(uri, uri)
-                .withAspectRatio(MyConstants.ASPECTRATIO_X, MyConstants.ASPECTRATIO_Y)
-                .withMaxResultSize(MyConstants.SIZE_FULL_WIDTH, MyConstants.SIZE_FULL_HEIGHT)
+                .useSourceImageAspectRatio()
+//                .withAspectRatio(MyConstants.ASPECTRATIO_X, MyConstants.ASPECTRATIO_Y)
+//                .withMaxResultSize(MyConstants.SIZE_FULL_WIDTH, MyConstants.SIZE_FULL_HEIGHT)
                 .withOptions(options)
                 .start(this);
         Intent intent = new Intent();

@@ -22,8 +22,11 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import com.bumptech.glide.Glide;
 import com.kutovenko.kitstasher.R;
@@ -69,6 +72,9 @@ public class KitsFragment extends Fragment implements FragmentKitsAdapter.Filter
     private boolean isSortDateAsc;
     private boolean isSortScaleAsc;
     private boolean isSortNameAsc;
+
+    private boolean searchOnlyInSection;
+
     private String workMode;
     private String currentCategory;
     private String currentSortOrder;
@@ -109,7 +115,9 @@ public class KitsFragment extends Fragment implements FragmentKitsAdapter.Filter
         }else{
             if (workMode == null) workMode = MyConstants.TYPE_KIT;
         }
+        if (!workMode.equals(MyConstants.TYPE_ALL)){
         activeCategories = dbConnector.getActiveCategories(workMode);
+        }
 
     }
 
@@ -168,7 +176,9 @@ public class KitsFragment extends Fragment implements FragmentKitsAdapter.Filter
             workMode = getArguments().getString(MyConstants.ITEM_TYPE);
             currentCategory = getArguments().getString(MyConstants.CATEGORY);
             if (currentCategory == null) currentCategory = MyConstants.CAT_ALL;
-            activeCategories = dbConnector.getActiveCategories(workMode);
+            if (!workMode.equals(MyConstants.TYPE_ALL)) {
+                activeCategories = dbConnector.getActiveCategories(workMode);
+            }
             position = getArguments().getInt(MyConstants.POSITION);
             switch (workMode){
                 case MyConstants.TYPE_AFTERMARKET:
@@ -255,35 +265,36 @@ public class KitsFragment extends Fragment implements FragmentKitsAdapter.Filter
         LinearLayoutManager rvCategoriesManager = new LinearLayoutManager(getActivity());
         binding.rvActiveCategories.setLayoutManager(rvCategoriesManager);
         binding.rvActiveCategories.setItemAnimator(new DefaultItemAnimator());
-        bottomSheetAdapter = new BottomSheetAdapter(context, activeCategories, activeCategoriesListener );
-        binding.rvActiveCategories.setAdapter(bottomSheetAdapter);
+        if (!workMode.equals(MyConstants.TYPE_ALL)) {
+            bottomSheetAdapter = new BottomSheetAdapter(context, activeCategories, activeCategoriesListener);
+            binding.rvActiveCategories.setAdapter(bottomSheetAdapter);
 
-        mBottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
-            @Override
-            public void onStateChanged(@NonNull View bottomSheet, int newState) {
-                if (BottomSheetBehavior.STATE_EXPANDED == newState) {
-                    binding.fab.hide();
-                    binding.ivBottomSheetArrow.setVisibility(View.INVISIBLE);
-                } else if (BottomSheetBehavior.STATE_COLLAPSED == newState) {
-                    binding.fab.show();
-                    binding.ivBottomSheetArrow.setVisibility(View.VISIBLE);
-                    Glide.with(context)
-                            .load(com.kutovenko.kitstasher.R.drawable.ic_keyboard_arrow_up_black_24dp)
-                            .into(binding.ivBottomSheetArrow);
-                } else if (BottomSheetBehavior.STATE_HIDDEN == newState) {
-                    binding.fab.show();
-                    binding.ivBottomSheetArrow.setVisibility(View.VISIBLE);
-                    Glide.with(context)
-                            .load(com.kutovenko.kitstasher.R.drawable.ic_keyboard_arrow_up_black_24dp)
-                            .into(binding.ivBottomSheetArrow);
+            mBottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+                @Override
+                public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                    if (BottomSheetBehavior.STATE_EXPANDED == newState) {
+                        binding.fab.hide();
+                        binding.ivBottomSheetArrow.setVisibility(View.INVISIBLE);
+                    } else if (BottomSheetBehavior.STATE_COLLAPSED == newState) {
+                        binding.fab.show();
+                        binding.ivBottomSheetArrow.setVisibility(View.VISIBLE);
+                        Glide.with(context)
+                                .load(com.kutovenko.kitstasher.R.drawable.ic_keyboard_arrow_up_black_24dp)
+                                .into(binding.ivBottomSheetArrow);
+                    } else if (BottomSheetBehavior.STATE_HIDDEN == newState) {
+                        binding.fab.show();
+                        binding.ivBottomSheetArrow.setVisibility(View.VISIBLE);
+                        Glide.with(context)
+                                .load(com.kutovenko.kitstasher.R.drawable.ic_keyboard_arrow_up_black_24dp)
+                                .into(binding.ivBottomSheetArrow);
+                    }
                 }
-            }
 
-            @Override
-            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-            }
-        });
-
+                @Override
+                public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                }
+            });
+        }
         requestSort(currentSortOrder);
 
         if(position != 0) {
@@ -359,6 +370,8 @@ public class KitsFragment extends Fragment implements FragmentKitsAdapter.Filter
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(com.kutovenko.kitstasher.R.menu.menu_main, menu);
         super.onCreateOptionsMenu(menu, inflater);
+
+
         MenuItem closeItem = menu.findItem(com.kutovenko.kitstasher.R.id.action_close);
         closeItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override

@@ -2,8 +2,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.example.kitstasher.activity.MainActivity">
-    <item android:title="@string/close_kitstasher"
-        android:id="@+id/action_close"/>
     <item
         android:id="@+id/action_search"
         android:icon="@drawable/ic_search_black_24dp"
@@ -11,4 +9,6 @@
         android:title="@string/action_search"
         app:actionViewClass="androidx.appcompat.widget.SearchView"
         app:showAsAction="always" />
+    <item android:title="@string/close_kitstasher"
+        android:id="@+id/action_close"/>
 </menu>

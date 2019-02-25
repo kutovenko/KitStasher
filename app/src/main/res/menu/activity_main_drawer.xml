@@ -3,6 +3,10 @@
 
     <group android:checkableBehavior="single">
         <item
+            android:id="@+id/nav_viewall"
+            android:icon="@drawable/ic_baseline_view_list_24px"
+            android:title="@string/nav_all" />
+        <item
             android:id="@+id/nav_viewstash"
             android:icon="@drawable/ic_library_books_black_24dp"
             android:title="@string/nav_kits" />

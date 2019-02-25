@@ -87,32 +87,33 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         AsyncApp42ServiceApi.App42StorageServiceListener, OnFragmentInteractionListener {
     private FragmentTabbedManualaddBinding binding;
     public static String manualTag;
-    private String imageFileName,
-            ownerId,
-            barcode,
-            sendStatus,
-            dateAdded,
-            boxartUrl,
-            category,
-            boxartUri,
-            onlineId,
-            scalematesUrl,
-            placePurchased,
-            defCurrency,
-            mCurrentPhotoPath; //path for use with ACTION_VIEW intents
-    private long currentId;
+    private String imageFileName;
+    private String ownerId;
+    private String barcode;
+    private String sendStatus;
+    private String dateAdded;
+    private String boxartUrl;
+    private String category;
+    private String boxartUri;
+    private String onlineId;
+    private String scalematesUrl;
+    private String placePurchased;
+    private String defCurrency;
+    private String mCurrentPhotoPath; //path for use with ACTION_VIEW intents
     private String itemType;
-    private boolean isFoundOnline,
-            isBoxartTemporary,
-            wasSearchedOnline;
+
+    private long currentId;
+    private boolean isFoundOnline;
+    private boolean isBoxartTemporary;
+    private boolean wasSearchedOnline;
     private Context context;
     private DbConnector dbConnector;
     private List<String> myBrands;
-    private ArrayAdapter<String> acAdapterMybrands,
-            acAdapterMyshops,
-            descriptionAdapter,
-            currencyAdapter,
-            yearsAdapter;
+    private ArrayAdapter<String> acAdapterMybrands;
+    private ArrayAdapter<String> acAdapterMyshops;
+    private ArrayAdapter<String> descriptionAdapter;
+    private ArrayAdapter<String> currencyAdapter;
+    private ArrayAdapter<String> yearsAdapter;
     private List<String> myShops;
     private OnFragmentInteractionListener mListener;
     private StashItem stashItem;
@@ -507,7 +508,12 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                     getFieldsValues();
                     isBoxartTemporary = false;
                     if (!isInLocalBase(stashItem.getBrand(), stashItem.getBrandCatno())) {
-                        stashItem.saveToStashWhenOffline(dbConnector);
+                        stashItem.saveToLocalStash(dbConnector);
+                        if (Helper.isOnline(context)){
+                            stashItem.saveToStashWhenOnline(dbConnector, boxartUri, imageFileName, ownerId);
+                        } else {
+                            Toast.makeText(context, R.string.no_internet_connection, Toast.LENGTH_SHORT).show();
+                        }
                         Toast.makeText(getActivity(), com.kutovenko.kitstasher.R.string.kit_added, Toast.LENGTH_SHORT).show();
                         clearFields();
                         break;

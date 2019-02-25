@@ -1,6 +1,7 @@
 package com.kutovenko.kitstasher.ui.fragment;
 
 
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;

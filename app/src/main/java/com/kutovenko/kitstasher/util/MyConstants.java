@@ -80,6 +80,7 @@ public class MyConstants {
     public static final String PARSE_REGISTERED = "registered";
 
     // Image Dimensions
+    public static final int SIZE_FULL_SIDE = 720;
     public static final int SIZE_FULL_HEIGHT = 450; //исправить!
     public static final int SIZE_FULL_WIDTH = 720;
     public static final int SIZE_UP_MEDIUM_HEIGHT = 393;
@@ -211,6 +212,7 @@ public class MyConstants {
     public static final String WORLDRANK = "world_rank";
 
 
+    public static final String TYPE_ALL = "0"; // тип - все
     public static final String TYPE_KIT = "1"; // тип - набор
     public static final String TYPE_AFTERMARKET = "2"; // тип - афтермаркет
     public static final String TYPE_SUPPLY = "3"; // тип - краска/химия

@@ -416,7 +416,7 @@
     <string name="cant_write_to_local_db">Can\'t write to local database</string>
 
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="hello_blank_fragment" translatable="false">Hello blank fragment</string>
     <string name="error_in_online_record">Error in online record</string>
     <string name="online_backup_error">Online Backup Error</string>
     <string name="media_photoetch">Photoetch</string>
@@ -454,12 +454,13 @@
     <string name="media_colorstop_">Color Stop: </string>
     <string name="media_filler_">Filler: </string>
     <string name="media_primer_">Primer: </string>
-    <string name="app_version">KitStasher 0.9</string>
+    <string name="app_version" translatable="false">KitStasher 1.0.1</string>
     <string name="nav_about_privacy">About</string>
     <string name="about_permissions">KitStasher asks for Camera and Storage permissions. Camera permission is used for barcode scanning and making photos of boxart pictures. Storage permission is used for saving boxart pictures. KitStasher will not be able to work without them.</string>
     <string name="permissions">KitStasher Permissions</string>
     <string name="responce_message">Response Message</string>
     <string name="saving_failed">Saving failed. Please, try again!</string>
+    <string name="nav_all">All Stash</string>
 
 
 </resources>

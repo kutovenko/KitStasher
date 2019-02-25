@@ -363,4 +363,7 @@
     <string name="nav_about_privacy">О приложении</string>
     <string name="permissions">Разрешения KitStasher</string>
     <string name="about_permissions">KitStasher запрашивает разрешения на доступ к камере и локальному хранилищу. Камера используется для сканирования штрихкодов и фотографирования коробок наборов. Для сохранения фото коробок нужно разрешение на доступ к локальному хранилищу.</string>
+    <string name="nav_all">Вся коллекция</string>
+    <string name="saving_failed">Сохранение не удалось. Повторите, пожалуйста!</string>
+    <string name="responce_message">Ответ</string>
 </resources>

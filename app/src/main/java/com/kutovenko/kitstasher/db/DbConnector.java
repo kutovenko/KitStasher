@@ -608,8 +608,33 @@ public class DbConnector {
                 having = null;
                 break;
         }
+        if (!itemType.equals(MyConstants.TYPE_ALL)){
         Cursor cursor = mDB.query(TABLE_KITS, null, "item_type = ? ",
                 new String[]{itemType}, groupBy, having, sortBy);
+
+        itemList = prepareKit(cursor);
+        cursor.close();
+
+        return itemList;
+        } else {
+            Cursor cursor = mDB.query(TABLE_KITS, null, null,
+                    null, groupBy, having, sortBy);
+
+            itemList = prepareKit(cursor);
+            cursor.close();
+
+            return itemList;
+        }
+
+    }
+
+
+    public ArrayList<StashItem> allFilteredKits() {
+        ArrayList<StashItem> itemList;
+        String groupBy = "_id";
+
+        Cursor cursor = mDB.query(TABLE_KITS, null, null,
+                null, groupBy, null, "_id");
         itemList = prepareKit(cursor);
         cursor.close();
         return itemList;

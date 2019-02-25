@@ -59,7 +59,7 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
     private OnFragmentInteractionListener mListener;
     public static String scanTag;
     private String workMode;
-    private Context mContext;
+    private Context context;
     private FragmentTabbedScanningBinding binding;
 
     public ScanFragment() {
@@ -89,7 +89,6 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
     {
         super.onCreate(savedInstanceState);
         onAttachToParentFragment(getParentFragment());
-
     }
 
     @Override
@@ -102,7 +101,7 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
         dbConnector = new DbConnector(getActivity());
         dbConnector.open();
 
-        mContext = getActivity();
+        context = getActivity();
 
         binding.pbScan.setVisibility(View.GONE);
 
@@ -193,7 +192,7 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
                                     Toast.LENGTH_SHORT).show();
                             initiateScanner(getCallback());
                         } else {
-                            if (Helper.isOnline(mContext)){
+                            if (Helper.isOnline(context)){
                                 binding.pbScan.setVisibility(View.VISIBLE);
                                 searchCloud(currentBarcode);
                                 binding.pbScan.setVisibility(View.INVISIBLE);
@@ -259,7 +258,7 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
             }
         }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(com.kutovenko.kitstasher.R.string.Found);
         UiAlertDialogAdapter uiAlertDialogAdapter = new UiAlertDialogAdapter(getActivity(), itemList);
         builder.setAdapter(uiAlertDialogAdapter, new DialogInterface.OnClickListener() {
@@ -323,8 +322,11 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
                     stashItemToAdd.setMedia(media);
                     stashItemToAdd.setScale(scale);
 
-                    stashItemToAdd.saveToStashWhenOffline(dbConnector);
-                    Toast.makeText(mContext, com.kutovenko.kitstasher.R.string.kit_added, Toast.LENGTH_SHORT).show();
+                    stashItemToAdd.saveToLocalStash(dbConnector);
+                    if (Helper.isOnline(context)){
+                        stashItemToAdd.saveOnlineAfterScan(ownerId);
+                    }
+                    Toast.makeText(context, com.kutovenko.kitstasher.R.string.kit_added, Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -359,7 +361,7 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
 
     private void createAlertDialog(String msg) {
         AlertDialog.Builder alertbox = new AlertDialog.Builder(
-                mContext);
+                context);
         alertbox.setTitle(getString(R.string.responce_message));
         alertbox.setMessage(msg);
         alertbox.setPositiveButton("Ok", new DialogInterface.OnClickListener() {

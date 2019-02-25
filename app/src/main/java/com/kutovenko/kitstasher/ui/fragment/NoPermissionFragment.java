@@ -3,6 +3,7 @@ package com.kutovenko.kitstasher.ui.fragment;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -56,6 +57,7 @@ public class NoPermissionFragment extends Fragment {
                              Bundle savedInstanceState) {
         FragmentNoPermissionBinding binding = DataBindingUtil.inflate(inflater, R.layout.fragment_no_permission, container,
                 false);
+
         if (notificationText.equals(Manifest.permission.WRITE_EXTERNAL_STORAGE)){
             binding.tvRequestText.setText(com.kutovenko.kitstasher.R.string.permission_storage);
         }else if (notificationText.equals(Manifest.permission.CAMERA)){

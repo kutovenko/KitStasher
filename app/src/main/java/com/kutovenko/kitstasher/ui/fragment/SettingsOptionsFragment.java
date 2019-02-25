@@ -2,6 +2,7 @@ package com.kutovenko.kitstasher.ui.fragment;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
@@ -36,6 +37,7 @@ public class SettingsOptionsFragment extends Fragment implements View.OnClickLis
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_options, container, false);
+
         dbConnector = new DbConnector(getActivity());
         dbConnector.open();
         context = getActivity();

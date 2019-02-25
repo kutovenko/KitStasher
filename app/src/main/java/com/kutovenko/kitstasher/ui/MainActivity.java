@@ -50,7 +50,8 @@ public class MainActivity extends AppCompatActivity
 
     private static final String TAG_HOME = "home";
     private static final String TAG_ADDSTASH = "addstash";
-    private static final String TAG_VIEWSTASH = "viewstash";
+    private static final String TAG_STASH = "stash";
+    private static final String TAG_KITS = "kits";
     private static final String TAG_PAINTS = "paints";
     private static final String TAG_SETTINGS = "settings";
     private static final String TAG_AFTERMARKET = "aftermarket";
@@ -71,7 +72,6 @@ public class MainActivity extends AppCompatActivity
     private String title;
     private String workMode;
     private ActivityMainBinding binding;
-    //private CallbackManager callbackManager;
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -84,7 +84,6 @@ public class MainActivity extends AppCompatActivity
     protected void onDestroy() {
         super.onDestroy();
         dbConnector.close();
-//        unbinder.unbind();
     }
 
     @Override
@@ -114,23 +113,19 @@ public class MainActivity extends AppCompatActivity
         imgProfile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-//                startActivity(intent);
-
-                                        LoginFragment fragment = new LoginFragment();
+                LoginFragment fragment = new LoginFragment();
                 FragmentTransaction fragmentTransaction =
                         getSupportFragmentManager().beginTransaction();
                 fragmentTransaction.replace(com.kutovenko.kitstasher.R.id.mainactivityContainer, fragment);
                 fragmentTransaction.commit();
-
-
             }
         });
 
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, binding.drawerLayout, binding.appbarmain.toolbar, com.kutovenko.kitstasher.R.string.navigation_drawer_open, com.kutovenko.kitstasher.R.string.navigation_drawer_close);
-        binding.drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
+        ActionBarDrawerToggle drawerListener = new ActionBarDrawerToggle(
+                this, binding.drawerLayout, binding.appbarmain.toolbar,
+                com.kutovenko.kitstasher.R.string.navigation_drawer_open, com.kutovenko.kitstasher.R.string.navigation_drawer_close);
+        binding.drawerLayout.addDrawerListener(drawerListener);
+        drawerListener.syncState();
         mHandler = new Handler();
         binding.navView.setNavigationItemSelectedListener(this);
 
@@ -140,7 +135,7 @@ public class MainActivity extends AppCompatActivity
 
         if (savedInstanceState == null) {
             navItemIndex = 0;
-            CURRENT_TAG = TAG_VIEWSTASH;
+            CURRENT_TAG = TAG_KITS;
             loadHomeFragment(workMode);
         }
     }
@@ -164,18 +159,23 @@ public class MainActivity extends AppCompatActivity
                     @Override
                     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
                         switch (menuItem.getItemId()) {
-                            case com.kutovenko.kitstasher.R.id.nav_viewstash:
+                            case com.kutovenko.kitstasher.R.id.nav_viewall:
                                 navItemIndex = 0;
-                                CURRENT_TAG = TAG_VIEWSTASH;
+                                CURRENT_TAG = TAG_STASH;
+                                workMode = MyConstants.TYPE_ALL;
+                                break;
+                            case com.kutovenko.kitstasher.R.id.nav_viewstash:
+                                navItemIndex = 1;
+                                CURRENT_TAG = TAG_KITS;
                                 workMode = MyConstants.TYPE_KIT;
                                 break;
                             case com.kutovenko.kitstasher.R.id.nav_aftermarket:
-                                navItemIndex = 1;
+                                navItemIndex = 2;
                                 CURRENT_TAG = TAG_AFTERMARKET;
                                 workMode = MyConstants.TYPE_AFTERMARKET;
                                 break;
                             case com.kutovenko.kitstasher.R.id.nav_paints:
-                                navItemIndex = 2;
+                                navItemIndex = 3;
                                 CURRENT_TAG = TAG_PAINTS;
                                 workMode = MyConstants.TYPE_SUPPLY;
                                 break;
@@ -185,23 +185,23 @@ public class MainActivity extends AppCompatActivity
 //                                workMode = MyConstants.TYPE_KIT;
 //                                break;
                             case com.kutovenko.kitstasher.R.id.nav_statistics:
-                                navItemIndex = 3;
+                                navItemIndex = 4;
                                 CURRENT_TAG = TAG_STATISTICS;
                                 workMode = MyConstants.TYPE_KIT;
                                 break;
                             case com.kutovenko.kitstasher.R.id.nav_settings:
-                                navItemIndex = 4;
+                                navItemIndex = 5;
                                 CURRENT_TAG = TAG_SETTINGS;
                                 workMode = MyConstants.TYPE_KIT;
                                 break;
                             case com.kutovenko.kitstasher.R.id.nav_about:
-                                navItemIndex = 5;
+                                navItemIndex = 6;
                                 CURRENT_TAG = TAG_ABOUT;
                                 workMode = MyConstants.TYPE_KIT;
                                 break;
                             default:
-                                navItemIndex = 0;
-                                CURRENT_TAG = TAG_VIEWSTASH;
+                                navItemIndex = 1;
+                                CURRENT_TAG = TAG_KITS;
                                 workMode = MyConstants.TYPE_KIT;
                         }
                         if (menuItem.isChecked()) {
@@ -285,10 +285,12 @@ public class MainActivity extends AppCompatActivity
             case 2:
                 return kitsFragment;
             case 3:
-                return new StatisticsFragment();
+                return kitsFragment;
             case 4:
-                return new SettingsFragment();
+                return new StatisticsFragment();
             case 5:
+                return new SettingsFragment();
+            case 6:
                 return SettingsAboutFragment.newInstance();
             default:
                 Fragment defFragment = new KitsFragment();
@@ -303,23 +305,28 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
-        if (id == com.kutovenko.kitstasher.R.id.nav_viewstash) {
+        if (id == R.id.nav_viewall) {
             navItemIndex = 0;
             loadHomeFragment(workMode);
-        } else if (id == com.kutovenko.kitstasher.R.id.nav_aftermarket) {
+
+        } else if (id == com.kutovenko.kitstasher.R.id.nav_viewstash) {
             navItemIndex = 1;
             loadHomeFragment(workMode);
-        } else if (id == com.kutovenko.kitstasher.R.id.nav_paints) {
+
+        } else if (id == com.kutovenko.kitstasher.R.id.nav_aftermarket) {
             navItemIndex = 2;
             loadHomeFragment(workMode);
-        } else if (id == com.kutovenko.kitstasher.R.id.nav_statistics) {
+        } else if (id == com.kutovenko.kitstasher.R.id.nav_paints) {
             navItemIndex = 3;
             loadHomeFragment(workMode);
-        } else if (id == com.kutovenko.kitstasher.R.id.nav_settings) {
+        } else if (id == com.kutovenko.kitstasher.R.id.nav_statistics) {
             navItemIndex = 4;
             loadHomeFragment(workMode);
-        } else if (id == com.kutovenko.kitstasher.R.id.nav_about) {
+        } else if (id == com.kutovenko.kitstasher.R.id.nav_settings) {
             navItemIndex = 5;
+            loadHomeFragment(workMode);
+        } else if (id == com.kutovenko.kitstasher.R.id.nav_about) {
+            navItemIndex = 6;
             loadHomeFragment(workMode);
         }
 

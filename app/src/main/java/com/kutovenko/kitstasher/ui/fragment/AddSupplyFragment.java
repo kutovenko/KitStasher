@@ -306,9 +306,9 @@ public class AddSupplyFragment extends Fragment implements View.OnClickListener,
                         }
                     }else{
                         if(Helper.isOnline(context)){
-                            supplyItem.saveToStashWhenOnline(dbConnector, mCurrentPhotoPath, imageFileName, ownerId, false);
+                            supplyItem.saveToStashWhenOnline(dbConnector, mCurrentPhotoPath, imageFileName, ownerId);
                         }else{
-                            supplyItem.saveToStashWhenOffline(dbConnector);
+                            supplyItem.saveToLocalStash(dbConnector);
                         }
                     }
                     returnToKits();

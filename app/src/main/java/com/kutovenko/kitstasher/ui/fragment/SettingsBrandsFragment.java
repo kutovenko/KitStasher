@@ -1,6 +1,7 @@
 package com.kutovenko.kitstasher.ui.fragment;
 
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.databinding.DataBindingUtil;
@@ -38,6 +39,7 @@ public class SettingsBrandsFragment extends Fragment {
                              Bundle savedInstanceState) {
         FragmentListWithEditBinding binding = DataBindingUtil.inflate(inflater,
                 R.layout.fragment_list_with_edit, container, false);
+
         Context context = getActivity();
         LinearLayoutManager rvBrandsManager = new LinearLayoutManager(context);
         binding.rvBrands.setHasFixedSize(true);

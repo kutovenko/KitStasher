@@ -243,6 +243,7 @@ public class FragmentKitsAdapter extends RecyclerView.Adapter<FragmentKitsAdapte
 
     public void setSortedItemList(ArrayList<StashItem> list) {
         filteredItemList = list;
+        itemList = list;
         notifyItemRangeChanged(0, filteredItemList.size());
     }
 

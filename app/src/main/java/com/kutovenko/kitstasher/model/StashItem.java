@@ -302,22 +302,43 @@ public class StashItem implements Parcelable
 
     /////BASIC METHODS/////
 
-    public void saveToStashWhenOffline(DbConnector dbConnector){
+    public void saveToLocalStash(DbConnector dbConnector){
         saveToLocalDb(dbConnector);
     }
 
-    public void saveToStashWhenOnline(DbConnector dbConnector, String imagePath,
-                                      String imageFileName, String ownerId, final boolean isKitNew){
-        this.setLocalId(saveToLocalDb(dbConnector));
-        saveWithBoxartAndThumbnail(dbConnector, imagePath, imageFileName, ownerId, isKitNew);
+    public void saveToStashWhenOnline(DbConnector dbConnector, String imagePath, String imageFileName, String ownerId){
+//    public void saveToStashWhenOnline(DbConnector dbConnector, String imagePath,
+//                                      String imageFileName, String ownerId, final boolean isKitNew){
+//        this.setLocalId(saveToLocalDb(dbConnector));
+        saveWithBoxartAndThumbnail(dbConnector, imagePath, imageFileName, ownerId);
+
+//        saveWithBoxartAndThumbnail(dbConnector, imagePath, imageFileName, ownerId, isKitNew);
     }
 
-    private void saveWithBoxartAndThumbnail(final DbConnector dbConnector, String imagePath,
-                                            String imageFileName, final String ownerId, final boolean isKitNew){
+
+    public void saveOnlineAfterScan(String ownerId) {
+        StashItem.this.saveToNewKit(ownerId);
+    }
+
+    public void saveWithBoxartAndThumbnail(final DbConnector dbConnector, String imagePath, String imageFileName, final String ownerId){
+//    public void saveWithBoxartAndThumbnail(final DbConnector dbConnector, String imagePath,
+//                                            String imageFileName, final String ownerId, final boolean isKitNew){
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         Bitmap bmp = BitmapFactory.decodeFile(imagePath);
-        getResizedBitmap(bmp, MyConstants.SIZE_FULL_HEIGHT, MyConstants.SIZE_FULL_WIDTH)
-                .compress(Bitmap.CompressFormat.JPEG, 70, stream);
+        int h = bmp.getHeight();
+        int w = bmp.getWidth();
+        int scale = 1;
+        if(Math.max(h, w) == h){
+            scale = h / MyConstants.SIZE_FULL_SIDE;
+            getResizedBitmap(bmp, MyConstants.SIZE_FULL_SIDE, (w / scale))
+                    .compress(Bitmap.CompressFormat.JPEG, 70, stream);
+        } else {
+            scale = w / MyConstants.SIZE_FULL_SIDE;
+            getResizedBitmap(bmp, (h / scale), MyConstants.SIZE_FULL_SIDE)
+                    .compress(Bitmap.CompressFormat.JPEG, 70, stream);
+        }
+
+
         byte[] data = stream.toByteArray();
         String fullName = imageFileName + MyConstants.SIZE_FULL + MyConstants.JPG;
         final ParseFile imageFile = new ParseFile(fullName, data);
@@ -328,15 +349,15 @@ public class StashItem implements Parcelable
             public void done(ParseException ex) {
                 if (ex == null) {
                     String preparedUrl = prepareUrlFromParseBoxart(imageFile.getUrl());
-                    saveStashItemToParse(dbConnector, preparedUrl, ownerId);
-                    StashItem.this.setOnlineId(preparedUrl);
+//                    saveStashItemToParse(dbConnector, preparedUrl, ownerId);
+//                    StashItem.this.setOnlineId(preparedUrl);
                     ContentValues cv = new ContentValues(1);
                     cv.put(DbConnector.COLUMN_ID_ONLINE, preparedUrl);
                     StashItem.this.editStashItem(dbConnector, cv);
                     StashItem.this.setBoxartUrl(preparedUrl);
-                    if(isKitNew){
-                        StashItem.this.saveToNewKit(ownerId);
-                    }
+//                    if(isKitNew){
+                    StashItem.this.saveToNewKit(ownerId);
+//                    }
                 }
             }
         });
