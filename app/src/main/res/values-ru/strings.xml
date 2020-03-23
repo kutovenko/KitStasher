@@ -145,7 +145,7 @@
     <string name="reissue">Перевыпуск</string>
     <string name="sdcard_failed">Ошибка доступа к карте SD</string>
     <string name="year">Год выпуска</string>
-    <string name="searching">Ищем...</string>
+    <string name="searching">Ищем…</string>
     <string name="error_field_required">Обязательное поле</string>
     <string name="other">"Другое"</string>
     <string name="Saved">Сохранено</string>
@@ -198,7 +198,7 @@
     <string name="View_Stash">Посмотреть базу</string>
     <string name="View_Statistics">Посмотреть статистику</string>
     <string name="What_in_the_box">А что в коробке?</string>
-    <string name="No_matches_try_manual">Не найдено... Попробуйте поискать по комбинации производителя и каталожного номера!</string>
+    <string name="No_matches_try_manual">Не найдено… Попробуйте поискать по комбинации производителя и каталожного номера!</string>
     <string name="Status">Статус</string>
     <string name="After_with_this_name_already_exists">Такое дополнение уже есть в базе</string>
     <string name="add_aftermarket">Добавить афтермаркет</string>
@@ -311,14 +311,14 @@
     <string name="permission_denied">Доступ запрещен</string>
     <string name="permission_granted">Доступ разрешен</string>
     <string name="facebook_gdpr">Вопросы и ответы о Facebook и GDPR</string>
-    <string name="p4b_gdpr">Политика защиты данных платформы Buddy IoT</string>
+    <string name="p4b_gdpr">Политика защиты данных платформы AppHQ</string>
     <string name="kitstasher_page">Страница KitStasher на Facebook</string>
     <string name="about">О программе</string>
     <string name="personal_data_policy">Обработка персональных данных</string>
     <string name="support">Поддержка</string>
     <string name="close_kitstasher">Закрыть KitStasher</string>
     <string name="personal_data_policy_fb">Для регистрации KitStasher использует Facebook API и получает имя и идентификатор пользователя, а также ссылку на картинку профиля. Почитать о политике обработки персональных данных на Facebook можно по ссылке ниже.</string>
-    <string name="personal_data_policy_p4b">Для сохранения записей о наборах, дополнениях и красках KitStasher использует сервис Buddy IoT Platform, на который также передается идентификатор пользователя Facebook. Почитать о политике обработки персональных данных платформы Buddy IoT можно по ссылке ниже.</string>
+    <string name="personal_data_policy_p4b">Для сохранения записей о наборах, дополнениях и красках KitStasher использует сервис AppHQ. Почитать о политике обработки персональных данных платформы AppHQ можно по ссылке ниже.</string>
     <string name="kitstasher_support_text">У KitStasher есть своя страница на Facebook, на которой можно задать вопросы и получить поддержку. Пожалуйста, помните, что KitStasher - мой личный хобби-проект. Я стараюсь реагировать на вопросы как можно быстрее, но не могу гарантировать немедленную круглосуточную техподдержку.</string>
     <string name="please_fill_fields">Заполните, пожалуйста, все поля</string>
     <string name="paint_type">Тип краски*</string>

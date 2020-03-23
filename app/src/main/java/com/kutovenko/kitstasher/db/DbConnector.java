@@ -268,7 +268,7 @@ public class DbConnector {
                     " UNION SELECT 'Kopro'" +
                     " UNION SELECT 'Kopro-MasterCraft'" +
                     " UNION SELECT 'KP'" +
-                    " UNION SELECT 'LEM Kits'" +
+                    " UNION SELECT Currencies" +
                     " UNION SELECT 'Lindberg'" +
                     " UNION SELECT 'Lukgraph'" +
                     " UNION SELECT 'Marsh Models/Aerotech'" +
@@ -503,6 +503,8 @@ public class DbConnector {
         cv.put(COLUMN_STATUS, stashItem.getStatus());
         cv.put(COLUMN_ITEMTYPE, stashItem.getItemType());
         cv.put(COLUMN_MEDIA, stashItem.getMedia());
+        cv.put(COLUMN_QUANTITY, stashItem.getQuantity());
+
         return mDB.insert(TABLE_KITS, null, cv);
     }
 
@@ -531,7 +533,7 @@ public class DbConnector {
             case MyConstants.CODE_OTHER:
                 having = DbConnector.COLUMN_CATEGORY + " = '" + MyConstants.CODE_OTHER + "'";
                 break;
-            // Kits categories
+            // Currencies categories
             case MyConstants.CODE_AIR:
                 having = DbConnector.COLUMN_CATEGORY + " = '" + MyConstants.CODE_AIR + "'";
                 break;

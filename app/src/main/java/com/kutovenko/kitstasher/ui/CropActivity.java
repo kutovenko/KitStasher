@@ -21,17 +21,29 @@ public class CropActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(com.kutovenko.kitstasher.R.layout.activity_crop);
-
-        String u = "file:///" + getIntent().getStringExtra(MyConstants.FILE_URI);
+        String u = "";
+        if (getIntent().getExtras().getString("filepath") != null
+                && !getIntent().getExtras().getString("filepath").equals(null)) {
+            u = getIntent().getExtras().getString("filepath");
+        } else if (getIntent().getStringExtra(MyConstants.FILE_URI) != null){
+            u = "file:///" + getIntent().getStringExtra(MyConstants.FILE_URI);
+        }
         Uri uri = Uri.parse(u);
+        Uri destinationUri;
+        if (getIntent().getExtras().getString(MyConstants.NEW_FILE_URI) != null){
+            destinationUri = Uri.parse(getIntent().getExtras().getString(MyConstants.NEW_FILE_URI));
+
+        } else {
+            destinationUri = uri;
+        }
         UCrop.Options options = new UCrop.Options();
         options.setToolbarTitle(getResources().getString(com.kutovenko.kitstasher.R.string.edit_image));
         options.setToolbarColor(getResources().getColor(com.kutovenko.kitstasher.R.color.colorPrimary));
         options.setActiveWidgetColor(getResources().getColor(com.kutovenko.kitstasher.R.color.colorPrimary));
-        UCrop.of(uri, uri)
+        UCrop.of(uri, destinationUri)
                 .useSourceImageAspectRatio()
 //                .withAspectRatio(MyConstants.ASPECTRATIO_X, MyConstants.ASPECTRATIO_Y)
-//                .withMaxResultSize(MyConstants.SIZE_FULL_WIDTH, MyConstants.SIZE_FULL_HEIGHT)
+                .withMaxResultSize(MyConstants.SIZE_FULL_WIDTH, MyConstants.SIZE_FULL_HEIGHT)
                 .withOptions(options)
                 .start(this);
         Intent intent = new Intent();

@@ -1,22 +1,13 @@
 package com.kutovenko.kitstasher.model;
 
 import android.content.ContentValues;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.text.TextUtils;
 
 import com.kutovenko.kitstasher.db.DbConnector;
-import com.kutovenko.kitstasher.util.Helper;
 import com.kutovenko.kitstasher.util.MyConstants;
-import com.parse.ParseException;
-import com.parse.ParseFile;
-import com.parse.ParseObject;
-import com.parse.SaveCallback;
-
-import java.io.ByteArrayOutputStream;
+import com.shephertz.app42.paas.sdk.android.App42CallBack;
+import com.shephertz.app42.paas.sdk.android.storage.StorageService;
 
 /**
  * Created by Алексей on 04.05.2017.
@@ -306,161 +297,190 @@ public class StashItem implements Parcelable
         saveToLocalDb(dbConnector);
     }
 
-    public void saveToStashWhenOnline(DbConnector dbConnector, String imagePath, String imageFileName, String ownerId){
-//    public void saveToStashWhenOnline(DbConnector dbConnector, String imagePath,
-//                                      String imageFileName, String ownerId, final boolean isKitNew){
-//        this.setLocalId(saveToLocalDb(dbConnector));
-        saveWithBoxartAndThumbnail(dbConnector, imagePath, imageFileName, ownerId);
+//    public void saveToStashWhenOnline(DbConnector dbConnector, String imagePath, String imageFileName, String ownerId){
+////    public void saveToStashWhenOnline(DbConnector dbConnector, String imagePath,
+////                                      String imageFileName, String ownerId, final boolean isKitNew){
+////        this.setLocalId(saveToLocalDb(dbConnector));
+//        saveWithBoxartAndThumbnail(dbConnector, imagePath, imageFileName, ownerId);
+//
+////        saveWithBoxartAndThumbnail(dbConnector, imagePath, imageFileName, ownerId, isKitNew);
+//    }
 
-//        saveWithBoxartAndThumbnail(dbConnector, imagePath, imageFileName, ownerId, isKitNew);
+
+//    public void saveOnlineAfterScan(StorageService storageService) {
+//        StashItem.this.saveToNewKit(storageService);
+//    }
+
+//    private void saveWithBoxartAndThumbnail(final DbConnector dbConnector, String imagePath, String imageFileName, final String ownerId){
+////    public void saveWithBoxartAndThumbnail(final DbConnector dbConnector, String imagePath,
+////                                            String imageFileName, final String ownerId, final boolean isKitNew){
+//        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+////        Bitmap bmp = BitmapFactory.decodeFile(imagePath);
+////        int h = bmp.getHeight();
+////        int w = bmp.getWidth();
+////        int scale = 1;
+////        if(Math.max(h, w) == h){
+////            scale = h / MyConstants.SIZE_FULL_SIDE;
+////            getResizedBitmap(bmp, MyConstants.SIZE_FULL_SIDE, (w / scale))
+////                    .compress(Bitmap.CompressFormat.JPEG, 70, stream);
+////        } else {
+////            scale = w / MyConstants.SIZE_FULL_SIDE;
+////            getResizedBitmap(bmp, (h / scale), MyConstants.SIZE_FULL_SIDE)
+////                    .compress(Bitmap.CompressFormat.JPEG, 70, stream);
+////        }
+//
+//
+//        byte[] data = stream.toByteArray();
+//        String fullName = imageFileName + MyConstants.SIZE_FULL + MyConstants.JPG;
+//        final ParseFile imageFile = new ParseFile(fullName, data);
+//        final ParseObject boxartToSave = new ParseObject(MyConstants.PARSE_C_BOXART);
+//        boxartToSave.put(MyConstants.PARSE_IMAGE, imageFile);
+//        boxartToSave.saveInBackground(new SaveCallback() {
+//            @Override
+//            public void done(ParseException ex) {
+//                if (ex == null) {
+//                    String preparedUrl = prepareUrlFromParseBoxart(imageFile.getUrl());
+////                    saveStashItemToParse(dbConnector, preparedUrl, ownerId);
+////                    StashItem.this.setOnlineId(preparedUrl);
+//                    ContentValues cv = new ContentValues(1);
+//                    cv.put(DbConnector.COLUMN_ID_ONLINE, preparedUrl);
+//                    StashItem.this.editStashItem(dbConnector, cv);
+//                    StashItem.this.setBoxartUrl(preparedUrl);
+////                    if(isKitNew){
+//                    StashItem.this.saveToNewKit(ownerId);
+////                    }
+//                }
+//            }
+//        });
+//    }
+
+//    private void saveStashItemToParse(final DbConnector dbConnector, final String boxartUrl,
+//                                      final String ownerId) {
+//        final String[] parseId = new String[1];
+//
+//        final ParseObject kitTowrite = new ParseObject(MyConstants.PARSE_C_STASH);
+//        String media = this.getMedia();
+//        if (media != null) {
+//            kitTowrite.put(MyConstants.PARSE_MEDIA, media);
+//        }
+//        if (ownerId != null) {
+//            kitTowrite.put(MyConstants.PARSE_OWNERID, ownerId);
+//        }
+//        String itemType = this.getItemType();
+//        if (itemType != null){
+//            kitTowrite.put(MyConstants.PARSE_ITEMTYPE, itemType);
+//        }
+//        long localId = this.getLocalId();
+//        kitTowrite.put(MyConstants.PARSE_LOCALID, localId);
+//        String brand = this.getBrand();
+//        if (brand != null) {
+//            kitTowrite.put(MyConstants.PARSE_BRAND, brand);
+//        }
+//        String catno = this.getBrandCatno();
+//        if (catno != null){
+//            kitTowrite.put(MyConstants.PARSE_BRAND_CATNO, catno);
+//        }
+//        String name = this.getName();
+//        if (name != null) {
+//            kitTowrite.put(MyConstants.PARSE_KITNAME, name);
+//        }
+//        String category = this.getCategory();
+//        if (category != null) {
+//            kitTowrite.put(MyConstants.CATEGORY, category);
+//        }
+//        String barcode = this.getBarcode();
+//        if (barcode != null) {
+//            kitTowrite.put(MyConstants.PARSE_BARCODE, barcode);
+//        }
+//        int scale = this.getScale();
+//        kitTowrite.put(MyConstants.PARSE_SCALE, scale);
+//        String noengname = this.getNoengName();
+//        if(noengname != null){
+//            kitTowrite.put(MyConstants.PARSE_NOENGNAME, noengname);
+//        }
+//        String mates = this.getScalematesUrl();
+//        if (mates != null) {
+//            kitTowrite.put(MyConstants.PARSE_SCALEMATES, mates);
+//        }
+//        kitTowrite.put(MyConstants.BOXART_URL, boxartUrl);
+//        String desc = this.getDescription();
+//        if (desc != null) {
+//            kitTowrite.put(MyConstants.PARSE_DESCRIPTION, desc);
+//        }
+//        String year = this.getYear();
+//        if (year != null) {
+//            kitTowrite.put(MyConstants.YEAR, year);
+//        }
+//
+//        kitTowrite.saveInBackground(new SaveCallback() {
+//            @Override
+//            public void done(ParseException e) {
+//                if (e == null) {
+//                    parseId[0] = kitTowrite.getObjectId();
+//                    StashItem.this.setOnlineId(parseId[0]);
+//                    ContentValues cv = new ContentValues(2);
+//                    cv.put(DbConnector.COLUMN_ID_ONLINE, parseId[0]);
+//                    cv.put(DbConnector.COLUMN_BOXART_URL, boxartUrl);
+//                    StashItem.this.editStashItem(dbConnector, cv);
+//                } else {
+//                    String a = e.toString();
+//                    String b = " ";
+//                }
+//            }
+//        });
+//    }
+
+    public void saveToNewKit(StorageService storageService) {
+        String dbName = MyConstants.App42DBName;
+        String collectionName = "NewKits";
+        String newKitJson = "{\"b\": \"" + this.getBrand() + "\"," +
+                "\"c\": \"" + this.getBrandCatno() + "\"," +
+                "\"a\": \"" + this.getBarcode() + "\"," +
+                "\"s\": \"" + this.getScale() + "\"," +
+                "\"k\": \"" + this.getName() + "}";
+        /* Below snippet will save JSON object in App42 Cloud */
+        storageService.insertJSONDocument(dbName,collectionName,newKitJson,new App42CallBack() {
+            public void onSuccess(Object response)   {
+//                Storage storage  = (Storage )response;
+//                ArrayList<Storage.JSONDocument> jsonDocList = storage.getJsonDocList();
+//                for(int i = 0; i<jsonDocList.size(); i++)      {
+//                    System.out.println("objectId is " + jsonDocList.get(i).getDocId());
+////                    Above line will return object id of saved JSON object
+//                     System.out.println("CreatedAt is " + jsonDocList.get(i).getCreatedAt());
+//                     System.out.println("UpdatedAtis " + jsonDocList.get(i).getUpdatedAt());
+//                     System.out.println("Jsondoc is " + jsonDocList.get(i).getJsonDoc());
+//                     }
+            }  public void onException(Exception ex){
+                System.out.println("Exception Message"+ex.getMessage());
+            }  });
     }
 
+//
+//
+//
+//
+//
+//        ParseObject kitTowrite = new ParseObject(MyConstants.PARSE_C_NEWKIT);
+//        kitTowrite.put(MyConstants.PARSE_BARCODE, this.getBarcode());
+//        kitTowrite.put(MyConstants.TAG_BRAND, this.getBrand());
+//        kitTowrite.put(MyConstants.PARSE_BRAND_CATNO, this.getBrandCatno());
+//        kitTowrite.put(MyConstants.SCALE, this.getScale());
+//        kitTowrite.put(MyConstants.PARSE_KITNAME, this.getName());
+//        kitTowrite.put(MyConstants.PARSE_NOENGNAME, this.getNoengName());
+//        kitTowrite.put(MyConstants.CATEGORY, this.getCategory());
+////        if (!TextUtils.isEmpty(this.getBoxartUrl())) {
+////            kitTowrite.put(MyConstants.BOXART_URL, Helper.trimUrl(this.getBoxartUrl())); //Убираем обозначение размера картинки
+////        }
+//        kitTowrite.put(MyConstants.DESCRIPTION, this.getDescription());
+//        kitTowrite.put(MyConstants.PARSE_OWNERID, ownerId);
+//        kitTowrite.put(MyConstants.YEAR, this.getYear());
+//
+////        kitTowrite.put(MyConstants.PARSE_ITEMTYPE, this.getItemType());
+////        kitTowrite.put(MyConstants.PARSE_MEDIA, this.getMedia());
+//
+//        kitTowrite.saveInBackground();
 
-    public void saveOnlineAfterScan(String ownerId) {
-        StashItem.this.saveToNewKit(ownerId);
-    }
-
-    public void saveWithBoxartAndThumbnail(final DbConnector dbConnector, String imagePath, String imageFileName, final String ownerId){
-//    public void saveWithBoxartAndThumbnail(final DbConnector dbConnector, String imagePath,
-//                                            String imageFileName, final String ownerId, final boolean isKitNew){
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        Bitmap bmp = BitmapFactory.decodeFile(imagePath);
-        int h = bmp.getHeight();
-        int w = bmp.getWidth();
-        int scale = 1;
-        if(Math.max(h, w) == h){
-            scale = h / MyConstants.SIZE_FULL_SIDE;
-            getResizedBitmap(bmp, MyConstants.SIZE_FULL_SIDE, (w / scale))
-                    .compress(Bitmap.CompressFormat.JPEG, 70, stream);
-        } else {
-            scale = w / MyConstants.SIZE_FULL_SIDE;
-            getResizedBitmap(bmp, (h / scale), MyConstants.SIZE_FULL_SIDE)
-                    .compress(Bitmap.CompressFormat.JPEG, 70, stream);
-        }
-
-
-        byte[] data = stream.toByteArray();
-        String fullName = imageFileName + MyConstants.SIZE_FULL + MyConstants.JPG;
-        final ParseFile imageFile = new ParseFile(fullName, data);
-        final ParseObject boxartToSave = new ParseObject(MyConstants.PARSE_C_BOXART);
-        boxartToSave.put(MyConstants.PARSE_IMAGE, imageFile);
-        boxartToSave.saveInBackground(new SaveCallback() {
-            @Override
-            public void done(ParseException ex) {
-                if (ex == null) {
-                    String preparedUrl = prepareUrlFromParseBoxart(imageFile.getUrl());
-//                    saveStashItemToParse(dbConnector, preparedUrl, ownerId);
-//                    StashItem.this.setOnlineId(preparedUrl);
-                    ContentValues cv = new ContentValues(1);
-                    cv.put(DbConnector.COLUMN_ID_ONLINE, preparedUrl);
-                    StashItem.this.editStashItem(dbConnector, cv);
-                    StashItem.this.setBoxartUrl(preparedUrl);
-//                    if(isKitNew){
-                    StashItem.this.saveToNewKit(ownerId);
-//                    }
-                }
-            }
-        });
-    }
-
-    private void saveStashItemToParse(final DbConnector dbConnector, final String boxartUrl,
-                                      final String ownerId) {
-        final String[] parseId = new String[1];
-
-        final ParseObject kitTowrite = new ParseObject(MyConstants.PARSE_C_STASH);
-        String media = this.getMedia();
-        if (media != null) {
-            kitTowrite.put(MyConstants.PARSE_MEDIA, media);
-        }
-        if (ownerId != null) {
-            kitTowrite.put(MyConstants.PARSE_OWNERID, ownerId);
-        }
-        String itemType = this.getItemType();
-        if (itemType != null){
-            kitTowrite.put(MyConstants.PARSE_ITEMTYPE, itemType);
-        }
-        long localId = this.getLocalId();
-        kitTowrite.put(MyConstants.PARSE_LOCALID, localId);
-        String brand = this.getBrand();
-        if (brand != null) {
-            kitTowrite.put(MyConstants.PARSE_BRAND, brand);
-        }
-        String catno = this.getBrandCatno();
-        if (catno != null){
-            kitTowrite.put(MyConstants.PARSE_BRAND_CATNO, catno);
-        }
-        String name = this.getName();
-        if (name != null) {
-            kitTowrite.put(MyConstants.PARSE_KITNAME, name);
-        }
-        String category = this.getCategory();
-        if (category != null) {
-            kitTowrite.put(MyConstants.CATEGORY, category);
-        }
-        String barcode = this.getBarcode();
-        if (barcode != null) {
-            kitTowrite.put(MyConstants.PARSE_BARCODE, barcode);
-        }
-        int scale = this.getScale();
-        kitTowrite.put(MyConstants.PARSE_SCALE, scale);
-        String noengname = this.getNoengName();
-        if(noengname != null){
-            kitTowrite.put(MyConstants.PARSE_NOENGNAME, noengname);
-        }
-        String mates = this.getScalematesUrl();
-        if (mates != null) {
-            kitTowrite.put(MyConstants.PARSE_SCALEMATES, mates);
-        }
-        kitTowrite.put(MyConstants.BOXART_URL, boxartUrl);
-        String desc = this.getDescription();
-        if (desc != null) {
-            kitTowrite.put(MyConstants.PARSE_DESCRIPTION, desc);
-        }
-        String year = this.getYear();
-        if (year != null) {
-            kitTowrite.put(MyConstants.YEAR, year);
-        }
-
-        kitTowrite.saveInBackground(new SaveCallback() {
-            @Override
-            public void done(ParseException e) {
-                if (e == null) {
-                    parseId[0] = kitTowrite.getObjectId();
-                    StashItem.this.setOnlineId(parseId[0]);
-                    ContentValues cv = new ContentValues(2);
-                    cv.put(DbConnector.COLUMN_ID_ONLINE, parseId[0]);
-                    cv.put(DbConnector.COLUMN_BOXART_URL, boxartUrl);
-                    StashItem.this.editStashItem(dbConnector, cv);
-                } else {
-                    String a = e.toString();
-                    String b = " ";
-                }
-            }
-        });
-    }
-
-    private void saveToNewKit(String ownerId) {
-        ParseObject kitTowrite = new ParseObject(MyConstants.PARSE_C_NEWKIT);
-        kitTowrite.put(MyConstants.PARSE_BARCODE, this.getBarcode());
-        kitTowrite.put(MyConstants.BRAND, this.getBrand());
-        kitTowrite.put(MyConstants.PARSE_BRAND_CATNO, this.getBrandCatno());
-        kitTowrite.put(MyConstants.SCALE, this.getScale());
-        kitTowrite.put(MyConstants.PARSE_KITNAME, this.getName());
-        kitTowrite.put(MyConstants.PARSE_NOENGNAME, this.getNoengName());
-        kitTowrite.put(MyConstants.CATEGORY, this.getCategory());
-        if (!TextUtils.isEmpty(this.getBoxartUrl())) {
-            kitTowrite.put(MyConstants.BOXART_URL, Helper.trimUrl(this.getBoxartUrl())); //Убираем обозначение размера картинки
-        }
-        kitTowrite.put(MyConstants.DESCRIPTION, this.getDescription());
-        kitTowrite.put(MyConstants.PARSE_OWNERID, ownerId);
-        kitTowrite.put(MyConstants.YEAR, this.getYear());
-
-        kitTowrite.put(MyConstants.PARSE_ITEMTYPE, this.getItemType());
-        kitTowrite.put(MyConstants.PARSE_MEDIA, this.getMedia());
-
-        kitTowrite.saveInBackground();
-
-    }
+//    }
 
     ////HELPERS//////
 
@@ -472,19 +492,19 @@ public class StashItem implements Parcelable
         return dbConnector.editItemById(this.getLocalId(), cv);
     }
 
-    private String prepareUrlFromParseBoxart(String url) {
-        return url.substring(0, url.length() - 12);
-    }
-
-    private Bitmap getResizedBitmap(Bitmap bm, int newHeight, int newWidth) {
-        int width = bm.getWidth();
-        int height = bm.getHeight();
-        float scaleWidth = ((float) newWidth) / width;
-        float scaleHeight = ((float) newHeight) / height;
-        Matrix matrix = new Matrix();
-        matrix.postScale(scaleWidth, scaleHeight);
-        return Bitmap.createScaledBitmap(bm, newWidth, newHeight, false);
-    }
+//    private String prepareUrlFromParseBoxart(String url) {
+//        return url.substring(0, url.length() - 12);
+//    }
+//
+//    private Bitmap getResizedBitmap(Bitmap bm, int newHeight, int newWidth) {
+//        int width = bm.getWidth();
+//        int height = bm.getHeight();
+//        float scaleWidth = ((float) newWidth) / width;
+//        float scaleHeight = ((float) newHeight) / height;
+//        Matrix matrix = new Matrix();
+//        matrix.postScale(scaleWidth, scaleHeight);
+//        return Bitmap.createScaledBitmap(bm, newWidth, newHeight, false);
+//    }
 
     @Override
     public int describeContents() {

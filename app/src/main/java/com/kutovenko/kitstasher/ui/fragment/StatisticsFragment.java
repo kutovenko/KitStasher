@@ -3,7 +3,6 @@ package com.kutovenko.kitstasher.ui.fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -13,6 +12,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.databinding.DataBindingUtil;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.facebook.AccessToken;
 import com.facebook.AccessTokenTracker;
@@ -32,23 +36,13 @@ import com.github.mikephil.charting.utils.ViewPortHandler;
 import com.kutovenko.kitstasher.R;
 import com.kutovenko.kitstasher.databinding.FragmentStatisticsBinding;
 import com.kutovenko.kitstasher.db.DbConnector;
+import com.kutovenko.kitstasher.ui.MainActivity;
 import com.kutovenko.kitstasher.util.Helper;
 import com.kutovenko.kitstasher.util.MyConstants;
-import com.kutovenko.kitstasher.ui.MainActivity;
-import com.parse.CountCallback;
-import com.parse.GetCallback;
-import com.parse.ParseException;
-import com.parse.ParseObject;
-import com.parse.ParseQuery;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-
-import androidx.annotation.NonNull;
-import androidx.databinding.DataBindingUtil;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 
 /**
  * Created by Алексей on 21.04.2017.
@@ -76,19 +70,19 @@ public class StatisticsFragment extends Fragment implements View.OnClickListener
         dbConnector.open();
         totalKits = dbConnector.countAllRecordsByType(MyConstants.TYPE_KIT);
 
-        binding.btnCheckNow.setOnClickListener(this);
-        if (!isOnline()) {
-            binding.btnCheckNow.setClickable(false);
-            Toast.makeText(getActivity(), com.kutovenko.kitstasher.R.string.no_internet_connection, Toast.LENGTH_SHORT).show();
-        }
+//        binding.btnCheckNow.setOnClickListener(this);
+//        if (!isOnline()) {
+//            binding.btnCheckNow.setClickable(false);
+//            Toast.makeText(getActivity(), com.kutovenko.kitstasher.R.string.no_internet_connection, Toast.LENGTH_SHORT).show();
+//        }
 
         sharedPreferences = getActivity().getSharedPreferences(MyConstants.ACCOUNT_PREFS,
                 Context.MODE_PRIVATE);
         cloudId = sharedPreferences.getString(MyConstants.USER_ID_PARSE, "");
 
-        if (sharedPreferences != null) {
-            binding.tvScore.setText(sharedPreferences.getString(MyConstants.WORLDRANK, ""));
-        }
+//        if (sharedPreferences != null) {
+//            binding.tvScore.setText(sharedPreferences.getString(MyConstants.WORLDRANK, ""));
+//        }
         ((MainActivity) getActivity())
                 .setActionBarTitle(getActivity().getResources().getString(com.kutovenko.kitstasher.R.string.nav_statistics));
 
@@ -338,62 +332,62 @@ public class StatisticsFragment extends Fragment implements View.OnClickListener
     }
     @Override
     public void onClick(View view) {
-        switch (view.getId()){
-            case com.kutovenko.kitstasher.R.id.btnCheckNow:
-                checkFacebookConnection();
-                if (sharedPreferences.getString("registered", "").equals("true")){
-                    sendStatisticsToParse();
-                    checkUserAchievments();
-                }
-                break;
-        }
+//        switch (view.getId()){
+//            case com.kutovenko.kitstasher.R.id.btnCheckNow:
+//                checkFacebookConnection();
+//                if (sharedPreferences.getString("registered", "").equals("true")){
+//                    sendStatisticsToParse();
+//                    checkUserAchievments();
+//                }
+//                break;
+//        }
     }
 
-    private void sendStatisticsToParse() {
-        ParseQuery<ParseObject> query = ParseQuery.getQuery(MyConstants.PARSE_C_TOPUSERS);
-        query.whereEqualTo(MyConstants.PARSE_TU_USERID, cloudId);
-        query.getFirstInBackground(new GetCallback<ParseObject>() {
-            public void done(ParseObject object, ParseException e) {
-                if (e == null) {
-                    object.put(MyConstants.PARSE_TU_STASH, totalKits);
-                    try {
-                        object.save();
-                    } catch (ParseException e1) {
-                        e1.printStackTrace();
-                    }
-                }
-            }
-        });
-    }
-
-    private void checkUserAchievments() {
-        progressDialog = ProgressDialog.show(getActivity(), "", getString(com.kutovenko.kitstasher.R.string.Checking));
-        progressDialog.setCancelable(true);
-
-        ParseQuery<ParseObject> query = ParseQuery.getQuery(MyConstants.PARSE_C_TOPUSERS);
-        query.whereGreaterThan(MyConstants.PARSE_TU_STASH, totalKits);
-        query.countInBackground(new CountCallback() {
-            public void done(int count, ParseException e) {
-                if (e == null) {
-                    if(count == 0){
-                        binding.tvScore.setText("1");
-                        progressDialog.dismiss();
-                        statEditor = sharedPreferences.edit();
-                        statEditor.putString(MyConstants.WORLDRANK, String.valueOf(1));
-                        statEditor.apply();
-                    }else{
-                        binding.tvScore.setText(String.valueOf(count + 1));
-                        progressDialog.dismiss();
-                        statEditor = sharedPreferences.edit();
-                        statEditor.putString(MyConstants.WORLDRANK, String.valueOf(count + 1));
-                        statEditor.apply();
-                    }
-                } else {
-                    binding.tvScore.setText(com.kutovenko.kitstasher.R.string.Server_error);
-                }
-            }
-        });
-    }
+//    private void sendStatisticsToParse() {
+//        ParseQuery<ParseObject> query = ParseQuery.getQuery(MyConstants.PARSE_C_TOPUSERS);
+//        query.whereEqualTo(MyConstants.PARSE_TU_USERID, cloudId);
+//        query.getFirstInBackground(new GetCallback<ParseObject>() {
+//            public void done(ParseObject object, ParseException e) {
+//                if (e == null) {
+//                    object.put(MyConstants.PARSE_TU_STASH, totalKits);
+//                    try {
+//                        object.save();
+//                    } catch (ParseException e1) {
+//                        e1.printStackTrace();
+//                    }
+//                }
+//            }
+//        });
+//    }
+//
+//    private void checkUserAchievments() {
+//        progressDialog = ProgressDialog.show(getActivity(), "", getString(com.kutovenko.kitstasher.R.string.Checking));
+//        progressDialog.setCancelable(true);
+//
+//        ParseQuery<ParseObject> query = ParseQuery.getQuery(MyConstants.PARSE_C_TOPUSERS);
+//        query.whereGreaterThan(MyConstants.PARSE_TU_STASH, totalKits);
+//        query.countInBackground(new CountCallback() {
+//            public void done(int count, ParseException e) {
+//                if (e == null) {
+//                    if(count == 0){
+//                        binding.tvScore.setText("1");
+//                        progressDialog.dismiss();
+//                        statEditor = sharedPreferences.edit();
+//                        statEditor.putString(MyConstants.WORLDRANK, String.valueOf(1));
+//                        statEditor.apply();
+//                    }else{
+//                        binding.tvScore.setText(String.valueOf(count + 1));
+//                        progressDialog.dismiss();
+//                        statEditor = sharedPreferences.edit();
+//                        statEditor.putString(MyConstants.WORLDRANK, String.valueOf(count + 1));
+//                        statEditor.apply();
+//                    }
+//                } else {
+//                    binding.tvScore.setText(com.kutovenko.kitstasher.R.string.Server_error);
+//                }
+//            }
+//        });
+//    }
 
     private boolean isOnline() {
         ConnectivityManager cm =

@@ -18,7 +18,9 @@ public class MyConstants {
      * For creating Database from AppHQ console, just go to (Technical Service Manager -> Storage Service -> click "Add DB".)
      */
     public static final String App42DBName = "KitStasher";  // Change it as your requirement. (Note that, only one DataBase can be created through same API_KEY & SECRET_KEY);
-    public static final String CollectionName = "Kits"; // Change it as your requirement.
+    public static final String CollectionName = "Currencies"; // Change it as your requirement.
+
+    public static final String DATABASE_NAME = "myscalestash";
 
     /*
     Category tags
@@ -223,4 +225,5 @@ public class MyConstants {
     public static final float ASPECTRATIO_X = 16;
     public static final float ASPECTRATIO_Y = 10;
     public static final String PAINT_EDIT_MODE = "isEdited";
+    public static final String NEW_FILE_URI = "newFilePath";
 }

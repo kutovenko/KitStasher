@@ -9,6 +9,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.databinding.DataBindingUtil;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -23,13 +27,6 @@ import com.kutovenko.kitstasher.network.AsyncApp42ServiceApi;
 import com.kutovenko.kitstasher.util.Helper;
 import com.kutovenko.kitstasher.util.MyConstants;
 import com.kutovenko.kitstasher.util.ValueContainer;
-import com.parse.GetCallback;
-import com.parse.LogInCallback;
-import com.parse.ParseException;
-import com.parse.ParseFacebookUtils;
-import com.parse.ParseObject;
-import com.parse.ParseQuery;
-import com.parse.ParseUser;
 import com.shephertz.app42.paas.sdk.android.App42API;
 import com.shephertz.app42.paas.sdk.android.App42CallBack;
 import com.shephertz.app42.paas.sdk.android.social.Social;
@@ -39,10 +36,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Collection;
-
-import androidx.databinding.DataBindingUtil;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 
 import static com.facebook.FacebookSdk.getApplicationContext;
 
@@ -143,34 +136,34 @@ public class LoginFragment extends Fragment {
             }
         });
 
-        ParseFacebookUtils.logInWithReadPermissionsInBackground(this, null, new LogInCallback() {
-            @Override
-            public void done(final ParseUser user, ParseException e) {
-                if (user != null) {
-                    setSprefData(MyConstants.USER_ID_PARSE, user.getUsername());
-                }
-                if (user != null && user.isNew()) {
-
-                    ParseQuery<ParseObject> query = ParseQuery.getQuery(MyConstants.PARSE_C_TOPUSERS);
-                    query.whereContains(MyConstants.PARSE_TU_USERID, user.getUsername());
-                    query.getFirstInBackground(new GetCallback<ParseObject>() {
-                        public void done(ParseObject object, com.parse.ParseException e) {
-                            if (e != null) {
-                                ParseObject newParseObject = new ParseObject(MyConstants.PARSE_C_TOPUSERS);
-                                newParseObject.put(MyConstants.PARSE_TU_USERID, user.getUsername());
-                                newParseObject.put(MyConstants.PARSE_TU_OWNERNAME, ksUser.getName());
-                                newParseObject.put(MyConstants.PARSE_TU_STASH, 0);
-                                try {
-                                    newParseObject.save();
-                                } catch (ParseException ex) {
-                                    ex.printStackTrace();
-                                }
-                            }
-                        }
-                    });
-                }
-            }
-        });
+//        ParseFacebookUtils.logInWithReadPermissionsInBackground(this, null, new LogInCallback() {
+//            @Override
+//            public void done(final ParseUser user, ParseException e) {
+//                if (user != null) {
+//                    setSprefData(MyConstants.USER_ID_PARSE, user.getUsername());
+//                }
+//                if (user != null && user.isNew()) {
+//
+//                    ParseQuery<ParseObject> query = ParseQuery.getQuery(MyConstants.PARSE_C_TOPUSERS);
+//                    query.whereContains(MyConstants.PARSE_TU_USERID, user.getUsername());
+//                    query.getFirstInBackground(new GetCallback<ParseObject>() {
+//                        public void done(ParseObject object, com.parse.ParseException e) {
+//                            if (e != null) {
+//                                ParseObject newParseObject = new ParseObject(MyConstants.PARSE_C_TOPUSERS);
+//                                newParseObject.put(MyConstants.PARSE_TU_USERID, user.getUsername());
+//                                newParseObject.put(MyConstants.PARSE_TU_OWNERNAME, ksUser.getName());
+//                                newParseObject.put(MyConstants.PARSE_TU_STASH, 0);
+//                                try {
+//                                    newParseObject.save();
+//                                } catch (ParseException ex) {
+//                                    ex.printStackTrace();
+//                                }
+//                            }
+//                        }
+//                    });
+//                }
+//            }
+//        });
 
 
 
@@ -209,7 +202,7 @@ public class LoginFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         callbackManager.onActivityResult(requestCode, resultCode, data);
-        ParseFacebookUtils.onActivityResult(requestCode, resultCode, data);
+//        ParseFacebookUtils.onActivityResult(requestCode, resultCode, data);
 
         setSprefData("registered", "true");
         StatisticsFragment fragment = new StatisticsFragment();

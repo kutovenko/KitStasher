@@ -7,30 +7,30 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-
-import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.Fragment;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.viewpager.widget.ViewPager;
-import androidx.appcompat.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import com.kutovenko.kitstasher.R;
-import com.kutovenko.kitstasher.databinding.FragmentTabbedScanningBinding;
-import com.kutovenko.kitstasher.model.Item;
-import com.kutovenko.kitstasher.network.AsyncApp42ServiceApi;
-import com.kutovenko.kitstasher.ui.listener.OnFragmentInteractionListener;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.viewpager.widget.ViewPager;
+
 import com.google.zxing.ResultPoint;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.journeyapps.barcodescanner.BarcodeCallback;
 import com.journeyapps.barcodescanner.BarcodeResult;
-import com.kutovenko.kitstasher.ui.adapter.UiAlertDialogAdapter;
-import com.kutovenko.kitstasher.model.StashItem;
+import com.kutovenko.kitstasher.R;
+import com.kutovenko.kitstasher.databinding.FragmentTabbedScanningBinding;
 import com.kutovenko.kitstasher.db.DbConnector;
+import com.kutovenko.kitstasher.model.Item;
+import com.kutovenko.kitstasher.model.StashItem;
+import com.kutovenko.kitstasher.network.AsyncApp42ServiceApi;
+import com.kutovenko.kitstasher.ui.adapter.UiAlertDialogAdapter;
+import com.kutovenko.kitstasher.ui.listener.OnFragmentInteractionListener;
 import com.kutovenko.kitstasher.util.Helper;
 import com.kutovenko.kitstasher.util.MyConstants;
 import com.shephertz.app42.paas.sdk.android.App42Exception;
@@ -273,9 +273,9 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
                             .hasNotes(MyConstants.EMPTY)
                             .hasDatePurchased(MyConstants.EMPTY)
                             .hasCurrency(MyConstants.EMPTY)
+                            .hasPlacePurchased(MyConstants.EMPTY)
                             .hasSendStatus(MyConstants.EMPTY)
                             .hasBoxartUrl(MyConstants.EMPTY)
-                            .hasPlacePurchased(MyConstants.EMPTY)
                             .hasQuantity(1)
                             .hasPrice(0)
                             .build();
@@ -323,9 +323,9 @@ public class ScanFragment extends Fragment implements AsyncApp42ServiceApi.App42
                     stashItemToAdd.setScale(scale);
 
                     stashItemToAdd.saveToLocalStash(dbConnector);
-                    if (Helper.isOnline(context)){
-                        stashItemToAdd.saveOnlineAfterScan(ownerId);
-                    }
+//                    if (Helper.isOnline(context)){
+//                        stashItemToAdd.saveOnlineAfterScan(ownerId);
+//                    }
                     Toast.makeText(context, com.kutovenko.kitstasher.R.string.kit_added, Toast.LENGTH_SHORT).show();
                 }
             }

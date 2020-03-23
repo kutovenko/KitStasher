@@ -14,15 +14,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
-import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
-import androidx.databinding.DataBindingUtil;
-import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
-import androidx.appcompat.app.AlertDialog;
-
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -32,35 +23,49 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
+import androidx.databinding.DataBindingUtil;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.kutovenko.kitstasher.BuildConfig;
 import com.kutovenko.kitstasher.R;
+import com.kutovenko.kitstasher.databinding.FragmentTabbedManualaddBinding;
+import com.kutovenko.kitstasher.db.DbConnector;
+import com.kutovenko.kitstasher.model.Item;
+import com.kutovenko.kitstasher.model.StashItem;
+import com.kutovenko.kitstasher.network.AsyncApp42ServiceApi;
 import com.kutovenko.kitstasher.ui.CropActivity;
 import com.kutovenko.kitstasher.ui.MainActivity;
-import com.kutovenko.kitstasher.ui.adapter.UiSpinnerSupplyAdapter;
-import com.kutovenko.kitstasher.databinding.FragmentTabbedManualaddBinding;
-import com.kutovenko.kitstasher.model.Item;
-import com.kutovenko.kitstasher.network.AsyncApp42ServiceApi;
-import com.kutovenko.kitstasher.ui.listener.OnFragmentInteractionListener;
-import com.kutovenko.kitstasher.util.ValueContainer;
-import com.kutovenko.kitstasher.BuildConfig;
 import com.kutovenko.kitstasher.ui.adapter.UiAlertDialogAdapter;
 import com.kutovenko.kitstasher.ui.adapter.UiSpinnerAdapter;
-import com.kutovenko.kitstasher.model.StashItem;
-import com.kutovenko.kitstasher.db.DbConnector;
+import com.kutovenko.kitstasher.ui.adapter.UiSpinnerSupplyAdapter;
+import com.kutovenko.kitstasher.ui.listener.OnFragmentInteractionListener;
 import com.kutovenko.kitstasher.util.Helper;
 import com.kutovenko.kitstasher.util.MyConstants;
+import com.kutovenko.kitstasher.util.PathUtil;
+import com.kutovenko.kitstasher.util.ValueContainer;
+import com.shephertz.app42.paas.sdk.android.App42API;
 import com.shephertz.app42.paas.sdk.android.App42Exception;
 import com.shephertz.app42.paas.sdk.android.storage.Query;
 import com.shephertz.app42.paas.sdk.android.storage.QueryBuilder;
 import com.shephertz.app42.paas.sdk.android.storage.Storage;
+import com.shephertz.app42.paas.sdk.android.storage.StorageService;
 import com.yalantis.ucrop.UCrop;
+import com.yalantis.ucrop.util.FileUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -68,8 +73,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
-
-import androidx.fragment.app.FragmentTransaction;
 
 import static android.app.Activity.RESULT_OK;
 import static android.view.View.SCREEN_STATE_ON;
@@ -85,6 +88,7 @@ import static com.kutovenko.kitstasher.ui.MainActivity.asyncService;
 
 public class ManualAddFragment extends Fragment implements View.OnClickListener, TextWatcher,
         AsyncApp42ServiceApi.App42StorageServiceListener, OnFragmentInteractionListener {
+
     private FragmentTabbedManualaddBinding binding;
     public static String manualTag;
     private String imageFileName;
@@ -314,7 +318,6 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         }
 
         return binding.getRoot();
-//        return view;
     }
 
     private int setAddonCategoryToPosition(String category) {
@@ -356,7 +359,6 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         context = getActivity();
         SharedPreferences sharedPreferences = context.getSharedPreferences(MyConstants.ACCOUNT_PREFS,
                 Context.MODE_PRIVATE);
-//        cloudModeOn = sharedPreferences.getBoolean(MyConstants.CLOUD_MODE, true);
         Calendar c = Calendar.getInstance();
         SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());
         if (getArguments() != null) {
@@ -396,6 +398,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
         binding.btnMAdd.setOnClickListener(this);
         binding.btnMCancel.setOnClickListener(this);
         binding.ivGetBoxart.setOnClickListener(this);
+        binding.ivGetImageFile.setOnClickListener(this);
         binding.tvPurchaseDate.setText(com.kutovenko.kitstasher.R.string.Date_not_set);
         binding.tvPurchaseDate.setOnClickListener(this);
         binding.btnClearDate.setOnClickListener(this);
@@ -509,11 +512,13 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                     isBoxartTemporary = false;
                     if (!isInLocalBase(stashItem.getBrand(), stashItem.getBrandCatno())) {
                         stashItem.saveToLocalStash(dbConnector);
-                        if (Helper.isOnline(context)){
-                            stashItem.saveToStashWhenOnline(dbConnector, boxartUri, imageFileName, ownerId);
-                        } else {
-                            Toast.makeText(context, R.string.no_internet_connection, Toast.LENGTH_SHORT).show();
+                        if (Helper.isOnline(context) && !stashItem.getBarcode().isEmpty()){
+                            StorageService storageService = App42API.buildStorageService();
+                            stashItem.saveToNewKit(storageService);
                         }
+//                        } else {
+//                            Toast.makeText(context, R.string.no_internet_connection, Toast.LENGTH_SHORT).show();
+//                        }
                         Toast.makeText(getActivity(), com.kutovenko.kitstasher.R.string.kit_added, Toast.LENGTH_SHORT).show();
                         clearFields();
                         break;
@@ -535,12 +540,29 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                 }
                 break;
 
+            case (R.id.ivGetImageFile):
+                    dispatchFileImageIntent();
+                    break;
+
             case com.kutovenko.kitstasher.R.id.tvPurchaseDate:
-                DialogFragment newFragment = new SelectDateFragment();
-                Bundle bundle = new Bundle(1);
-                bundle.putString("caller", "manualadd");
-                newFragment.setArguments(bundle);
-                newFragment.show(getFragmentManager(), "DatePicker");
+                // TODO: 06.03.2019 datepicker
+//                DatePickerFragment newFragment = new DatePickerFragment();
+//                newFragment.show(getSupportFragmentManager(), "datePicker");
+//
+//                newFragment.setOnDateClickListener(new onDateClickListener() {
+//                    @Override
+//                    public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
+//
+//                        TextView tv1= (TextView) findViewById(R.id.txtDate);
+//                        tv1.setText(datePicker.getYear()+"/"+datePicker.getMonth()+"/"+datePicker.getDayOfMonth());
+//                    }
+//
+//                });
+//                DialogFragment newFragment = new SelectDateFragment();
+//                Bundle bundle = new Bundle(1);
+//                bundle.putString("caller", "manualadd");
+//                newFragment.setArguments(bundle);
+//                newFragment.show(getFragmentManager(), "DatePicker");
                 break;
 
             case com.kutovenko.kitstasher.R.id.btnClearDate:
@@ -548,6 +570,32 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                 binding.tvPurchaseDate.setText(com.kutovenko.kitstasher.R.string.Date_not_set);
                 break;
         }
+    }
+
+    private void dispatchFileImageIntent(){
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("image/*");
+        if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
+            if (Helper.getExternalStorageState() == Helper.StorageState.WRITEABLE) {
+                File photoFile = createImageFile();
+                if (photoFile != null) {
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                        mCurrentPhotoPath = FileProvider.getUriForFile(context,
+                                BuildConfig.APPLICATION_ID + ".provider",
+                                photoFile).toString();
+                    } else {
+                        mCurrentPhotoPath = Uri.fromFile(photoFile).toString();
+                    }
+                    startActivityForResult(intent, MainActivity.OPEN_DOCUMENT_CODE);
+                }
+            }
+        }
+
+
+
+
+        startActivityForResult(intent, MainActivity.OPEN_DOCUMENT_CODE);
     }
 
     private void dispatchTakePictureIntent() {
@@ -587,7 +635,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                     storageDir      /* directory */
             );
         } catch (IOException e) {
-            Toast.makeText(context, "Нельзя создать файл", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, getString(R.string.cant_create_file), Toast.LENGTH_LONG).show();
         }
         if (image != null) {
             mCurrentPhotoPath = image.getAbsolutePath();
@@ -596,7 +644,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             editor.putString(MyConstants.FILE_URI, mCurrentPhotoPath);
             editor.apply();
         } else {
-            Toast.makeText(context, "Нельзя создать файл", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, getString(R.string.cant_create_file), Toast.LENGTH_LONG).show();
         }
         return image;
     }
@@ -853,6 +901,34 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
             cropIntent.putExtra(MyConstants.FILE_URI, mCurrentPhotoPath);
             startActivityForResult(cropIntent, REQUEST_CODE_CROP);
         }
+
+        if (resultCode == RESULT_OK && requestCode == MainActivity.OPEN_DOCUMENT_CODE){
+            if (data != null) {
+                Uri imageUri = data.getData();
+                Glide
+                        .with(context)
+                        .load(imageUri)
+                        .apply(new RequestOptions().placeholder(com.kutovenko.kitstasher.R.drawable.ic_menu_camera).error(com.kutovenko.kitstasher.R.drawable.ic_menu_camera))
+                        .into(binding.ivCurrentBoxart);
+
+                String input = null;
+                try {
+                    input = PathUtil.getPath(context, imageUri);
+                } catch (URISyntaxException e) {
+                    e.printStackTrace();
+                }
+                String newFilePath = createImageFile().getAbsolutePath();
+                try {
+                    FileUtils.copyFile(input, newFilePath);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                mCurrentPhotoPath = newFilePath;
+                boxartUri = mCurrentPhotoPath;
+            }
+        }
+
         if (resultCode != RESULT_OK) {
             Toast.makeText(getActivity(), com.kutovenko.kitstasher.R.string.camera_failure, Toast.LENGTH_LONG).show();
         }
@@ -863,7 +939,7 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
                     .with(context)
                     .load(image)
                     .apply(new RequestOptions().placeholder(com.kutovenko.kitstasher.R.drawable.ic_menu_camera).error(com.kutovenko.kitstasher.R.drawable.ic_menu_camera))
-                    .into(binding.ivGetBoxart);
+                    .into(binding.ivCurrentBoxart);
             boxartUri = mCurrentPhotoPath;
 
         } else if (resultCode == UCrop.RESULT_ERROR) {
@@ -1023,6 +1099,22 @@ public class ManualAddFragment extends Fragment implements View.OnClickListener,
     public void onUpdateDocFailed(App42Exception ex) {
         binding.pbManualAdd.setVisibility(View.GONE);
     }
+
+//    private void copyImageFile(Uri sourceUri, String pathToNewFile){
+//        String sourcePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/TongueTwister/tt_temp.3gp";
+//
+//        String source = Uri.parse(sourceUri);
+//        String destination = pathToNewFile;
+////        File destination = new File(destinationPath);
+//        try
+//        {
+//            FileUtils.copyFile(source, destination);
+//        }
+//        catch (IOException e)
+//        {
+//            e.printStackTrace();
+//        }
+//    }
 
     private void checkCameraPermissions() {
         if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA)

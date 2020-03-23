@@ -10,21 +10,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.RequestOptions;
-import com.google.android.material.navigation.NavigationView;
-import com.kutovenko.kitstasher.R;
-import com.kutovenko.kitstasher.databinding.ActivityMainBinding;
-import com.kutovenko.kitstasher.ui.fragment.KitsFragment;
-import com.kutovenko.kitstasher.ui.fragment.SettingsAboutFragment;
-import com.kutovenko.kitstasher.ui.fragment.SettingsFragment;
-import com.kutovenko.kitstasher.ui.fragment.StatisticsFragment;
-import com.kutovenko.kitstasher.network.AsyncApp42ServiceApi;
-import com.kutovenko.kitstasher.db.DbConnector;
-import com.kutovenko.kitstasher.util.MyConstants;
-import com.kutovenko.kitstasher.ui.fragment.LoginFragment;
-import com.parse.ParseFacebookUtils;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -33,6 +18,23 @@ import androidx.databinding.DataBindingUtil;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
+import com.google.android.material.navigation.NavigationView;
+import com.kutovenko.kitstasher.R;
+import com.kutovenko.kitstasher.databinding.ActivityMainBinding;
+import com.kutovenko.kitstasher.db.DbConnector;
+import com.kutovenko.kitstasher.network.AsyncApp42ServiceApi;
+import com.kutovenko.kitstasher.ui.fragment.KitsFragment;
+import com.kutovenko.kitstasher.ui.fragment.LoginFragment;
+import com.kutovenko.kitstasher.ui.fragment.SettingsAboutFragment;
+import com.kutovenko.kitstasher.ui.fragment.SettingsFragment;
+import com.kutovenko.kitstasher.ui.fragment.StatisticsFragment;
+import com.kutovenko.kitstasher.util.MyConstants;
+
+import static com.kutovenko.kitstasher.util.MyConstants2Kt.TYPE_KIT;
+//import com.kutovenko.kitstasher.util.MyConstants;
 
 /**
  * Created by Alexey on 10.04.2017.
@@ -64,6 +66,8 @@ public class MainActivity extends AppCompatActivity
     public static final int REQUEST_CODE_CROP = 3;
     public static final int MY_PERMISSIONS_REQUEST_CAMERA = 10;
     public static final int MY_PERMISSIONS_REQUEST_WRITE = 20;
+    public static final int OPEN_DOCUMENT_CODE = 40;
+
 
     private static int navItemIndex = 0;
     private DbConnector dbConnector;
@@ -102,7 +106,7 @@ public class MainActivity extends AppCompatActivity
         dbConnector = new DbConnector(this);
         dbConnector.open();
 
-        workMode = MyConstants.TYPE_KIT;
+        workMode = TYPE_KIT;
 
         binding.appbarmain.toolbar.setTitle(title);
         setSupportActionBar(binding.appbarmain.toolbar);
@@ -339,25 +343,25 @@ public class MainActivity extends AppCompatActivity
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (resultCode == RESULT_OK) {
-            if (requestCode == REQUEST_CODE_VIEW) {
-//                String workMode = data.getStringExtra(MyConstants.ITEM_TYPE);
-//                int position = data.getIntExtra(MyConstants.POSITION, 0);
-//                String category = data.getStringExtra(MyConstants.CATEGORY);
-//                Bundle bundle = new Bundle();
-//                bundle.putInt(MyConstants.POSITION, position);
-//                bundle.putString(MyConstants.CATEGORY, category);
-//                bundle.putString(MyConstants.ITEM_TYPE, workMode);
-//                KitsFragment fragment = KitsFragment.newInstance();
-//                fragment.setArguments(bundle);
-//                FragmentTransaction fragmentTransaction =
-//                        getSupportFragmentManager().beginTransaction();
-//                fragmentTransaction.replace(com.kutovenko.kitstasher.R.id.mainactivityContainer, fragment);
-//                fragmentTransaction.commit();
-            }
-        }
+//        if (resultCode == RESULT_OK) {
+//            if (requestCode == REQUEST_CODE_VIEW) {
+////                String workMode = data.getStringExtra(MyConstants.ITEM_TYPE);
+////                int position = data.getIntExtra(MyConstants.POSITION, 0);
+////                String category = data.getStringExtra(MyConstants.CATEGORY);
+////                Bundle bundle = new Bundle();
+////                bundle.putInt(MyConstants.POSITION, position);
+////                bundle.putString(MyConstants.CATEGORY, category);
+////                bundle.putString(MyConstants.ITEM_TYPE, workMode);
+////                KitsFragment fragment = KitsFragment.newInstance();
+////                fragment.setArguments(bundle);
+////                FragmentTransaction fragmentTransaction =
+////                        getSupportFragmentManager().beginTransaction();
+////                fragmentTransaction.replace(com.kutovenko.kitstasher.R.id.mainactivityContainer, fragment);
+////                fragmentTransaction.commit();
+//            }
+//        }
 
-        ParseFacebookUtils.onActivityResult(requestCode, resultCode, data);
+//        ParseFacebookUtils.onActivityResult(requestCode, resultCode, data);
         Fragment f = getSupportFragmentManager().findFragmentById(R.id.mainactivityContainer);
         f.onActivityResult(requestCode, resultCode, data);
 

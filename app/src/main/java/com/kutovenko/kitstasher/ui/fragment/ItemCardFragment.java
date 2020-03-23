@@ -2,7 +2,6 @@ package com.kutovenko.kitstasher.ui.fragment;
 
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
@@ -10,20 +9,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
+import androidx.annotation.NonNull;
+import androidx.databinding.DataBindingUtil;
+import androidx.fragment.app.Fragment;
+
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.kutovenko.kitstasher.R;
-import com.kutovenko.kitstasher.ui.EditActivity;
 import com.kutovenko.kitstasher.databinding.FragmentItemCardBinding;
 import com.kutovenko.kitstasher.model.StashItem;
+import com.kutovenko.kitstasher.ui.EditActivity;
 import com.kutovenko.kitstasher.util.Helper;
 import com.kutovenko.kitstasher.util.MyConstants;
 
 import java.io.File;
-
-import androidx.annotation.NonNull;
-import androidx.databinding.DataBindingUtil;
-import androidx.fragment.app.Fragment;
 
 
 /**
@@ -140,7 +139,7 @@ public class ItemCardFragment extends Fragment {
         if (!Helper.isBlank(uri)) {
             Glide
                     .with(context)
-                    .load(new File(Uri.parse(uri).getPath()))
+                    .load(new File(uri))
                     .apply(new RequestOptions().placeholder(com.kutovenko.kitstasher.R.drawable.ic_menu_camera).error(com.kutovenko.kitstasher.R.drawable.ic_menu_camera))
                     .into(binding.ivBoxart);
         } else {

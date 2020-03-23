@@ -392,9 +392,9 @@
     <string name="permission_granted">Permission granted</string>
 
     <string name="personal_data_policy_fb">KitStasher uses Facebook API for registration. KitStasher gets user ID, user name and link to profile pic. You can read Facebook Personal Data Policy here.</string>
-    <string name="personal_data_policy_p4b">KitStasher uses Buddy IoT Platform API to store kits, add-ons and paints records. It also store Facebook user ID. You can read Buddy IoT Platform Personal Data Policy here.</string>
+    <string name="personal_data_policy_p4b">KitStasher uses AppHQ API to store kits, add-ons and paints records. It also store Facebook user ID. You can read AppHQ Platform Personal Data Policy here.</string>
     <string name="facebook_gdpr">Facebook GDPR FAQ</string>
-    <string name="p4b_gdpr">Buddy IoT Platform Privacy Policy</string>
+    <string name="p4b_gdpr">AppHQ Privacy Policy</string>
     <string name="kitstasher_page">KitStasher Facebook Page</string>
     <string name="about">About</string>
     <string name="personal_data_policy">Personal Data Policy</string>
@@ -461,6 +461,7 @@
     <string name="responce_message">Response Message</string>
     <string name="saving_failed">Saving failed. Please, try again!</string>
     <string name="nav_all">All Stash</string>
+    <string name="cant_create_file">Нельзя создать файл</string>
 
 
 </resources>

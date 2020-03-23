@@ -1,21 +1,20 @@
 package com.kutovenko.kitstasher.ui.fragment;
 
 
-import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.kutovenko.kitstasher.R;
-import com.kutovenko.kitstasher.databinding.FragmentSettingsAboutBinding;
-import com.kutovenko.kitstasher.util.Helper;
-import com.kutovenko.kitstasher.ui.MainActivity;
-
 import androidx.annotation.NonNull;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
+
+import com.kutovenko.kitstasher.R;
+import com.kutovenko.kitstasher.databinding.FragmentSettingsAboutBinding;
+import com.kutovenko.kitstasher.ui.MainActivity;
+import com.kutovenko.kitstasher.util.Helper;
 
 
 public class SettingsAboutFragment extends Fragment {
@@ -47,7 +46,7 @@ public class SettingsAboutFragment extends Fragment {
 
         binding.tvP4BLink.setClickable(true);
         binding.tvP4BLink.setMovementMethod(LinkMovementMethod.getInstance());
-        String p4bText = "<a href='https://buddy.com/privacy-policy'>"
+        String p4bText = "<a href='https://apphq.shephertz.com/register/policy'>"
                 + getString(com.kutovenko.kitstasher.R.string.p4b_gdpr)
                 + "</a>";
         binding.tvP4BLink.setText(Helper.fromHtml(p4bText));

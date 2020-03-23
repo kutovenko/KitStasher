@@ -113,7 +113,7 @@ public class FragmentKitsAdapter extends RecyclerView.Adapter<FragmentKitsAdapte
         if (!Helper.isBlank(uri)) {
             Glide
                     .with(context)
-                    .load(new File(Uri.parse(uri).getPath()))
+                    .load(uri)
                     .apply(new RequestOptions().placeholder(com.kutovenko.kitstasher.R.drawable.ic_menu_camera)
                             .error(com.kutovenko.kitstasher.R.drawable.ic_menu_camera))
                     .into(holder.ivBoxart);

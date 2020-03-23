@@ -305,11 +305,11 @@ public class AddSupplyFragment extends Fragment implements View.OnClickListener,
                             Toast.makeText(context, "Database Error. Can't write to local database", Toast.LENGTH_SHORT).show();
                         }
                     }else{
-                        if(Helper.isOnline(context)){
-                            supplyItem.saveToStashWhenOnline(dbConnector, mCurrentPhotoPath, imageFileName, ownerId);
-                        }else{
+//                        if(Helper.isOnline(context)){
+//                            supplyItem.saveToStashWhenOnline(dbConnector, mCurrentPhotoPath, imageFileName, ownerId);
+//                        }else{
                             supplyItem.saveToLocalStash(dbConnector);
-                        }
+//                        }
                     }
                     returnToKits();
 

@@ -5,46 +5,38 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
-
-import androidx.databinding.DataBindingUtil;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.appcompat.widget.SearchView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CompoundButton;
-import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.ToggleButton;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SearchView;
+import androidx.databinding.DataBindingUtil;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.kutovenko.kitstasher.R;
+import com.kutovenko.kitstasher.databinding.FragmentViewstashBinding;
+import com.kutovenko.kitstasher.db.DbConnector;
+import com.kutovenko.kitstasher.model.CategoryItem;
+import com.kutovenko.kitstasher.model.StashItem;
 import com.kutovenko.kitstasher.ui.MainActivity;
 import com.kutovenko.kitstasher.ui.ViewActivity;
 import com.kutovenko.kitstasher.ui.adapter.BottomSheetAdapter;
 import com.kutovenko.kitstasher.ui.adapter.FragmentKitsAdapter;
-import com.kutovenko.kitstasher.databinding.FragmentViewstashBinding;
 import com.kutovenko.kitstasher.ui.listener.OnPagerItemInteractionListener;
-import com.kutovenko.kitstasher.model.CategoryItem;
-import com.kutovenko.kitstasher.model.StashItem;
-import com.kutovenko.kitstasher.db.DbConnector;
 import com.kutovenko.kitstasher.util.Helper;
 import com.kutovenko.kitstasher.util.MyConstants;
-import com.parse.GetCallback;
-import com.parse.ParseException;
-import com.parse.ParseObject;
-import com.parse.ParseQuery;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -443,7 +435,7 @@ public class KitsFragment extends Fragment implements FragmentKitsAdapter.Filter
             }
         }
         try {
-            deleteFromOnlineStash(onlineId);
+//            deleteFromOnlineStash(onlineId);
         } finally {
             dbConnector.deleteItem(itemId);
         }
@@ -454,20 +446,20 @@ public class KitsFragment extends Fragment implements FragmentKitsAdapter.Filter
         bottomSheetAdapter.updateCategories(activeCategories);
     }
 
-    private void deleteFromOnlineStash(String onlineId) {
-        ParseQuery<ParseObject> query = ParseQuery.getQuery(MyConstants.PARSE_C_STASH);
-        query.getInBackground(onlineId, new GetCallback<ParseObject>() {
-            public void done(ParseObject item, ParseException e) {
-                if (e == null) {
-                    item.put(MyConstants.PARSE_DELETED, true);
-                    item.saveInBackground();
-                } else {
-                    //debug
-                    Toast.makeText(context, e.toString(), Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-    }
+//    private void deleteFromOnlineStash(String onlineId) {
+//        ParseQuery<ParseObject> query = ParseQuery.getQuery(MyConstants.PARSE_C_STASH);
+//        query.getInBackground(onlineId, new GetCallback<ParseObject>() {
+//            public void done(ParseObject item, ParseException e) {
+//                if (e == null) {
+//                    item.put(MyConstants.PARSE_DELETED, true);
+//                    item.saveInBackground();
+//                } else {
+//                    //debug
+//                    Toast.makeText(context, e.toString(), Toast.LENGTH_SHORT).show();
+//                }
+//            }
+//        });
+//    }
 
     @Override
     public void onCategorySelected(String category) {
